@@ -1,0 +1,12 @@
+:root {
+  --color-page: #f6f2ea;
+  --color-surface: #fffaf2;
+  --color-text: #20211d;
+  --color-muted: #6f7168;
+  --color-border: #ded6c8;
+  --color-primary: #0f6b5f;
+  --color-primary-strong: #0a4f46;
+  --color-danger: #b42318;
+  --shadow-panel: 0 18px 45px rgba(43, 36, 24, 0.12);
+  --radius-panel: 8px;
+}
