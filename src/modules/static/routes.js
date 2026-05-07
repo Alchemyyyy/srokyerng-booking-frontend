@@ -11,6 +11,11 @@ export const staticRoutes = [
   },
 
   {
+    path: "color-system",
+    name: "color-system",
+    component: () => import("@/modules/static/pages/ColorSystemView.vue"),
+  },
+  {
     path: "components",
     name: "components-demo",
     component: () => import("@/modules/static/pages/ComponentsDemoView.vue"),

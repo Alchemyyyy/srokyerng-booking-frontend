@@ -4,6 +4,8 @@ import { RouterLink, useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { ROLES } from "@/shared/constants/roles";
 import BrandLogo from "@/shared/components/BrandLogo.vue";
+import LanguageToggle from "@/shared/components/LanguageToggle.vue";
+import ThemeToggle from "@/shared/components/ThemeToggle.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -66,17 +68,19 @@ watch(
 </script>
 
 <template>
-  <header class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
+  <header
+    class="sticky top-0 z-50 border-b border-(--color-border) bg-(--color-surface)/90 backdrop-blur-xl"
+  >
     <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
       <RouterLink
         :to="{ name: 'public.properties' }"
-        class="flex items-center gap-3 text-slate-900 transition hover:text-[#2b7fff]"
+        class="flex items-center gap-3 text-(--color-text) transition hover:text-(--color-primary)"
       >
         <BrandLogo show-tagline />
       </RouterLink>
 
       <nav
-        class="hidden items-center gap-1 rounded-full border border-slate-200 bg-slate-50/80 p-1 lg:flex"
+        class="hidden items-center gap-1 rounded-full border border-(--color-border) bg-(--color-surface-soft) p-1 lg:flex"
       >
         <RouterLink
           v-for="item in navigationItems"
@@ -85,8 +89,8 @@ watch(
           class="rounded-full px-4 py-2 text-sm font-medium transition"
           :class="
             isActiveRoute(item.to.name)
-              ? 'bg-white text-[#2b7fff] shadow-sm ring-1 ring-[#2b7fff]/15'
-              : 'text-slate-600 hover:bg-white hover:text-slate-900'
+              ? 'bg-(--color-surface) text-(--color-primary) shadow-sm ring-1 ring-(--color-focus-ring)'
+              : 'text-(--color-muted) hover:bg-(--color-surface) hover:text-(--color-text)'
           "
         >
           {{ item.label }}
@@ -94,16 +98,21 @@ watch(
       </nav>
 
       <div class="hidden items-center gap-3 lg:flex">
+        <ThemeToggle />
+        <LanguageToggle />
+
         <template v-if="authStore.isAuthenticated">
-          <div class="flex items-center gap-3 rounded-full bg-slate-50 px-3 py-2 ring-1 ring-slate-200">
+          <div
+            class="flex items-center gap-3 rounded-full bg-(--color-surface-soft) px-3 py-2 ring-1 ring-(--color-border)"
+          >
             <div
-              class="flex h-9 w-9 items-center justify-center rounded-full bg-[#2b7fff]/10 text-sm font-bold text-[#2b7fff]"
+              class="flex h-9 w-9 items-center justify-center rounded-full bg-(--color-primary-soft) text-sm font-bold text-(--color-primary)"
             >
               {{ userInitial }}
             </div>
             <div class="pr-1">
-              <p class="max-w-40 truncate text-sm font-semibold text-slate-900">{{ userLabel }}</p>
-              <p class="text-xs uppercase tracking-[0.2em] text-slate-400">
+              <p class="max-w-40 truncate text-sm font-semibold text-(--color-text)">{{ userLabel }}</p>
+              <p class="text-xs uppercase tracking-[0.2em] text-(--color-muted)">
                 {{ authStore.user?.role || "Member" }}
               </p>
             </div>
@@ -112,14 +121,14 @@ watch(
           <RouterLink
             v-if="dashboardRoute"
             :to="dashboardRoute"
-            class="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#2b7fff]/30 hover:text-[#2b7fff]"
+            class="rounded-full border border-(--color-border) px-4 py-2 text-sm font-semibold text-(--color-muted) transition hover:border-(--color-primary) hover:text-(--color-primary)"
           >
             Dashboard
           </RouterLink>
 
           <button
             type="button"
-            class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#2b7fff]"
+            class="rounded-full bg-(--color-primary) px-4 py-2 text-sm font-semibold text-white transition hover:bg-(--color-primary-strong)"
             @click="handleLogout"
           >
             Logout
@@ -129,14 +138,14 @@ watch(
         <template v-else>
           <RouterLink
             :to="{ name: 'public.login' }"
-            class="rounded-full px-4 py-2 text-sm font-semibold text-slate-700 transition hover:text-[#2b7fff]"
+            class="rounded-full px-4 py-2 text-sm font-semibold text-(--color-muted) transition hover:text-(--color-primary)"
           >
             Login
           </RouterLink>
 
           <RouterLink
             :to="{ name: 'public.register' }"
-            class="rounded-full bg-[#2b7fff] px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-[#2b7fff]/20 transition hover:bg-[#1f70ea]"
+            class="rounded-full bg-(--color-primary) px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-(--color-primary-strong)"
           >
             Register
           </RouterLink>
@@ -145,7 +154,7 @@ watch(
 
       <button
         type="button"
-        class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 transition hover:border-[#2b7fff]/30 hover:text-[#2b7fff] lg:hidden"
+        class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-(--color-border) bg-(--color-surface) text-(--color-muted) transition hover:border-(--color-primary) hover:text-(--color-primary) lg:hidden"
         :aria-expanded="mobileMenuOpen"
         aria-label="Toggle navigation menu"
         @click="toggleMobileMenu"
@@ -164,8 +173,13 @@ watch(
       </button>
     </div>
 
-    <div v-if="mobileMenuOpen" class="border-t border-slate-200 bg-white lg:hidden">
+    <div v-if="mobileMenuOpen" class="border-t border-(--color-border) bg-(--color-surface) lg:hidden">
       <div class="mx-auto max-w-7xl space-y-5 px-4 py-5 sm:px-6">
+        <div class="flex flex-wrap gap-2">
+          <ThemeToggle />
+          <LanguageToggle />
+        </div>
+
         <nav class="space-y-2">
           <RouterLink
             v-for="item in navigationItems"
@@ -174,8 +188,8 @@ watch(
             class="block rounded-2xl px-4 py-3 text-sm font-semibold transition"
             :class="
               isActiveRoute(item.to.name)
-                ? 'bg-[#2b7fff]/10 text-[#2b7fff]'
-                : 'bg-slate-50 text-slate-700 hover:bg-slate-100'
+                ? 'bg-(--color-primary-soft) text-(--color-primary)'
+                : 'bg-(--color-surface-soft) text-(--color-muted) hover:text-(--color-text)'
             "
             @click="closeMobileMenu"
           >
@@ -184,16 +198,16 @@ watch(
         </nav>
 
         <div v-if="authStore.isAuthenticated" class="space-y-3">
-          <div class="rounded-3xl bg-slate-50 p-4 ring-1 ring-slate-200">
-            <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Signed in as</p>
-            <p class="mt-2 text-base font-semibold text-slate-900">{{ userLabel }}</p>
-            <p class="mt-1 text-sm text-slate-500">{{ authStore.user?.role || "Member" }}</p>
+          <div class="rounded-3xl bg-(--color-surface-soft) p-4 ring-1 ring-(--color-border)">
+            <p class="text-xs uppercase tracking-[0.2em] text-(--color-muted)">Signed in as</p>
+            <p class="mt-2 text-base font-semibold text-(--color-text)">{{ userLabel }}</p>
+            <p class="mt-1 text-sm text-(--color-muted)">{{ authStore.user?.role || "Member" }}</p>
           </div>
 
           <RouterLink
             v-if="dashboardRoute"
             :to="dashboardRoute"
-            class="block rounded-2xl border border-slate-200 px-4 py-3 text-center text-sm font-semibold text-slate-700 transition hover:border-[#2b7fff]/30 hover:text-[#2b7fff]"
+            class="block rounded-2xl border border-(--color-border) px-4 py-3 text-center text-sm font-semibold text-(--color-muted) transition hover:border-(--color-primary) hover:text-(--color-primary)"
             @click="closeMobileMenu"
           >
             Open Dashboard
@@ -201,7 +215,7 @@ watch(
 
           <button
             type="button"
-            class="block w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#2b7fff]"
+            class="block w-full rounded-2xl bg-(--color-primary) px-4 py-3 text-sm font-semibold text-white transition hover:bg-(--color-primary-strong)"
             @click="handleLogout"
           >
             Logout
@@ -211,7 +225,7 @@ watch(
         <div v-else class="grid gap-3 sm:grid-cols-2">
           <RouterLink
             :to="{ name: 'public.login' }"
-            class="rounded-2xl border border-slate-200 px-4 py-3 text-center text-sm font-semibold text-slate-700 transition hover:border-[#2b7fff]/30 hover:text-[#2b7fff]"
+            class="rounded-2xl border border-(--color-border) px-4 py-3 text-center text-sm font-semibold text-(--color-muted) transition hover:border-(--color-primary) hover:text-(--color-primary)"
             @click="closeMobileMenu"
           >
             Login
@@ -219,7 +233,7 @@ watch(
 
           <RouterLink
             :to="{ name: 'public.register' }"
-            class="rounded-2xl bg-[#2b7fff] px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#1f70ea]"
+            class="rounded-2xl bg-(--color-primary) px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-(--color-primary-strong)"
             @click="closeMobileMenu"
           >
             Register

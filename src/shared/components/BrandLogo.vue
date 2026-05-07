@@ -14,7 +14,7 @@ defineProps({
 <template>
   <div class="flex items-center gap-3">
     <div
-      class="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#2b7fff] to-[#165fda] shadow-lg shadow-[#2b7fff]/25"
+      class="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-(--color-primary) to-(--color-primary-strong) shadow-lg shadow-blue-500/20"
     >
       <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.3),_transparent_50%)]"></div>
       <svg
@@ -40,15 +40,15 @@ defineProps({
           d="M15.25 9.4a2.35 2.35 0 1 1 4.7 0c0 1.54-2.35 3.8-2.35 3.8s-2.35-2.26-2.35-3.8Z"
           fill="currentColor"
         />
-        <circle cx="17.6" cy="9.4" r="0.72" fill="#2b7fff" />
+        <circle cx="17.6" cy="9.4" r="0.72" fill="var(--color-primary)" />
       </svg>
     </div>
 
     <div class="min-w-0">
-      <p class="text-sm font-black leading-tight tracking-tight text-slate-900 sm:text-base">
+      <p class="text-sm font-black leading-tight tracking-tight text-(--color-text) sm:text-base">
         SrokYerng Booking
       </p>
-      <p v-if="showTagline" class="text-xs text-slate-500">
+      <p v-if="showTagline" class="text-xs text-(--color-muted)">
         {{ subtitle }}
       </p>
     </div>

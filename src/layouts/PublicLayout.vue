@@ -8,7 +8,7 @@ const showNavbar = computed(() => !route.meta.publicOnly);
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 text-slate-900">
+  <div class="min-h-screen bg-(--color-page) text-(--color-text)">
     <PublicNavbar v-if="showNavbar" />
     <RouterView />
   </div>

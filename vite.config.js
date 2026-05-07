@@ -1,9 +1,5 @@
 import { fileURLToPath, URL } from 'node:url'
 
-<<<<<<< HEAD
-=======
-import { defineConfig } from 'vite'
->>>>>>> dd0111d0a3585bf24b06bac92fb9730d5f59c6da
 import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
 import { defineConfig } from 'vite'
