@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SrokYerng Bold Youth Travel Sample</title>
+    <style>
+      :root {
+        --color-page: #fff7ed;
+        --color-surface: #ffffff;
+        --color-text: #18181b;
+        --color-muted: #71717a;
+        --color-border: #f0e7dc;
+        --color-primary: #e11d48;
+        --color-primary-strong: #be123c;
+        --color-primary-soft: #ffe4e6;
+        --color-secondary: #7c3aed;
+        --color-secondary-soft: #ede9fe;
+        --color-accent: #f59e0b;
+        --color-accent-soft: #fef3c7;
+        --color-info: #0891b2;
+        --color-info-soft: #cffafe;
+        --color-success: #16a34a;
+        --color-success-soft: #dcfce7;
+        --shadow-card: 0 20px 50px rgba(24, 24, 27, 0.12);
+        --radius-sm: 12px;
+        --radius-md: 22px;
+        --radius-lg: 34px;
+        --space-sm: 8px;
+        --space-md: 16px;
+        --space-lg: 24px;
+        --space-xl: 32px;
+        --font-main: "Trebuchet MS", Avenir Next, ui-sans-serif, system-ui, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background:
+          radial-gradient(circle at 8% 12%, rgba(225, 29, 72, 0.18), transparent 26%),
+          radial-gradient(circle at 90% 4%, rgba(124, 58, 237, 0.18), transparent 28%),
+          radial-gradient(circle at 76% 80%, rgba(245, 158, 11, 0.18), transparent 30%),
+          var(--color-page);
+        color: var(--color-text);
+        font-family: var(--font-main);
+      }
+
+      .page {
+        min-height: 100vh;
+        overflow: hidden;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px clamp(16px, 5vw, 64px);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1.15rem;
+        font-weight: 900;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 40px;
+        height: 40px;
+        place-items: center;
+        border: 3px solid #18181b;
+        border-radius: 15px;
+        background: var(--color-accent);
+        box-shadow: 5px 5px 0 #18181b;
+        color: #18181b;
+        transform: rotate(-5deg);
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .nav a {
+        color: var(--color-text);
+        font-weight: 850;
+        text-decoration: none;
+      }
+
+      .nav .cta-link {
+        border: 3px solid var(--color-text);
+        border-radius: 999px;
+        background: #fff;
+        box-shadow: 4px 4px 0 var(--color-text);
+        padding: 10px 16px;
+      }
+
+      .hero {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(300px, 500px);
+        gap: clamp(28px, 5vw, 64px);
+        align-items: center;
+        padding: 42px clamp(16px, 5vw, 64px) 48px;
+      }
+
+      .bubble {
+        position: absolute;
+        z-index: -1;
+        border-radius: 999px;
+        filter: blur(0.5px);
+      }
+
+      .bubble-one {
+        width: 130px;
+        height: 130px;
+        right: 44%;
+        top: 8%;
+        background: var(--color-secondary-soft);
+      }
+
+      .bubble-two {
+        width: 84px;
+        height: 84px;
+        left: 4%;
+        bottom: 12%;
+        background: var(--color-info-soft);
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        border: 3px solid var(--color-text);
+        border-radius: 999px;
+        background: var(--color-accent);
+        box-shadow: 4px 4px 0 var(--color-text);
+        color: var(--color-text);
+        font-size: 0.82rem;
+        font-weight: 900;
+        letter-spacing: 0.05em;
+        padding: 8px 13px;
+        text-transform: uppercase;
+      }
+
+      .hero h1 {
+        max-width: 760px;
+        margin: 24px 0 0;
+        font-size: clamp(3.4rem, 8vw, 7.2rem);
+        font-weight: 950;
+        letter-spacing: -0.08em;
+        line-height: 0.86;
+      }
+
+      .hero h1 span {
+        color: var(--color-primary);
+        text-shadow: 4px 4px 0 var(--color-primary-soft);
+      }
+
+      .hero p {
+        max-width: 610px;
+        margin: 24px 0 0;
+        color: var(--color-muted);
+        font-size: 1.1rem;
+        font-weight: 650;
+        line-height: 1.75;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 28px;
+      }
+
+      .button {
+        border: 3px solid var(--color-text);
+        border-radius: 999px;
+        background: var(--color-primary);
+        box-shadow: 5px 5px 0 var(--color-text);
+        color: #fff;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 950;
+        padding: 14px 20px;
+        transition: transform 0.16s ease, box-shadow 0.16s ease;
+      }
+
+      .button:hover {
+        box-shadow: 2px 2px 0 var(--color-text);
+        transform: translate(3px, 3px);
+      }
+
+      .button-secondary {
+        background: var(--color-surface);
+        color: var(--color-text);
+      }
+
+      .hero-card {
+        position: relative;
+        border: 4px solid var(--color-text);
+        border-radius: 42px;
+        background: var(--color-surface);
+        box-shadow: 12px 12px 0 var(--color-text);
+        padding: 14px;
+        transform: rotate(2deg);
+      }
+
+      .hero-image {
+        min-height: 500px;
+        border-radius: 30px;
+        background:
+          linear-gradient(180deg, transparent 50%, rgba(24, 24, 27, 0.74)),
+          url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1000&q=80") center/cover;
+      }
+
+      .hero-sticker {
+        position: absolute;
+        left: -22px;
+        bottom: 42px;
+        border: 3px solid var(--color-text);
+        border-radius: 24px;
+        background: var(--color-accent);
+        box-shadow: 6px 6px 0 var(--color-text);
+        padding: 16px 18px;
+        transform: rotate(-7deg);
+      }
+
+      .hero-sticker span {
+        display: block;
+        font-size: 0.82rem;
+        font-weight: 900;
+      }
+
+      .hero-sticker strong {
+        display: block;
+        margin-top: 4px;
+        font-size: 2rem;
+        letter-spacing: -0.06em;
+      }
+
+      .search-section {
+        padding: 0 clamp(16px, 5vw, 64px) 46px;
+      }
+
+      .search-card {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: var(--space-md);
+        border: 4px solid var(--color-text);
+        border-radius: var(--radius-lg);
+        background: var(--color-surface);
+        box-shadow: 8px 8px 0 var(--color-text);
+        padding: var(--space-lg);
+      }
+
+      label {
+        display: grid;
+        gap: 8px;
+        color: var(--color-text);
+        font-size: 0.86rem;
+        font-weight: 900;
+      }
+
+      input,
+      select {
+        width: 100%;
+        border: 3px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        background: #fff;
+        color: var(--color-text);
+        font: inherit;
+        font-weight: 700;
+        padding: 13px 14px;
+      }
+
+      input:focus,
+      select:focus {
+        border-color: var(--color-secondary);
+        outline: 4px solid var(--color-secondary-soft);
+      }
+
+      .content {
+        padding: 0 clamp(16px, 5vw, 64px) 72px;
+      }
+
+      .section-title {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: var(--space-md);
+        margin: 20px 0 22px;
+      }
+
+      .section-title h2 {
+        margin: 0;
+        font-size: clamp(2rem, 5vw, 4rem);
+        font-weight: 950;
+        letter-spacing: -0.07em;
+      }
+
+      .section-title p {
+        margin: 8px 0 0;
+        color: var(--color-muted);
+        font-weight: 650;
+        line-height: 1.65;
+      }
+
+      .section-title a {
+        color: var(--color-primary);
+        font-weight: 950;
+        text-decoration: none;
+      }
+
+      .trip-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--space-lg);
+      }
+
+      .trip-card {
+        overflow: hidden;
+        border: 4px solid var(--color-text);
+        border-radius: var(--radius-lg);
+        background: var(--color-surface);
+        box-shadow: 8px 8px 0 var(--color-text);
+      }
+
+      .trip-card:nth-child(2) {
+        transform: rotate(-1.5deg);
+      }
+
+      .trip-card:nth-child(3) {
+        transform: rotate(1.5deg);
+      }
+
+      .trip-image {
+        position: relative;
+        min-height: 250px;
+        background: var(--image) center/cover;
+      }
+
+      .tag {
+        display: inline-flex;
+        border: 3px solid var(--color-text);
+        border-radius: 999px;
+        background: var(--color-accent);
+        color: var(--color-text);
+        font-size: 0.78rem;
+        font-weight: 950;
+        padding: 7px 11px;
+      }
+
+      .trip-image .tag {
+        position: absolute;
+        left: 14px;
+        top: 14px;
+      }
+
+      .trip-body {
+        padding: var(--space-lg);
+      }
+
+      .trip-body h3 {
+        margin: 0 0 8px;
+        font-size: 1.4rem;
+        font-weight: 950;
+        letter-spacing: -0.04em;
+      }
+
+      .meta {
+        color: var(--color-muted);
+        font-weight: 650;
+        line-height: 1.65;
+      }
+
+      .card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-md);
+        margin-top: var(--space-lg);
+      }
+
+      .price strong {
+        color: var(--color-primary);
+        font-size: 1.7rem;
+        font-weight: 950;
+      }
+
+      .mini-button {
+        border: 3px solid var(--color-text);
+        border-radius: 999px;
+        background: var(--color-secondary-soft);
+        color: var(--color-secondary);
+        cursor: pointer;
+        font: inherit;
+        font-weight: 950;
+        padding: 10px 14px;
+      }
+
+      .feature-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--space-md);
+        margin-top: var(--space-xl);
+      }
+
+      .feature-card {
+        border: 4px solid var(--color-text);
+        border-radius: var(--radius-lg);
+        background: var(--color-surface);
+        box-shadow: 7px 7px 0 var(--color-text);
+        padding: var(--space-lg);
+      }
+
+      .feature-card strong {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 1.2rem;
+        font-weight: 950;
+      }
+
+      .feature-card:nth-child(1) {
+        background: var(--color-primary-soft);
+      }
+
+      .feature-card:nth-child(2) {
+        background: var(--color-secondary-soft);
+      }
+
+      .feature-card:nth-child(3) {
+        background: var(--color-info-soft);
+      }
+
+      .style-note {
+        margin-top: var(--space-xl);
+        border: 4px solid var(--color-text);
+        border-radius: var(--radius-lg);
+        background: var(--color-surface);
+        box-shadow: 8px 8px 0 var(--color-text);
+        padding: var(--space-lg);
+        color: var(--color-muted);
+        font-weight: 650;
+        line-height: 1.7;
+      }
+
+      .style-note strong {
+        color: var(--color-text);
+        font-weight: 950;
+      }
+
+      @media (max-width: 980px) {
+        .hero,
+        .search-card,
+        .trip-grid,
+        .feature-strip {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-image {
+          min-height: 380px;
+        }
+
+        .nav {
+          display: none;
+        }
+
+        .trip-card:nth-child(2),
+        .trip-card:nth-child(3),
+        .hero-card {
+          transform: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="brand"><span class="brand-mark">S</span> SrokYerng</div>
+        <nav class="nav">
+          <a href="#">Trips</a>
+          <a href="#">Deals</a>
+          <a href="#">Groups</a>
+          <a class="cta-link" href="#">Join now</a>
+        </nav>
+      </header>
+
+      <section class="hero">
+        <span class="bubble bubble-one"></span>
+        <span class="bubble bubble-two"></span>
+
+        <div>
+          <span class="eyebrow">Bold Youth Travel</span>
+          <h1>Book stays for your next <span>weekend escape.</span></h1>
+          <p>
+            This direction is loud, playful, and social. It works best for students,
+            backpackers, group trips, hostels, budget stays, and travel campaigns.
+          </p>
+          <div class="hero-actions">
+            <button class="button">Find fun stays</button>
+            <button class="button button-secondary">Explore deals</button>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <div class="hero-image"></div>
+          <div class="hero-sticker">
+            <span>Group trips from</span>
+            <strong>$12/night</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="search-section">
+        <form class="search-card">
+          <label>
+            Destination
+            <input type="text" value="Siem Reap" />
+          </label>
+          <label>
+            Trip date
+            <input type="date" value="2026-05-20" />
+          </label>
+          <label>
+            Travel vibe
+            <select>
+              <option>Backpacker</option>
+              <option>Group trip</option>
+              <option>Budget hotel</option>
+            </select>
+          </label>
+          <button class="button" type="button">Search now</button>
+        </form>
+      </section>
+
+      <main class="content">
+        <div class="section-title">
+          <div>
+            <span class="tag">Trending with travelers</span>
+            <h2>Stays with energy</h2>
+            <p>Use bold cards, playful shadows, and bright badges when the product needs to feel young and social.</p>
+          </div>
+          <a href="#">See all</a>
+        </div>
+
+        <section class="trip-grid">
+          <article class="trip-card">
+            <div
+              class="trip-image"
+              style="--image: url('https://images.unsplash.com/photo-1532635241-17e820acc59f?auto=format&fit=crop&w=900&q=80')"
+            >
+              <span class="tag">Hostel vibe</span>
+            </div>
+            <div class="trip-body">
+              <h3>Siem Reap Social Hostel</h3>
+              <div class="meta">Dorm rooms · Group activities · Night market nearby</div>
+              <div class="card-footer">
+                <div class="price">From <strong>$12</strong></div>
+                <button class="mini-button">Book</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="trip-card">
+            <div
+              class="trip-image"
+              style="--image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80')"
+            >
+              <span class="tag">Beach crew</span>
+            </div>
+            <div class="trip-body">
+              <h3>Kampot Weekend Rooms</h3>
+              <div class="meta">Private rooms · Budget friendly · Good for friends</div>
+              <div class="card-footer">
+                <div class="price">From <strong>$24</strong></div>
+                <button class="mini-button">Book</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="trip-card">
+            <div
+              class="trip-image"
+              style="--image: url('https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=900&q=80')"
+            >
+              <span class="tag">City break</span>
+            </div>
+            <div class="trip-body">
+              <h3>Phnom Penh Micro Stay</h3>
+              <div class="meta">Short stays · Central location · Easy check-in</div>
+              <div class="card-footer">
+                <div class="price">From <strong>$18</strong></div>
+                <button class="mini-button">Book</button>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="feature-strip">
+          <article class="feature-card">
+            <strong>Playful brand</strong>
+            <p class="meta">Bright colors and chunky shadows make the site feel energetic and memorable.</p>
+          </article>
+          <article class="feature-card">
+            <strong>Good for campaigns</strong>
+            <p class="meta">Works well for promotions, student travel, group discounts, and social content.</p>
+          </article>
+          <article class="feature-card">
+            <strong>Less formal</strong>
+            <p class="meta">Not ideal for admin dashboards or luxury hotels. Better for public marketing pages.</p>
+          </article>
+        </section>
+
+        <section class="style-note">
+          <strong>Design direction:</strong> Bold Youth Travel is best if SrokYerng wants to feel young,
+          social, affordable, and campaign-friendly. It can be useful for selected landing pages,
+          but it may be too loud for the full platform and owner/admin workflows.
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

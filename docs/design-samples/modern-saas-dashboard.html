@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SrokYerng Modern SaaS Dashboard Sample</title>
+    <style>
+      :root {
+        --color-page: #f8fafc;
+        --color-sidebar: #0f172a;
+        --color-sidebar-muted: #94a3b8;
+        --color-surface: #ffffff;
+        --color-text: #0f172a;
+        --color-muted: #64748b;
+        --color-border: #e2e8f0;
+        --color-primary: #4f46e5;
+        --color-primary-strong: #4338ca;
+        --color-primary-soft: #eef2ff;
+        --color-secondary: #06b6d4;
+        --color-secondary-soft: #cffafe;
+        --color-success: #16a34a;
+        --color-success-soft: #dcfce7;
+        --color-warning: #d97706;
+        --color-warning-soft: #fef3c7;
+        --color-danger: #dc2626;
+        --color-danger-soft: #fee2e2;
+        --shadow-card: 0 18px 45px rgba(15, 23, 42, 0.08);
+        --radius-sm: 8px;
+        --radius-md: 14px;
+        --radius-lg: 22px;
+        --space-sm: 8px;
+        --space-md: 16px;
+        --space-lg: 24px;
+        --space-xl: 32px;
+        --font-main: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--color-page);
+        color: var(--color-text);
+        font-family: var(--font-main);
+      }
+
+      .dashboard {
+        display: grid;
+        grid-template-columns: 280px minmax(0, 1fr);
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        background:
+          radial-gradient(circle at top left, rgba(79, 70, 229, 0.34), transparent 32%),
+          var(--color-sidebar);
+        color: #fff;
+        padding: var(--space-lg);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: var(--space-xl);
+        font-size: 1.1rem;
+        font-weight: 800;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 38px;
+        height: 38px;
+        place-items: center;
+        border-radius: 12px;
+        background: var(--color-primary);
+      }
+
+      .nav-title {
+        margin: 22px 0 10px;
+        color: var(--color-sidebar-muted);
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .nav-list {
+        display: grid;
+        gap: 6px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .nav-list a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-radius: var(--radius-sm);
+        color: #cbd5e1;
+        font-weight: 650;
+        padding: 11px 12px;
+        text-decoration: none;
+      }
+
+      .nav-list a.active,
+      .nav-list a:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+      }
+
+      .main {
+        padding: var(--space-lg) clamp(18px, 4vw, 44px) 44px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-md);
+        margin-bottom: var(--space-lg);
+      }
+
+      .page-title h1 {
+        margin: 0;
+        font-size: clamp(1.8rem, 4vw, 3rem);
+        letter-spacing: -0.06em;
+      }
+
+      .page-title p {
+        margin: 8px 0 0;
+        color: var(--color-muted);
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+      }
+
+      .button {
+        border: 0;
+        border-radius: var(--radius-sm);
+        background: var(--color-primary);
+        color: #fff;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 800;
+        padding: 12px 16px;
+      }
+
+      .button:hover {
+        background: var(--color-primary-strong);
+      }
+
+      .button-secondary {
+        border: 1px solid var(--color-border);
+        background: var(--color-surface);
+        color: var(--color-text);
+      }
+
+      .grid-stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: var(--space-md);
+      }
+
+      .card {
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        background: var(--color-surface);
+        box-shadow: var(--shadow-card);
+      }
+
+      .stat-card {
+        padding: var(--space-lg);
+      }
+
+      .stat-card span {
+        color: var(--color-muted);
+        font-size: 0.86rem;
+        font-weight: 700;
+      }
+
+      .stat-card strong {
+        display: block;
+        margin-top: 10px;
+        font-size: 2rem;
+        letter-spacing: -0.06em;
+      }
+
+      .trend {
+        display: inline-flex;
+        margin-top: 14px;
+        border-radius: 999px;
+        background: var(--color-success-soft);
+        color: var(--color-success);
+        font-size: 0.78rem;
+        font-weight: 800;
+        padding: 5px 9px;
+      }
+
+      .content-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.6fr);
+        gap: var(--space-lg);
+        margin-top: var(--space-lg);
+      }
+
+      .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-md);
+        border-bottom: 1px solid var(--color-border);
+        padding: var(--space-lg);
+      }
+
+      .panel-header h2 {
+        margin: 0;
+        font-size: 1.1rem;
+      }
+
+      .panel-header a {
+        color: var(--color-primary);
+        font-size: 0.9rem;
+        font-weight: 800;
+        text-decoration: none;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid var(--color-border);
+        padding: 15px var(--space-lg);
+        text-align: left;
+        vertical-align: middle;
+      }
+
+      th {
+        color: var(--color-muted);
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      td {
+        color: var(--color-text);
+        font-size: 0.95rem;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .muted {
+        color: var(--color-muted);
+      }
+
+      .status {
+        display: inline-flex;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 800;
+        padding: 6px 10px;
+      }
+
+      .status-paid,
+      .status-approved {
+        background: var(--color-success-soft);
+        color: var(--color-success);
+      }
+
+      .status-pending {
+        background: var(--color-warning-soft);
+        color: var(--color-warning);
+      }
+
+      .status-rejected {
+        background: var(--color-danger-soft);
+        color: var(--color-danger);
+      }
+
+      .side-stack {
+        display: grid;
+        gap: var(--space-lg);
+      }
+
+      .action-card {
+        padding: var(--space-lg);
+      }
+
+      .action-card h3 {
+        margin: 0 0 8px;
+        font-size: 1.05rem;
+      }
+
+      .action-card p {
+        margin: 0;
+        color: var(--color-muted);
+        line-height: 1.6;
+      }
+
+      .progress-row {
+        display: grid;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .progress-label {
+        display: flex;
+        justify-content: space-between;
+        color: var(--color-muted);
+        font-size: 0.9rem;
+        font-weight: 700;
+      }
+
+      .progress-track {
+        overflow: hidden;
+        height: 10px;
+        border-radius: 999px;
+        background: var(--color-primary-soft);
+      }
+
+      .progress-fill {
+        width: 72%;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+      }
+
+      .activity-list {
+        display: grid;
+        gap: 16px;
+        margin: 0;
+        padding: var(--space-lg);
+        list-style: none;
+      }
+
+      .activity-list li {
+        display: grid;
+        grid-template-columns: 36px 1fr;
+        gap: 12px;
+      }
+
+      .activity-dot {
+        display: grid;
+        width: 36px;
+        height: 36px;
+        place-items: center;
+        border-radius: 12px;
+        background: var(--color-primary-soft);
+        color: var(--color-primary);
+        font-weight: 900;
+      }
+
+      .activity-list strong {
+        display: block;
+        margin-bottom: 3px;
+      }
+
+      .style-note {
+        margin-top: var(--space-lg);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        background: var(--color-surface);
+        padding: var(--space-lg);
+        color: var(--color-muted);
+        line-height: 1.7;
+      }
+
+      .style-note strong {
+        color: var(--color-text);
+      }
+
+      @media (max-width: 1100px) {
+        .dashboard {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: relative;
+          height: auto;
+        }
+
+        .grid-stats,
+        .content-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .topbar,
+        .actions {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .grid-stats,
+        .content-grid {
+          grid-template-columns: 1fr;
+        }
+
+        table {
+          display: block;
+          overflow-x: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard">
+      <aside class="sidebar">
+        <div class="brand"><span class="brand-mark">S</span> SrokYerng Admin</div>
+
+        <p class="nav-title">Workspace</p>
+        <ul class="nav-list">
+          <li><a class="active" href="#">Dashboard</a></li>
+          <li><a href="#">Reservations</a></li>
+          <li><a href="#">Payments</a></li>
+          <li><a href="#">Properties</a></li>
+        </ul>
+
+        <p class="nav-title">Review</p>
+        <ul class="nav-list">
+          <li><a href="#">Property approvals</a></li>
+          <li><a href="#">Payment verification</a></li>
+          <li><a href="#">User management</a></li>
+        </ul>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div class="page-title">
+            <h1>Operations dashboard</h1>
+            <p>Monitor reservations, owner activity, payments, and admin review queues.</p>
+          </div>
+          <div class="actions">
+            <button class="button button-secondary">Export report</button>
+            <button class="button">Approve queue</button>
+          </div>
+        </header>
+
+        <section class="grid-stats">
+          <article class="card stat-card">
+            <span>Total reservations</span>
+            <strong>1,284</strong>
+            <div class="trend">+12.4% this month</div>
+          </article>
+          <article class="card stat-card">
+            <span>Revenue verified</span>
+            <strong>$42.8k</strong>
+            <div class="trend">+8.1% this month</div>
+          </article>
+          <article class="card stat-card">
+            <span>Pending approvals</span>
+            <strong>18</strong>
+            <div class="trend">Needs review</div>
+          </article>
+          <article class="card stat-card">
+            <span>Active properties</span>
+            <strong>236</strong>
+            <div class="trend">+9 new</div>
+          </article>
+        </section>
+
+        <section class="content-grid">
+          <article class="card">
+            <div class="panel-header">
+              <h2>Recent reservations</h2>
+              <a href="#">View all</a>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Guest</th>
+                  <th>Property</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <strong>Dara Sok</strong><br />
+                    <span class="muted">May 20 - May 23</span>
+                  </td>
+                  <td>Angkor Garden Hotel</td>
+                  <td>$144</td>
+                  <td><span class="status status-paid">Paid</span></td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>Sopheak Kim</strong><br />
+                    <span class="muted">May 22 - May 24</span>
+                  </td>
+                  <td>Riverside Boutique Stay</td>
+                  <td>$124</td>
+                  <td><span class="status status-pending">Pending</span></td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>Chantha Mey</strong><br />
+                    <span class="muted">May 24 - May 25</span>
+                  </td>
+                  <td>Coastal Family Resort</td>
+                  <td>$55</td>
+                  <td><span class="status status-approved">Approved</span></td>
+                </tr>
+                <tr>
+                  <td>
+                    <strong>Vanna Roeun</strong><br />
+                    <span class="muted">May 26 - May 28</span>
+                  </td>
+                  <td>City Studio Room</td>
+                  <td>$76</td>
+                  <td><span class="status status-rejected">Rejected</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </article>
+
+          <aside class="side-stack">
+            <article class="card action-card">
+              <h3>Payment verification</h3>
+              <p>Review uploaded payment proofs and update payment status before reservations are confirmed.</p>
+              <div class="progress-row">
+                <div class="progress-label"><span>Queue completion</span><strong>72%</strong></div>
+                <div class="progress-track"><div class="progress-fill"></div></div>
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="panel-header">
+                <h2>Activity</h2>
+                <a href="#">Open log</a>
+              </div>
+              <ul class="activity-list">
+                <li>
+                  <span class="activity-dot">P</span>
+                  <div><strong>Property approved</strong><span class="muted">Admin approved Kampot resort listing.</span></div>
+                </li>
+                <li>
+                  <span class="activity-dot">$</span>
+                  <div><strong>Payment verified</strong><span class="muted">ABA transfer proof matched booking total.</span></div>
+                </li>
+                <li>
+                  <span class="activity-dot">R</span>
+                  <div><strong>Reservation updated</strong><span class="muted">Owner confirmed room availability.</span></div>
+                </li>
+              </ul>
+            </article>
+          </aside>
+        </section>
+
+        <section class="style-note">
+          <strong>Design direction:</strong> Modern SaaS Dashboard is best for owner and admin screens.
+          It uses a dark sidebar, white data cards, compact tables, strong status badges, and clear
+          action buttons. This should not replace the public homepage style; use it for management workflows.
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
