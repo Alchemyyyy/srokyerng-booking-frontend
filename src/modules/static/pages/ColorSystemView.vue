@@ -1,6 +1,10 @@
 <template>
   <main class="color-system-page">
     <section class="hero-panel">
+      <div class="hero-toolbar">
+        <ThemeToggle />
+        <LanguageToggle />
+      </div>
       <p class="eyebrow">Design tokens</p>
       <h1>SrokYerng light and dark color system</h1>
       <p class="muted">
@@ -133,6 +137,9 @@
 </template>
 
 <script setup>
+import LanguageToggle from "@/shared/components/LanguageToggle.vue";
+import ThemeToggle from "@/shared/components/ThemeToggle.vue";
+
 const lightColors = [
   { name: "Page", token: "--color-page", value: "#f3f6fb" },
   { name: "Surface", token: "--color-surface", value: "#ffffff" },
@@ -178,6 +185,14 @@ const darkColors = [
 
 .hero-panel {
   padding: clamp(28px, 5vw, 56px);
+}
+
+.hero-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
 }
 
 .hero-panel h1,

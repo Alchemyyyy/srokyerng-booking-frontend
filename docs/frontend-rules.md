@@ -35,9 +35,20 @@ These rules keep the Vue codebase consistent while multiple teammates work in pa
 - Keep temporary form state inside the component.
 - Auth session state belongs in `src/modules/auth/store/authStore.js`.
 
+## Language
+
+- Use `vue-i18n` for route pages and reusable components.
+- Put global/common keys in `src/app/i18n/locales/en.json` and `src/app/i18n/locales/km.json`.
+- Avoid hardcoded UI labels in real pages; use `t("module.key")` instead.
+- User-created database content is not translated automatically; display it as entered unless the feature supports bilingual fields.
+- Hardcoded text is acceptable in temporary design samples and throwaway demos.
+
 ## Styling
 
-- Use global tokens from `src/assets/styles/variables.css`.
+- Use Tailwind utilities for layout, spacing, responsive design, and simple visual states.
+- Use global tokens from `src/assets/styles/variables.css` for brand colors, surfaces, borders, shadows, radius, and dark mode.
+- Prefer token-based Tailwind arbitrary values for project colors, for example `bg-(--color-surface)` and `text-(--color-text)`.
+- Avoid random Tailwind color classes like `bg-blue-500`, `text-gray-700`, or `border-slate-200` unless the team lead approves them.
 - Keep shared component styles reusable and module styles local.
 - Avoid hardcoded role strings, route paths, or colors when constants/tokens exist.
 

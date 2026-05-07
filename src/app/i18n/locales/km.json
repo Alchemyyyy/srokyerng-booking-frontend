@@ -1,0 +1,41 @@
+{
+  "app": {
+    "name": "ស្រុកយើង Booking"
+  },
+  "common": {
+    "cancel": "បោះបង់",
+    "confirm": "បញ្ជាក់",
+    "createAccount": "បង្កើតគណនី",
+    "email": "អ៊ីមែល",
+    "loading": "កំពុងផ្ទុក",
+    "password": "ពាក្យសម្ងាត់",
+    "phone": "លេខទូរស័ព្ទ",
+    "refresh": "ផ្ទុកឡើងវិញ",
+    "save": "រក្សាទុក",
+    "submit": "ដាក់ស្នើ"
+  },
+  "auth": {
+    "accountType": "ប្រភេទគណនី",
+    "alreadyHaveAccount": "មានគណនីរួចហើយ?",
+    "createAccountTitle": "បង្កើតគណនី",
+    "creating": "កំពុងបង្កើត...",
+    "customer": "អតិថិជន",
+    "fullName": "ឈ្មោះពេញ",
+    "invalidCredentials": "អ៊ីមែល ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ",
+    "joinSubtitle": "ចូលរួមជាអតិថិជន ឬម្ចាស់អចលនទ្រព្យ។",
+    "loginSubtitle": "ចូលប្រើ ដើម្បីគ្រប់គ្រងការកក់ អចលនទ្រព្យ និងការទូទាត់។",
+    "newHere": "ថ្មីនៅទីនេះ?",
+    "owner": "ម្ចាស់អចលនទ្រព្យ",
+    "registrationFailed": "ការចុះឈ្មោះបានបរាជ័យ",
+    "signIn": "ចូលប្រើ",
+    "signingIn": "កំពុងចូលប្រើ...",
+    "welcomeBack": "សូមស្វាគមន៍មកវិញ"
+  },
+  "components": {
+    "comingSoonMessage": "ផ្នែកនេះត្រូវបានរៀបចំសម្រាប់ការអភិវឌ្ឍម៉ូឌុល។",
+    "emptyMessage": "មិនទាន់មានអ្វីត្រូវបង្ហាញនៅទីនេះទេ។",
+    "emptyTitle": "រកមិនឃើញទិន្នន័យ",
+    "modalTitle": "ចំណងជើងផ្ទាំង",
+    "noRecords": "រកមិនឃើញកំណត់ត្រា។"
+  }
+}

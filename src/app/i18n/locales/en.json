@@ -1,0 +1,41 @@
+{
+  "app": {
+    "name": "SrokYerng Booking"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "createAccount": "Create account",
+    "email": "Email",
+    "loading": "Loading",
+    "password": "Password",
+    "phone": "Phone",
+    "refresh": "Refresh",
+    "save": "Save",
+    "submit": "Submit"
+  },
+  "auth": {
+    "accountType": "Account type",
+    "alreadyHaveAccount": "Already have an account?",
+    "createAccountTitle": "Create account",
+    "creating": "Creating...",
+    "customer": "Customer",
+    "fullName": "Full name",
+    "invalidCredentials": "Invalid email or password",
+    "joinSubtitle": "Join as a customer or property owner.",
+    "loginSubtitle": "Sign in to manage bookings, properties, and payments.",
+    "newHere": "New here?",
+    "owner": "Property owner",
+    "registrationFailed": "Registration failed",
+    "signIn": "Sign in",
+    "signingIn": "Signing in...",
+    "welcomeBack": "Welcome back"
+  },
+  "components": {
+    "comingSoonMessage": "This area is prepared for module implementation.",
+    "emptyMessage": "There is nothing to show here yet.",
+    "emptyTitle": "No data found",
+    "modalTitle": "Modal title",
+    "noRecords": "No records found."
+  }
+}

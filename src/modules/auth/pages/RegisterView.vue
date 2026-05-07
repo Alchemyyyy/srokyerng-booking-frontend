@@ -1,8 +1,12 @@
 <script setup>
 import { reactive, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRouter, RouterLink } from "vue-router";
 import { useAuthStore } from "@/modules/auth/store/authStore";
+import LanguageToggle from "@/shared/components/LanguageToggle.vue";
+import ThemeToggle from "@/shared/components/ThemeToggle.vue";
 
+const { t } = useI18n();
 const router = useRouter();
 const authStore = useAuthStore();
 const form = reactive({
@@ -21,36 +25,41 @@ const submit = async () => {
     await authStore.register(form);
     await router.push({ name: "public.login" });
   } catch (error) {
-    errorMessage.value = error.message || "Registration failed";
+    errorMessage.value = error.message || t("auth.registrationFailed");
   }
 };
 </script>
 
 <template>
   <main class="auth-page">
+    <div class="fixed right-4 top-4 z-10 flex flex-wrap justify-end gap-2">
+      <ThemeToggle />
+      <LanguageToggle />
+    </div>
+
     <section class="auth-panel">
-      <p class="eyebrow">SrokYerng Booking</p>
-      <h1>Create account</h1>
-      <p class="muted">Join as a customer or property owner.</p>
+      <p class="eyebrow">{{ t("app.name") }}</p>
+      <h1>{{ t("auth.createAccountTitle") }}</h1>
+      <p class="muted">{{ t("auth.joinSubtitle") }}</p>
 
       <form class="auth-form" @submit.prevent="submit">
         <label>
-          Full name
+          {{ t("auth.fullName") }}
           <input v-model.trim="form.full_name" type="text" autocomplete="name" required />
         </label>
 
         <label>
-          Email
+          {{ t("common.email") }}
           <input v-model.trim="form.email" type="email" autocomplete="email" required />
         </label>
 
         <label>
-          Phone
+          {{ t("common.phone") }}
           <input v-model.trim="form.phone" type="tel" autocomplete="tel" />
         </label>
 
         <label>
-          Password
+          {{ t("common.password") }}
           <input
             v-model="form.password"
             type="password"
@@ -61,23 +70,23 @@ const submit = async () => {
         </label>
 
         <label>
-          Account type
+          {{ t("auth.accountType") }}
           <select v-model="form.role">
-            <option value="customer">Customer</option>
-            <option value="owner">Property owner</option>
+            <option value="customer">{{ t("auth.customer") }}</option>
+            <option value="owner">{{ t("auth.owner") }}</option>
           </select>
         </label>
 
         <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
 
         <button class="primary-button" type="submit" :disabled="authStore.loading">
-          {{ authStore.loading ? "Creating..." : "Create account" }}
+          {{ authStore.loading ? t("auth.creating") : t("common.createAccount") }}
         </button>
       </form>
 
       <p class="auth-switch">
-        Already have an account?
-        <RouterLink :to="{ name: 'public.login' }">Sign in</RouterLink>
+        {{ t("auth.alreadyHaveAccount") }}
+        <RouterLink :to="{ name: 'public.login' }">{{ t("auth.signIn") }}</RouterLink>
       </p>
     </section>
   </main>
