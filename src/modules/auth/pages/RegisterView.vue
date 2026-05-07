@@ -2,6 +2,7 @@
 import { reactive, ref } from "vue";
 import { useRouter, RouterLink } from "vue-router";
 import { useAuthStore } from "@/modules/auth/store/authStore";
+import BrandLogo from "@/shared/components/BrandLogo.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -29,7 +30,7 @@ const submit = async () => {
 <template>
   <main class="auth-page">
     <section class="auth-panel">
-      <p class="eyebrow">SrokYerng Booking</p>
+      <BrandLogo class="mb-4" />
       <h1>Create account</h1>
       <p class="muted">Join as a customer or property owner.</p>
 
