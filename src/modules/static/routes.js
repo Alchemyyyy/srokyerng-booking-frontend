@@ -9,11 +9,7 @@ export const staticRoutes = [
     name: "contact",
     component: () => import("@/modules/static/pages/ContactView.vue"),
   },
-  {
-    path: "color-system",
-    name: "color-system",
-    component: () => import("@/modules/static/pages/ColorSystemView.vue"),
-  },
+
   {
     path: "components",
     name: "components-demo",
