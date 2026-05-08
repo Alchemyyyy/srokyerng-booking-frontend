@@ -7,6 +7,9 @@ import router from "./app/router";
 import { initializeTheme } from "./shared/services/themeStorage";
 import "./assets/styles/main.css";
 
+import '@fontsource-variable/kantumruy-pro';
+import '@fontsource/poppins';
+
 initializeTheme();
 
 const app = createApp(App);

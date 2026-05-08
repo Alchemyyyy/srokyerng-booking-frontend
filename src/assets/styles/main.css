@@ -16,6 +16,10 @@ body {
   font-family: var(--font-main);
 }
 
+:lang(km) {
+  font-family: var(--font-secondary);
+}
+
 a {
   color: var(--color-primary);
   font-weight: 500;
