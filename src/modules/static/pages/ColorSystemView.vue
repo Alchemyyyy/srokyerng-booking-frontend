@@ -8,8 +8,9 @@
       <p class="eyebrow">Design tokens</p>
       <h1>SrokYerng light and dark color system</h1>
       <p class="muted">
-        The frontend uses logo-blue design tokens with both light and dark modes. Components
-        should use CSS variables, not hardcoded colors, so they adapt automatically.
+        The frontend uses logo-blue design tokens with both light and dark
+        modes. Components should use CSS variables, not hardcoded colors, so
+        they adapt automatically.
       </p>
     </section>
 
@@ -19,7 +20,8 @@
           <p class="eyebrow">Light mode</p>
           <h2>Clean marketplace</h2>
           <p>
-            Best for public pages, search, property cards, forms, and general booking flow.
+            Best for public pages, search, property cards, forms, and general
+            booking flow.
           </p>
         </div>
         <div class="preview-search">
@@ -42,7 +44,8 @@
           <p class="eyebrow">Dark mode</p>
           <h2>Night marketplace</h2>
           <p>
-            Best for optional dark theme, dashboards, low-light browsing, and modern admin UI.
+            Best for optional dark theme, dashboards, low-light browsing, and
+            modern admin UI.
           </p>
         </div>
         <div class="preview-search">
@@ -126,11 +129,26 @@
       <p class="eyebrow">Rules</p>
       <h2>How teammates should use this</h2>
       <ul>
-        <li>Use variables like <code>var(--color-primary)</code>, not hardcoded hex colors.</li>
-        <li>Use <code>data-theme="dark"</code> on the app root when adding a manual theme toggle.</li>
-        <li>Use <code>data-theme="light"</code> to force light mode even when the OS is dark.</li>
-        <li>Use status classes like <code>.status-paid</code> and <code>.status-rejected</code> for badges.</li>
-        <li>Keep the logo blues as the main identity across public, owner, and admin screens.</li>
+        <li>
+          Use variables like <code>var(--color-primary)</code>, not hardcoded
+          hex colors.
+        </li>
+        <li>
+          Use <code>data-theme="dark"</code> on the app root when adding a
+          manual theme toggle.
+        </li>
+        <li>
+          Use <code>data-theme="light"</code> to force light mode even when the
+          OS is dark.
+        </li>
+        <li>
+          Use status classes like <code>.status-paid</code> and
+          <code>.status-rejected</code> for badges.
+        </li>
+        <li>
+          Keep the logo blues as the main identity across public, owner, and
+          admin screens.
+        </li>
       </ul>
     </section>
   </main>
@@ -141,29 +159,54 @@ import LanguageToggle from "@/shared/components/LanguageToggle.vue";
 import ThemeToggle from "@/shared/components/ThemeToggle.vue";
 
 const lightColors = [
-  { name: "Page", token: "--color-page", value: "#f3f6fb" },
-  { name: "Surface", token: "--color-surface", value: "#ffffff" },
-  { name: "Text", token: "--color-text", value: "#0d2f63" },
-  { name: "Muted", token: "--color-muted", value: "#607d8b" },
-  { name: "Border", token: "--color-border", value: "#d8e3ef" },
-  { name: "Primary", token: "--color-primary", value: "#1e88e5" },
-  { name: "Primary strong", token: "--color-primary-strong", value: "#0d47a1" },
-  { name: "Primary soft", token: "--color-primary-soft", value: "#e3f2fd" },
-  { name: "Secondary", token: "--color-secondary", value: "#1565c0" },
-  { name: "Info", token: "--color-info", value: "#607d8b" },
+  { name: "Page", token: "--color-page", value: "#FDFDFD" },
+  { name: "Surface", token: "--color-surface", value: "#FFFFFF" },
+  { name: "Surface soft", token: "--color-surface-soft", value: "#F4F8FB" },
+  { name: "Text", token: "--color-text", value: "#062969" },
+  { name: "Muted", token: "--color-muted", value: "#4B628F" },
+  { name: "Border", token: "--color-border", value: "#C7D9E4" },
+
+  { name: "Primary", token: "--color-primary", value: "#1268B4" },
+  {
+    name: "Primary strong",
+    token: "--color-primary-strong",
+    value: "#062969",
+  },
+  {
+    name: "Primary soft",
+    token: "--color-primary-soft",
+    value: "#EAF3F8",
+  },
+
+  { name: "Secondary", token: "--color-secondary", value: "#3995C6" },
+  {
+    name: "Secondary soft",
+    token: "--color-secondary-soft",
+    value: "#84AED0",
+  },
+
+  { name: "Warning", token: "--color-warning", value: "#DAB773" },
 ];
 
 const darkColors = [
-  { name: "Page", token: "--color-page", value: "#071526" },
-  { name: "Surface", token: "--color-surface", value: "#0d2238" },
-  { name: "Surface soft", token: "--color-surface-soft", value: "#102b47" },
-  { name: "Text", token: "--color-text", value: "#f3f6fb" },
-  { name: "Muted", token: "--color-muted", value: "#9fb5c7" },
-  { name: "Border", token: "--color-border", value: "#1f3f5d" },
-  { name: "Primary", token: "--color-primary", value: "#1e88e5" },
-  { name: "Primary strong", token: "--color-primary-strong", value: "#64b5f6" },
-  { name: "Secondary", token: "--color-secondary", value: "#38bdf8" },
-  { name: "Danger", token: "--color-danger", value: "#fb7185" },
+  { name: "Page", token: "--color-page", value: "#06152E" },
+  { name: "Surface", token: "--color-surface", value: "#0B1F45" },
+  { name: "Surface soft", token: "--color-surface-soft", value: "#12305F" },
+
+  { name: "Text", token: "--color-text", value: "#FDFDFD" },
+  { name: "Muted", token: "--color-muted", value: "#A9BDD1" },
+  { name: "Border", token: "--color-border", value: "#284B7A" },
+
+  { name: "Primary", token: "--color-primary", value: "#3995C6" },
+  {
+    name: "Primary strong",
+    token: "--color-primary-strong",
+    value: "#84AED0",
+  },
+
+  { name: "Secondary", token: "--color-secondary", value: "#1268B4" },
+
+  { name: "Warning", token: "--color-warning", value: "#DAB773" },
 ];
 </script>
 
@@ -224,31 +267,38 @@ const darkColors = [
 }
 
 .light-preview {
-  --preview-page: #f3f6fb;
+  --preview-page: #fdfdfd;
   --preview-surface: #ffffff;
   --preview-input: #ffffff;
-  --preview-text: #0d2f63;
-  --preview-muted: #607d8b;
-  --preview-border: #d8e3ef;
-  --preview-primary: #1e88e5;
-  --preview-primary-strong: #0d47a1;
-  --preview-primary-soft: #e3f2fd;
+
+  --preview-text: #062969;
+  --preview-muted: #4b628f;
+
+  --preview-border: #c7d9e4;
+
+  --preview-primary: #1268b4;
+  --preview-primary-strong: #062969;
+  --preview-primary-soft: #eaf3f8;
+
   background: var(--preview-page);
 }
 
 .dark-preview {
-  --preview-page: #071526;
-  --preview-surface: #0d2238;
-  --preview-input: #071526;
-  --preview-text: #f3f6fb;
-  --preview-muted: #9fb5c7;
-  --preview-border: #1f3f5d;
-  --preview-primary: #1e88e5;
-  --preview-primary-strong: #64b5f6;
-  --preview-primary-soft: rgba(30, 136, 229, 0.18);
+  --preview-page: #06152e;
+  --preview-surface: #0b1f45;
+  --preview-input: #06152e;
+
+  --preview-text: #fdfdfd;
+  --preview-muted: #a9bdd1;
+
+  --preview-border: #284b7a;
+
+  --preview-primary: #3995c6;
+  --preview-primary-strong: #84aed0;
+  --preview-primary-soft: rgba(57, 149, 198, 0.18);
+
   background: var(--preview-page);
 }
-
 .preview-header h2,
 .preview-card h3 {
   color: var(--preview-text);
@@ -346,20 +396,19 @@ const darkColors = [
 }
 
 .dark-token-section {
-  background: #071526;
-  color: #f3f6fb;
+  background: #06152e;
+  color: #fdfdfd;
 }
 
 .dark-token-section .section-heading h2,
 .dark-token-section .color-card h3 {
-  color: #f3f6fb;
+  color: #fdfdfd;
 }
 
 .dark-token-section .color-card {
-  border-color: #1f3f5d;
-  background: #0d2238;
+  border-color: #284b7a;
+  background: #0b1f45;
 }
-
 .color-swatch {
   width: 64px;
   height: 64px;
