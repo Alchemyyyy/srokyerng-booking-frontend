@@ -70,15 +70,15 @@ const experienceLanes = [
 ];
 
 const paletteNotes = [
-  { name: "Page", value: "#F3F6FB" },
-  { name: "Primary", value: "#1E88E5" },
-  { name: "Strong", value: "#0D47A1" },
-  { name: "Muted", value: "#607D8B" },
+  { name: "Page", token: "--color-page" },
+  { name: "Primary", token: "--color-primary" },
+  { name: "Strong", token: "--color-primary-strong" },
+  { name: "Muted", token: "--color-muted" },
 ];
 </script>
 
 <template>
-  <main class="about-page">
+  <main class="about-page" data-theme="light">
     <section class="hero-section">
       <div class="hero-copy">
         <BrandLogo show-tagline subtitle="Stay local, experience Cambodia" />
@@ -150,7 +150,7 @@ const paletteNotes = [
               v-for="color in paletteNotes"
               :key="color.name"
               class="palette-chip"
-              :style="{ '--swatch': color.value }"
+              :style="{ '--swatch': `var(${color.token})` }"
             >
               <span class="palette-chip__swatch"></span>
               <span>{{ color.name }}</span>
@@ -242,28 +242,29 @@ const paletteNotes = [
 @import url("https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700;800&display=swap");
 
 .about-page {
-  --about-page: #f3f6fb;
-  --about-surface: #ffffff;
-  --about-surface-soft: #edf5ff;
-  --about-text: #0d2f63;
-  --about-muted: #607d8b;
-  --about-border: #d8e3ef;
-  --about-primary: #1e88e5;
-  --about-primary-strong: #0d47a1;
-  --about-primary-soft: #e3f2fd;
-  --about-shadow-panel: 0 18px 45px rgba(13, 71, 161, 0.1);
-  --about-shadow-card: 0 10px 28px rgba(13, 71, 161, 0.08);
+  --about-page: var(--color-page);
+  --about-surface: var(--color-surface);
+  --about-surface-soft: var(--color-surface-soft);
+  --about-text: var(--color-text);
+  --about-muted: var(--color-muted);
+  --about-border: var(--color-border);
+  --about-primary: var(--color-primary);
+  --about-primary-strong: var(--color-primary-strong);
+  --about-primary-soft: var(--color-primary-soft);
+  --about-shadow-panel: var(--shadow-panel);
+  --about-shadow-card: var(--shadow-card);
 
   min-height: 100%;
   padding: 32px 0 72px;
   background:
-    radial-gradient(
-      circle at top left,
-      rgba(30, 136, 229, 0.16),
-      transparent 24%
-    ),
-    radial-gradient(circle at 88% 10%, rgba(13, 71, 161, 0.1), transparent 24%),
-    linear-gradient(180deg, #f9fbff 0%, var(--about-page) 52%, #eef5fd 100%);
+    radial-gradient(circle at top left, var(--about-primary-soft), transparent 24%),
+    radial-gradient(circle at 88% 10%, var(--about-primary-soft), transparent 24%),
+    linear-gradient(
+      180deg,
+      var(--about-surface) 0%,
+      var(--about-page) 52%,
+      var(--about-surface-soft) 100%
+    );
   color: var(--about-text);
   font-family: "Kantumruy Pro", sans-serif;
 }
@@ -283,9 +284,9 @@ const paletteNotes = [
   gap: 24px;
   align-items: center;
   padding: clamp(24px, 4vw, 40px);
-  border: 1px solid rgba(216, 227, 239, 0.85);
+  border: 1px solid var(--about-border);
   border-radius: 36px;
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--about-surface);
   box-shadow: var(--about-shadow-panel);
   backdrop-filter: blur(12px);
 }
@@ -374,12 +375,12 @@ const paletteNotes = [
     var(--about-primary),
     var(--about-primary-strong)
   );
-  color: #fff;
-  box-shadow: 0 16px 32px rgba(30, 136, 229, 0.24);
+  color: var(--color-text-inverse);
+  box-shadow: var(--about-shadow-card);
 }
 
 .button-primary:hover {
-  color: #fff;
+  color: var(--color-text-inverse);
 }
 
 .button-secondary {
@@ -389,13 +390,13 @@ const paletteNotes = [
 }
 
 .button-white {
-  background: #fff;
+  background: var(--about-surface);
   color: var(--about-primary-strong);
 }
 
 .button-outline {
   border: 1px solid rgba(255, 255, 255, 0.28);
-  color: #fff;
+  color: var(--color-text-inverse);
 }
 
 .metric-row {
@@ -418,7 +419,7 @@ const paletteNotes = [
 .metric-card {
   padding: 18px;
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.88);
+  background: var(--about-surface);
 }
 
 .metric-card strong {
@@ -444,8 +445,8 @@ const paletteNotes = [
   border-radius: 30px;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.96),
-    rgba(243, 248, 255, 0.96)
+    var(--about-surface),
+    var(--about-surface-soft)
   );
 }
 
@@ -553,7 +554,7 @@ const paletteNotes = [
   padding: 0 14px;
   border: 1px solid var(--about-border);
   border-radius: 14px;
-  background: #fff;
+  background: var(--about-surface);
   color: var(--about-text);
 }
 
@@ -563,7 +564,7 @@ const paletteNotes = [
   border: 0;
   border-radius: 14px;
   background: var(--about-primary);
-  color: #fff;
+  color: var(--color-text-inverse);
   cursor: pointer;
   font-weight: 700;
 }
@@ -597,7 +598,7 @@ const paletteNotes = [
   justify-items: center;
   padding: 14px 10px;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.86);
+  background: var(--about-surface);
   text-align: center;
   color: var(--about-text);
   font-size: 0.78rem;
@@ -609,7 +610,7 @@ const paletteNotes = [
   height: 38px;
   border-radius: 14px;
   background: var(--swatch);
-  box-shadow: inset 0 0 0 1px rgba(13, 47, 99, 0.08);
+  box-shadow: inset 0 0 0 1px var(--about-border);
 }
 
 .story-grid {
@@ -642,9 +643,9 @@ const paletteNotes = [
 .experience-panel {
   margin-top: 24px;
   padding: clamp(24px, 4vw, 34px);
-  border: 1px solid rgba(216, 227, 239, 0.82);
+  border: 1px solid var(--about-border);
   border-radius: 36px;
-  background: rgba(255, 255, 255, 0.88);
+  background: var(--about-surface);
   box-shadow: var(--about-shadow-panel);
 }
 
@@ -715,12 +716,12 @@ const paletteNotes = [
       transparent 32%
     ),
     linear-gradient(135deg, var(--about-primary-strong), var(--about-primary));
-  box-shadow: 0 24px 56px rgba(13, 71, 161, 0.2);
+  box-shadow: var(--about-shadow-panel);
 }
 
 .cta-panel h2,
 .cta-panel p {
-  color: #fff;
+  color: var(--color-text-inverse);
 }
 
 .cta-panel p {
