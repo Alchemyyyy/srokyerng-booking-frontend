@@ -8,6 +8,7 @@ import PublicLayout from "@/layouts/PublicLayout.vue";
 
 import { adminRoutes } from "@/modules/admin/routes";
 import { authRoutes } from "@/modules/auth/routes";
+import { homeRoutes } from "@/modules/home/routes";
 import { ownerPropertyRoutes, propertyRoutes } from "@/modules/properties/routes";
 import { reservationRoutes } from "@/modules/reservations/routes";
 import { staticRoutes } from "@/modules/static/routes";
@@ -29,7 +30,7 @@ const router = createRouter({
       name: "public",
       component: PublicLayout,
       children: [
-        { path: "", redirect: { name: "public.properties" } },
+        ...withNamePrefix(homeRoutes, "public"),
         ...withNamePrefix(authRoutes, "public"),
         ...withNamePrefix(staticRoutes, "public"),
         ...withNamePrefix(propertyRoutes, "public"),
@@ -67,7 +68,7 @@ const router = createRouter({
     },
     {
       path: "/:pathMatch(.*)*",
-      redirect: { name: "public.properties" },
+      redirect: { name: "public.home" },
     },
   ],
 });
