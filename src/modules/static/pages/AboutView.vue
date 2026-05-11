@@ -1,780 +1,390 @@
 <script setup>
+import { computed } from "vue";
 import { RouterLink } from "vue-router";
-import BrandLogo from "@/shared/components/BrandLogo.vue";
+import { useI18n } from "vue-i18n";
+import member2 from "@/assets/images/about/team/member_2.png";
 
-const trustMetrics = [
-  { value: "Local-first", label: "Brand direction" },
-  { value: "Light UI", label: "Color system" },
-  { value: "Clear flow", label: "Booking experience" },
-];
+const { t } = useI18n({ useScope: "global" });
 
-const storyCards = [
+const missionVision = computed(() => [
   {
-    title: "Our mission",
-    description:
-      "Make accommodation discovery feel calm, trustworthy, and easy to understand for both travelers and property owners.",
+    icon: "🎯",
+    title: t("about.mission.title"),
+    desc: t("about.mission.desc"),
   },
   {
-    title: "Our vision",
-    description:
-      "Build a booking platform that feels unmistakably Cambodian while still looking clean, modern, and ready for scale.",
+    icon: "🌟",
+    title: t("about.vision.title"),
+    desc: t("about.vision.desc"),
   },
-];
+]);
 
-const pillars = [
+const whyUs = computed(() => [
   {
-    step: "01",
-    title: "Stay local",
-    description:
-      "SrokYerng Booking is meant to highlight places that feel rooted in Cambodia, not anonymous listings.",
+    icon: "🇰🇭",
+    title: t("about.why.local.title"),
+    desc: t("about.why.local.desc"),
   },
   {
-    step: "02",
-    title: "Book with confidence",
-    description:
-      "The product should help users understand options quickly, trust what they see, and move through booking without friction.",
+    icon: "✅",
+    title: t("about.why.verified.title"),
+    desc: t("about.why.verified.desc"),
   },
   {
-    step: "03",
-    title: "Support every role",
-    description:
-      "The same visual system needs to work for public browsing, owner workflows, and admin review screens.",
+    icon: "💰",
+    title: t("about.why.price.title"),
+    desc: t("about.why.price.desc"),
   },
-];
+  {
+    icon: "🤝",
+    title: t("about.why.support.title"),
+    desc: t("about.why.support.desc"),
+  },
+]);
 
-const experienceLanes = [
+const team = computed(() => [
   {
-    title: "For travelers",
-    points: [
-      "Discover properties inside a calm, welcoming interface.",
-      "Scan availability, price, and trust signals quickly.",
-      "Feel the local identity of Cambodia throughout the experience.",
-    ],
+    name: t("about.team.members.leakhena.name"),
+    role: t("about.team.members.leakhena.role"),
+    image: null,
   },
   {
-    title: "For owners",
-    points: [
-      "Present listings in a cleaner and more professional way.",
-      "Manage reservations with a UI that feels organized and dependable.",
-      "Benefit from a brand that feels credible from the first impression.",
-    ],
+    name: t("about.team.members.sambath.name"),
+    role: t("about.team.members.sambath.role"),
+    image: member2,
   },
   {
-    title: "For the platform",
-    points: [
-      "Use light surfaces and blue hierarchy to reduce visual stress.",
-      "Keep status colors separate from brand colors for clarity.",
-      "Create one recognizable visual language across the full product.",
-    ],
+    name: t("about.team.members.meoun-chan-sambath.name"),
+    role: t("about.team.members.meoun-chan-sambath.role"),
+    image: null,
   },
-];
-
-const paletteNotes = [
-  { name: "Page", token: "--color-page" },
-  { name: "Primary", token: "--color-primary" },
-  { name: "Strong", token: "--color-primary-strong" },
-  { name: "Muted", token: "--color-muted" },
-];
+  {
+    name: t("about.team.members.ei-visal.name"),
+    role: t("about.team.members.ei-visal.role"),
+    image: null,
+  },
+  {
+    name: t("about.team.members.houn-thanun.name"),
+    role: t("about.team.members.houn-thanun.role"),
+    image: null,
+  },
+  {
+    name: t("about.team.members.an-menghour.name"),
+    role: t("about.team.members.an-menghour.role"),
+    image: null,
+  },
+]);
 </script>
 
 <template>
-  <main class="about-page" data-theme="light">
-    <section class="hero-section">
-      <div class="hero-copy">
-        <BrandLogo show-tagline subtitle="Stay local, experience Cambodia" />
+  <div class="min-h-screen">
+    <!-- Hero / Our Story -->
+    <!-- Updated Hero / Our Story -->
 
-        <p class="eyebrow">About SrokYerng Booking</p>
-        <h1>
-          Designed with the light color system for a calmer booking experience.
-        </h1>
-        <p class="hero-text">
-          This About page now follows the light palette directly: airy page
-          backgrounds, white surfaces, deep blue hierarchy, and softer
-          supporting tones that make the brand feel trusted, local, and easy to
-          navigate.
-        </p>
+    <section
+      class="relative min-h-[70vh] flex items-center overflow-hidden px-4 py-16 sm:px-6 lg:px-8"
+    >
+      <!-- Decorative Background Elements -->
+      <div
+        class="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-(--color-primary-soft) opacity-40 blur-3xl"
+      />
+      <div
+        class="pointer-events-none absolute bottom-0 left-1/4 h-64 w-64 rounded-full bg-(--color-secondary-soft) opacity-20 blur-3xl"
+      />
 
-        <div class="hero-actions">
-          <RouterLink
-            :to="{ name: 'public.properties' }"
-            class="button button-primary"
-          >
-            Explore properties
-          </RouterLink>
-         
+      <div class="relative mx-auto max-w-7xl">
+        <div class="grid items-center gap-12 lg:grid-cols-2">
+          <!-- Left Column: Content -->
+          <div class="text-left">
+            <div
+              class="inline-flex items-center space-x-2 rounded-full bg-(--color-primary-soft) px-4 py-1.5 mb-6 border border-(--color-primary)/10"
+            >
+              <span class="relative flex h-2 w-2">
+                <span
+                  class="animate-ping absolute inline-flex h-full w-full rounded-full bg-(--color-primary) opacity-75"
+                ></span>
+                <span
+                  class="relative inline-flex rounded-full h-2 w-2 bg-(--color-primary)"
+                ></span>
+              </span>
+              <span
+                class="text-xs font-bold tracking-wider uppercase text-(--color-primary)"
+              >
+                {{ t("about.story.eyebrow") }}
+              </span>
+            </div>
+
+            <h1
+              class="mb-6 text-4xl font-extrabold tracking-tight text-(--color-text) sm:text-6xl"
+            >
+              {{ t("about.story.title") }}
+              <span
+                class="block mt-2 bg-gradient-to-r from-(--color-primary) to-(--color-secondary) bg-clip-text text-transparent"
+              >
+                {{ t("about.story.titleHighlight") }}
+              </span>
+            </h1>
+
+            <p
+              class="mb-10 max-w-xl text-lg leading-relaxed text-(--color-muted)"
+            >
+              {{ t("about.story.desc") }}
+            </p>
+
+            <!-- Desktop Quick Stats (Horizontal) -->
+            <div
+              class="hidden sm:flex items-center space-x-8 border-t border-(--color-border) pt-8"
+            >
+              <div
+                v-for="stat in [
+                  { value: '500+', label: t('about.stats.properties') },
+                  { value: '4.8★', label: t('about.stats.rating') },
+                ]"
+                :key="stat.label"
+              >
+                <p class="text-3xl font-bold text-(--color-text)">
+                  {{ stat.value }}
+                </p>
+                <p class="text-sm font-medium text-(--color-muted)">
+                  {{ stat.label }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Visual Element -->
+          <div class="relative lg:block">
+            <div
+              class="relative z-10 overflow-hidden rounded-[2rem] border border-(--color-border) bg-(--color-surface) p-3 shadow-2xl"
+            >
+              <!-- Glassmorphism Image Overlay -->
+              <div
+                class="aspect-[4/5] rounded-[1.6rem] bg-gradient-to-br from-(--color-primary-soft) to-(--color-secondary-soft) relative flex items-center justify-center overflow-hidden"
+              >
+                <!-- Placeholder for your actual image -->
+                <div
+                  class="absolute inset-0 bg-black/5 backdrop-blur-[1px]"
+                ></div>
+                <span
+                  class="text-8xl transform hover:scale-110 transition-transform duration-500"
+                  >🏢</span
+                >
+
+                <!-- Floating Stats Card (Glassmorphism) -->
+                <div
+                  class="absolute bottom-6 right-6 left-6 backdrop-blur-md bg-white/20 border border-white/30 rounded-2xl p-4 shadow-xl"
+                >
+                  <div class="flex justify-between items-center text-white">
+                    <div>
+                      <p class="text-xs font-medium opacity-80">Active Users</p>
+                      <p class="text-xl font-bold">10K+</p>
+                    </div>
+                    <div class="h-10 w-px bg-white/20"></div>
+                    <div>
+                      <p class="text-xs font-medium opacity-80">Locations</p>
+                      <p class="text-xl font-bold">25+</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Abstract Shape behind image -->
+            <div
+              class="absolute -bottom-6 -right-6 -z-0 h-full w-full rounded-[2rem] border-2 border-(--color-primary-soft)"
+            />
+          </div>
         </div>
 
-        <div class="metric-row">
-          <article
-            v-for="metric in trustMetrics"
-            :key="metric.label"
-            class="metric-card"
+        <!-- Mobile Stats Grid (Visible only on small screens) -->
+        <div class="mt-12 grid grid-cols-2 gap-4 sm:hidden">
+          <div
+            v-for="stat in [
+              { value: '500+', label: t('about.stats.properties') },
+              { value: '4.8★', label: t('about.stats.rating') },
+            ]"
+            :key="stat.label"
+            class="rounded-2xl bg-(--color-surface-soft) p-4 border border-(--color-border)"
           >
-            <strong>{{ metric.value }}</strong>
-            <span>{{ metric.label }}</span>
-          </article>
+            <p class="text-xl font-bold text-(--color-primary)">
+              {{ stat.value }}
+            </p>
+            <p class="text-xs text-(--color-muted)">{{ stat.label }}</p>
+          </div>
         </div>
       </div>
+    </section>
 
-      <aside class="hero-preview">
-        <div class="preview-card">
-          <div class="preview-card__top">
-            <p>Light mode preview</p>
-            <span>Brand-ready</span>
+    <!-- Mission & Vision -->
+    <section class="bg-(--color-surface-soft) px-4 py-16 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-7xl">
+        <div class="mb-10 text-center">
+          <p class="eyebrow mb-2">{{ t("about.mission.eyebrow") }}</p>
+          <h2 class="text-3xl font-bold text-(--color-text)">
+            {{ t("about.mission.sectionTitle") }}
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div
+            v-for="item in missionVision"
+            :key="item.title"
+            class="rounded-3xl border border-(--color-border) bg-(--color-surface) p-8 shadow-(--shadow-card)"
+          >
+            <div
+              class="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-(--color-primary-soft) text-2xl"
+            >
+              {{ item.icon }}
+            </div>
+            <h3 class="mb-3 text-xl font-bold text-(--color-text)">
+              {{ item.title }}
+            </h3>
+            <p class="leading-relaxed text-(--color-muted)">{{ item.desc }}</p>
           </div>
+        </div>
+      </div>
+    </section>
 
-          <div class="preview-visual">
-            <div class="preview-visual__temple"></div>
-            <div class="preview-visual__roof"></div>
-            <div class="preview-visual__wave"></div>
-          </div>
+    <!-- Why Choose Us -->
+    <section class="px-4 py-16 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-7xl">
+        <div class="mb-10 text-center">
+          <p class="eyebrow mb-2">{{ t("about.why.eyebrow") }}</p>
+          <h2 class="text-3xl font-bold text-(--color-text)">
+            {{ t("about.why.title") }}
+          </h2>
+        </div>
 
-          <div class="search-mock">
-            <label>
-              Destination
-              <input type="text" value="Siem Reap" />
-            </label>
-            <button type="button">Search stays</button>
-          </div>
-
-          <div class="preview-note">
-            <strong>Why this works</strong>
-            <p>
-              The light system keeps booking actions clear while the softer
-              surfaces make the whole page feel more open and welcoming.
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div
+            v-for="item in whyUs"
+            :key="item.title"
+            class="rounded-3xl border border-(--color-border) bg-(--color-surface) p-6 text-center shadow-(--shadow-card) transition hover:-translate-y-1 hover:border-(--color-primary) hover:shadow-lg"
+          >
+            <div class="mb-4 flex justify-center">
+              <div
+                class="flex h-14 w-14 items-center justify-center rounded-2xl bg-(--color-primary-soft) text-2xl"
+              >
+                {{ item.icon }}
+              </div>
+            </div>
+            <h3 class="mb-2 font-bold text-(--color-text)">{{ item.title }}</h3>
+            <p class="text-sm leading-relaxed text-(--color-muted)">
+              {{ item.desc }}
             </p>
           </div>
+        </div>
+      </div>
+    </section>
 
-          <div class="palette-row">
-            <article
-              v-for="color in paletteNotes"
-              :key="color.name"
-              class="palette-chip"
-              :style="{ '--swatch': `var(${color.token})` }"
-            >
-              <span class="palette-chip__swatch"></span>
-              <span>{{ color.name }}</span>
-            </article>
+    <!-- Our Team -->
+    <section class="bg-(--color-surface-soft) px-4 py-16 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-7xl">
+        <div class="mb-10 text-center">
+          <p class="eyebrow mb-2">{{ t("about.team.eyebrow") }}</p>
+          <h2 class="text-3xl font-bold text-(--color-text)">
+            {{ t("about.team.title") }}
+          </h2>
+          <p class="mt-3 text-(--color-muted)">
+            {{ t("about.team.subtitle") }}
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+          <div
+            v-for="member in team"
+            :key="member.name"
+            class="rounded-3xl border border-(--color-border) bg-(--color-surface) p-8 text-center shadow-(--shadow-card)"
+          >
+            <div class="mx-auto mb-5 h-20 w-20 overflow-hidden rounded-full">
+              <img
+                :src="member.image"
+                :alt="member.name"
+                class="h-full w-full object-cover object-top"
+              />
+            </div>
+
+            <h3 class="font-bold text-(--color-text)">{{ member.name }}</h3>
+            <p class="mt-1 text-sm text-(--color-muted)">{{ member.role }}</p>
           </div>
         </div>
-      </aside>
-    </section>
-
-    <section class="story-grid">
-      <article v-for="card in storyCards" :key="card.title" class="story-card">
-        <p class="eyebrow">Brand story</p>
-        <h2>{{ card.title }}</h2>
-        <p>{{ card.description }}</p>
-      </article>
-    </section>
-
-    <section class="pillars-section">
-      <div class="section-heading">
-        <p class="eyebrow">Core pillars</p>
-        <h2>What the brand should communicate on every public page.</h2>
-      </div>
-
-      <div class="pillars-grid">
-        <article
-          v-for="pillar in pillars"
-          :key="pillar.step"
-          class="pillar-card"
-        >
-          <span class="pillar-step">{{ pillar.step }}</span>
-          <h3>{{ pillar.title }}</h3>
-          <p>{{ pillar.description }}</p>
-        </article>
       </div>
     </section>
 
-    <section class="experience-panel">
-      <div class="section-heading">
-        <p class="eyebrow">Experience design</p>
-        <h2>One light system, shaped for three different audiences.</h2>
-      </div>
-
-      <div class="lane-grid">
-        <article
-          v-for="lane in experienceLanes"
-          :key="lane.title"
-          class="lane-card"
-        >
-          <h3>{{ lane.title }}</h3>
-          <ul>
-            <li v-for="point in lane.points" :key="point">{{ point }}</li>
-          </ul>
-        </article>
-      </div>
-    </section>
-
-    <section class="cta-panel">
-      <div>
-        <p class="eyebrow eyebrow-inverse">Next step</p>
-        <h2>
-          Use this same light system across the rest of the public experience.
-        </h2>
-        <p>
-          The About page now aligns with the shared light palette. The next
-          useful step would be applying the same treatment to the home page,
-          contact page, and shared brand components.
-        </p>
-      </div>
-
-      <div class="cta-actions">
+    <!-- Contact CTA -->
+    <section
+      class="mx-4 mb-16 overflow-hidden rounded-3xl bg-gradient-to-r from-(--color-primary) to-(--color-secondary) px-8 py-14 text-center sm:mx-6 lg:mx-8"
+    >
+      <h2 class="mb-3 text-3xl font-bold text-white">
+        {{ t("about.cta.title") }}
+      </h2>
+      <p class="mb-8 text-lg text-white/80">{{ t("about.cta.subtitle") }}</p>
+      <div class="flex flex-wrap justify-center gap-4">
         <RouterLink
           :to="{ name: 'public.contact' }"
-          class="button button-white"
+          class="rounded-full bg-white px-8 py-3 font-semibold text-(--color-primary) shadow-lg transition hover:bg-white/90"
         >
-          Continue to contact
+          {{ t("about.cta.contact") }}
         </RouterLink>
         <RouterLink
           :to="{ name: 'public.properties' }"
-          class="button button-outline"
+          class="rounded-full border-2 border-white px-8 py-3 font-semibold text-white transition hover:bg-white/10"
         >
-          Browse stays
+          {{ t("about.cta.browse") }}
         </RouterLink>
       </div>
     </section>
-  </main>
+
+    <!-- THANK -->
+    <section class="bg-(--color-surface) px-4 py-16 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-5xl">
+        <div class="mb-16 text-center">
+          <h2
+            class="relative mb-6 inline-block text-2xl font-bold text-(--color-text) after:absolute after:-bottom-3 after:left-1/2 after:h-1 after:w-24 after:-translate-x-1/2 after:bg-(--color-primary)"
+          >
+            {{ t("about.thanks.title") }}
+          </h2>
+
+          <p class="mt-8 text-xl font-medium text-(--color-muted)">
+            {{ t("about.thanks.subtitle") }}
+          </p>
+          <p
+            class="mx-auto mt-6 max-w-4xl leading-loose text-(--color-muted) sm:text-lg"
+          >
+            {{ t("about.thanks.message") }}
+          </p>
+        </div>
+        <div
+          class="grid grid-cols-1 items-center justify-items-center gap-12 border-t border-(--color-border) pt-16 md:grid-cols-3"
+        >
+          <!-- MPTC -->
+          <div class="flex flex-col items-center w-full">
+            <img
+              src="@/assets/images/about/thanks/mptc_logo.png"
+              alt="MPTC Logo"
+              class="w-full h-28 object-contain"
+            />
+          </div>
+
+          <!-- CBRD -->
+          <div class="flex flex-col items-center w-full">
+            <img
+              src="@/assets/images/about/thanks/cbrd_fund_logo.png"
+              alt="CBRD Fund Logo"
+              class="w-full h-auto object-contain dark:brightness-110"
+            />
+          </div>
+
+          <!-- ANT -->
+          <div class="flex flex-col items-center w-full">
+            <img
+              src="@/assets/images/about/thanks/ant_logo.png"
+              alt="ANT Logo"
+              class="w-full h-auto object-contain dark:brightness-110"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
 </template>
-
-<style scoped>
-@import url("https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700;800&display=swap");
-
-.about-page {
-  --about-page: var(--color-page);
-  --about-surface: var(--color-surface);
-  --about-surface-soft: var(--color-surface-soft);
-  --about-text: var(--color-text);
-  --about-muted: var(--color-muted);
-  --about-border: var(--color-border);
-  --about-primary: var(--color-primary);
-  --about-primary-strong: var(--color-primary-strong);
-  --about-primary-soft: var(--color-primary-soft);
-  --about-shadow-panel: var(--shadow-panel);
-  --about-shadow-card: var(--shadow-card);
-
-  min-height: 100%;
-  padding: 32px 0 72px;
-  background:
-    radial-gradient(circle at top left, var(--about-primary-soft), transparent 24%),
-    radial-gradient(circle at 88% 10%, var(--about-primary-soft), transparent 24%),
-    linear-gradient(
-      180deg,
-      var(--about-surface) 0%,
-      var(--about-page) 52%,
-      var(--about-surface-soft) 100%
-    );
-  color: var(--about-text);
-  font-family: "Kantumruy Pro", sans-serif;
-}
-
-.hero-section,
-.story-grid,
-.pillars-section,
-.experience-panel,
-.cta-panel {
-  width: min(1180px, calc(100% - 32px));
-  margin: 0 auto;
-}
-
-.hero-section {
-  display: grid;
-  grid-template-columns: minmax(0, 1.04fr) minmax(320px, 0.96fr);
-  gap: 24px;
-  align-items: center;
-  padding: clamp(24px, 4vw, 40px);
-  border: 1px solid var(--about-border);
-  border-radius: 36px;
-  background: var(--about-surface);
-  box-shadow: var(--about-shadow-panel);
-  backdrop-filter: blur(12px);
-}
-
-.eyebrow,
-.eyebrow-inverse {
-  margin: 0;
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-}
-
-.eyebrow {
-  color: var(--about-primary);
-}
-
-.eyebrow-inverse {
-  color: rgba(255, 255, 255, 0.76);
-}
-
-.hero-copy h1,
-.story-card h2,
-.section-heading h2,
-.pillar-card h3,
-.lane-card h3,
-.cta-panel h2 {
-  margin: 0;
-  color: var(--about-text);
-  letter-spacing: -0.05em;
-}
-
-.hero-copy h1 {
-  max-width: 720px;
-  margin-top: 18px;
-  font-size: clamp(2.6rem, 6vw, 4.9rem);
-  line-height: 0.96;
-}
-
-.hero-text,
-.story-card p,
-.section-heading p,
-.pillar-card p,
-.lane-card li,
-.preview-note p,
-.cta-panel p {
-  color: var(--about-muted);
-  line-height: 1.75;
-}
-
-.hero-text {
-  max-width: 640px;
-  margin: 18px 0 0;
-  font-size: 1.02rem;
-}
-
-.hero-actions,
-.cta-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
-  margin-top: 24px;
-}
-
-.button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 50px;
-  padding: 0 20px;
-  border-radius: 18px;
-  font-weight: 700;
-  transition:
-    transform 180ms ease,
-    box-shadow 180ms ease,
-    background 180ms ease;
-}
-
-.button:hover {
-  transform: translateY(-1px);
-}
-
-.button-primary {
-  background: linear-gradient(
-    135deg,
-    var(--about-primary),
-    var(--about-primary-strong)
-  );
-  color: var(--color-text-inverse);
-  box-shadow: var(--about-shadow-card);
-}
-
-.button-primary:hover {
-  color: var(--color-text-inverse);
-}
-
-.button-secondary {
-  border: 1px solid var(--about-border);
-  background: var(--about-surface);
-  color: var(--about-text);
-}
-
-.button-white {
-  background: var(--about-surface);
-  color: var(--about-primary-strong);
-}
-
-.button-outline {
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  color: var(--color-text-inverse);
-}
-
-.metric-row {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  margin-top: 26px;
-}
-
-.metric-card,
-.story-card,
-.pillar-card,
-.lane-card,
-.preview-card {
-  border: 1px solid var(--about-border);
-  background: var(--about-surface);
-  box-shadow: var(--about-shadow-card);
-}
-
-.metric-card {
-  padding: 18px;
-  border-radius: 22px;
-  background: var(--about-surface);
-}
-
-.metric-card strong {
-  display: block;
-  color: var(--about-primary-strong);
-  font-size: 1.1rem;
-}
-
-.metric-card span {
-  display: block;
-  margin-top: 8px;
-  color: var(--about-muted);
-  font-size: 0.88rem;
-}
-
-.hero-preview {
-  display: flex;
-}
-
-.preview-card {
-  width: 100%;
-  padding: 20px;
-  border-radius: 30px;
-  background: linear-gradient(
-    180deg,
-    var(--about-surface),
-    var(--about-surface-soft)
-  );
-}
-
-.preview-card__top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.preview-card__top p,
-.preview-card__top span {
-  margin: 0;
-  font-size: 0.82rem;
-  font-weight: 700;
-}
-
-.preview-card__top p {
-  color: var(--about-muted);
-}
-
-.preview-card__top span {
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: var(--about-primary-soft);
-  color: var(--about-primary-strong);
-}
-
-.preview-visual {
-  position: relative;
-  min-height: 190px;
-  margin-top: 18px;
-  border-radius: 26px;
-  background:
-    radial-gradient(
-      circle at top center,
-      rgba(255, 255, 255, 0.22),
-      transparent 26%
-    ),
-    linear-gradient(135deg, var(--about-primary), var(--about-primary-strong));
-  overflow: hidden;
-}
-
-.preview-visual::after {
-  content: "";
-  position: absolute;
-  right: -28px;
-  top: 20px;
-  width: 120px;
-  height: 120px;
-  border-radius: 999px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-}
-
-.preview-visual__temple,
-.preview-visual__roof,
-.preview-visual__wave {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.preview-visual__temple {
-  top: 40px;
-  width: 120px;
-  height: 56px;
-  border-radius: 18px 18px 10px 10px;
-  background: rgba(255, 255, 255, 0.18);
-}
-
-.preview-visual__roof {
-  top: 22px;
-  width: 170px;
-  height: 80px;
-  background: rgba(255, 255, 255, 0.95);
-  clip-path: polygon(50% 0, 100% 70%, 82% 70%, 50% 28%, 18% 70%, 0 70%);
-}
-
-.preview-visual__wave {
-  bottom: 28px;
-  width: 210px;
-  height: 34px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.9);
-}
-
-.search-mock {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
-  align-items: end;
-  margin-top: 18px;
-}
-
-.search-mock label {
-  display: grid;
-  gap: 8px;
-  color: var(--about-muted);
-  font-size: 0.82rem;
-  font-weight: 700;
-}
-
-.search-mock input {
-  min-height: 48px;
-  padding: 0 14px;
-  border: 1px solid var(--about-border);
-  border-radius: 14px;
-  background: var(--about-surface);
-  color: var(--about-text);
-}
-
-.search-mock button {
-  min-height: 48px;
-  padding: 0 16px;
-  border: 0;
-  border-radius: 14px;
-  background: var(--about-primary);
-  color: var(--color-text-inverse);
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.preview-note {
-  margin-top: 18px;
-  padding: 18px;
-  border-radius: 22px;
-  background: var(--about-surface-soft);
-}
-
-.preview-note strong {
-  display: block;
-  color: var(--about-primary-strong);
-}
-
-.preview-note p {
-  margin: 8px 0 0;
-}
-
-.palette-row {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.palette-chip {
-  display: grid;
-  gap: 10px;
-  justify-items: center;
-  padding: 14px 10px;
-  border-radius: 18px;
-  background: var(--about-surface);
-  text-align: center;
-  color: var(--about-text);
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-
-.palette-chip__swatch {
-  width: 38px;
-  height: 38px;
-  border-radius: 14px;
-  background: var(--swatch);
-  box-shadow: inset 0 0 0 1px var(--about-border);
-}
-
-.story-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-  margin-top: 24px;
-}
-
-.story-card,
-.pillar-card,
-.lane-card {
-  padding: 24px;
-  border-radius: 28px;
-}
-
-.story-card h2,
-.section-heading h2,
-.cta-panel h2 {
-  margin-top: 12px;
-  font-size: clamp(1.95rem, 4vw, 3rem);
-  line-height: 1;
-}
-
-.story-card p:last-child {
-  margin-top: 14px;
-}
-
-.pillars-section,
-.experience-panel {
-  margin-top: 24px;
-  padding: clamp(24px, 4vw, 34px);
-  border: 1px solid var(--about-border);
-  border-radius: 36px;
-  background: var(--about-surface);
-  box-shadow: var(--about-shadow-panel);
-}
-
-.section-heading p {
-  max-width: 720px;
-  margin: 14px 0 0;
-}
-
-.pillars-grid,
-.lane-grid {
-  display: grid;
-  gap: 16px;
-  margin-top: 24px;
-}
-
-.pillars-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.pillar-step {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 54px;
-  min-height: 30px;
-  padding: 0 12px;
-  border-radius: 999px;
-  background: var(--about-primary-soft);
-  color: var(--about-primary-strong);
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-}
-
-.pillar-card h3,
-.lane-card h3 {
-  margin-top: 16px;
-  font-size: 1.38rem;
-}
-
-.pillar-card p {
-  margin-top: 10px;
-}
-
-.lane-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.lane-card ul {
-  display: grid;
-  gap: 12px;
-  margin: 16px 0 0;
-  padding-left: 18px;
-}
-
-.cta-panel {
-  display: grid;
-  grid-template-columns: minmax(0, 1.08fr) auto;
-  gap: 24px;
-  align-items: center;
-  margin-top: 24px;
-  padding: clamp(24px, 4vw, 34px);
-  border-radius: 36px;
-  background:
-    radial-gradient(
-      circle at top right,
-      rgba(255, 255, 255, 0.12),
-      transparent 32%
-    ),
-    linear-gradient(135deg, var(--about-primary-strong), var(--about-primary));
-  box-shadow: var(--about-shadow-panel);
-}
-
-.cta-panel h2,
-.cta-panel p {
-  color: var(--color-text-inverse);
-}
-
-.cta-panel p {
-  max-width: 680px;
-  margin: 14px 0 0;
-}
-
-@media (max-width: 1080px) {
-  .hero-section,
-  .story-grid,
-  .pillars-grid,
-  .lane-grid,
-  .cta-panel {
-    grid-template-columns: 1fr;
-  }
-
-  .metric-row,
-  .palette-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 720px) {
-  .about-page {
-    padding: 20px 0 56px;
-  }
-
-  .hero-section,
-  .story-grid,
-  .pillars-section,
-  .experience-panel,
-  .cta-panel {
-    width: min(100%, calc(100% - 20px));
-  }
-
-  .hero-section,
-  .pillars-section,
-  .experience-panel,
-  .cta-panel {
-    border-radius: 28px;
-  }
-
-  .hero-actions,
-  .cta-actions,
-  .search-mock {
-    grid-template-columns: 1fr;
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .metric-row,
-  .palette-row {
-    grid-template-columns: 1fr;
-  }
-}
-</style>

@@ -1,9 +1,13 @@
 <script setup>
 import { computed, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { RouterLink, useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { ROLES } from "@/shared/constants/roles";
-import BrandLogo from "@/shared/components/BrandLogo.vue";
+import logoUrl from "@/assets/images/logos/logo.png";
+{
+  /* <BrandLogo show-tagline />; */
+}
 import LanguageToggle from "@/shared/components/LanguageToggle.vue";
 import ThemeToggle from "@/shared/components/ThemeToggle.vue";
 
@@ -11,12 +15,13 @@ const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const mobileMenuOpen = ref(false);
+const { t, locale } = useI18n({ useScope: "global" });
 
-const navigationItems = [
-  { label: "Properties", to: { name: "public.properties" } },
-  { label: "About Us", to: { name: "public.about" } },
-  { label: "Contact", to: { name: "public.contact" } },
-];
+const navigationItems = computed(() => [
+  { label: t("nav.properties"), to: { name: "public.properties" } },
+  { label: t("nav.about"), to: { name: "public.about" } },
+  { label: t("nav.contact"), to: { name: "public.contact" } },
+]);
 
 const dashboardRoute = computed(() => {
   switch (authStore.user?.role) {
@@ -37,11 +42,13 @@ const userLabel = computed(() => {
     authStore.user?.fullName ||
     authStore.user?.username ||
     authStore.user?.email ||
-    "My account"
+    t("nav.signedInAs")
   );
 });
 
-const userInitial = computed(() => userLabel.value.trim().charAt(0).toUpperCase());
+const userInitial = computed(() =>
+  userLabel.value.trim().charAt(0).toUpperCase(),
+);
 
 const isActiveRoute = (name) => route.name === name;
 
@@ -71,12 +78,19 @@ watch(
   <header
     class="sticky top-0 z-50 border-b border-(--color-border) bg-(--color-surface)/90 backdrop-blur-xl"
   >
-    <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+    <div
+      class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8"
+    >
       <RouterLink
         :to="{ name: 'public.properties' }"
         class="flex items-center gap-3 text-(--color-text) transition hover:text-(--color-primary)"
       >
-        <BrandLogo show-tagline />
+        <img
+          :src="logoUrl"
+          alt="Srokyerng Booking"
+          class="h-14 w-auto object-contain dark:brightness-200"
+        />
+        <span class="text-xl font-bold tracking-wide">ស្រុកយើង</span>
       </RouterLink>
 
       <nav
@@ -111,8 +125,14 @@ watch(
               {{ userInitial }}
             </div>
             <div class="pr-1">
-              <p class="max-w-40 truncate text-sm font-semibold text-(--color-text)">{{ userLabel }}</p>
-              <p class="text-xs uppercase tracking-[0.2em] text-(--color-muted)">
+              <p
+                class="max-w-40 truncate text-sm font-semibold text-(--color-text)"
+              >
+                {{ userLabel }}
+              </p>
+              <p
+                class="text-xs uppercase tracking-[0.2em] text-(--color-muted)"
+              >
                 {{ authStore.user?.role || "Member" }}
               </p>
             </div>
@@ -123,7 +143,7 @@ watch(
             :to="dashboardRoute"
             class="rounded-full border border-(--color-border) px-4 py-2 text-sm font-semibold text-(--color-muted) transition hover:border-(--color-primary) hover:text-(--color-primary)"
           >
-            Dashboard
+            {{ t("nav.dashboard") }}
           </RouterLink>
 
           <button
@@ -131,7 +151,7 @@ watch(
             class="rounded-full bg-(--color-primary) px-4 py-2 text-sm font-semibold text-white transition hover:bg-(--color-primary-strong)"
             @click="handleLogout"
           >
-            Logout
+            {{ t("nav.logout") }}
           </button>
         </template>
 
@@ -140,14 +160,14 @@ watch(
             :to="{ name: 'public.login' }"
             class="rounded-full px-4 py-2 text-sm font-semibold text-(--color-muted) transition hover:text-(--color-primary)"
           >
-            Login
+            {{ t("nav.login") }}
           </RouterLink>
 
           <RouterLink
             :to="{ name: 'public.register' }"
             class="rounded-full bg-(--color-primary) px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-(--color-primary-strong)"
           >
-            Register
+            {{ t("nav.register") }}
           </RouterLink>
         </template>
       </div>
@@ -159,7 +179,13 @@ watch(
         aria-label="Toggle navigation menu"
         @click="toggleMobileMenu"
       >
-        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg
+          class="h-5 w-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -173,7 +199,10 @@ watch(
       </button>
     </div>
 
-    <div v-if="mobileMenuOpen" class="border-t border-(--color-border) bg-(--color-surface) lg:hidden">
+    <div
+      v-if="mobileMenuOpen"
+      class="border-t border-(--color-border) bg-(--color-surface) lg:hidden"
+    >
       <div class="mx-auto max-w-7xl space-y-5 px-4 py-5 sm:px-6">
         <div class="flex flex-wrap gap-2">
           <ThemeToggle />
@@ -198,10 +227,18 @@ watch(
         </nav>
 
         <div v-if="authStore.isAuthenticated" class="space-y-3">
-          <div class="rounded-3xl bg-(--color-surface-soft) p-4 ring-1 ring-(--color-border)">
-            <p class="text-xs uppercase tracking-[0.2em] text-(--color-muted)">Signed in as</p>
-            <p class="mt-2 text-base font-semibold text-(--color-text)">{{ userLabel }}</p>
-            <p class="mt-1 text-sm text-(--color-muted)">{{ authStore.user?.role || "Member" }}</p>
+          <div
+            class="rounded-3xl bg-(--color-surface-soft) p-4 ring-1 ring-(--color-border)"
+          >
+            <p class="text-xs uppercase tracking-[0.2em] text-(--color-muted)">
+              {{ t("nav.signedInAs") }}
+            </p>
+            <p class="mt-2 text-base font-semibold text-(--color-text)">
+              {{ userLabel }}
+            </p>
+            <p class="mt-1 text-sm text-(--color-muted)">
+              {{ authStore.user?.role || "Member" }}
+            </p>
           </div>
 
           <RouterLink
@@ -210,7 +247,7 @@ watch(
             class="block rounded-2xl border border-(--color-border) px-4 py-3 text-center text-sm font-semibold text-(--color-muted) transition hover:border-(--color-primary) hover:text-(--color-primary)"
             @click="closeMobileMenu"
           >
-            Open Dashboard
+            {{ t("nav.dashboard") }}
           </RouterLink>
 
           <button

@@ -37,5 +37,180 @@
     "emptyTitle": "No data found",
     "modalTitle": "Modal title",
     "noRecords": "No records found."
+  },
+  "nav": {
+    "properties": "Properties",
+    "about": "About Us",
+    "contact": "Contact",
+    "signedInAs": "Signed in as",
+    "dashboard": "Dashboard",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Register"
+  },
+  "footer": {
+    "tagline": "Discover authentic Cambodian stays. From boutique guesthouses to riverside retreats — book local, experience more.",
+    "explore": "Explore",
+    "legal": "Legal",
+    "contact": "Contact",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "address": "Phnom Penh, Cambodia",
+    "email": "info{'@'}srokyerng.com",
+    "phone": "+855 12 345 678",
+    "rights": "All rights reserved.",
+    "madeWith": "Made with ❤️ in Cambodia"
+  },
+  "home": {
+    "hero": {
+      "eyebrow": "Welcome to SrokYerng",
+      "title": "Stay Local,",
+      "titleHighlight": "Experience Cambodia",
+      "subtitle": "Discover authentic guesthouses, villas, and bungalows across Cambodia. Book directly with local hosts for the best experience."
+    },
+    "search": {
+      "city": "City",
+      "allCities": "All Cities",
+      "checkIn": "Check In",
+      "checkOut": "Check Out",
+      "guests": "Guests"
+    },
+    "cities": {
+      "phnomPenh": "Phnom Penh",
+      "siemReap": "Siem Reap",
+      "sihanoukville": "Sihanoukville",
+      "battambang": "Battambang",
+      "kampot": "Kampot"
+    },
+    "categories": {
+      "eyebrow": "Browse by Type",
+      "title": "What are you looking for?",
+      "guesthouse": "Guesthouse",
+      "villa": "Villa",
+      "bungalow": "Bungalow",
+      "apartment": "Apartment",
+      "resort": "Resort",
+      "hostel": "Hostel"
+    },
+    "featured": {
+      "eyebrow": "Top Picks",
+      "title": "Featured Properties",
+      "viewAll": "View All",
+      "perNight": "night",
+      "reviews": "reviews"
+    },
+    "features": {
+      "eyebrow": "Why SrokYerng",
+      "title": "Why Choose Us?",
+      "subtitle": "We connect travelers with authentic local stays across Cambodia.",
+      "local": {
+        "title": "100% Local",
+        "desc": "Every property is owned and managed by Cambodian hosts."
+      },
+      "verified": {
+        "title": "Verified Listings",
+        "desc": "All properties are verified for quality and safety."
+      },
+      "price": {
+        "title": "Best Price",
+        "desc": "No hidden fees. Book directly with hosts for the best rates."
+      },
+      "support": {
+        "title": "24/7 Support",
+        "desc": "Our team is always ready to help you with your stay."
+      }
+    },
+    "cta": {
+      "title": "Ready to Explore Cambodia?",
+      "subtitle": "Join thousands of travelers who have discovered authentic Cambodian stays.",
+      "browse": "Browse Properties",
+      "register": "Create Account"
+    }
+  },
+  "about": {
+    "story": {
+      "eyebrow": "Our Story",
+      "title": "Built for Cambodia,",
+      "titleHighlight": "By Cambodians",
+      "desc": "SrokYerng Booking was born from a simple idea — to make it easier for travelers to discover authentic local stays across Cambodia, while helping property owners reach more guests."
+    },
+    "stats": {
+      "properties": "Properties",
+      "travelers": "Travelers",
+      "cities": "Cities",
+      "rating": "Avg Rating"
+    },
+    "mission": {
+      "eyebrow": "What We Stand For",
+      "sectionTitle": "Our Mission & Vision",
+      "title": "Our Mission",
+      "desc": "To make accommodation discovery feel calm, trustworthy, and easy for both travelers and property owners across Cambodia."
+    },
+    "vision": {
+      "title": "Our Vision",
+      "desc": "To build a booking platform that feels unmistakably Cambodian while being clean, modern, and ready for scale."
+    },
+    "why": {
+      "eyebrow": "Why SrokYerng",
+      "title": "Why Choose Us?",
+      "local": {
+        "title": "100% Local",
+        "desc": "Every property is owned and managed by Cambodian hosts."
+      },
+      "verified": {
+        "title": "Verified Listings",
+        "desc": "All properties are verified for quality and safety."
+      },
+      "price": {
+        "title": "Best Price",
+        "desc": "No hidden fees. Book directly with hosts for the best rates."
+      },
+      "support": {
+        "title": "24/7 Support",
+        "desc": "Our team is always ready to help you with your stay."
+      }
+    },
+    "team": {
+      "eyebrow": "The People Behind SrokYerng",
+      "title": "Meet Our Team",
+      "subtitle": "A group of passionate Cambodians dedicated to creating a better travel experience.",
+      "members": {
+        "leakhena": {
+          "name": "Bou Leakhena",
+          "role": "Full-stack Developer"
+        },
+        "sambath": {
+          "name": "Orn Sambath",
+          "role": "Frontend Developer"
+        },
+        "meoun-chan-sambath": {
+          "name": "Meoun Chan Sombath",
+          "role": "Team Lead & Full-stack Developer"
+        },
+        "ei-visal": {
+          "name": "EI Visal",
+          "role": "Backend Developer"
+        },
+        "houn-thanun": {
+          "name": "Huon Thanun",
+          "role": "Frontend Developer"
+        },
+        "an-menghour": {
+          "name": "An Menghour",
+          "role": "Backend Developer"
+        }
+      },
+      "cta": {
+        "title": "Want to Know More?",
+        "subtitle": "Get in touch with our team or start exploring properties today.",
+        "contact": "Contact Us",
+        "browse": "Browse Properties"
+      },
+      "thanks": {
+        "title": "Acknowledgment",
+        "subtitle": "Our Deepest Gratitude To",
+        "message": "We would like to express our sincere thanks to the Ministry of Post and Telecommunications (MPTC), the CBRD Fund, and ANT Training Center. Our team honored to have received scholarships for Web Developement. This support has significantly reduced our financial burden and allowed us to focus on our studies. We are committed to working hard and using our skills to contribute positively to society in the future."
+      }
+    }
   }
 }
