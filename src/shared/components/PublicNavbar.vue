@@ -17,11 +17,13 @@ const authStore = useAuthStore();
 const mobileMenuOpen = ref(false);
 const { t, locale } = useI18n({ useScope: "global" });
 
+
 const navigationItems = computed(() => [
   { label: t("nav.properties"), to: { name: "public.properties" } },
   { label: t("nav.about"), to: { name: "public.about" } },
   { label: t("nav.contact"), to: { name: "public.contact" } },
 ]);
+
 
 const dashboardRoute = computed(() => {
   switch (authStore.user?.role) {
@@ -63,7 +65,7 @@ const toggleMobileMenu = () => {
 const handleLogout = async () => {
   authStore.logout();
   closeMobileMenu();
-  await router.push({ name: "public.properties" });
+  await router.push({ name: "public.home" });
 };
 
 watch(
@@ -82,7 +84,7 @@ watch(
       class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8"
     >
       <RouterLink
-        :to="{ name: 'public.properties' }"
+        :to="{ name: 'public.home' }"
         class="flex items-center gap-3 text-(--color-text) transition hover:text-(--color-primary)"
       >
         <img
