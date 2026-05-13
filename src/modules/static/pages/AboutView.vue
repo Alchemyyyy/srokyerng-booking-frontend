@@ -2,7 +2,10 @@
 import { computed } from "vue";
 import { RouterLink } from "vue-router";
 import { useI18n } from "vue-i18n";
+import member1 from "@/assets/images/about/team/member_1.png";
 import member2 from "@/assets/images/about/team/member_2.png";
+import member3 from "@/assets/images/about/team/member_3.png";
+import member5 from "@/assets/images/about/team/member_5.png";
 
 const { t } = useI18n({ useScope: "global" });
 
@@ -46,7 +49,7 @@ const team = computed(() => [
   {
     name: t("about.team.members.leakhena.name"),
     role: t("about.team.members.leakhena.role"),
-    image: null,
+    image: member1,
   },
   {
     name: t("about.team.members.sambath.name"),
@@ -56,7 +59,7 @@ const team = computed(() => [
   {
     name: t("about.team.members.meoun-chan-sambath.name"),
     role: t("about.team.members.meoun-chan-sambath.role"),
-    image: null,
+    image: member3,
   },
   {
     name: t("about.team.members.ei-visal.name"),
@@ -66,7 +69,7 @@ const team = computed(() => [
   {
     name: t("about.team.members.houn-thanun.name"),
     role: t("about.team.members.houn-thanun.role"),
-    image: null,
+    image: member5,
   },
   {
     name: t("about.team.members.an-menghour.name"),

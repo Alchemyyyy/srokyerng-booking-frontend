@@ -39,6 +39,7 @@
     "noRecords": "No records found."
   },
   "nav": {
+    "home": "Home",
     "properties": "Properties",
     "about": "About Us",
     "contact": "Contact",
@@ -73,7 +74,9 @@
       "allCities": "All Cities",
       "checkIn": "Check In",
       "checkOut": "Check Out",
-      "guests": "Guests"
+      "guests": "Guests",
+      "type": "Property Type",
+      "submit": "Search"
     },
     "cities": {
       "phnomPenh": "Phnom Penh",
