@@ -1,23 +1,51 @@
 <script setup>
 import { computed, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { RouterLink, useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { ROLES } from "@/shared/constants/roles";
-import BrandLogo from "@/shared/components/BrandLogo.vue";
+import { onMounted, onUnmounted } from "vue";
+import logoUrl from "@/assets/images/logos/logo2.png";
+
 import LanguageToggle from "@/shared/components/LanguageToggle.vue";
 import ThemeToggle from "@/shared/components/ThemeToggle.vue";
+import { getStoredTheme, setTheme } from "@/shared/services/themeStorage";
+import { setLocale } from "@/app/i18n";
+import AppButton from "@/shared/components/AppButton.vue";
+
+const currentTheme = ref(getStoredTheme());
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const mobileMenuOpen = ref(false);
+const isScrolled = ref(false);
+const { t, locale } = useI18n({ useScope: "global" });
 
-const navigationItems = [
-  { label: "Home", to: { name: "public.home" } },
-  { label: "Properties", to: { name: "public.properties" } },
-  { label: "About Us", to: { name: "public.about" } },
-  { label: "Contact", to: { name: "public.contact" } },
-];
+const toggleTheme = () => {
+  const next = currentTheme.value === "light" ? "dark" : "light";
+  currentTheme.value = next;
+  setTheme(next);
+};
+
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 50;
+};
+
+onMounted(() => {
+  window.addEventListener("scroll", handleScroll);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("scroll", handleScroll);
+});
+
+const navigationItems = computed(() => [
+  { label: t("nav.home"), to: { name: "public.home" } },
+  { label: t("nav.properties"), to: { name: "public.properties" } },
+  { label: t("nav.about"), to: { name: "public.about" } },
+  { label: t("nav.contact"), to: { name: "public.contact" } },
+]);
 
 const dashboardRoute = computed(() => {
   switch (authStore.user?.role) {
@@ -38,11 +66,13 @@ const userLabel = computed(() => {
     authStore.user?.fullName ||
     authStore.user?.username ||
     authStore.user?.email ||
-    "My account"
+    t("nav.signedInAs")
   );
 });
 
-const userInitial = computed(() => userLabel.value.trim().charAt(0).toUpperCase());
+const userInitial = computed(() =>
+  userLabel.value.trim().charAt(0).toUpperCase(),
+);
 
 const isActiveRoute = (name) => route.name === name;
 
@@ -70,37 +100,151 @@ watch(
 
 <template>
   <header
-    class="sticky top-0 z-50 border-b border-(--color-border) bg-(--color-surface)/90 backdrop-blur-xl"
+    :class="[
+      'fixed top-0 z-50 w-full transition-all duration-300',
+      isScrolled
+        ? 'border-b border-(--color-border) bg-(--color-surface)/90 backdrop-blur-xl py-3'
+        : 'bg-transparent border-b border-white/10 py-6',
+    ]"
   >
-    <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+    <div
+      class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8"
+    >
       <RouterLink
         :to="{ name: 'public.home' }"
-        class="flex items-center gap-3 text-(--color-text) transition hover:text-(--color-primary)"
+        class="flex shrink-0 items-center gap-2 text-(--color-text) transition hover:text-(--color-primary)"
       >
-        <BrandLogo show-tagline />
+        <img
+          :src="logoUrl"
+          alt="Srokyerng Booking"
+          class="h-10 w-auto object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
+          :class="!isScrolled ? 'brightness-0 invert' : 'dark:brightness-200'"
+        />
+        <span
+          class="font-kantumruy text-xl font-extrabold tracking-wider leading-none self-center"
+          :class="
+            !isScrolled
+              ? 'text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]'
+              : 'text-(--color-text)'
+          "
+        >
+          ស្រុកយើង
+        </span>
       </RouterLink>
-
       <nav
-        class="hidden items-center gap-1 rounded-full border border-(--color-border) bg-(--color-surface-soft) p-1 lg:flex"
+        class="hidden items-center gap-1 rounded-full border p-1 lg:flex mx-4"
+        :class="
+          isScrolled
+            ? 'border-(--color-border) bg-(--color-surface-soft)'
+            : '!border-white/20 !bg-white/10 backdrop-blur-md'
+        "
       >
         <RouterLink
           v-for="item in navigationItems"
           :key="item.label"
           :to="item.to"
-          class="rounded-full px-4 py-2 text-sm font-medium transition"
-          :class="
+          class="rounded-full px-5 py-2 text-sm font-medium transition-all"
+          :class="[
             isActiveRoute(item.to.name)
-              ? 'bg-(--color-surface) text-(--color-primary) shadow-sm ring-1 ring-(--color-focus-ring)'
-              : 'text-(--color-muted) hover:bg-(--color-surface) hover:text-(--color-text)'
-          "
+              ? isScrolled
+                ? 'bg-(--color-surface) !text-(--color-primary)'
+                : '!bg-white/20 !text-white'
+              : isScrolled
+                ? '!text-(--color-muted) hover:!text-(--color-text)'
+                : '!text-white/80 hover:!text-white',
+            locale === 'km' ? 'font-kantumruy text-[15px]' : 'font-sans',
+          ]"
         >
           {{ item.label }}
         </RouterLink>
       </nav>
+      <!-- <ThemeToggle v-if="isScrolled" /> -->
+      <div class="hidden shrink-0 items-center gap-3 lg:flex">
+        <button
+          type="button"
+          @click="toggleTheme"
+          :class="[
+            'h-9 w-9 flex items-center justify-center rounded-full transition',
+            !isScrolled
+              ? 'text-white hover:bg-white/10'
+              : 'text-(--color-muted) hover:bg-(--color-surface-soft)',
+          ]"
+        >
+          <span>
+            <!-- Sun icon = light mode -->
+            <svg
+              v-if="currentTheme === 'light'"
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 3v1m0 16v1m8.66-9h-1M4.34 12h-1m15.07-6.07-.71.71M6.34 17.66l-.71.71m12.02 0-.71-.71M6.34 6.34l-.71-.71M12 7a5 5 0 100 10A5 5 0 0012 7z"
+              />
+            </svg>
+            <!-- Moon icon = dark mode -->
+            <svg
+              v-else-if="currentTheme === 'dark'"
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
+              />
+            </svg>
+            <!-- Monitor icon = system mode -->
+            <svg
+              v-else
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
+            </svg>
+          </span>
+        </button>
+        <!-- <LanguageToggle v-if="isScrolled" /> -->
 
-      <div class="hidden items-center gap-3 lg:flex">
-        <ThemeToggle />
-        <LanguageToggle />
+        <div
+          v-if="!isScrolled"
+          class="inline-flex rounded-full border-white/20 bg-white/10 backdrop-blur-md p-1"
+        >
+          <button
+            v-for="option in [
+              { value: 'en', label: 'EN' },
+              { value: 'km', label: 'ខ្មែរ' },
+            ]"
+            :key="option.value"
+            type="button"
+            :class="[
+              'rounded-full px-3 py-1.5 text-sm font-semibold transition',
+              locale === option.value
+                ? 'bg-(--color-primary) text-white'
+                : 'text-white/70 hover:bg-white/10 hover:text-white',
+            ]"
+            @click="setLocale(option.value)"
+          >
+            {{ option.label }}
+          </button>
+        </div>
 
         <template v-if="authStore.isAuthenticated">
           <div
@@ -112,8 +256,14 @@ watch(
               {{ userInitial }}
             </div>
             <div class="pr-1">
-              <p class="max-w-40 truncate text-sm font-semibold text-(--color-text)">{{ userLabel }}</p>
-              <p class="text-xs uppercase tracking-[0.2em] text-(--color-muted)">
+              <p
+                class="max-w-40 truncate text-sm font-semibold text-(--color-text)"
+              >
+                {{ userLabel }}
+              </p>
+              <p
+                class="text-xs uppercase tracking-[0.2em] text-(--color-muted)"
+              >
                 {{ authStore.user?.role || "Member" }}
               </p>
             </div>
@@ -124,7 +274,7 @@ watch(
             :to="dashboardRoute"
             class="rounded-full border border-(--color-border) px-4 py-2 text-sm font-semibold text-(--color-muted) transition hover:border-(--color-primary) hover:text-(--color-primary)"
           >
-            Dashboard
+            {{ t("nav.dashboard") }}
           </RouterLink>
 
           <button
@@ -132,23 +282,40 @@ watch(
             class="rounded-full bg-(--color-primary) px-4 py-2 text-sm font-semibold text-white transition hover:bg-(--color-primary-strong)"
             @click="handleLogout"
           >
-            Logout
+            {{ t("nav.logout") }}
           </button>
         </template>
 
         <template v-else>
-          <RouterLink
-            :to="{ name: 'public.login' }"
-            class="rounded-full px-4 py-2 text-sm font-semibold text-(--color-muted) transition hover:text-(--color-primary)"
-          >
-            Login
+          <!-- Login - also has same conflict, fix it -->
+          <RouterLink :to="{ name: 'public.login' }">
+            <AppButton
+              variant="ghost"
+              size="sm"
+              :class="
+                !isScrolled
+                  ? '!text-white hover:!bg-white/10 !rounded-full'
+                  : '!rounded-full'
+              "
+            >
+              {{ t("nav.login") }}
+            </AppButton>
           </RouterLink>
 
-          <RouterLink
-            :to="{ name: 'public.register' }"
-            class="rounded-full bg-(--color-primary) px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-(--color-primary-strong)"
-          >
-            Register
+          <!-- Register - remove text-white from static class -->
+          <RouterLink :to="{ name: 'public.register' }">
+            <AppButton
+              variant="primary"
+              size="sm"
+              :class="[
+                '!rounded-full',
+                !isScrolled
+                  ? 'bg-white/20 !text-white !border-white/20 hover:bg-white/30 hover:border-white/30'
+                  : '',
+              ]"
+            >
+              {{ t("nav.register") }}
+            </AppButton>
           </RouterLink>
         </template>
       </div>
@@ -160,7 +327,13 @@ watch(
         aria-label="Toggle navigation menu"
         @click="toggleMobileMenu"
       >
-        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg
+          class="h-5 w-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -174,11 +347,14 @@ watch(
       </button>
     </div>
 
-    <div v-if="mobileMenuOpen" class="border-t border-(--color-border) bg-(--color-surface) lg:hidden">
+    <div
+      v-if="mobileMenuOpen"
+      class="border-t border-(--color-border) bg-(--color-surface) lg:hidden"
+    >
       <div class="mx-auto max-w-7xl space-y-5 px-4 py-5 sm:px-6">
         <div class="flex flex-wrap gap-2">
-          <ThemeToggle />
-          <LanguageToggle />
+          <ThemeToggle v-if="isScrolled" />
+          <!-- <LanguageToggle v-if="isScrolled" /> -->
         </div>
 
         <nav class="space-y-2">
@@ -199,10 +375,18 @@ watch(
         </nav>
 
         <div v-if="authStore.isAuthenticated" class="space-y-3">
-          <div class="rounded-3xl bg-(--color-surface-soft) p-4 ring-1 ring-(--color-border)">
-            <p class="text-xs uppercase tracking-[0.2em] text-(--color-muted)">Signed in as</p>
-            <p class="mt-2 text-base font-semibold text-(--color-text)">{{ userLabel }}</p>
-            <p class="mt-1 text-sm text-(--color-muted)">{{ authStore.user?.role || "Member" }}</p>
+          <div
+            class="rounded-3xl bg-(--color-surface-soft) p-4 ring-1 ring-(--color-border)"
+          >
+            <p class="text-xs uppercase tracking-[0.2em] text-(--color-muted)">
+              {{ t("nav.signedInAs") }}
+            </p>
+            <p class="mt-2 text-base font-semibold text-(--color-text)">
+              {{ userLabel }}
+            </p>
+            <p class="mt-1 text-sm text-(--color-muted)">
+              {{ authStore.user?.role || "Member" }}
+            </p>
           </div>
 
           <RouterLink
@@ -211,7 +395,7 @@ watch(
             class="block rounded-2xl border border-(--color-border) px-4 py-3 text-center text-sm font-semibold text-(--color-muted) transition hover:border-(--color-primary) hover:text-(--color-primary)"
             @click="closeMobileMenu"
           >
-            Open Dashboard
+            {{ t("nav.dashboard") }}
           </RouterLink>
 
           <button
