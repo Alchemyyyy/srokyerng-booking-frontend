@@ -9,7 +9,8 @@ import PublicLayout from "@/layouts/PublicLayout.vue";
 import { adminRoutes } from "@/modules/admin/routes";
 import { authRoutes } from "@/modules/auth/routes";
 import { homeRoutes } from "@/modules/home/routes";
-import { ownerPropertyRoutes, propertyRoutes } from "@/modules/properties/routes";
+import { ownerRoutes } from "@/modules/owner/routes";
+import { propertyRoutes } from "@/modules/properties/routes";
 import { reservationRoutes } from "@/modules/reservations/routes";
 import { staticRoutes } from "@/modules/static/routes";
 
@@ -53,7 +54,7 @@ const router = createRouter({
       meta: { requiresAuth: true, roles: [ROLES.OWNER] },
       children: [
         { path: "", redirect: { name: "owner.dashboard" } },
-        ...withNamePrefix(ownerPropertyRoutes, "owner"),
+        ...withNamePrefix(ownerRoutes, "owner"),
       ],
     },
     {
