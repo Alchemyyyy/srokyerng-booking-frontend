@@ -29,5 +29,20 @@ onMounted(fetchProperties);
 </script>
 
 <template>
-  <PropertyCard v-for="item in properties" :key="item.id" :property="item" />
+  <main class="mt-25">
+    <header class="mb-8">
+      <h1 class="text-3xl font-semibold text-(--color-text)">My Properties</h1>
+      <p class="mt-2 text-(--color-muted)">Manage your property listings here.</p>
+    </header>
+
+    <section>
+      <div v-if="properties.length === 0" class="empty-state">
+        No properties found. Please add a property to get started.
+      </div>
+
+      <PropertyCard v-else v-for="property in properties" :key="property.id" :property="property" />
+    </section>
+  </main>
 </template>
+
+<style scoped></style>

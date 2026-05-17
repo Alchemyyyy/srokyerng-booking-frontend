@@ -46,7 +46,7 @@ const props = defineProps({
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                     </svg>
                 </button>
-                <button class="icon-btn p-2 bg-gray-100 text-GRAY-900 rounded-sm" title="Edit">
+                <button class="icon-btn p-2 rounded-sm bg-(--color-primary-soft) text-(--color-muted)" title="Edit">
                     <svg class="edit-icon size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                         stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round"

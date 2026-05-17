@@ -39,23 +39,13 @@ onMounted(fetchReservations);
 </script>
 
 <template>
-  <main class="owner-reservations">
+  <main class="owner-reservations mt-25">
     <header class="mb-8">
       <h1 class="text-3xl font-semibold text-(--color-text)">Reservations Summary</h1>
       <p class="mt-2 text-(--color-muted)">Recent reservations for your properties.</p>
     </header>
 
-    <div v-if="loading" class="state-container">
-      <div class="loader"></div>
-      <p>Fetching reservation data...</p>
-    </div>
-
-    <div v-else-if="error" class="state-container error">
-      <p>{{ error }}</p>
-      <button @click="fetchReservations" class="btn-retry">Retry</button>
-    </div>
-
-    <section v-else class="reservations-list">
+    <section class="reservations-list">
       <div v-if="recentReservations.length === 0" class="empty-state">
         No recent reservations found.
       </div>
@@ -85,11 +75,11 @@ onMounted(fetchReservations);
 </template>
 
 <style scoped>
-.owner-reservations {
-  /* min-height: 100vh; */
+/* .owner-reservations {
+  min-height: 100vh;
   background-color: var(--color-page);
   color: var(--color-text);
-}
+} */
 
 .reservations-list {
   display: flex;
