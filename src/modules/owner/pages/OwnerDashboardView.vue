@@ -1,8 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 
-import OwnerSidebar from '../components/layouts/OwnerSidebar.vue';
 import OwnerHeader from '../components/layouts/OwnerHeader.vue';
+import OwnerSidebar from '../components/layouts/OwnerSidebar.vue';
 import AppButton from '@/shared/components/AppButton.vue';
 import OwnerPropertiesView from '@/modules/properties/pages/OwnerPropertiesView.vue';
 import OwnerReservationsView from '@/modules/reservations/pages/OwnerReservationsView.vue';
