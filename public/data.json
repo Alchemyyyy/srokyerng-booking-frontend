@@ -1,0 +1,95 @@
+{
+    "summary": {
+        "totalProperties": 3,
+        "totalBookings": 170,
+        "totalRevenue": 23700,
+        "avgRating": 4.7,
+        "trends": {
+            "properties": "+1 this month",
+            "bookings": "+12 this week",
+            "revenue": "+8% this month",
+            "rating": "Excellent"
+        }
+    },
+    "paymentStatus": {
+        "isComplete": false,
+        "missingFields": [
+            "bank_account_number",
+            "identity_verification"
+        ],
+        "lastUpdated": "2026-05-10T10:00:00Z"
+    },
+    "properties": [
+        {
+            "id": "prop-01",
+            "name": "Sokha Phnom Penh Hotel",
+            "type": "Hotel",
+            "location": "Phnom Penh",
+            "rooms": 48,
+            "bookings": 142,
+            "revenue": 18940,
+            "status": "Approved",
+            "image": "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=300&q=80"
+        },
+        {
+            "id": "prop-02",
+            "name": "Kampot Garden Villa",
+            "type": "Villa",
+            "location": "Kampot",
+            "rooms": 4,
+            "bookings": 28,
+            "revenue": 4760,
+            "status": "Approved",
+            "image": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=300&q=80"
+        },
+        {
+            "id": "prop-03",
+            "name": "Mekong Riverside Suites",
+            "type": "Apartment",
+            "location": "Phnom Penh",
+            "rooms": 12,
+            "bookings": 0,
+            "revenue": 0,
+            "status": "Pending",
+            "image": "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=300&q=80"
+        }
+    ],
+    "recentReservations": [
+        {
+            "id": "res-9901",
+            "guestName": "Sok Chamroeun",
+            "propertyName": "Sokha Phnom Penh Hotel",
+            "checkIn": "2026-05-14",
+            "checkOut": "2026-05-16",
+            "amount": 240,
+            "status": "confirmed"
+        },
+        {
+            "id": "res-9902",
+            "guestName": "Elena Smith",
+            "propertyName": "Kampot Garden Villa",
+            "checkIn": "2026-05-15",
+            "checkOut": "2026-05-20",
+            "amount": 850,
+            "status": "pending"
+        },
+        {
+            "id": "res-9903",
+            "guestName": "Vannak Khem",
+            "propertyName": "Sokha Phnom Penh Hotel",
+            "checkIn": "2026-05-10",
+            "checkOut": "2026-05-12",
+            "amount": 180,
+            "status": "paid"
+        },
+        {
+            "id": "res-9904",
+            "guestName": "John Doe",
+            "propertyName": "Mekong Riverside Suites",
+            "checkIn": "2026-05-25",
+            "checkOut": "2026-05-28",
+            "amount": 450,
+            "status": "cancelled"
+        }
+    ]
+}

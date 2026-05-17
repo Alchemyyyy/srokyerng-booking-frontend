@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { registerRouteGuards } from "@/app/router/guards";
+// import { registerRouteGuards } from "@/app/router/guards";
 
 import AdminLayout from "@/layouts/AdminLayout.vue";
 import CustomerLayout from "@/layouts/CustomerLayout.vue";
@@ -74,6 +74,6 @@ const router = createRouter({
   ],
 });
 
-registerRouteGuards(router);
+// registerRouteGuards(router);
 
 export default router;
