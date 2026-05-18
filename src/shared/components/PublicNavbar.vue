@@ -221,7 +221,7 @@ watch(
             </svg>
           </span>
         </button>
-        <!-- <LanguageToggle v-if="isScrolled" /> -->
+        <LanguageToggle />
 
         <div
           v-if="!isScrolled"
@@ -354,7 +354,7 @@ watch(
       <div class="mx-auto max-w-7xl space-y-5 px-4 py-5 sm:px-6">
         <div class="flex flex-wrap gap-2">
           <ThemeToggle v-if="isScrolled" />
-          <!-- <LanguageToggle v-if="isScrolled" /> -->
+          <LanguageToggle />
         </div>
 
         <nav class="space-y-2">

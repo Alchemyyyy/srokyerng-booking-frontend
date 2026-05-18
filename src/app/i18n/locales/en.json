@@ -76,7 +76,11 @@
       "checkOut": "Check Out",
       "guests": "Guests",
       "type": "Property Type",
-      "submit": "Search"
+      "submit": "Search",
+      "checkInOut": "Check-in / Out",
+      "properties": "Properties",
+      "happyGuests": "Happy Guests",
+      "cities": "Cities"
     },
     "cities": {
       "phnomPenh": "Phnom Penh",
@@ -86,8 +90,11 @@
       "kampot": "Kampot"
     },
     "categories": {
-      "eyebrow": "Browse by Type",
+      "eyebrow": "Stay Your Way",
       "title": "What are you looking for?",
+      "places": "Places",
+      "hotel": "Hotel",
+      "homestay": "Homestay",
       "guesthouse": "Guesthouse",
       "villa": "Villa",
       "bungalow": "Bungalow",
@@ -100,7 +107,69 @@
       "title": "Featured Properties",
       "viewAll": "View All",
       "perNight": "night",
-      "reviews": "reviews"
+      "reviews": "reviews",
+      "subtitle": "Handpicked by our team base on guest reviews and quality",
+      "exploreAll": "Explore all properties",
+      "badges": {
+        "mostPopular": "Most Popular",
+        "topRated": "Top Rated",
+        "bestValue": "Best Value"
+      },
+      "amenities": {
+        "freeWifi": "Free Wi-Fi",
+        "swimmingPool": "Swimming Pool",
+        "garden": "Garden",
+        "beachAccess": "Beach Access"
+      }
+    },
+    "destinations": {
+      "eyebrow": "Top Destinations",
+      "title": "Explore Popular Cities",
+      "subtitle": "From the bustling capital to tranquil coastal towns — Cambodia awaits.",
+      "viewAll": "View All",
+      "properties": "Properties",
+      "cities": {
+        "phnomPenh": "Phnom Penh",
+        "siemReap": "Siem Reap",
+        "sihanoukville": "Sihanoukville",
+        "battambang": "Battambang",
+        "kampot": "Kampot"
+      }
+    },
+    "steps": {
+      "eyebrow": "Simple Process",
+      "title": "Book in 3 Easy Steps",
+      "subtitle": "Reserve your perfect stay in minutes",
+      "step1": {
+        "title": "Search & Filter",
+        "desc": "Enter your destination and travel dates. Use filters to find the perfect type of accommodation within your budget."
+      },
+      "step2": {
+        "title": "Choose & Review",
+        "desc": "Browse detailed listings with real photos, amenities, room types, and authentic guest reviews."
+      },
+      "step3": {
+        "title": "Book & Pay Securely",
+        "desc": "Reserve your room with secure online payment. Receive instant confirmation to your email."
+      }
+    },
+    "testimonials": {
+      "eyebrow": "Traveler Stories",
+      "title": "What Our Guests Say",
+      "months": {
+        "january": "January",
+        "february": "February",
+        "march": "March",
+        "april": "April",
+        "may": "May",
+        "june": "June",
+        "july": "July",
+        "august": "August",
+        "september": "September",
+        "october": "October",
+        "november": "November",
+        "december": "December"
+      }
     },
     "features": {
       "eyebrow": "Why SrokYerng",
@@ -123,96 +192,128 @@
         "desc": "Our team is always ready to help you with your stay."
       }
     },
+    "whyUs": {
+      "eyebrow": "Why SrokYerng",
+      "title": "Built for Cambodia,",
+      "titleHighlight": "Loved by Travelers",
+      "subtitle": "SrokYerng was created to connect Cambodia's vibrant local accommodation scene with travelers seeking authentic experiences. We support local business owners with tools to manage and grow their listings.",
+      "happyGuests": "28,000+ Happy Guests",
+      "features": {
+        "verified": {
+          "title": "Verified Listings",
+          "desc": "All properties are reviewed and approved by our admin team before going live."
+        },
+        "quality": {
+          "title": "Quality Guarantee",
+          "desc": "Real guest reviews and photos ensure you know exactly what you're booking."
+        },
+        "support": {
+          "title": "Local Support",
+          "desc": "Khmer-speaking customer support to assist you throughout your stay."
+        },
+        "price": {
+          "title": "Best Price Promise",
+          "desc": "Book directly through SrokYerng and get the best available rates."
+        }
+      }
+    },
     "cta": {
       "title": "Ready to Explore Cambodia?",
       "subtitle": "Join thousands of travelers who have discovered authentic Cambodian stays.",
       "browse": "Browse Properties",
-      "register": "Create Account"
-    }
-  },
-  "about": {
-    "story": {
-      "eyebrow": "Our Story",
-      "title": "Built for Cambodia,",
-      "titleHighlight": "By Cambodians",
-      "desc": "SrokYerng Booking was born from a simple idea — to make it easier for travelers to discover authentic local stays across Cambodia, while helping property owners reach more guests."
+      "register": "Create Account",
+      "ownerTitle": "Are You a Property Owner?",
+      "ownerSubtitle": "Join 800+ property owners on SrokYerng Booking. List your hotel, guesthouse, villa, or homestay and start receiving bookings from travelers across the globe.",
+      "listButton": "List Your Property Free",
+      "feature1": "Free to list",
+      "feature2": "No setup fees",
+      "feature3": "Full control",
+      "feature4": "Direct bookings"
     },
-    "stats": {
-      "properties": "Properties",
-      "travelers": "Travelers",
-      "cities": "Cities",
-      "rating": "Avg Rating"
-    },
-    "mission": {
-      "eyebrow": "What We Stand For",
-      "sectionTitle": "Our Mission & Vision",
-      "title": "Our Mission",
-      "desc": "To make accommodation discovery feel calm, trustworthy, and easy for both travelers and property owners across Cambodia."
-    },
-    "vision": {
-      "title": "Our Vision",
-      "desc": "To build a booking platform that feels unmistakably Cambodian while being clean, modern, and ready for scale."
-    },
-    "why": {
-      "eyebrow": "Why SrokYerng",
-      "title": "Why Choose Us?",
-      "local": {
-        "title": "100% Local",
-        "desc": "Every property is owned and managed by Cambodian hosts."
+    "about": {
+      "story": {
+        "eyebrow": "Our Story",
+        "title": "Built for Cambodia,",
+        "titleHighlight": "By Cambodians",
+        "desc": "SrokYerng Booking was born from a simple idea — to make it easier for travelers to discover authentic local stays across Cambodia, while helping property owners reach more guests."
       },
-      "verified": {
-        "title": "Verified Listings",
-        "desc": "All properties are verified for quality and safety."
+      "stats": {
+        "properties": "Properties",
+        "travelers": "Travelers",
+        "cities": "Cities",
+        "rating": "Avg Rating"
       },
-      "price": {
-        "title": "Best Price",
-        "desc": "No hidden fees. Book directly with hosts for the best rates."
+      "mission": {
+        "eyebrow": "What We Stand For",
+        "sectionTitle": "Our Mission & Vision",
+        "title": "Our Mission",
+        "desc": "To make accommodation discovery feel calm, trustworthy, and easy for both travelers and property owners across Cambodia."
       },
-      "support": {
-        "title": "24/7 Support",
-        "desc": "Our team is always ready to help you with your stay."
-      }
-    },
-    "team": {
-      "eyebrow": "The People Behind SrokYerng",
-      "title": "Meet Our Team",
-      "subtitle": "A group of passionate Cambodians dedicated to creating a better travel experience.",
-      "members": {
-        "leakhena": {
-          "name": "Bou Leakhena",
-          "role": "Full-stack Developer"
+      "vision": {
+        "title": "Our Vision",
+        "desc": "To build a booking platform that feels unmistakably Cambodian while being clean, modern, and ready for scale."
+      },
+      "why": {
+        "eyebrow": "Why SrokYerng",
+        "title": "Why Choose Us?",
+        "local": {
+          "title": "100% Local",
+          "desc": "Every property is owned and managed by Cambodian hosts."
         },
-        "sambath": {
-          "name": "Orn Sambath",
-          "role": "Frontend Developer"
+        "verified": {
+          "title": "Verified Listings",
+          "desc": "All properties are verified for quality and safety."
         },
-        "meoun-chan-sambath": {
-          "name": "Meoun Chan Sombath",
-          "role": "Team Lead & Full-stack Developer"
+        "price": {
+          "title": "Best Price",
+          "desc": "No hidden fees. Book directly with hosts for the best rates."
         },
-        "ei-visal": {
-          "name": "EI Visal",
-          "role": "Backend Developer"
-        },
-        "houn-thanun": {
-          "name": "Huon Thanun",
-          "role": "Frontend Developer"
-        },
-        "an-menghour": {
-          "name": "An Menghour",
-          "role": "Backend Developer"
+        "support": {
+          "title": "24/7 Support",
+          "desc": "Our team is always ready to help you with your stay."
         }
       },
-      "cta": {
-        "title": "Want to Know More?",
-        "subtitle": "Get in touch with our team or start exploring properties today.",
-        "contact": "Contact Us",
-        "browse": "Browse Properties"
-      },
-      "thanks": {
-        "title": "Acknowledgment",
-        "subtitle": "Our Deepest Gratitude To",
-        "message": "We would like to express our sincere thanks to the Ministry of Post and Telecommunications (MPTC), the CBRD Fund, and ANT Training Center. Our team honored to have received scholarships for Web Developement. This support has significantly reduced our financial burden and allowed us to focus on our studies. We are committed to working hard and using our skills to contribute positively to society in the future."
+      "team": {
+        "eyebrow": "The People Behind SrokYerng",
+        "title": "Meet Our Team",
+        "subtitle": "A group of passionate Cambodians dedicated to creating a better travel experience.",
+        "members": {
+          "leakhena": {
+            "name": "Bou Leakhena",
+            "role": "Full-stack Developer"
+          },
+          "sambath": {
+            "name": "Orn Sambath",
+            "role": "Frontend Developer"
+          },
+          "meoun-chan-sambath": {
+            "name": "Meoun Chan Sombath",
+            "role": "Team Lead & Full-stack Developer"
+          },
+          "ei-visal": {
+            "name": "EI Visal",
+            "role": "Backend Developer"
+          },
+          "houn-thanun": {
+            "name": "Huon Thanun",
+            "role": "Frontend Developer"
+          },
+          "an-menghour": {
+            "name": "An Menghour",
+            "role": "Backend Developer"
+          }
+        },
+        "cta": {
+          "title": "Want to Know More?",
+          "subtitle": "Get in touch with our team or start exploring properties today.",
+          "contact": "Contact Us",
+          "browse": "Browse Properties"
+        },
+        "thanks": {
+          "title": "Acknowledgment",
+          "subtitle": "Our Deepest Gratitude To",
+          "message": "We would like to express our sincere thanks to the Ministry of Post and Telecommunications (MPTC), the CBRD Fund, and ANT Training Center. Our team honored to have received scholarships for Web Developement. This support has significantly reduced our financial burden and allowed us to focus on our studies. We are committed to working hard and using our skills to contribute positively to society in the future."
+        }
       }
     }
   }
