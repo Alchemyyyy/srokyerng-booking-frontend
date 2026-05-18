@@ -1,0 +1,317 @@
+{
+    "summary": {
+        "totalProperties": 12,
+        "totalBookings": 1487,
+        "totalRevenue": 186450,
+        "avgRating": 4.8,
+        "trends": {
+            "properties": "+3 this month",
+            "bookings": "+21% this week",
+            "revenue": "+14% this month",
+            "rating": "Excellent"
+        }
+    },
+    "analytics": {
+        "weeklyTraffic": [
+            {
+                "day": "Mon",
+                "sessions": 180,
+                "conversions": 42
+            },
+            {
+                "day": "Tue",
+                "sessions": 220,
+                "conversions": 55
+            },
+            {
+                "day": "Wed",
+                "sessions": 260,
+                "conversions": 61
+            },
+            {
+                "day": "Thu",
+                "sessions": 310,
+                "conversions": 72
+            },
+            {
+                "day": "Fri",
+                "sessions": 420,
+                "conversions": 96
+            },
+            {
+                "day": "Sat",
+                "sessions": 510,
+                "conversions": 122
+            },
+            {
+                "day": "Sun",
+                "sessions": 390,
+                "conversions": 88
+            }
+        ],
+        "monthlyPerformance": [
+            {
+                "label": "Jan",
+                "revenue": 18500,
+                "expenses": 9200,
+                "profit": 9300
+            },
+            {
+                "label": "Feb",
+                "revenue": 19400,
+                "expenses": 9800,
+                "profit": 9600
+            },
+            {
+                "label": "Mar",
+                "revenue": 22300,
+                "expenses": 10800,
+                "profit": 11500
+            },
+            {
+                "label": "Apr",
+                "revenue": 24700,
+                "expenses": 11600,
+                "profit": 13100
+            },
+            {
+                "label": "May",
+                "revenue": 28600,
+                "expenses": 13400,
+                "profit": 15200
+            },
+            {
+                "label": "Jun",
+                "revenue": 31200,
+                "expenses": 14500,
+                "profit": 16700
+            },
+            {
+                "label": "Jul",
+                "revenue": 32800,
+                "expenses": 15200,
+                "profit": 17600
+            },
+            {
+                "label": "Aug",
+                "revenue": 35100,
+                "expenses": 16800,
+                "profit": 18300
+            },
+            {
+                "label": "Sep",
+                "revenue": 36600,
+                "expenses": 17100,
+                "profit": 19500
+            },
+            {
+                "label": "Oct",
+                "revenue": 38200,
+                "expenses": 17800,
+                "profit": 20400
+            },
+            {
+                "label": "Nov",
+                "revenue": 40100,
+                "expenses": 18400,
+                "profit": 21700
+            },
+            {
+                "label": "Dec",
+                "revenue": 43600,
+                "expenses": 19900,
+                "profit": 23700
+            }
+        ],
+        "segmentPerformance": [
+            {
+                "name": "Hotels",
+                "value": 92000
+            },
+            {
+                "name": "Villas",
+                "value": 42000
+            },
+            {
+                "name": "Apartments",
+                "value": 31000
+            },
+            {
+                "name": "Homestays",
+                "value": 21450
+            }
+        ]
+    },
+    "paymentStatus": {
+        "isComplete": false,
+        "missingFields": [
+            "bank_account_number",
+            "identity_verification"
+        ],
+        "lastUpdated": "2026-05-10T10:00:00Z"
+    },
+    "properties": [
+        {
+            "id": "prop-01",
+            "name": "Sokha Phnom Penh Hotel",
+            "type": "Hotel",
+            "location": "Phnom Penh",
+            "rooms": 48,
+            "bookings": 312,
+            "revenue": 48940,
+            "status": "Approved",
+            "image": "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=300&q=80"
+        },
+        {
+            "id": "prop-02",
+            "name": "Kampot Garden Villa",
+            "type": "Villa",
+            "location": "Kampot",
+            "rooms": 8,
+            "bookings": 144,
+            "revenue": 18760,
+            "status": "Approved",
+            "image": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=300&q=80"
+        },
+        {
+            "id": "prop-03",
+            "name": "Mekong Riverside Suites",
+            "type": "Apartment",
+            "location": "Phnom Penh",
+            "rooms": 18,
+            "bookings": 96,
+            "revenue": 12600,
+            "status": "Pending",
+            "image": "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=300&q=80"
+        },
+        {
+            "id": "prop-04",
+            "name": "Siem Reap Heritage Resort",
+            "type": "Hotel",
+            "location": "Siem Reap",
+            "rooms": 36,
+            "bookings": 228,
+            "revenue": 35200,
+            "status": "Approved",
+            "image": "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=300&q=80"
+        },
+        {
+            "id": "prop-05",
+            "name": "Battambang Bamboo Homestay",
+            "type": "Homestay",
+            "location": "Battambang",
+            "rooms": 12,
+            "bookings": 82,
+            "revenue": 9400,
+            "status": "Approved",
+            "image": "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=300&q=80"
+        },
+        {
+            "id": "prop-06",
+            "name": "Koh Rong Beach Villa",
+            "type": "Villa",
+            "location": "Koh Rong",
+            "rooms": 6,
+            "bookings": 65,
+            "revenue": 15800,
+            "status": "Approved",
+            "image": "https://images.unsplash.com/photo-1496417263034-38ec4f0b665a?auto=format&fit=crop&w=300&q=80"
+        },
+        {
+            "id": "prop-07",
+            "name": "Angkor City Apartments",
+            "type": "Apartment",
+            "location": "Siem Reap",
+            "rooms": 22,
+            "bookings": 118,
+            "revenue": 17200,
+            "status": "Approved",
+            "image": "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=300&q=80"
+        },
+        {
+            "id": "prop-08",
+            "name": "Kratie Riverside Lodge",
+            "type": "Hotel",
+            "location": "Kratie",
+            "rooms": 16,
+            "bookings": 74,
+            "revenue": 8800,
+            "status": "Pending",
+            "image": "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?auto=format&fit=crop&w=300&q=80"
+        }
+    ],
+    "recentReservations": [
+        {
+            "id": "res-1001",
+            "guestName": "Sok Chamroeun",
+            "propertyName": "Sokha Phnom Penh Hotel",
+            "checkIn": "2026-05-14",
+            "checkOut": "2026-05-16",
+            "amount": 240,
+            "status": "confirmed"
+        },
+        {
+            "id": "res-1002",
+            "guestName": "Elena Smith",
+            "propertyName": "Kampot Garden Villa",
+            "checkIn": "2026-05-15",
+            "checkOut": "2026-05-20",
+            "amount": 850,
+            "status": "pending"
+        },
+        {
+            "id": "res-1003",
+            "guestName": "Vannak Khem",
+            "propertyName": "Siem Reap Heritage Resort",
+            "checkIn": "2026-05-10",
+            "checkOut": "2026-05-12",
+            "amount": 380,
+            "status": "paid"
+        },
+        {
+            "id": "res-1004",
+            "guestName": "John Doe",
+            "propertyName": "Mekong Riverside Suites",
+            "checkIn": "2026-05-25",
+            "checkOut": "2026-05-28",
+            "amount": 450,
+            "status": "cancelled"
+        },
+        {
+            "id": "res-1005",
+            "guestName": "Anna Lee",
+            "propertyName": "Koh Rong Beach Villa",
+            "checkIn": "2026-05-22",
+            "checkOut": "2026-05-27",
+            "amount": 1200,
+            "status": "confirmed"
+        },
+        {
+            "id": "res-1006",
+            "guestName": "David Kim",
+            "propertyName": "Angkor City Apartments",
+            "checkIn": "2026-05-18",
+            "checkOut": "2026-05-20",
+            "amount": 320,
+            "status": "paid"
+        },
+        {
+            "id": "res-1007",
+            "guestName": "Maria Garcia",
+            "propertyName": "Battambang Bamboo Homestay",
+            "checkIn": "2026-05-28",
+            "checkOut": "2026-05-30",
+            "amount": 160,
+            "status": "confirmed"
+        },
+        {
+            "id": "res-1008",
+            "guestName": "Chris Johnson",
+            "propertyName": "Kratie Riverside Lodge",
+            "checkIn": "2026-06-02",
+            "checkOut": "2026-06-05",
+            "amount": 270,
+            "status": "pending"
+        }
+    ]
+}
