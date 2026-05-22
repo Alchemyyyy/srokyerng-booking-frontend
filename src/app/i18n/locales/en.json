@@ -256,6 +256,7 @@
       "why": {
         "eyebrow": "Why SrokYerng",
         "title": "Why Choose Us?",
+        "subtitle": "We combine trusted local listings, transparent pricing, and responsive support so booking across Cambodia feels clear from the first click.",
         "local": {
           "title": "100% Local",
           "desc": "Every property is owned and managed by Cambodian hosts."
@@ -316,5 +317,136 @@
         }
       }
     }
+  },
+  "propertiesPage": {
+    "hero": {
+      "title": "Find stays that feel local, calm, and easy to book.",
+      "subtitle": "Explore handpicked properties across Cambodia with simple filters, thoughtful curation, and a cleaner booking flow.",
+      "smartBrowse": "Smart Browse",
+      "shapeYourStay": "Shape your stay",
+      "searchLabel": "Search",
+      "searchPlaceholder": "Search by city, vibe, or property name",
+      "staysReadyToBrowse": "{count} stays ready to browse",
+      "activeFiltersSummary": "{count} active filters - {location}"
+    },
+    "stats": {
+      "curatedStays": "Curated stays",
+      "acrossCambodia": "Across Cambodia",
+      "averageRating": "Avg Rating",
+      "guestLovedListings": "Guest-loved listings"
+    },
+    "filters": {
+      "title": "Filters",
+      "refineTrip": "Refine your trip",
+      "allStays": "All stays",
+      "maxPricePerNight": "Max price per night",
+      "minimumRating": "Minimum rating",
+      "all": "All"
+    },
+    "sort": {
+      "label": "Sort",
+      "recommended": "Recommended",
+      "priceLow": "Price: Low to High",
+      "priceHigh": "Price: High to Low",
+      "guestRating": "Guest Rating"
+    },
+    "actions": {
+      "reset": "Reset",
+      "browseStays": "Browse stays",
+      "grid": "Grid",
+      "list": "List",
+      "resetFilters": "Reset filters"
+    },
+    "results": {
+      "eyebrow": "Browse Results",
+      "title": "{count} stays in {location}",
+      "allCambodia": "All Cambodia"
+    },
+    "whyBrowse": {
+      "title": "Why browse here",
+      "items": {
+        "verified": "Verified stays with clearer pricing.",
+        "localFirst": "Local-first picks across city and coast.",
+        "realFilters": "Filters tuned for real travel decisions."
+      }
+    },
+    "cards": {
+      "saveProperty": "Save property",
+      "night": "/night"
+    },
+    "empty": {
+      "eyebrow": "No exact match",
+      "title": "Try widening your filters",
+      "message": "No stays matched this combination yet. Clear a filter or raise the budget ceiling to reveal more options."
+    },
+    "badges": {
+      "mostPopular": "Most Popular",
+      "topRated": "Top Rated",
+      "luxuryEscape": "Luxury Escape",
+      "bestValue": "Best Value",
+      "localFavorite": "Local Favorite",
+      "cityView": "City View",
+      "privateRetreat": "Private Retreat",
+      "sunsetPick": "Sunset Pick"
+    },
+    "highlights": {
+      "freeWifi": "Free Wi-Fi",
+      "pool": "Pool",
+      "restaurant": "Restaurant",
+      "airportPickup": "Airport Pickup",
+      "breakfast": "Breakfast",
+      "quietCourtyard": "Quiet Courtyard",
+      "beachfront": "Beachfront",
+      "infinityPool": "Infinity Pool",
+      "spa": "Spa",
+      "seafoodGrill": "Seafood Grill",
+      "riverView": "River View",
+      "garden": "Garden",
+      "bicycleRental": "Bicycle Rental",
+      "terrace": "Terrace",
+      "tourBooking": "Tour Booking",
+      "lateCheckIn": "Late Check-in",
+      "rooftopPool": "Rooftop Pool",
+      "gym": "Gym",
+      "workspace": "Workspace",
+      "fastCheckIn": "Fast Check-in",
+      "privatePatio": "Private Patio",
+      "familyRooms": "Family Rooms",
+      "sunsetDeck": "Sunset Deck",
+      "kayaks": "Kayaks"
+    },
+    "descriptions": {
+      "sokha": "Elegant riverside rooms with easy access to cafes, business districts, and evening walks by the water.",
+      "angkor": "A calm boutique stay with sunrise pool views and quick tuk-tuk rides to Angkor Wat and the night market.",
+      "pearlIsland": "Ocean-facing villas, private beach access, and sunset dining designed for slower coastal days.",
+      "mango": "Leafy garden rooms beside the river with hammocks, slow breakfasts, and local-host warmth.",
+      "heritageInn": "Clean, comfortable guesthouse rooms near galleries, cafes, and the city's slower neighborhood charm.",
+      "skyPenthouse": "A polished high-rise stay with rooftop skyline views, gym access, and a quieter home-base feel.",
+      "templeGarden": "Private villa styling with lush landscaping, family-friendly rooms, and a soft luxury atmosphere.",
+      "saltBreeze": "Clifftop bungalows with dramatic sunset decks, spa rituals, and a more secluded resort mood."
+    }
+  },
+  "propertyDetail": {
+    "home": "Home",
+    "search": "Search",
+    "night": "night",
+    "reserveNow": "Reserve Now",
+    "aboutProperty": "About This Property",
+    "amenities": "Amenities & Features",
+    "roomTypes": "Available Room Types",
+    "upTo": "Up To",
+    "rooms": "Rooms",
+    "rating": "Rating",
+    "reviews": "Reviews",
+    "recreation": "Recreation",
+    "dining": "Dining",
+    "connectivity": "Connectivity",
+    "guestReviews": "Guest Reviews",
+    "viewAllReviews": "View all 245 reviews",
+    "serviceFee": "Service Fee",
+    "total": "Total",
+    "checkIn": "Check-In",
+    "checkOut": "Check-Out",
+    "description": "A stunning beachfront resort offering pristine white sand beaches, crystal-clear waters, and unforgettable sunset views."
   }
 }
