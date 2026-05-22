@@ -5,7 +5,8 @@ import { RouterLink, useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { ROLES } from "@/shared/constants/roles";
 import { onMounted, onUnmounted } from "vue";
-import logoUrl from "@/assets/images/logos/logo2.png";
+import lightModeLogo from "@/assets/images/logos/logo.png";
+import darkModeLogo from "@/assets/images/logos/logo2.png";
 
 import LanguageToggle from "@/shared/components/LanguageToggle.vue";
 import ThemeToggle from "@/shared/components/ThemeToggle.vue";
@@ -14,6 +15,9 @@ import { setLocale } from "@/app/i18n";
 import AppButton from "@/shared/components/AppButton.vue";
 
 const currentTheme = ref(getStoredTheme());
+const systemTheme = ref("light");
+let systemThemeQuery;
+let themeObserver;
 
 const route = useRoute();
 const router = useRouter();
@@ -32,12 +36,37 @@ const handleScroll = () => {
   isScrolled.value = window.scrollY > 50;
 };
 
+const syncThemeState = () => {
+  currentTheme.value = getStoredTheme();
+  systemTheme.value = window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+};
+
+const handleSystemThemeChange = (event) => {
+  systemTheme.value = event.matches ? "dark" : "light";
+};
+
 onMounted(() => {
+  syncThemeState();
+  handleScroll();
+
+  systemThemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  systemThemeQuery.addEventListener("change", handleSystemThemeChange);
+
+  themeObserver = new MutationObserver(syncThemeState);
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-theme"],
+  });
+
   window.addEventListener("scroll", handleScroll);
 });
 
 onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);
+  systemThemeQuery?.removeEventListener("change", handleSystemThemeChange);
+  themeObserver?.disconnect();
 });
 
 const navigationItems = computed(() => [
@@ -59,6 +88,14 @@ const dashboardRoute = computed(() => {
       return null;
   }
 });
+
+const resolvedTheme = computed(() =>
+  currentTheme.value === "system" ? systemTheme.value : currentTheme.value,
+);
+
+const isNavbarSolid = computed(
+  () => isScrolled.value || Boolean(route.meta.navbarSolid),
+);
 
 const userLabel = computed(() => {
   return (
@@ -102,7 +139,7 @@ watch(
   <header
     :class="[
       'fixed top-0 z-50 w-full transition-all duration-300',
-      isScrolled
+      isNavbarSolid
         ? 'border-b border-(--color-border) bg-(--color-surface)/90 backdrop-blur-xl py-3'
         : 'bg-transparent border-b border-white/10 py-6',
     ]"
@@ -115,15 +152,21 @@ watch(
         class="flex shrink-0 items-center gap-2 text-(--color-text) transition hover:text-(--color-primary)"
       >
         <img
-          :src="logoUrl"
+          v-if="resolvedTheme === 'dark' || !isNavbarSolid"
+          :src="darkModeLogo"
           alt="Srokyerng Booking"
-          class="h-10 w-auto object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
-          :class="!isScrolled ? 'brightness-0 invert' : 'dark:brightness-200'"
+          class="h-10 w-auto object-contain brightness-200"
+        />
+        <img
+          v-else
+          :src="lightModeLogo"
+          alt="Srokyerng Booking"
+          class="h-10 w-auto object-contain"
         />
         <span
           class="font-kantumruy text-xl font-extrabold tracking-wider leading-none self-center"
           :class="
-            !isScrolled
+            !isNavbarSolid
               ? 'text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]'
               : 'text-(--color-text)'
           "
@@ -134,7 +177,7 @@ watch(
       <nav
         class="hidden items-center gap-1 rounded-full border p-1 lg:flex mx-4"
         :class="
-          isScrolled
+          isNavbarSolid
             ? 'border-(--color-border) bg-(--color-surface-soft)'
             : '!border-white/20 !bg-white/10 backdrop-blur-md'
         "
@@ -146,10 +189,10 @@ watch(
           class="rounded-full px-5 py-2 text-sm font-medium transition-all"
           :class="[
             isActiveRoute(item.to.name)
-              ? isScrolled
+              ? isNavbarSolid
                 ? 'bg-(--color-surface) !text-(--color-primary)'
                 : '!bg-white/20 !text-white'
-              : isScrolled
+              : isNavbarSolid
                 ? '!text-(--color-muted) hover:!text-(--color-text)'
                 : '!text-white/80 hover:!text-white',
             locale === 'km' ? 'font-kantumruy text-[15px]' : 'font-sans',
@@ -165,7 +208,7 @@ watch(
           @click="toggleTheme"
           :class="[
             'h-9 w-9 flex items-center justify-center rounded-full transition',
-            !isScrolled
+            !isNavbarSolid
               ? 'text-white hover:bg-white/10'
               : 'text-(--color-muted) hover:bg-(--color-surface-soft)',
           ]"
@@ -224,7 +267,7 @@ watch(
         <LanguageToggle />
 
         <div
-          v-if="!isScrolled"
+          v-if="!isNavbarSolid"
           class="inline-flex rounded-full border-white/20 bg-white/10 backdrop-blur-md p-1"
         >
           <button
@@ -293,7 +336,7 @@ watch(
               variant="ghost"
               size="sm"
               :class="
-                !isScrolled
+                !isNavbarSolid
                   ? '!text-white hover:!bg-white/10 !rounded-full'
                   : '!rounded-full'
               "
@@ -309,7 +352,7 @@ watch(
               size="sm"
               :class="[
                 '!rounded-full',
-                !isScrolled
+                !isNavbarSolid
                   ? 'bg-white/20 !text-white !border-white/20 hover:bg-white/30 hover:border-white/30'
                   : '',
               ]"
@@ -353,7 +396,7 @@ watch(
     >
       <div class="mx-auto max-w-7xl space-y-5 px-4 py-5 sm:px-6">
         <div class="flex flex-wrap gap-2">
-          <ThemeToggle v-if="isScrolled" />
+          <ThemeToggle v-if="isNavbarSolid" />
           <LanguageToggle />
         </div>
 

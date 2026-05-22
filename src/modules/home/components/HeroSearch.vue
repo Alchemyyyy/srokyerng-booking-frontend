@@ -12,7 +12,8 @@
         class="absolute inset-0 backdrop-blur-[2px]"
         style="
           background: linear-gradient(
-            135deg,
+            /* 135deg, */ to bottom,
+            rgba(6, 41, 105, 0.85) 0%,
             rgba(41, 111, 166, 0.8),
             rgba(41, 111, 166, 0.3),
             rgba(0, 0, 0, 0.5)
