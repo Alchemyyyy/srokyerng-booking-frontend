@@ -1,4 +1,4 @@
-import OwnerDashboardView from "@/modules/owner/pages/OwnerDashboardView.vue";
+import AnalyticsDashboardView from "@/modules/owner/pages/AnalyticsDashboardView.vue";
 import OwnerPaymentAccountsView from "@/modules/payments/pages/OwnerPaymentAccountsView.vue";
 import MyPropertiesView from "@/modules/properties/pages/OwnerPropertiesView.vue";
 import OwnerReservationsView from "@/modules/reservations/pages/OwnerReservationsView.vue";
@@ -8,7 +8,7 @@ export const ownerRoutes = [
   {
     path: "",
     name: "dashboard",
-    component: OwnerDashboardView,
+    component: AnalyticsDashboardView,
   },
   {
     path: "properties",

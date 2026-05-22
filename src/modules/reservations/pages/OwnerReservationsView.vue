@@ -11,6 +11,7 @@ const reservationColumns = ref([
   { key: 'id', label: 'Booking ID' },
   { key: 'guestName', label: 'Guest' },
   { key: 'propertyName', label: 'Property' },
+  { key: 'amount', label: 'Amount' },
   { key: 'checkIn', label: 'Date' },
   { key: 'status', label: 'Status' },
 ]);
@@ -55,6 +56,11 @@ onMounted(fetchReservations);
           <span class="font-bold">{{ value }}</span>
         </template>
 
+        <!-- Customizing the 'Amount' cell -->
+        <template #cell-amount="{ value }">
+          <span class="font-bold">${{ value }}</span>
+        </template>
+
         <!-- Customizing the 'Status' cell using design tokens -->
         <template #cell-status="{ value }">
           <span :class="['status-badge', `status-${value}`]">
@@ -70,6 +76,8 @@ onMounted(fetchReservations);
           </div>
         </template>
       </AppTable>
+
+      
     </section>
   </main>
 </template>

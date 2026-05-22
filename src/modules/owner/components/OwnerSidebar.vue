@@ -32,9 +32,15 @@ const isActive = (path) => route.path === path;
     <aside
         class="flex h-screen w-64 flex-col border-r border-(--color-border) bg-(--color-surface) transition-colors duration-300 fixed top-0 left-0 z-20">
         <!-- Logo -->
-        <div class="flex h-30 items-center justify-center border-b border-(--color-border) px-6">
+        <div class="flex flex-col h-40 items-center justify-center border-b border-(--color-border) px-6 gap-3">
             <img v-if="currentTheme === 'dark'" :src="logoDark" class="h-20 w-auto brightness-200" />
             <img v-else :src="logoLight" class="h-20 w-auto" />
+            <span class="font-kantumruy text-xl font-extrabold tracking-wider leading-none self-center" :class="currentTheme === 'dark'
+                ? 'text-(--color-primary) drop-shadow-[0_2px_12px_rgba(37,117,230,0.4)] brightness-125'
+                : 'text-(--color-primary) drop-shadow-[0_2px_12px_rgba(37,117,230,0.4)]'
+                ">
+                ស្រុកយើង
+            </span>
         </div>
 
         <!-- Navigation -->
@@ -45,7 +51,8 @@ const isActive = (path) => route.path === path;
                     ? 'bg-(--color-primary-soft) text-(--color-primary-strong)'
                     : 'text-(--color-muted) hover:bg-(--color-surface-soft) hover:text-(--color-text)',
             ]">
-                <span class="mr-3 text-lg flex items-center text-(--color-warning)">
+                <span
+                    class="mr-3 text-lg flex items-center text-(--color-primary) bg-(--color-primary-soft) rounded-xl p-2">
                     <component :is="item.icon" class="h-5 w-5" aria-hidden="true" />
                 </span>
 
