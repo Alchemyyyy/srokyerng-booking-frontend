@@ -3,6 +3,7 @@ import OwnerPaymentAccountsView from "@/modules/payments/pages/OwnerPaymentAccou
 import MyPropertiesView from "@/modules/properties/pages/OwnerPropertiesView.vue";
 import OwnerReservationsView from "@/modules/reservations/pages/OwnerReservationsView.vue";
 import ManageRoomsView from "@/modules/rooms/pages/ManageRoomsView.vue";
+import AmenityManagementView from "@/modules/amenities/pages/AmenityManagementView.vue";
 
 export const ownerRoutes = [
   {
@@ -30,4 +31,14 @@ export const ownerRoutes = [
     name: "paymentAccounts",
     component: OwnerPaymentAccountsView,
   },
+{
+  path: "amenities",
+  name: "amenities",
+  component: AmenityManagementView,
+},
+{
+  path: "amenities/:id",
+  name: "propertyAmenities",
+  component: AmenityManagementView,
+}
 ];
