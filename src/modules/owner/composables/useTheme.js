@@ -1,6 +1,6 @@
 import { ref } from "vue";
 
-// 👇 IMPORTANT: outside function = shared state (singleton)
+// IMPORTANT: outside function = shared state (singleton)
 const currentTheme = ref(localStorage.getItem("srokyerng_theme") || "light");
 
 const applyTheme = (theme) => {
