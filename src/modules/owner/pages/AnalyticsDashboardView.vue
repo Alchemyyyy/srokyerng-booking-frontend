@@ -11,6 +11,8 @@ import AnalyticsDashboardTopbar from '@/modules/owner/components/analytics/Analy
 import AnalyticsDashboardTrafficSection from '@/modules/owner/components/analytics/AnalyticsDashboardTrafficSection.vue';
 import { useAnalyticsDashboardStore } from '@/modules/owner/store/AnalyticsDashboardStore';
 
+import { useSidebar } from '@/shared/composables/useSidebar';
+
 const dashboardStore = useAnalyticsDashboardStore();
 const {
     loading,
@@ -37,10 +39,13 @@ const {
 } = storeToRefs(dashboardStore);
 
 const { fetchDashboardData, formatMoney, formatDate, barHeightStyle } = dashboardStore;
+
+const { isSidebarOpen } = useSidebar();
+
 </script>
 
 <template>
-    <main class="owner-dashboard my-25">
+    <main class="owner-dashboard my-25 transition-all duration-300" :class="isSidebarOpen ? 'ml-64' : 'ml-20'">
         <AnalyticsDashboardState v-if="loading" loading />
         <AnalyticsDashboardState v-else-if="error" :error="error" @retry="fetchDashboardData" />
 

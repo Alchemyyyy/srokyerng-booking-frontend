@@ -1,13 +1,13 @@
 <script setup>
-import OwnerHeader from '@/modules/owner/components/OwnerHeader.vue';
-import OwnerSidebar from '@/modules/owner/components/OwnerSidebar.vue';
+import OwnerHeader from '@/modules/owner/components/layout/OwnerHeader.vue';
+import OwnerSidebar from '@/modules/owner/components/layout/OwnerSidebar.vue';
 </script>
 
 <template>
   <OwnerHeader />
   <OwnerSidebar />
 
-  <main class="ml-64 px-8">
+  <main class="px-8">
     <RouterView />
   </main>
 </template>
