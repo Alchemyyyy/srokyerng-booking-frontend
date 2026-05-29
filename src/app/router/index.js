@@ -13,8 +13,8 @@ import { ownerRoutes } from "@/modules/owner/routes";
 import { propertyRoutes } from "@/modules/properties/routes";
 import { reservationRoutes } from "@/modules/reservations/routes";
 import { staticRoutes } from "@/modules/static/routes";
-
 import { ROLES } from "@/shared/constants/roles";
+import { reviewRoutes } from "@/modules/reviews/routes";
 
 const withNamePrefix = (routes, prefix) =>
   routes.map((route) => ({
@@ -45,6 +45,7 @@ const router = createRouter({
       children: [
         { path: "", redirect: { name: "customer.reservations" } },
         ...withNamePrefix(reservationRoutes, "customer"),
+        ...withNamePrefix(reviewRoutes, "customer"),
       ],
     },
     {
