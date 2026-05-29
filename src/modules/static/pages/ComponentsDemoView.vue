@@ -5,6 +5,7 @@ import AppButton from "@/shared/components/AppButton.vue";
 import AppInput from "@/shared/components/AppInput.vue";
 import AppModal from "@/shared/components/AppModal.vue";
 import AppTable from "@/shared/components/AppTable.vue";
+import AppTextarea from "@/shared/components/AppTextarea.vue";
 import EmptyState from "@/shared/components/EmptyState.vue";
 import LoadingSpinner from "@/shared/components/LoadingSpinner.vue";
 import LanguageToggle from "@/shared/components/LanguageToggle.vue";
@@ -12,6 +13,7 @@ import ThemeToggle from "@/shared/components/ThemeToggle.vue";
 
 const isModalOpen = ref(false);
 const destination = ref("Siem Reap");
+const notes = ref("");
 
 const columns = [
   { key: "property", label: "Property" },
@@ -107,6 +109,12 @@ const statusClass = (status) => {
             label="Check-in date"
             type="date"
             error="Please choose a valid date."
+          />
+          <AppTextarea
+            id="notes"
+            v-model="notes"
+            label="Notes"
+            placeholder="Add reservation notes"
           />
         </div>
       </article>

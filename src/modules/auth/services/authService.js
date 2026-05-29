@@ -1,15 +1,47 @@
-import api from "@/shared/services/api";
+import { authApi } from "@/modules/auth/api/auth.api";
 
 export const authService = {
   register(payload) {
-    return api.post("/auth/register", payload);
+    return authApi.register(payload);
   },
 
   login(payload) {
-    return api.post("/auth/login", payload);
+    return authApi.login(payload);
   },
 
-  getMe() {
-    return api.get("/auth/me");
+  refreshToken() {
+    return authApi.refreshToken();
+  },
+
+  logout() {
+    return authApi.logout();
+  },
+
+  logoutAll() {
+    return authApi.logoutAll();
+  },
+
+  forgotPassword(payload) {
+    return authApi.forgotPassword(payload);
+  },
+
+  resetPassword(payload) {
+    return authApi.resetPassword(payload);
+  },
+
+  verifyEmail(payload) {
+    return authApi.verifyEmail(payload);
+  },
+
+  resendVerificationEmail() {
+    return authApi.resendVerificationEmail();
+  },
+
+  getSessions() {
+    return authApi.getSessions();
+  },
+
+  revokeSession(sessionId) {
+    return authApi.revokeSession(sessionId);
   },
 };

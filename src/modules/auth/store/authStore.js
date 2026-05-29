@@ -1,66 +1,124 @@
 import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 import { authService } from "@/modules/auth/services/authService";
-import { authStorage } from "@/shared/services/authStorage";
+import { setAccessToken, setAuthHandlers } from "@/app/api/http";
 
 export const useAuthStore = defineStore("auth", () => {
-  const token = ref(authStorage.getToken());
-  const user = ref(authStorage.getUser());
+  const accessToken = ref(null);
+  const user = ref(null);
+  const initialized = ref(false);
   const loading = ref(false);
   const error = ref(null);
 
-  const isAuthenticated = computed(() => Boolean(token.value));
+  const isAuthenticated = computed(() => Boolean(accessToken.value && user.value));
+  const isAdmin = computed(() => user.value?.role === "admin");
+  const isOwner = computed(() => user.value?.role === "owner");
+  const isCustomer = computed(() => user.value?.role === "customer");
 
-  const persistSession = (data) => {
-    token.value = data.token;
+  const setSession = (data) => {
+    accessToken.value = data.access_token;
     user.value = data.user;
-    authStorage.setSession(data);
+    setAccessToken(data.access_token);
+  };
+
+  const clearSession = () => {
+    accessToken.value = null;
+    user.value = null;
+    setAccessToken(null);
+  };
+
+  const runWithLoading = async (callback, fallbackMessage) => {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      return await callback();
+    } catch (requestError) {
+      error.value = requestError.message || fallbackMessage;
+      throw requestError;
+    } finally {
+      loading.value = false;
+    }
   };
 
   const login = async (payload) => {
-    loading.value = true;
-    error.value = null;
-
-    try {
+    return runWithLoading(async () => {
       const response = await authService.login(payload);
-      persistSession(response.data);
+      setSession(response.data);
+      initialized.value = true;
       return response.data.user;
-    } catch (requestError) {
-      error.value = requestError.message || "Login failed";
-      throw requestError;
-    } finally {
-      loading.value = false;
-    }
+    }, "Login failed");
   };
 
   const register = async (payload) => {
-    loading.value = true;
-    error.value = null;
+    return runWithLoading(async () => authService.register(payload), "Registration failed");
+  };
 
+  const refreshSession = async () => {
     try {
-      return await authService.register(payload);
-    } catch (requestError) {
-      error.value = requestError.message || "Registration failed";
-      throw requestError;
-    } finally {
-      loading.value = false;
+      const response = await authService.refreshToken();
+      setSession(response.data);
+      return response.data.user;
+    } catch (refreshError) {
+      clearSession();
+      throw refreshError;
     }
   };
 
-  const logout = () => {
-    token.value = null;
-    user.value = null;
-    authStorage.clearSession();
+  const restoreSession = async () => {
+    if (initialized.value) {
+      return user.value;
+    }
+
+    try {
+      return await refreshSession();
+    } catch {
+      return null;
+    } finally {
+      initialized.value = true;
+    }
   };
 
+  const logout = async () => {
+    try {
+      await authService.logout();
+    } finally {
+      clearSession();
+      initialized.value = true;
+    }
+  };
+
+  const logoutAll = async () => {
+    try {
+      await authService.logoutAll();
+    } finally {
+      clearSession();
+      initialized.value = true;
+    }
+  };
+
+  setAuthHandlers({
+    refresh: refreshSession,
+    logout: clearSession,
+  });
+
   return {
-    token,
+    accessToken,
     user,
+    initialized,
     loading,
     error,
     isAuthenticated,
+    isAdmin,
+    isOwner,
+    isCustomer,
+    setSession,
+    clearSession,
     login,
     register,
+    refreshSession,
+    restoreSession,
     logout,
+    logoutAll,
   };
 });

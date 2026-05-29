@@ -1,8 +1,9 @@
 import { useAuthStore } from "@/modules/auth/store/authStore";
 
 export const registerRouteGuards = (router) => {
-  router.beforeEach((to) => {
+  router.beforeEach(async (to) => {
     const authStore = useAuthStore();
+    await authStore.restoreSession();
 
     if (to.meta.publicOnly && authStore.isAuthenticated) {
       return { name: "public.properties" };
