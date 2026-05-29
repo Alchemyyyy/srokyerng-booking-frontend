@@ -275,12 +275,12 @@ defineProps({
 }
 
 .bar-stack {
-    width: 100%;
+    width: 60%;
     height: 260px;
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    gap: 0.6rem;
+    gap: 1.8rem;
 }
 
 .bar {

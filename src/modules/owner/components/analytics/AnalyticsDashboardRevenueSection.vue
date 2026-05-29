@@ -416,12 +416,12 @@ const emit = defineEmits(['update:modelValue']);
 }
 
 .paired-bars {
-    width: 100%;
+    width: 60%;
     height: 280px;
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    gap: 0.8rem;
+    gap: 1.8rem;
 }
 
 .paired-bar {

@@ -152,6 +152,71 @@
         ],
         "lastUpdated": "2026-05-10T10:00:00Z"
     },
+    "admin": {
+        "pending": {
+            "propertyApprovals": 2,
+            "paymentVerifications": 3
+        },
+        "recentPayments": [
+            {
+                "id": "pay-2001",
+                "reservationId": "res-1002",
+                "payerName": "Elena Smith",
+                "method": "ABA Transfer",
+                "amount": 850,
+                "submittedAt": "2026-05-25T09:48:00Z",
+                "status": "pending"
+            },
+            {
+                "id": "pay-2002",
+                "reservationId": "res-1003",
+                "payerName": "Vannak Khem",
+                "method": "Wing",
+                "amount": 380,
+                "submittedAt": "2026-05-24T18:20:00Z",
+                "status": "verified"
+            },
+            {
+                "id": "pay-2003",
+                "reservationId": "res-1005",
+                "payerName": "Anna Lee",
+                "method": "Credit Card",
+                "amount": 1200,
+                "submittedAt": "2026-05-24T14:05:00Z",
+                "status": "pending"
+            }
+        ],
+        "users": [
+            {
+                "id": "user-001",
+                "fullName": "Sok Visal",
+                "email": "visal@srokyerng.test",
+                "role": "admin",
+                "status": "active"
+            },
+            {
+                "id": "user-002",
+                "fullName": "Elena Smith",
+                "email": "elena@srokyerng.test",
+                "role": "customer",
+                "status": "active"
+            },
+            {
+                "id": "user-003",
+                "fullName": "Kampot Garden Villa",
+                "email": "owner-kampot@srokyerng.test",
+                "role": "owner",
+                "status": "active"
+            },
+            {
+                "id": "user-004",
+                "fullName": "Vannak Khem",
+                "email": "vannak@srokyerng.test",
+                "role": "customer",
+                "status": "suspended"
+            }
+        ]
+    },
     "properties": [
         {
             "id": "prop-01",

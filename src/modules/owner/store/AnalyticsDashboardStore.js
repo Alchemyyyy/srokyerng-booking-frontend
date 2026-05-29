@@ -253,7 +253,7 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
         if (dashboardData.value.paymentStatus && !dashboardData.value.paymentStatus.isComplete) {
             feed.push({
                 icon: ExclamationTriangleIcon,
-                bg: '#FAEEDA',
+                bg: 'var(--color-warning-soft)',
                 title: 'Payment account setup is incomplete',
                 time: 'Needs attention',
                 amount: 'Pending',
@@ -264,7 +264,7 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
         reservations.slice(0, 3).forEach((reservation) => {
             feed.push({
                 icon: DocumentTextIcon,
-                bg: '#E6F1FB',
+                bg: 'var(--color-primary-soft)',
                 title: `${reservation.guestName} booked ${reservation.propertyName}`,
                 time: formatDate(reservation.checkIn),
                 amount: formatMoney(reservation.amount || 0),
@@ -275,7 +275,7 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
         properties.slice(0, 2).forEach((property) => {
             feed.push({
                 icon: property.status === 'Approved' ? CheckCircleIcon : ClockIcon,
-                bg: property.status === 'Approved' ? '#E1F5EE' : '#FAEEDA',
+                bg: property.status === 'Approved' ? 'var(--color-success-soft)' : 'var(--color-warning-soft)',
                 title: `${property.name} is ${property.status.toLowerCase()}`,
                 time: property.location,
                 amount: formatMoney(property.revenue || 0),
