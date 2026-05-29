@@ -1,4 +1,4 @@
-import api from "@/shared/services/api";
+import api from "@/app/api/http";
 
 // CREATE
 export const createReview = async (
