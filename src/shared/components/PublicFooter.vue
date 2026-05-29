@@ -107,7 +107,7 @@ const socialLinks = [
                 :to="link.to"
                 class="text-sm text-(--color-muted) transition hover:text-(--color-primary)"
               >
-                {{ t(link.label) }}
+                {{ link.label }}
               </RouterLink>
             </li>
           </ul>
