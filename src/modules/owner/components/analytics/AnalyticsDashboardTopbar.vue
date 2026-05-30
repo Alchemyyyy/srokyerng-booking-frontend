@@ -1,33 +1,42 @@
 <script setup>
+import { ChevronDownIcon } from '@heroicons/vue/24/outline';
+
 defineProps({
-    tabs: {
+    yearOptions: {
         type: Array,
         default: () => [],
     },
-    activeTab: {
-        type: String,
-        default: 'overview',
+    selectedYear: {
+        type: [Number, String],
+        default: '',
     },
 });
 
-const emit = defineEmits(['update:activeTab']);
+const emit = defineEmits(['update:selectedYear']);
 </script>
 
 <template>
     <header class="topbar">
         <div>
-            <p class="eyebrow">May 2026 · Live data</p>
+            <p class="eyebrow">Yearly data · Live data</p>
             <h1 class="text-3xl font-semibold text-(--color-text)">Analytics Dashboard</h1>
-            <p class="topbar-subtitle">Track revenue, booking traffic, and property performance from one place.</p>
+            <p class="topbar-subtitle">Track revenue, booking traffic, and property performance by year.</p>
         </div>
 
         <div class="topbar-actions">
-            <nav class="tabs" aria-label="Dashboard sections">
-                <button v-for="tab in tabs" :key="tab.key" type="button" class="tab"
-                    :class="{ active: activeTab === tab.key }" @click="emit('update:activeTab', tab.key)">
-                    {{ tab.label }}
-                </button>
-            </nav>
+            <label class="year-picker" v-if="yearOptions.length > 0">
+                <p class="year-picker__label">Year</p>
+                <div class="year-picker__wrapper">
+                    <select class="year-picker__select" :value="selectedYear"
+                        @change="emit('update:selectedYear', Number($event.target.value))">
+                        <option v-for="year in yearOptions" :key="year" :value="year">
+                            {{ year }}
+                        </option>
+                    </select>
+
+                    <ChevronDownIcon class="year-picker__icon" />
+                </div>
+            </label>
         </div>
     </header>
 </template>
@@ -45,6 +54,7 @@ const emit = defineEmits(['update:activeTab']);
     text-transform: uppercase;
     letter-spacing: 0.12em;
     font-size: 0.72rem;
+    font-weight: 500;
     color: var(--color-muted);
 }
 
@@ -62,29 +72,72 @@ const emit = defineEmits(['update:activeTab']);
     align-items: center;
 }
 
-.tabs {
-    display: flex;
-    gap: 0.35rem;
-    padding: 0.35rem;
-    border-radius: 999px;
-    border: 1px solid var(--color-border);
-    background: var(--color-surface-soft);
+.year-picker {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 8.5rem;
 }
 
-.tab {
-    border: 0;
-    padding: 0.55rem 1rem;
-    border-radius: 999px;
-    background: transparent;
+.year-picker__label {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.72rem;
+    font-weight: 500;
     color: var(--color-muted);
-    cursor: pointer;
-    font-weight: 600;
 }
 
-.tab.active {
+.year-picker__wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.year-picker__select {
+    width: 100%;
+
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    border: 1px solid var(--color-border);
+    border-radius: 14px;
+
     background: var(--color-surface);
     color: var(--color-text);
+
+    padding: 0.7rem 2.8rem 0.7rem 0.9rem;
+
+    font: inherit;
+    font-weight: 600;
+
     box-shadow: var(--shadow-card);
+    outline: none;
+
+    cursor: pointer;
+}
+
+.year-picker__select:focus {
+    border-color: var(--color-primary);
+    box-shadow:
+        0 0 0 3px color-mix(in srgb,
+            var(--color-primary) 18%,
+            transparent),
+        var(--shadow-card);
+}
+
+.year-picker__icon {
+    position: absolute;
+    right: 0.9rem;
+    top: 50%;
+
+    width: 16px;
+    height: 16px;
+
+    transform: translateY(-50%);
+
+    color: var(--color-muted);
+
+    pointer-events: none;
 }
 
 @media (max-width: 1100px) {
@@ -100,10 +153,6 @@ const emit = defineEmits(['update:activeTab']);
 @media (max-width: 760px) {
     .topbar-actions {
         align-items: flex-start;
-    }
-
-    .tabs {
-        flex-wrap: wrap;
     }
 }
 </style>

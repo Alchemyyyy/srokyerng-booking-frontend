@@ -2,72 +2,72 @@ import { ref } from 'vue';
 
 const THEME_KEY = 'srokyerng_theme';
 
-const currentTheme = ref(
-    localStorage.getItem(THEME_KEY) || 'system'
-);
+const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-// actual applied theme
-const resolvedTheme = ref('light');
-
-const mediaQuery = window.matchMedia(
-    '(prefers-color-scheme: dark)'
-);
-
-const applyTheme = (theme) => {
-    // system mode
-    if (theme === 'system') {
-        resolvedTheme.value =
-            mediaQuery.matches
-                ? 'dark'
-                : 'light';
-
-        document.documentElement.setAttribute(
-            'data-theme',
-            resolvedTheme.value
-        );
-
-        return;
+const getAppliedTheme = () => {
+    if (typeof document === 'undefined') {
+        return 'light';
     }
 
-    // manual mode
-    resolvedTheme.value = theme;
+    const theme = document.documentElement.getAttribute('data-theme');
 
-    document.documentElement.setAttribute(
-        'data-theme',
-        theme
-    );
+    if (theme === 'dark' || theme === 'light') {
+        return theme;
+    }
+
+    return mediaQuery.matches ? 'dark' : 'light';
+};
+
+const currentTheme = ref(localStorage.getItem(THEME_KEY) || 'system');
+const resolvedTheme = ref(getAppliedTheme());
+
+const syncThemeFromDocument = () => {
+    resolvedTheme.value = getAppliedTheme();
+};
+
+const applyTheme = (theme) => {
+    if (theme === 'system') {
+        resolvedTheme.value = mediaQuery.matches ? 'dark' : 'light';
+        document.documentElement.removeAttribute('data-theme');
+    } else {
+        resolvedTheme.value = theme;
+        document.documentElement.setAttribute('data-theme', theme);
+    }
+
+    currentTheme.value = theme;
 };
 
 const setTheme = (theme) => {
-    currentTheme.value = theme;
-
-    localStorage.setItem(
-        THEME_KEY,
-        theme
-    );
-
+    localStorage.setItem(THEME_KEY, theme);
     applyTheme(theme);
 };
 
 const toggleTheme = () => {
-    setTheme(
-        resolvedTheme.value === 'dark'
-            ? 'light'
-            : 'dark'
-    );
+    setTheme(resolvedTheme.value === 'dark' ? 'light' : 'dark');
 };
 
-// auto detect OS theme change
-mediaQuery.addEventListener(
-    'change',
-    () => {
-        if (currentTheme.value === 'system') {
-            applyTheme('system');
-        }
+mediaQuery.addEventListener('change', () => {
+    if (currentTheme.value === 'system') {
+        syncThemeFromDocument();
     }
-);
+});
 
-// initial load
+if (typeof window !== 'undefined') {
+    const themeObserver = new MutationObserver(syncThemeFromDocument);
+
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+    });
+
+    window.addEventListener('storage', (event) => {
+        if (event.key === THEME_KEY) {
+            currentTheme.value = localStorage.getItem(THEME_KEY) || 'system';
+            syncThemeFromDocument();
+        }
+    });
+}
+
 applyTheme(currentTheme.value);
 
 export function useTheme() {
@@ -75,6 +75,6 @@ export function useTheme() {
         currentTheme,
         resolvedTheme,
         setTheme,
-        toggleTheme
+        toggleTheme,
     };
 }

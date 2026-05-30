@@ -3,7 +3,10 @@ import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 
 import ThemeToggle from './ThemeToggle1.vue';
+import LanguageToggle from './LanguageToggle.vue';
 import { useSidebar } from '@/shared/composables/useSidebar';
+
+import { MagnifyingGlassIcon, BellIcon, ChevronRightIcon } from '@heroicons/vue/24/outline';
 
 defineProps({
     showSearch: {
@@ -58,10 +61,7 @@ const { isSidebarOpen } = useSidebar();
                 Home
             </span>
 
-            <svg class="w-3.5 h-3.5 text-(--color-muted) shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                stroke-width="2">
-                <path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
+            <ChevronRightIcon class="w-3.5 h-3.5 text-(--color-muted) shrink-0" />
 
             <span class="font-semibold text-(--color-text) truncate">
                 {{ routeLabel }}
@@ -75,11 +75,7 @@ const { isSidebarOpen } = useSidebar();
                    hover:border-(--color-primary)
                    hover:text-(--color-primary)
                    transition-all duration-200">
-            <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8" />
-
-                <path d="M21 21l-4.35-4.35" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
+            <MagnifyingGlassIcon class="w-3.5 h-3.5 shrink-0" />
 
             <span>Search…</span>
 
@@ -97,21 +93,22 @@ const { isSidebarOpen } = useSidebar();
                    hover:border-(--color-primary)
                    hover:text-(--color-primary)
                    transition-all duration-200">
-            <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" stroke-linecap="round" stroke-linejoin="round" />
+            <BellIcon class="w-4.5 h-4.5" />
 
-                <path d="M13.73 21a2 2 0 01-3.46 0" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-
-            <span class="absolute top-1.5 right-2 w-1.5 h-1.5 rounded-full bg-(--color-danger)" />
+            <span class="absolute top-1.5 right-2 w-1.5 h-1.5 rounded-full bg-(--color-danger)"></span>
         </button>
 
-        <div class="h-5 w-px bg-(--color-border)" />
+        <div class="h-5 w-px bg-(--color-border)"></div>
+
+        <!-- Language -->
+        <LanguageToggle />
+
+        <div class="h-5 w-px bg-(--color-border)"></div>
 
         <!-- Theme -->
         <ThemeToggle />
 
-        <div class="h-5 w-px bg-(--color-border)" />
+        <div class="h-5 w-px bg-(--color-border)"></div>
 
         <!-- Profile -->
         <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center shrink-0
