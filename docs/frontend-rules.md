@@ -7,8 +7,9 @@ These rules keep the Vue codebase consistent while multiple teammates work in pa
 - Put route-level screens in `src/modules/<module>/pages`.
 - Put feature-specific UI in `src/modules/<module>/components`.
 - Put reusable UI in `src/shared/components`.
-- Put API calls in module `services` files.
-- Put app-wide low-level services in `src/shared/services`.
+- Put backend endpoint wrappers in `src/modules/<module>/api`.
+- Put module orchestration helpers in `src/modules/<module>/services` only when needed.
+- Put app-wide low-level API/http clients in shared/app service folders.
 - Put module route definitions in `src/modules/<module>/routes.js`.
 - Keep `src/app/router/index.js` focused on combining module routes.
 
@@ -18,14 +19,17 @@ These rules keep the Vue codebase consistent while multiple teammates work in pa
 - App-level guards belong in `src/app/router/guards.js`.
 - The main router imports and combines module route arrays.
 - Layout parents live in `src/app/router/index.js`.
+- Scaffold route files may export empty arrays until pages are ready.
+- Do not wire unfinished route arrays into `src/app/router/index.js` unless they point to safe placeholder pages.
 - Route names are prefixed by layout area, for example `public.login` and `admin.dashboard`.
 - Protected routes must use `meta.requiresAuth`.
 - Role-protected routes must use role constants from `src/shared/constants/roles.js`.
 
 ## API Calls
 
-- Use `src/shared/services/api.js` for backend requests.
+- Use the shared HTTP/API client for backend requests.
 - Do not create raw Axios instances inside modules.
+- Module API files should export a named API object, for example `propertyApi` or `wishlistApi`.
 - Keep endpoint paths aligned with backend route names.
 - Let the API client attach the auth token.
 
@@ -57,3 +61,4 @@ These rules keep the Vue codebase consistent while multiple teammates work in pa
 - Empty files are intentional placeholders only during early scaffold work.
 - Replace placeholders with real implementation when a module becomes active.
 - Do not delete scaffold files without checking module ownership.
+- Keep module README files updated when a module has special route ownership or integration rules.
