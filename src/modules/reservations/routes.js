@@ -1,5 +1,8 @@
 import ComingSoonView from "@/shared/components/ComingSoonView.vue";
 import { ROLES } from "@/shared/constants/roles";
+import BookingHistoryView from "./pages/BookingHistoryView.vue";
+import BookingDetailView from "./pages/BookingDetailView.vue";
+import BookingCreateView from "./pages/BookingCreateView.vue";
 
 export const reservationRoutes = [
   {
@@ -7,6 +10,24 @@ export const reservationRoutes = [
     name: "reservations",
     component: ComingSoonView,
     props: { title: "My Reservations" },
+    meta: { requiresAuth: true, roles: [ROLES.CUSTOMER] },
+  },
+  {
+    path: "booking-history",
+    name: "booking-history",
+    component: BookingHistoryView,
+    meta: { requiresAuth: true, roles: [ROLES.CUSTOMER] },
+  },
+  {
+    path: "booking/:id",
+    name: "booking-detail",
+    component: BookingDetailView,
+    meta: { requiresAuth: true, roles: [ROLES.CUSTOMER] },
+  },
+  {
+    path: "booking/create",
+    name: "booking-create",
+    component: BookingCreateView,
     meta: { requiresAuth: true, roles: [ROLES.CUSTOMER] },
   },
 ];
