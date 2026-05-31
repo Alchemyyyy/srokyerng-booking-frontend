@@ -1,5 +1,6 @@
 import SearchView from "@/modules/properties/pages/SearchView.vue";
 import PropertyDetailView from "./pages/PropertyDetailView.vue";
+import PropertyRoomsView from "../rooms/pages/PropertyRoomsView.vue";
 
 export const propertyRoutes = [
   {
@@ -13,4 +14,5 @@ export const propertyRoutes = [
     component: PropertyDetailView,
     meta: { navbarSolid: true },
   },
+  { path: "properties/:propertyId/rooms", component: PropertyRoomsView },
 ];

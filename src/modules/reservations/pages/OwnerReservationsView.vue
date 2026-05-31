@@ -1,19 +1,19 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import AppTable from '@/shared/components/AppTable.vue';
+import { ref, onMounted } from "vue";
+import AppTable from "@/shared/components/AppTable.vue";
 
-import '@/assets/styles/variables.css';
+import "@/assets/styles/variables.css";
 
 const loading = ref(true);
 const error = ref(null);
 const recentReservations = ref([]);
 const reservationColumns = ref([
-  { key: 'id', label: 'Booking ID' },
-  { key: 'guestName', label: 'Guest' },
-  { key: 'propertyName', label: 'Property' },
-  { key: 'amount', label: 'Amount' },
-  { key: 'checkIn', label: 'Date' },
-  { key: 'status', label: 'Status' },
+  { key: "id", label: "Booking ID" },
+  { key: "guestName", label: "Guest" },
+  { key: "propertyName", label: "Property" },
+  { key: "amount", label: "Amount" },
+  { key: "checkIn", label: "Date" },
+  { key: "status", label: "Status" },
 ]);
 
 const fetchReservations = async () => {
@@ -21,7 +21,7 @@ const fetchReservations = async () => {
   error.value = null;
 
   try {
-    const response = await fetch('/data.json');
+    const response = await fetch("/data.json");
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -29,8 +29,9 @@ const fetchReservations = async () => {
     const data = await response.json();
     recentReservations.value = data.recentReservations || [];
   } catch (err) {
-    error.value = 'Failed to load reservations data. Ensure data.json is present.';
-    console.error('Reservations Fetch Error:', err);
+    error.value =
+      "Failed to load reservations data. Ensure data.json is present.";
+    console.error("Reservations Fetch Error:", err);
   } finally {
     loading.value = false;
   }
@@ -42,8 +43,12 @@ onMounted(fetchReservations);
 <template>
   <main class="owner-reservations mt-25">
     <header class="mb-8">
-      <h1 class="text-3xl font-semibold text-(--color-text)">Reservations Summary</h1>
-      <p class="mt-2 text-(--color-muted)">Recent reservations for your properties.</p>
+      <h1 class="text-3xl font-semibold text-(--color-text)">
+        Reservations Summary
+      </h1>
+      <p class="mt-2 text-(--color-muted)">
+        Recent reservations for your properties.
+      </p>
     </header>
 
     <section class="reservations-list">
@@ -51,7 +56,12 @@ onMounted(fetchReservations);
         No recent reservations found.
       </div>
 
-      <AppTable v-else class="data-table" :columns="reservationColumns" :rows="recentReservations">
+      <AppTable
+        v-else
+        class="data-table"
+        :columns="reservationColumns"
+        :rows="recentReservations"
+      >
         <template #cell-guestName="{ value }">
           <span class="font-bold">{{ value }}</span>
         </template>
@@ -72,12 +82,12 @@ onMounted(fetchReservations);
         <template #cell-checkIn="{ row }">
           <div class="flex flex-col">
             <span>{{ row.checkIn }}</span>
-            <span class="text-xs text-(--color-muted)">to {{ row.checkOut }}</span>
+            <span class="text-xs text-(--color-muted)"
+              >to {{ row.checkOut }}</span
+            >
           </div>
         </template>
       </AppTable>
-
-      
     </section>
   </main>
 </template>

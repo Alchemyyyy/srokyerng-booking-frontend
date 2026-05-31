@@ -20,7 +20,9 @@ const withNamePrefix = (routes, prefix) =>
   routes.map((route) => ({
     ...route,
     name: route.name ? `${prefix}.${route.name}` : route.name,
-    children: route.children ? withNamePrefix(route.children, prefix) : route.children,
+    children: route.children
+      ? withNamePrefix(route.children, prefix)
+      : route.children,
   }));
 
 const router = createRouter({
@@ -75,6 +77,6 @@ const router = createRouter({
   ],
 });
 
-registerRouteGuards(router);
+// registerRouteGuards(router);
 
 export default router;
