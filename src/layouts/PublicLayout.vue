@@ -6,6 +6,7 @@ import PublicFooter from "@/shared/components/PublicFooter.vue";
 
 const route = useRoute();
 const showNavbar = computed(() => !route.meta.publicOnly);
+const showFooter = computed(() => !route.meta.publicOnly);
 </script>
 
 <template>
@@ -14,6 +15,6 @@ const showNavbar = computed(() => !route.meta.publicOnly);
     <main class="flex-1">
       <RouterView />
     </main>
-    <PublicFooter />
+    <PublicFooter v-if="showFooter" />
   </div>
 </template>

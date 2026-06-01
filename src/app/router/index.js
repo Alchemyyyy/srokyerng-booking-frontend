@@ -15,12 +15,23 @@ import { reservationRoutes } from "@/modules/reservations/routes";
 import { staticRoutes } from "@/modules/static/routes";
 import { ROLES } from "@/shared/constants/roles";
 import { reviewRoutes } from "@/modules/reviews/routes";
+import { adminAnalyticsRoutes, ownerAnalyticsRoutes } from "@/modules/analytics/routes";
+import { chatRoutes } from "@/modules/chats/routes";
+import { notificationRoutes } from "@/modules/notifications/routes";
+import {
+  adminReportRoutes,
+  customerReportRoutes,
+  ownerReportRoutes,
+} from "@/modules/reports/routes";
+import { wishlistRoutes } from "@/modules/wishlists/routes";
 
 const withNamePrefix = (routes, prefix) =>
   routes.map((route) => ({
     ...route,
     name: route.name ? `${prefix}.${route.name}` : route.name,
-    children: route.children ? withNamePrefix(route.children, prefix) : route.children,
+    children: route.children
+      ? withNamePrefix(route.children, prefix)
+      : route.children,
   }));
 
 const router = createRouter({
@@ -46,6 +57,10 @@ const router = createRouter({
         { path: "", redirect: { name: "customer.reservations" } },
         ...withNamePrefix(reservationRoutes, "customer"),
         ...withNamePrefix(reviewRoutes, "customer"),
+        ...withNamePrefix(wishlistRoutes, "customer"),
+        ...withNamePrefix(notificationRoutes, "customer"),
+        ...withNamePrefix(chatRoutes, "customer"),
+        ...withNamePrefix(customerReportRoutes, "customer"),
       ],
     },
     {
@@ -56,6 +71,10 @@ const router = createRouter({
       children: [
         { path: "", redirect: { name: "owner.dashboard" } },
         ...withNamePrefix(ownerRoutes, "owner"),
+        ...withNamePrefix(ownerAnalyticsRoutes, "owner"),
+        ...withNamePrefix(notificationRoutes, "owner"),
+        ...withNamePrefix(chatRoutes, "owner"),
+        ...withNamePrefix(ownerReportRoutes, "owner"),
       ],
     },
     {
@@ -66,6 +85,9 @@ const router = createRouter({
       children: [
         { path: "", redirect: { name: "admin.dashboard" } },
         ...withNamePrefix(adminRoutes, "admin"),
+        ...withNamePrefix(adminAnalyticsRoutes, "admin"),
+        ...withNamePrefix(notificationRoutes, "admin"),
+        ...withNamePrefix(adminReportRoutes, "admin"),
       ],
     },
     {

@@ -11,24 +11,75 @@
     "password": "Password",
     "phone": "Phone",
     "refresh": "Refresh",
+    "retry": "Retry",
     "save": "Save",
     "submit": "Submit"
   },
   "auth": {
     "accountType": "Account type",
     "alreadyHaveAccount": "Already have an account?",
+    "backToLogin": "Back to login",
+    "confirmPassword": "Confirm password",
+    "confirmPasswordRequired": "Confirm password is required",
     "createAccountTitle": "Create account",
     "creating": "Creating...",
     "customer": "Customer",
+    "customerBookings": "Booking history and account access",
+    "customerEntrySubtitle": "Book rooms, manage trips, and keep your reservation history in one place.",
+    "customerEntryTitle": "I want to book stays",
+    "customerRegisterSubtitle": "Create a customer account to book stays and manage reservations.",
+    "customerRegisterTitle": "Create customer account",
+    "emailInvalid": "Enter a valid email address",
+    "emailRequired": "Email is required",
+    "changeAccountType": "Change",
+    "chooseAccountTypeSubtitle": "Choose how you want to use SrokYerng Booking.",
+    "forgotPassword": "Forgot password?",
+    "forgotPasswordFailed": "Password reset request failed",
+    "forgotPasswordSubtitle": "Enter your account email and we will send you a password reset link.",
+    "forgotPasswordSuccess": "If that email exists, a password reset link has been sent.",
+    "forgotPasswordTitle": "Reset your password",
     "fullName": "Full name",
+    "fullNameRequired": "Full name is required",
+    "hidePassword": "Hide password",
     "invalidCredentials": "Invalid email or password",
     "joinSubtitle": "Join as a customer or property owner.",
     "loginSubtitle": "Sign in to manage bookings, properties, and payments.",
     "newHere": "New here?",
+    "newPassword": "New password",
     "owner": "Property owner",
+    "ownerEntrySubtitle": "List properties, manage rooms, and follow reservations from your dashboard.",
+    "ownerEntryTitle": "I manage properties",
+    "ownerTools": "Owner tools for properties and reservations",
+    "ownerRegisterSubtitle": "Create an owner account to manage properties, rooms, and bookings.",
+    "ownerRegisterTitle": "Register as property owner",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "passwordRequirementLength": "At least 8 characters",
+    "passwordRequired": "Password is required",
+    "protectedSessions": "Protected sessions with secure refresh",
     "registrationFailed": "Registration failed",
+    "registrationSuccess": "Account created. Please check your email to verify your account before using protected features.",
+    "resetPassword": "Reset password",
+    "resetPasswordFailed": "Password reset failed",
+    "resetPasswordSubtitle": "Create a new password for your account.",
+    "resetPasswordSuccess": "Password reset successfully. You can now sign in with your new password.",
+    "resetPasswordTitle": "Create a new password",
+    "resettingPassword": "Resetting...",
+    "resetTokenMissing": "Reset token is missing or invalid.",
+    "sendResetLink": "Send reset link",
+    "sendingResetLink": "Sending...",
+    "secureAccess": "Secure access",
+    "secureAccessSubtitle": "One account connects travelers, property owners, and admins with the right workspace.",
+    "secureAccessTitle": "Manage every stay from one trusted place",
+    "showPassword": "Show password",
     "signIn": "Sign in",
     "signingIn": "Signing in...",
+    "verificationTokenMissing": "Verification token is missing or invalid.",
+    "verifyEmailFailed": "Email verification failed",
+    "verifyEmailSubtitle": "We are checking the verification link from your email.",
+    "verifyEmailSuccess": "Email verified successfully. You can now sign in.",
+    "verifyEmailTitle": "Verify email",
+    "verifyingEmail": "Verifying email...",
     "welcomeBack": "Welcome back"
   },
   "components": {
@@ -36,14 +87,7 @@
     "emptyMessage": "There is nothing to show here yet.",
     "emptyTitle": "No data found",
     "modalTitle": "Modal title",
-    "noRecords": "No records found.",
-    "themeToggle": {
-      "light": "Light",
-      "dark": "Dark",
-      "system": "System",
-      "followsOs": "Follows your OS preference",
-      "overridesOs": "Overrides OS preference"
-    }
+    "noRecords": "No records found."
   },
   "nav": {
     "home": "Home",
@@ -252,6 +296,7 @@
       "title": "Built for Cambodia,",
       "titleHighlight": "By Cambodians",
       "desc": "SrokYerng Booking was born from a simple idea — to make it easier for travelers to discover authentic local stays across Cambodia, while helping property owners reach more guests.",
+
       "feature1": {
         "title": "Easy & Quick Booking",
         "desc": "Book your stay in just a few clicks, anytime and anywhere."
@@ -305,6 +350,7 @@
       "eyebrow": "The People Behind SrokYerng",
       "title": "Meet Our Team",
       "subtitle": "A group of passionate Cambodians dedicated to creating a better travel experience.",
+
       "members": {
         "leakhena": {
           "name": "Bou Leakhena",
@@ -701,77 +747,41 @@
     "checkOut": "Check-Out",
     "description": "A stunning beachfront resort offering pristine white sand beaches, crystal-clear waters, and unforgettable sunset views."
   },
-  "owner": {
-    "profile": {
-      "name": "Owner Name",
-      "role": "Property Owner"
-    },
-    "header": {
-      "search": "Search…"
-    },
-    "sidebar": {
-      "navigation": "Navigation",
-      "dashboard": "Dashboard",
+
+  "roomDetail": {
+    "breadcrumb": {
+      "home": "Home",
       "properties": "Properties",
-      "rooms": "Rooms",
-      "reservations": "Reservations",
-      "paymentAccounts": "Payment Accounts",
-      "settings": "Settings"
+      "rooms": "Rooms"
     },
-    "analytics": {
-      "loadingDashboard": "Loading owner dashboard...",
-      "retry": "Retry",
-      "dashboardEyebrow": "Yearly data · Live data",
-      "dashboardTitle": "Analytics Dashboard",
-      "dashboardSubtitle": "Track revenue, booking traffic, and property performance by year.",
-      "year": "Year",
-      "summaryMetrics": "Summary metrics",
-      "approvalTitle": "Listing Approval Status",
-      "quickNavigation": "Quick Navigation",
-      "noApprovalStatuses": "No approval statuses available.",
-      "noQuickLinks": "No quick links configured.",
-      "approval": {
-        "activeListings": "Approved & Active Listings",
-        "pendingAudits": "Pending Compliance Audits",
-        "draftModeSuspended": "Draft Mode / Suspended"
-      },
-      "yearly": "Yearly",
-      "reservationOverviewTitle": "Reservation Overview",
-      "bookingsCompleted": "Bookings Completed",
-      "revenueBySegmentTitle": "Revenue by Segment",
-      "currentQuarter": "Current quarter",
-      "recentReservationsTitle": "Recent Reservations",
-      "recentReservationsSubtitle": "Latest bookings across your properties.",
-      "recentReservationsTrafficSubtitle": "Latest bookings from your properties.",
-      "reservations": {
-        "guest": "Guest",
-        "propertyRoom": "Property / Room",
-        "checkInOut": "Check-in / Check-out",
-        "amount": "Amount",
-        "status": "Status"
-      },
-      "items": "items",
-      "noRoomAssigned": "No Room Assigned",
-      "to": "to",
-      "unknownProperty": "Unknown Property",
-      "trafficOverviewTitle": "Traffic Overview",
-      "trafficOverviewSubtitle": "Weekly sessions & conversions",
-      "sessions": "Sessions",
-      "conversions": "Conversions",
-      "dailyConversionRate": "Daily Conversion Rate",
-      "thisWeek": "This week",
-      "propertyMix": "Property Mix",
-      "revenueBySegment": "Revenue by segment",
-      "byPercent": "by %",
-      "error": {
-        "failedToLoadDashboardData": "Failed to load dashboard data. Ensure data.json is present."
-      },
-      "summary": {
-        "totalProperties": "Total Properties",
-        "totalBookings": "Total Bookings",
-        "totalRevenue": "Total Revenue",
-        "avgRating": "Avg Rating"
-      }
-    }
+    "liveAvailability": "Live Availability Verified",
+    "featuredSpace": "Featured Space",
+    "featuredSpaceLabel": "Master Bedroom & Lounge",
+    "exploreGallery": "Explore Gallery",
+    "signatureRoom": "Signature Space Room",
+    "showMap": "Show Map",
+    "maxAllowed": "Max Allowed",
+    "guests": "Guests",
+    "beddingConfig": "Bedding Config",
+    "floorDimension": "Floor Dimension",
+    "architectureStory": "The Architecture Story",
+    "includedLuxuries": "Included Premium Luxuries",
+    "ratesFrom": "Rates Starting From",
+    "perNight": "/ night",
+    "bestRate": "Best Rate Match",
+    "arrivalDate": "Arrival Date",
+    "departureDate": "Departure Date",
+    "accompaniedGuests": "Accompanied Guests",
+    "adult1": "1 Adult Guest",
+    "adult2": "2 Adult Guests",
+    "adult3": "3 Adult Guests",
+    "adult4": "4 Adult Guests",
+    "baseStayRate": "Base Stay Rate",
+    "resortSurcharges": "Resort Surcharges & Cleaning",
+    "included": "INCLUDED",
+    "aggregateTotal": "Aggregate Total Due",
+    "confirmReservation": "Confirm & Secure Reservation",
+    "noDeposit": "No upfront deposit required today.",
+    "hotel": "Angkor Palace Luxury Hotel Resort"
   }
 }

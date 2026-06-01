@@ -3,8 +3,9 @@ import { reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter, RouterLink } from "vue-router";
 import { useAuthStore } from "@/modules/auth/store/authStore";
-import LanguageToggle from "@/shared/components/LanguageToggle.vue";
-import ThemeToggle from "@/shared/components/ThemeToggle.vue";
+import AuthShell from "@/modules/auth/components/AuthShell.vue";
+import { ROLES } from "@/shared/constants/roles";
+import { isValidEmail } from "@/shared/utils/validators";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -14,14 +15,54 @@ const form = reactive({
   email: "",
   password: "",
 });
+const formErrors = reactive({
+  email: "",
+  password: "",
+});
 const errorMessage = ref("");
+const showPassword = ref(false);
+
+const getPostLoginRoute = (user) => {
+  if (route.query.redirect) {
+    return route.query.redirect;
+  }
+
+  const routeByRole = {
+    [ROLES.ADMIN]: { name: "admin.dashboard" },
+    [ROLES.OWNER]: { name: "owner.dashboard" },
+    [ROLES.CUSTOMER]: { name: "public.home" },
+  };
+
+  return routeByRole[user?.role] || { name: "public.properties" };
+};
+
+const validateForm = () => {
+  formErrors.email = "";
+  formErrors.password = "";
+
+  if (!form.email) {
+    formErrors.email = t("auth.emailRequired");
+  } else if (!isValidEmail(form.email)) {
+    formErrors.email = t("auth.emailInvalid");
+  }
+
+  if (!form.password) {
+    formErrors.password = t("auth.passwordRequired");
+  }
+
+  return !formErrors.email && !formErrors.password;
+};
 
 const submit = async () => {
   errorMessage.value = "";
 
+  if (!validateForm()) {
+    return;
+  }
+
   try {
-    await authStore.login(form);
-    await router.push(route.query.redirect || { name: "public.properties" });
+    const user = await authStore.login(form);
+    await router.push(getPostLoginRoute(user));
   } catch (error) {
     errorMessage.value = error.message || t("auth.invalidCredentials");
   }
@@ -29,46 +70,49 @@ const submit = async () => {
 </script>
 
 <template>
-  <main class="auth-page">
-    <div class="fixed right-4 top-4 z-10 flex flex-wrap justify-end gap-2">
-      <ThemeToggle />
-      <LanguageToggle />
-    </div>
+  <AuthShell :title="t('auth.welcomeBack')" :subtitle="t('auth.loginSubtitle')">
+    <form class="auth-form" novalidate @submit.prevent="submit">
+      <label>
+        {{ t("common.email") }}
+        <input v-model.trim="form.email" type="email" autocomplete="email" />
+        <span v-if="formErrors.email" class="form-field-error">{{ formErrors.email }}</span>
+      </label>
 
-    <section class="auth-panel">
-      <p class="eyebrow">{{ t("app.name") }}</p>
-      <h1>{{ t("auth.welcomeBack") }}</h1>
-      <p class="muted">{{ t("auth.loginSubtitle") }}</p>
-
-      <form class="auth-form" @submit.prevent="submit">
-        <label>
-          {{ t("common.email") }}
-          <input v-model.trim="form.email" type="email" autocomplete="email" required />
-        </label>
-
-        <label>
-          {{ t("common.password") }}
+      <label>
+        {{ t("common.password") }}
+        <span class="password-field">
           <input
             v-model="form.password"
-            type="password"
+            :type="showPassword ? 'text' : 'password'"
             autocomplete="current-password"
-            required
           />
-        </label>
+          <button
+            type="button"
+            :aria-label="showPassword ? t('auth.hidePassword') : t('auth.showPassword')"
+            @click="showPassword = !showPassword"
+          >
+            <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'" aria-hidden="true"></i>
+          </button>
+        </span>
+        <span v-if="formErrors.password" class="form-field-error">{{ formErrors.password }}</span>
+      </label>
 
-        <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
+      <RouterLink class="auth-small-link" :to="{ name: 'public.forgotPassword' }">
+        {{ t("auth.forgotPassword") }}
+      </RouterLink>
 
-        <button class="primary-button" type="submit" :disabled="authStore.loading">
-          {{ authStore.loading ? t("auth.signingIn") : t("auth.signIn") }}
-        </button>
-      </form>
+      <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
 
-      <p class="auth-switch">
-        {{ t("auth.newHere") }}
-        <RouterLink :to="{ name: 'public.register' }">
-          {{ t("common.createAccount") }}
-        </RouterLink>
-      </p>
-    </section>
-  </main>
+      <button class="primary-button" type="submit" :disabled="authStore.loading">
+        {{ authStore.loading ? t("auth.signingIn") : t("auth.signIn") }}
+      </button>
+    </form>
+
+    <p class="auth-switch">
+      {{ t("auth.newHere") }}
+      <RouterLink :to="{ name: 'public.register' }">
+        {{ t("common.createAccount") }}
+      </RouterLink>
+    </p>
+  </AuthShell>
 </template>
