@@ -75,6 +75,6 @@ const router = createRouter({
   ],
 });
 
-registerRouteGuards(router);
+// registerRouteGuards(router);
 
 export default router;
