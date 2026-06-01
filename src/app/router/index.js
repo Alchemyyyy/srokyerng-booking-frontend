@@ -24,6 +24,7 @@ import {
   ownerReportRoutes,
 } from "@/modules/reports/routes";
 import { wishlistRoutes } from "@/modules/wishlists/routes";
+import { userRoutes } from "@/modules/users/routes";
 
 const withNamePrefix = (routes, prefix) =>
   routes.map((route) => ({
@@ -59,6 +60,7 @@ const router = createRouter({
         ...withNamePrefix(reviewRoutes, "customer"),
         ...withNamePrefix(wishlistRoutes, "customer"),
         ...withNamePrefix(notificationRoutes, "customer"),
+        ...withNamePrefix(userRoutes, "customer"),
         ...withNamePrefix(chatRoutes, "customer"),
         ...withNamePrefix(customerReportRoutes, "customer"),
       ],
@@ -73,6 +75,7 @@ const router = createRouter({
         ...withNamePrefix(ownerRoutes, "owner"),
         ...withNamePrefix(ownerAnalyticsRoutes, "owner"),
         ...withNamePrefix(notificationRoutes, "owner"),
+        ...withNamePrefix(userRoutes, "owner"),
         ...withNamePrefix(chatRoutes, "owner"),
         ...withNamePrefix(ownerReportRoutes, "owner"),
       ],
@@ -87,6 +90,7 @@ const router = createRouter({
         ...withNamePrefix(adminRoutes, "admin"),
         ...withNamePrefix(adminAnalyticsRoutes, "admin"),
         ...withNamePrefix(notificationRoutes, "admin"),
+        ...withNamePrefix(userRoutes, "admin"),
         ...withNamePrefix(adminReportRoutes, "admin"),
       ],
     },
@@ -97,6 +101,6 @@ const router = createRouter({
   ],
 });
 
-// registerRouteGuards(router);
+registerRouteGuards(router);
 
 export default router;
