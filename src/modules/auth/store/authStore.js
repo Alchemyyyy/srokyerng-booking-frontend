@@ -7,6 +7,7 @@ export const useAuthStore = defineStore("auth", () => {
   const accessToken = ref(null);
   const user = ref(null);
   const initialized = ref(false);
+  const restoringSession = ref(false);
   const loading = ref(false);
   const error = ref(null);
 
@@ -54,6 +55,25 @@ export const useAuthStore = defineStore("auth", () => {
     return runWithLoading(async () => authService.register(payload), "Registration failed");
   };
 
+  const forgotPassword = async (payload) => {
+    return runWithLoading(async () => authService.forgotPassword(payload), "Password reset request failed");
+  };
+
+  const resetPassword = async (payload) => {
+    return runWithLoading(async () => authService.resetPassword(payload), "Password reset failed");
+  };
+
+  const verifyEmail = async (payload) => {
+    return runWithLoading(async () => authService.verifyEmail(payload), "Email verification failed");
+  };
+
+  const resendVerificationEmail = async () => {
+    return runWithLoading(
+      async () => authService.resendVerificationEmail(),
+      "Verification email could not be sent"
+    );
+  };
+
   const refreshSession = async () => {
     try {
       const response = await authService.refreshToken();
@@ -70,12 +90,15 @@ export const useAuthStore = defineStore("auth", () => {
       return user.value;
     }
 
+    restoringSession.value = true;
+
     try {
       return await refreshSession();
     } catch {
       return null;
     } finally {
       initialized.value = true;
+      restoringSession.value = false;
     }
   };
 
@@ -106,6 +129,7 @@ export const useAuthStore = defineStore("auth", () => {
     accessToken,
     user,
     initialized,
+    restoringSession,
     loading,
     error,
     isAuthenticated,
@@ -116,6 +140,10 @@ export const useAuthStore = defineStore("auth", () => {
     clearSession,
     login,
     register,
+    forgotPassword,
+    resetPassword,
+    verifyEmail,
+    resendVerificationEmail,
     refreshSession,
     restoreSession,
     logout,
