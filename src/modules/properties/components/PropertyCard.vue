@@ -1,5 +1,12 @@
 <script setup>
 import { computed } from "vue";
+import {
+  BuildingOffice2Icon,
+  PencilSquareIcon,
+  EyeIcon,
+  TrashIcon,
+  MapPinIcon,
+} from "@heroicons/vue/24/outline";
 const emit = defineEmits(["edit", "delete"]);
 
 const props = defineProps({
@@ -9,7 +16,6 @@ const props = defineProps({
   },
 });
 
-// Precise color badge matching for your status states
 const statusBadgeClass = computed(() => {
   const status = props.property.status?.toUpperCase();
   if (status === "APPROVED")
@@ -50,7 +56,8 @@ const statusBadgeClass = computed(() => {
         <p
           class="text-xs text-(--color-primary) font-medium mt-1 flex items-center gap-1"
         >
-          <span class="text-(--color-muted) text-[10px]">📍</span>
+          <MapPinIcon class="w-3 h-3 text-(--color-muted)" />
+
           <span class="text-(--color-muted) font-normal"
             >{{ property.type }} ·</span
           >
@@ -89,44 +96,20 @@ const statusBadgeClass = computed(() => {
         class="flex items-center justify-between gap-1.5 mt-5 pt-3 border-t border-(--color-border)"
       >
         <div class="flex items-center gap-1.5 flex-1">
-          <button
+          <RouterLink
+            :to="`/owner/rooms?propertyId=${property.id}`"
             class="flex items-center justify-center gap-1 bg-(--color-primary-soft) hover:bg-(--color-primary)/20 text-(--color-primary) font-semibold text-[11px] px-2.5 py-2 rounded-lg transition flex-1"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="2"
-              stroke="currentColor"
-              class="w-3.5 h-3.5"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"
-              />
-            </svg>
+            <BuildingOffice2Icon class="w-3.5 h-3.5" />
+
             Rooms
-          </button>
+          </RouterLink>
 
           <button
             @click="emit('edit', property)"
             class="flex items-center justify-center gap-1 bg-(--color-surface-soft) hover:bg-(--color-border) text-(--color-muted) font-semibold text-[11px] px-2.5 py-2 rounded-lg transition flex-1"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="2"
-              stroke="currentColor"
-              class="w-3.5 h-3.5"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-              />
-            </svg>
+            <PencilSquareIcon class="w-3.5 h-3.5" />
             Edit
           </button>
 
@@ -137,25 +120,7 @@ const statusBadgeClass = computed(() => {
             }"
             class="flex items-center justify-center gap-1 bg-(--color-surface-soft) hover:bg-(--color-border) text-(--color-muted) font-semibold text-[11px] px-2.5 py-3 rounded-lg transition flex-1"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="2"
-              stroke="currentColor"
-              class="w-3.5 h-3.5"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
-              />
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-              />
-            </svg>
+            <EyeIcon class="w-3.5 h-3.5" />
             View
           </RouterLink>
         </div>
@@ -165,19 +130,7 @@ const statusBadgeClass = computed(() => {
           class="text-(--color-danger) hover:bg-(--color-danger-soft) p-2 rounded-lg transition-colors ml-0.5"
           title="Delete Property"
         >
-          <svg
-            class="w-3.5 h-3.5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-            />
-          </svg>
+          <TrashIcon class="w-3.5 h-3.5" />
         </button>
       </div>
     </div>
