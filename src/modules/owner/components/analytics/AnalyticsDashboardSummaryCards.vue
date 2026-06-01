@@ -1,5 +1,7 @@
 <script setup>
+import { computed } from 'vue';
 import { onBeforeUnmount, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     summaryCards: {
@@ -15,6 +17,9 @@ const props = defineProps({
 const displayedValues = ref([]);
 const activeRafIds = [];
 const integerFormatter = new Intl.NumberFormat('en-US');
+const { t } = useI18n();
+
+const summaryMetricsLabel = computed(() => t('owner.analytics.summaryMetrics'));
 
 const stopAnimations = () => {
     activeRafIds.forEach((rafId) => {
@@ -26,14 +31,14 @@ const stopAnimations = () => {
 };
 
 const parseTargetValue = (card) => {
-    const label = String(card?.label || '').toLowerCase();
+    const kind = String(card?.kind || '').toLowerCase();
     const raw = String(card?.value || '');
 
-    if (label.includes('revenue')) {
+    if (kind === 'currency') {
         return Number(raw.replace(/[^\d.-]/g, '')) || 0;
     }
 
-    if (label.includes('rating')) {
+    if (kind === 'rating') {
         return Number(raw.replace(/[^\d.-]/g, '')) || 0;
     }
 
@@ -41,13 +46,13 @@ const parseTargetValue = (card) => {
 };
 
 const formatAnimatedValue = (card, value) => {
-    const label = String(card?.label || '').toLowerCase();
+    const kind = String(card?.kind || '').toLowerCase();
 
-    if (label.includes('revenue')) {
+    if (kind === 'currency') {
         return `$${integerFormatter.format(Math.round(value))}`;
     }
 
-    if (label.includes('rating')) {
+    if (kind === 'rating') {
         return `${value.toFixed(1)}★`;
     }
 
@@ -100,7 +105,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <section class="metrics" aria-label="Summary metrics">
+    <section class="metrics" :aria-label="summaryMetricsLabel">
         <article v-for="(card, index) in summaryCards" :key="card.label" class="metric">
             <div class="metric__icon" :class="`metric__icon--${card.tone}`">
                 <component :is="card.icon" class="h-6 w-6" />

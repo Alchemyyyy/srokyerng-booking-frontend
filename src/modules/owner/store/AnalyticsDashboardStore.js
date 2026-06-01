@@ -5,11 +5,9 @@ import {
     CalendarDaysIcon,
     CurrencyDollarIcon,
     StarIcon,
-    ExclamationTriangleIcon,
-    DocumentTextIcon,
-    CheckCircleIcon,
-    ClockIcon,
 } from '@heroicons/vue/24/outline';
+
+import i18n from '@/app/i18n';
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const palette = ['var(--color-primary)', 'var(--color-success)', 'var(--color-warning)', 'var(--color-danger)', 'var(--color-info)', 'var(--color-muted)'];
@@ -21,6 +19,7 @@ const moneyFormatter = new Intl.NumberFormat('en-US', {
 });
 
 const integerFormatter = new Intl.NumberFormat('en-US');
+const t = (...args) => i18n.global.t(...args);
 
 const formatMoney = (value) => moneyFormatter.format(Number(value) || 0);
 
@@ -37,46 +36,10 @@ const formatDate = (value) => {
     }).format(parsed);
 };
 
-const buildChartPoints = (values, width = 640, height = 220, padding = 24) => {
-    const safeValues = values.length ? values : [0];
-    const maxValue = Math.max(...safeValues, 1);
-    const innerWidth = width - padding * 2;
-    const innerHeight = height - padding * 2;
-
-    return safeValues.map((value, index) => {
-        const x = padding + (innerWidth * index) / Math.max(safeValues.length - 1, 1);
-        const y = padding + innerHeight - (value / maxValue) * innerHeight;
-
-        return { x, y };
-    });
-};
-
-const buildLinePath = (points) => {
-    if (!points.length) return '';
-
-    return points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
-};
-
-const buildAreaPath = (points, height = 220, padding = 24) => {
-    if (!points.length) return '';
-
-    const firstPoint = points[0];
-    const lastPoint = points[points.length - 1];
-
-    return `${buildLinePath(points)} L ${lastPoint.x} ${height - padding} L ${firstPoint.x} ${height - padding} Z`;
-};
-
 export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard', () => {
     const loading = ref(true);
     const error = ref(null);
-    const activeTab = ref('overview');
-    const monthWindow = ref(12);
     const selectedYear = ref(null);
-    const tabs = ref([
-        { key: 'overview', label: 'Overview' },
-        { key: 'revenue', label: 'Revenue' },
-        { key: 'traffic', label: 'Traffic' },
-    ]);
     const dashboardData = ref({
         summary: {
             totalProperties: 0,
@@ -218,69 +181,7 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
         });
     };
 
-    const monthlySeries = computed(() => {
-        return selectedYearSeries.value;
-    });
-
-    const visibleMonthlySeries = computed(() => monthlySeries.value.slice(0, monthWindow.value));
-
-    const revenuePoints = computed(() => buildChartPoints(visibleMonthlySeries.value.map((item) => item.revenue)));
-    const revenueLinePath = computed(() => buildLinePath(revenuePoints.value));
-    const revenueAreaPath = computed(() => buildAreaPath(revenuePoints.value));
-
-    const profitPoints = computed(() => buildChartPoints(visibleMonthlySeries.value.map((item) => item.profit)));
-    const profitLinePath = computed(() => buildLinePath(profitPoints.value));
-    const profitAreaPath = computed(() => buildAreaPath(profitPoints.value));
-
-    const deriveWeeklyTraffic = () => {
-        const reservations = dashboardData.value.recentReservations || [];
-        const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const buckets = weekdays.map((day) => ({ day, sessions: 0, conversions: 0 }));
-
-        reservations.forEach((reservation) => {
-            const dayIndex = new Date(reservation.checkIn).getDay();
-            const bucket = buckets[dayIndex];
-
-            bucket.sessions += 12;
-            bucket.conversions += ['paid', 'confirmed'].includes(String(reservation.status).toLowerCase()) ? 8 : 4;
-            bucket.sessions += Math.min(Math.round((Number(reservation.amount) || 0) / 60), 18);
-            bucket.conversions += Math.min(Math.round((Number(reservation.amount) || 0) / 140), 10);
-        });
-
-        return buckets.filter((item) => item.day !== 'Sun' || item.sessions > 0 || item.conversions > 0)
-            .slice(1)
-            .map((item, index) => ({
-                day: weekdays[index + 1],
-                sessions: Math.max(item.sessions, 18 + index * 6),
-                conversions: Math.max(item.conversions, 8 + index * 4),
-            }));
-    };
-
-    const weeklySessions = computed(() => {
-        const source = analyticsData.value.weeklyTraffic;
-
-        if (Array.isArray(source) && source.length > 0) {
-            return source.map((item) => ({
-                day: item.day,
-                sessions: Number(item.sessions) || 0,
-                conversions: Number(item.conversions) || 0,
-            }));
-        }
-
-        return deriveWeeklyTraffic();
-    });
-
-    const weeklySessionsPoints = computed(() => ({
-        sessions: buildChartPoints(weeklySessions.value.map((item) => item.sessions), 640, 240, 28),
-        conversions: buildChartPoints(weeklySessions.value.map((item) => item.conversions), 640, 240, 28),
-    }));
-
-    const weeklyConversionRates = computed(() =>
-        weeklySessions.value.map((item) => ({
-            day: item.day,
-            rate: Math.round((item.conversions / Math.max(item.sessions, 1)) * 100),
-        })),
-    );
+    const visibleMonthlySeries = computed(() => selectedYearSeries.value);
 
     const propertyBreakdown = computed(() => selectedYearSegments.value.length > 0
         ? selectedYearSegments.value
@@ -345,8 +246,8 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
 
             return {
                 ...reservation,
-                propertyName: property?.name || reservation.propertyName || 'Unknown Property',
-                roomName: room?.type || reservation.roomName || 'No Room Assigned',
+                propertyName: property?.name || reservation.propertyName || t('owner.analytics.unknownProperty'),
+                roomName: room?.type || reservation.roomName || t('owner.analytics.noRoomAssigned'),
                 roomType: room?.type || reservation.roomType || '',
                 propertyId: property?.id || reservation.propertyId || '',
                 roomId: room?.id || reservation.roomId || '',
@@ -355,102 +256,45 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
         }),
     );
 
-    const activityFeed = computed(() => {
-        const feed = [];
-        const reservations = dashboardData.value.recentReservations || [];
-        const properties = dashboardData.value.properties || [];
-
-        if (dashboardData.value.paymentStatus && !dashboardData.value.paymentStatus.isComplete) {
-            feed.push({
-                icon: ExclamationTriangleIcon,
-                bg: 'var(--color-warning-soft)',
-                title: 'Payment account setup is incomplete',
-                time: 'Needs attention',
-                amount: 'Pending',
-                tone: 'warning',
-            });
-        }
-
-        reservations.slice(0, 3).forEach((reservation) => {
-            feed.push({
-                icon: DocumentTextIcon,
-                bg: 'var(--color-primary-soft)',
-                title: `${reservation.guestName} booked ${reservation.propertyName}`,
-                time: formatDate(reservation.checkIn),
-                amount: formatMoney(reservation.amount || 0),
-                tone: 'info',
-            });
-        });
-
-        properties.slice(0, 2).forEach((property) => {
-            feed.push({
-                icon: property.status === 'Approved' ? CheckCircleIcon : ClockIcon,
-                bg: property.status === 'Approved' ? 'var(--color-success-soft)' : 'var(--color-warning-soft)',
-                title: `${property.name} is ${property.status.toLowerCase()}`,
-                time: property.location,
-                amount: formatMoney(property.revenue || 0),
-                tone: property.status === 'Approved' ? 'success' : 'warning',
-            });
-        });
-
-        return feed;
-    });
-
     const summaryCards = computed(() => {
         const summary = selectedYearSummary.value || {};
 
         return [
             {
-                label: 'Total Properties',
+                label: t('owner.analytics.summary.totalProperties'),
                 value: integerFormatter.format(summary.totalProperties || 0),
                 delta: summary.trends?.properties || '',
                 tone: 'blue',
                 icon: HomeIcon,
+                kind: 'number',
             },
             {
-                label: 'Total Bookings',
+                label: t('owner.analytics.summary.totalBookings'),
                 value: integerFormatter.format(summary.totalBookings || 0),
                 delta: summary.trends?.bookings || '',
                 tone: 'teal',
                 icon: CalendarDaysIcon,
+                kind: 'number',
             },
             {
-                label: 'Total Revenue',
+                label: t('owner.analytics.summary.totalRevenue'),
                 value: formatMoney(summary.totalRevenue || 0),
                 delta: summary.trends?.revenue || '',
                 tone: 'amber',
                 icon: CurrencyDollarIcon,
+                kind: 'currency',
             },
             {
-                label: 'Avg Rating',
+                label: t('owner.analytics.summary.avgRating'),
                 value: `${Number(summary.avgRating || 0).toFixed(1)}★`,
                 delta: summary.trends?.rating || '',
                 tone: 'coral',
                 icon: StarIcon,
+                kind: 'rating',
             },
         ];
     });
 
-    const propertyStatusClass = (status) => {
-        const normalized = String(status || '').toLowerCase();
-
-        if (normalized === 'approved') return 'badge badge-teal';
-        if (normalized === 'pending') return 'badge badge-amber';
-        return 'badge badge-coral';
-    };
-
-    const barHeightStyle = (value, maxValue) => ({
-        height: `${Math.max((Number(value) / Math.max(maxValue, 1)) * 100, 8)}%`,
-    });
-
-    const barOffsetStyle = (value, maxValue) => ({
-        top: `${100 - Math.max((Number(value) / Math.max(maxValue, 1)) * 100, 8)}%`,
-    });
-
-    const maxRevenueValue = computed(() => Math.max(...visibleMonthlySeries.value.map((item) => item.revenue), 1));
-    const maxExpenseValue = computed(() => Math.max(...visibleMonthlySeries.value.map((item) => item.expenses), 1));
-    const maxWeeklySessions = computed(() => Math.max(...weeklySessions.value.map((item) => item.sessions), 1));
-    const maxWeeklyConversions = computed(() => Math.max(...weeklySessions.value.map((item) => item.conversions), 1));
 
     const fetchDashboardData = async () => {
         loading.value = true;
@@ -476,7 +320,7 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
                     : Math.max(...availableYears);
             }
         } catch (requestError) {
-            error.value = 'Failed to load dashboard data. Ensure data.json is present.';
+            error.value = t('owner.analytics.error.failedToLoadDashboardData');
             console.error('Dashboard Fetch Error:', requestError);
         } finally {
             loading.value = false;
@@ -488,41 +332,14 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
     return {
         loading,
         error,
-        activeTab,
-        monthWindow,
         dashboardData,
         selectedYear,
         yearOptions,
         selectedYearLabel,
-        tabs,
-        analyticsData,
         summaryCards,
-        selectedYearSummary,
-        monthlySeries,
         visibleMonthlySeries,
-        revenuePoints,
-        revenueLinePath,
-        revenueAreaPath,
-        profitPoints,
-        profitLinePath,
-        profitAreaPath,
-        weeklySessions,
-        weeklySessionsPoints,
-        weeklyConversionRates,
-        propertyBreakdown,
-        propertyLookup,
         segmentBreakdown,
-        roomLookup,
-        reservationRows,
-        activityFeed,
         activeReservations,
-        propertyStatusClass,
-        barHeightStyle,
-        barOffsetStyle,
-        maxRevenueValue,
-        maxExpenseValue,
-        maxWeeklySessions,
-        maxWeeklyConversions,
         fetchDashboardData,
         formatMoney,
         formatDate,

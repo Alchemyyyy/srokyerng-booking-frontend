@@ -1,4 +1,6 @@
 <script setup>
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import AppSidebar from "@/shared/components/DashboardSidebar.vue";
 import { getInitials } from "@/shared/utils/getInitials";
 
@@ -13,27 +15,33 @@ import {
     Cog6ToothIcon,
 } from "@heroicons/vue/24/outline";
 
-const menuItems = [
-    { name: "Dashboard", path: "/owner", icon: ChartBarIcon },
-    { name: "Properties", path: "/owner/properties", icon: BuildingOffice2Icon },
-    { name: "Rooms", path: "/owner/rooms", icon: KeyIcon },
-    { name: "Reservations", path: "/owner/reservations", icon: CalendarDaysIcon },
-    { name: "Payment Accounts", path: "/owner/payment-accounts", icon: CreditCardIcon },
-];
+const { t } = useI18n();
 
-const bottomItems = [
-    { name: 'Settings', path: '/owner/settings', icon: Cog6ToothIcon },
-];
+const menuItems = computed(() => [
+    { name: t('owner.sidebar.dashboard'), path: "/owner", icon: ChartBarIcon },
+    { name: t('owner.sidebar.properties'), path: "/owner/properties", icon: BuildingOffice2Icon },
+    { name: t('owner.sidebar.rooms'), path: "/owner/rooms", icon: KeyIcon },
+    { name: t('owner.sidebar.reservations'), path: "/owner/reservations", icon: CalendarDaysIcon },
+    { name: t('owner.sidebar.paymentAccounts'), path: "/owner/payment-accounts", icon: CreditCardIcon },
+]);
 
-const userName = "Owner Name";
+const bottomItems = computed(() => [
+    { name: t('owner.sidebar.settings'), path: '/owner/settings', icon: Cog6ToothIcon },
+]);
 
-const user = {
-    initials: getInitials(userName),
-    name: userName,
-    role: "Property Owner",
-};
+const userName = computed(() => t('owner.profile.name'));
+
+const user = computed(() => ({
+    initials: getInitials(userName.value),
+    name: userName.value,
+    role: t('owner.profile.role'),
+}));
+
+const title = computed(() => t('app.name'));
+const navigationLabel = computed(() => t('owner.sidebar.navigation'));
 </script>
 
 <template>
-    <AppSidebar :menuItems="menuItems" :bottomItems="bottomItems" :logo="logoDark" title="ស្រុកយើង" navigationLabel="Navigation" :user="user" />
+    <AppSidebar :menuItems="menuItems" :bottomItems="bottomItems" :logo="logoDark" :title="title"
+        :navigation-label="navigationLabel" :user="user" />
 </template>

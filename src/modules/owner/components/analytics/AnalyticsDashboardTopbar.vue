@@ -1,4 +1,6 @@
 <script setup>
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ChevronDownIcon } from '@heroicons/vue/24/outline';
 
 defineProps({
@@ -13,19 +15,25 @@ defineProps({
 });
 
 const emit = defineEmits(['update:selectedYear']);
+const { t } = useI18n();
+
+const eyebrowText = computed(() => t('owner.analytics.dashboardEyebrow'));
+const titleText = computed(() => t('owner.analytics.dashboardTitle'));
+const subtitleText = computed(() => t('owner.analytics.dashboardSubtitle'));
+const yearText = computed(() => t('owner.analytics.year'));
 </script>
 
 <template>
     <header class="topbar">
         <div>
-            <p class="eyebrow">Yearly data · Live data</p>
-            <h1 class="text-3xl font-semibold text-(--color-text)">Analytics Dashboard</h1>
-            <p class="topbar-subtitle">Track revenue, booking traffic, and property performance by year.</p>
+            <p class="eyebrow">{{ eyebrowText }}</p>
+            <h1 class="text-3xl font-semibold text-(--color-text)">{{ titleText }}</h1>
+            <p class="topbar-subtitle">{{ subtitleText }}</p>
         </div>
 
         <div class="topbar-actions">
             <label class="year-picker" v-if="yearOptions.length > 0">
-                <p class="year-picker__label">Year</p>
+                <p class="year-picker__label">{{ yearText }}</p>
                 <div class="year-picker__wrapper">
                     <select class="year-picker__select" :value="selectedYear"
                         @change="emit('update:selectedYear', Number($event.target.value))">

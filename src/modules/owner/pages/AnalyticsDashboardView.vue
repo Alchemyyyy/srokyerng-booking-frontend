@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onActivated, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { storeToRefs } from 'pinia';
 import {
     BuildingOfficeIcon,
@@ -21,34 +22,21 @@ import { useAnalyticsDashboardStore } from '@/modules/owner/store/AnalyticsDashb
 import { useSidebar } from '@/shared/composables/useSidebar';
 
 const dashboardStore = useAnalyticsDashboardStore();
+const { t } = useI18n();
 const {
     loading,
     error,
-    activeTab,
-    monthWindow,
     selectedYear,
     yearOptions,
     selectedYearLabel,
     dashboardData,
-    tabs,
     summaryCards,
     visibleMonthlySeries,
-    profitPoints,
-    profitLinePath,
-    profitAreaPath,
-    weeklySessions,
-    weeklyConversionRates,
-    propertyBreakdown,
     segmentBreakdown,
-    activityFeed,
     activeReservations,
-    maxRevenueValue,
-    maxExpenseValue,
-    maxWeeklySessions,
-    maxWeeklyConversions,
 } = storeToRefs(dashboardStore);
 
-const { fetchDashboardData, formatMoney, formatDate, barHeightStyle } = dashboardStore;
+const { fetchDashboardData, formatMoney, formatDate } = dashboardStore;
 
 const { isSidebarOpen } = useSidebar();
 
@@ -64,6 +52,11 @@ const revenueSegments = computed(() => segmentBreakdown.value.map((segment) => (
     color: segment.color,
 })));
 
+const revenuePeriodLabel = computed(() => {
+    const currentQuarter = Math.ceil((new Date().getMonth() + 1) / 3);
+    return `Q${currentQuarter} ${selectedYearLabel.value}`;
+});
+
 const propertyCount = computed(() => dashboardData.value.summary?.totalProperties || 1);
 
 const approvalStatuses = computed(() => {
@@ -74,29 +67,29 @@ const approvalStatuses = computed(() => {
 
     return [
         {
-            label: 'Approved & Active Listings',
+            label: t('owner.analytics.approval.activeListings'),
             count: approved,
             tone: 'success',
         },
         {
-            label: 'Pending Compliance Audits',
+            label: t('owner.analytics.approval.pendingAudits'),
             count: pending,
             tone: 'warning',
         },
         {
-            label: 'Draft Mode / Suspended',
+            label: t('owner.analytics.approval.draftModeSuspended'),
             count: suspended,
             tone: 'danger',
         },
     ];
 });
 
-const quickLinks = [
-    { label: 'Properties Catalog', href: '/owner/properties', icon: 'BuildingOfficeIcon' },
-    { label: 'Room Allocator', href: '/owner/rooms', icon: 'HomeIcon' },
-    { label: 'Reservations Registry', href: '/owner/reservations', icon: 'CalendarDaysIcon' },
-    { label: 'Financial Ledger', href: '/owner/payment-accounts', icon: 'CreditCardIcon' },
-];
+const quickLinks = computed(() => [
+    { label: t('owner.sidebar.properties'), href: '/owner/properties', icon: 'BuildingOfficeIcon' },
+    { label: t('owner.sidebar.rooms'), href: '/owner/rooms', icon: 'HomeIcon' },
+    { label: t('owner.sidebar.reservations'), href: '/owner/reservations', icon: 'CalendarDaysIcon' },
+    { label: t('owner.sidebar.paymentAccounts'), href: '/owner/payment-accounts', icon: 'CreditCardIcon' },
+]);
 
 const iconMap = {
     BuildingOfficeIcon,
@@ -130,7 +123,7 @@ onActivated(() => {
 
             <AnalyticsDashboardSummaryCards :summary-cards="summaryCards" :animation-seed="animationSeed" />
 
-            <section v-if="activeTab === 'overview'" class="grid gap-6">
+            <section class="grid gap-6">
                 <div class="grid gap-6 lg:grid-cols-3">
                     <ReservationOverviewChart :chart="reservationOverviewChart" :year-label="selectedYearLabel"
                         :animation-seed="animationSeed" />
@@ -139,27 +132,12 @@ onActivated(() => {
                 </div>
 
                 <div class="grid gap-6 lg:grid-cols-3">
-                    <RevenueBySegmentCard :segments="revenueSegments" :animation-seed="animationSeed"
-                        class="lg:col-span-1" />
+                    <RevenueBySegmentCard :segments="revenueSegments" :period-label="revenuePeriodLabel"
+                        :animation-seed="animationSeed" class="lg:col-span-1" />
                     <RecentReservationsPanel :reservations="activeReservations" :format-date="formatDate"
                         :format-money="formatMoney" class="lg:col-span-2" />
                 </div>
             </section>
-
-            <!-- <AnalyticsDashboardRevenueSection v-if="activeTab === 'revenue'" v-model="monthWindow"
-                :visible-monthly-series="visibleMonthlySeries" :profit-points="profitPoints"
-                :profit-line-path="profitLinePath" :profit-area-path="profitAreaPath" :activity-feed="activityFeed"
-                :segment-breakdown="segmentBreakdown" :max-revenue-value="maxRevenueValue"
-                :max-expense-value="maxExpenseValue" :bar-height-style="barHeightStyle" />
-
-            <AnalyticsDashboardTrafficSection v-if="activeTab === 'traffic'" :weekly-sessions="weeklySessions"
-                :max-weekly-sessions="maxWeeklySessions" :max-weekly-conversions="maxWeeklyConversions"
-                :weekly-conversion-rates="weeklyConversionRates" :property-breakdown="propertyBreakdown"
-                :segment-breakdown="segmentBreakdown" :active-reservations="activeReservations"
-                :format-date="formatDate" :format-money="formatMoney" :bar-height-style="barHeightStyle" />
-
-            <AnalyticsDashboardPaymentNote v-if="dashboardData.paymentStatus && !dashboardData.paymentStatus.isComplete"
-                :payment-status="dashboardData.paymentStatus" /> -->
         </template>
     </main>
 </template>

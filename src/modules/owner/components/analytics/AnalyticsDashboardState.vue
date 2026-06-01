@@ -1,4 +1,7 @@
 <script setup>
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+
 defineProps({
     loading: {
         type: Boolean,
@@ -11,17 +14,21 @@ defineProps({
 });
 
 const emit = defineEmits(['retry']);
+const { t } = useI18n();
+
+const loadingMessage = computed(() => t('owner.analytics.loadingDashboard'));
+const retryLabel = computed(() => t('owner.analytics.retry'));
 </script>
 
 <template>
     <div v-if="loading" class="dashboard-state">
         <div class="loader"></div>
-        <p>Loading owner dashboard...</p>
+        <p>{{ loadingMessage }}</p>
     </div>
 
     <div v-else class="dashboard-state dashboard-state--error">
         <p>{{ error }}</p>
-        <button type="button" class="retry-button" @click="emit('retry')">Retry</button>
+        <button type="button" class="retry-button" @click="emit('retry')">{{ retryLabel }}</button>
     </div>
 </template>
 

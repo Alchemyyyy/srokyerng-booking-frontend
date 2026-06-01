@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -40,6 +41,10 @@ const props = defineProps({
 })
 
 const { resolvedTheme } = useTheme()
+const { t, locale } = useI18n()
+
+const chartLabel = computed(() => t('owner.analytics.bookingsCompleted'))
+const yearLabelText = computed(() => t('owner.analytics.yearly'))
 
 const chartVersion = ref(0)
 let animationFrameId = null
@@ -67,7 +72,7 @@ const chartData = ref({
     labels: props.chart?.labels ?? [],
     datasets: [
         {
-            label: 'Bookings Completed',
+            label: chartLabel.value,
             backgroundColor: getCssColor('--color-primary'),
             borderColor: getCssColor('--color-secondary'),
             pointBackgroundColor: getCssColor('--color-primary'),
@@ -113,7 +118,7 @@ const rebuildChart = () => {
         labels,
         datasets: [
             {
-                label: 'Bookings Completed',
+                label: chartLabel.value,
                 backgroundColor: getCssColor('--color-primary'),
                 borderColor: getCssColor('--color-secondary'),
                 pointBackgroundColor: getCssColor('--color-primary'),
@@ -131,7 +136,7 @@ const rebuildChart = () => {
             labels,
             datasets: [
                 {
-                    label: 'Bookings Completed',
+                    label: chartLabel.value,
                     backgroundColor: getCssColor('--color-primary'),
                     borderColor: getCssColor('--color-secondary'),
                     pointBackgroundColor: getCssColor('--color-primary'),
@@ -145,7 +150,7 @@ const rebuildChart = () => {
 }
 
 watch(
-    () => [resolvedTheme.value, props.animationSeed, props.chart?.labels, props.chart?.data],
+    () => [resolvedTheme.value, locale.value, props.animationSeed, props.chart?.labels, props.chart?.data],
     () => {
         rebuildChart()
     },
@@ -163,9 +168,10 @@ onBeforeUnmount(() => {
     <section
         class="rounded-2xl border border-(--color-border) bg-(--color-surface) p-6 shadow-(--shadow-card) lg:col-span-2">
         <div class="mb-4 flex items-center justify-between">
-            <h3 class="text-lg font-bold text-(--color-text)">Reservation Overview</h3>
+            <h3 class="text-lg font-bold text-(--color-text)">{{ t('owner.analytics.reservationOverviewTitle') }}</h3>
             <span
-                class="rounded-full bg-(--color-primary-soft) px-2.5 py-1 text-xs font-semibold text-(--color-primary)">Yearly
+                class="rounded-full bg-(--color-primary-soft) px-2.5 py-1 text-xs font-semibold text-(--color-primary)">{{
+                yearLabelText }}
                 {{ yearLabel }}</span>
         </div>
         <div class="h-64">

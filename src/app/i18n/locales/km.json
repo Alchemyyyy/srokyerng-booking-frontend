@@ -36,7 +36,14 @@
     "emptyMessage": "មិនទាន់មានអ្វីត្រូវបង្ហាញនៅទីនេះទេ។",
     "emptyTitle": "រកមិនឃើញទិន្នន័យ",
     "modalTitle": "ចំណងជើងផ្ទាំង",
-    "noRecords": "រកមិនឃើញកំណត់ត្រា។"
+    "noRecords": "រកមិនឃើញកំណត់ត្រា។",
+    "themeToggle": {
+      "light": "ភ្លឺ",
+      "dark": "ងងឹត",
+      "system": "ប្រព័ន្ធ",
+      "followsOs": "អនុវត្តតាមចំណូលចិត្តប្រព័ន្ធប្រតិបត្តិការ",
+      "overridesOs": "មិនអនុវត្តតាមចំណូលចិត្តប្រព័ន្ធប្រតិបត្តិការ"
+    }
   },
   "nav": {
     "home": "ទំព័រដើម",
@@ -693,5 +700,78 @@
     "checkIn": "ថ្ងៃចូល",
     "checkOut": "ថ្ងៃចេញ",
     "description": "រមណីយដ្ឋានមាត់សមុទ្រដ៏គួរឱ្យភ្ញាក់ផ្អើលដែលផ្តល់ជូននូវឆ្នេរខ្សាច់សស្អាត ទឹកសមុទ្រថ្លាឆ្លុះ និងទិដ្ឋភាពថ្ងៃលិចដែលមិនអាចបំភ្លេចបាន។"
+  },
+  "owner": {
+    "profile": {
+      "name": "ឈ្មោះ​ម្ចាស់",
+      "role": "ម្ចាស់អចលនទ្រព្យ"
+    },
+    "header": {
+      "search": "ស្វែងរក…"
+    },
+    "sidebar": {
+      "navigation": "ការរុករក",
+      "dashboard": "ផ្ទាំងគ្រប់គ្រង",
+      "properties": "អចលនទ្រព្យ",
+      "rooms": "បន្ទប់",
+      "reservations": "ការកក់",
+      "paymentAccounts": "គណនីទូទាត់",
+      "settings": "ការកំណត់"
+    },
+    "analytics": {
+      "loadingDashboard": "កំពុងផ្ទុកផ្ទាំងគ្រប់គ្រងម្ចាស់...",
+      "retry": "ព្យាយាមម្តងទៀត",
+      "dashboardEyebrow": "ទិន្នន័យប្រចាំឆ្នាំ · ទិន្នន័យផ្ទាល់",
+      "dashboardTitle": "ផ្ទាំងវិភាគ",
+      "dashboardSubtitle": "តាមដានប្រាក់ចំណូល ចរាចរណ៍ការកក់ និងដំណើរការអចលនទ្រព្យតាមឆ្នាំ។",
+      "year": "ឆ្នាំ",
+      "summaryMetrics": "សូចនាករសរុប",
+      "approvalTitle": "ស្ថានភាពអនុម័តបញ្ជី",
+      "quickNavigation": "ការរុករករហ័ស",
+      "noApprovalStatuses": "មិនមានស្ថានភាពអនុម័តទេ។",
+      "noQuickLinks": "មិនមានតំណរហ័សទេ។",
+      "approval": {
+        "activeListings": "បញ្ជីដែលបានអនុម័ត និងសកម្ម",
+        "pendingAudits": "កំពុងរង់ចាំការត្រួតពិនិត្យ",
+        "draftModeSuspended": "របៀបព្រាង / ផ្អាក"
+      },
+      "yearly": "ប្រចាំឆ្នាំ",
+      "reservationOverviewTitle": "ទិដ្ឋភាពទូទៅនៃការកក់",
+      "bookingsCompleted": "ការកក់ដែលបានបញ្ចប់",
+      "revenueBySegmentTitle": "ប្រាក់ចំណូលតាមផ្នែក",
+      "currentQuarter": "ត្រីមាសបច្ចុប្បន្ន",
+      "recentReservationsTitle": "ការកក់ថ្មីៗ",
+      "recentReservationsSubtitle": "ការកក់ចុងក្រោយនៅទូទាំងអចលនទ្រព្យរបស់អ្នក។",
+      "recentReservationsTrafficSubtitle": "ការកក់ចុងក្រោយពីអចលនទ្រព្យរបស់អ្នក។",
+      "reservations": {
+        "guest": "ភ្ញៀវ",
+        "propertyRoom": "អចលនទ្រព្យ / បន្ទប់",
+        "checkInOut": "ថ្ងៃចូល / ថ្ងៃចេញ",
+        "amount": "ចំនួនទឹកប្រាក់",
+        "status": "ស្ថានភាព"
+      },
+      "items": "ធាតុ",
+      "noRoomAssigned": "មិនបានកំណត់បន្ទប់",
+      "to": "ទៅ",
+      "unknownProperty": "អចលនទ្រព្យមិនស្គាល់",
+      "trafficOverviewTitle": "ទិដ្ឋភាពចរាចរណ៍",
+      "trafficOverviewSubtitle": "វគ្គប្រចាំសប្ដាហ៍ និងការបម្លែង",
+      "sessions": "វគ្គ",
+      "conversions": "ការបម្លែង",
+      "dailyConversionRate": "អត្រាបម្លែងប្រចាំថ្ងៃ",
+      "thisWeek": "សប្ដាហ៍នេះ",
+      "propertyMix": "សមាសភាពអចលនទ្រព្យ",
+      "revenueBySegment": "ប្រាក់ចំណូលតាមផ្នែក",
+      "byPercent": "តាម %",
+      "error": {
+        "failedToLoadDashboardData": "បរាជ័យក្នុងការផ្ទុកទិន្នន័យផ្ទាំងគ្រប់គ្រង។ សូមប្រាកដថា data.json មាន។"
+      },
+      "summary": {
+        "totalProperties": "អចលនទ្រព្យសរុប",
+        "totalBookings": "ការកក់សរុប",
+        "totalRevenue": "ប្រាក់ចំណូលសរុប",
+        "avgRating": "ពិន្ទុមធ្យម"
+      }
+    }
   }
 }

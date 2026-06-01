@@ -36,7 +36,14 @@
     "emptyMessage": "There is nothing to show here yet.",
     "emptyTitle": "No data found",
     "modalTitle": "Modal title",
-    "noRecords": "No records found."
+    "noRecords": "No records found.",
+    "themeToggle": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System",
+      "followsOs": "Follows your OS preference",
+      "overridesOs": "Overrides OS preference"
+    }
   },
   "nav": {
     "home": "Home",
@@ -245,7 +252,6 @@
       "title": "Built for Cambodia,",
       "titleHighlight": "By Cambodians",
       "desc": "SrokYerng Booking was born from a simple idea — to make it easier for travelers to discover authentic local stays across Cambodia, while helping property owners reach more guests.",
-
       "feature1": {
         "title": "Easy & Quick Booking",
         "desc": "Book your stay in just a few clicks, anytime and anywhere."
@@ -299,7 +305,6 @@
       "eyebrow": "The People Behind SrokYerng",
       "title": "Meet Our Team",
       "subtitle": "A group of passionate Cambodians dedicated to creating a better travel experience.",
-
       "members": {
         "leakhena": {
           "name": "Bou Leakhena",
@@ -695,5 +700,78 @@
     "checkIn": "Check-In",
     "checkOut": "Check-Out",
     "description": "A stunning beachfront resort offering pristine white sand beaches, crystal-clear waters, and unforgettable sunset views."
+  },
+  "owner": {
+    "profile": {
+      "name": "Owner Name",
+      "role": "Property Owner"
+    },
+    "header": {
+      "search": "Search…"
+    },
+    "sidebar": {
+      "navigation": "Navigation",
+      "dashboard": "Dashboard",
+      "properties": "Properties",
+      "rooms": "Rooms",
+      "reservations": "Reservations",
+      "paymentAccounts": "Payment Accounts",
+      "settings": "Settings"
+    },
+    "analytics": {
+      "loadingDashboard": "Loading owner dashboard...",
+      "retry": "Retry",
+      "dashboardEyebrow": "Yearly data · Live data",
+      "dashboardTitle": "Analytics Dashboard",
+      "dashboardSubtitle": "Track revenue, booking traffic, and property performance by year.",
+      "year": "Year",
+      "summaryMetrics": "Summary metrics",
+      "approvalTitle": "Listing Approval Status",
+      "quickNavigation": "Quick Navigation",
+      "noApprovalStatuses": "No approval statuses available.",
+      "noQuickLinks": "No quick links configured.",
+      "approval": {
+        "activeListings": "Approved & Active Listings",
+        "pendingAudits": "Pending Compliance Audits",
+        "draftModeSuspended": "Draft Mode / Suspended"
+      },
+      "yearly": "Yearly",
+      "reservationOverviewTitle": "Reservation Overview",
+      "bookingsCompleted": "Bookings Completed",
+      "revenueBySegmentTitle": "Revenue by Segment",
+      "currentQuarter": "Current quarter",
+      "recentReservationsTitle": "Recent Reservations",
+      "recentReservationsSubtitle": "Latest bookings across your properties.",
+      "recentReservationsTrafficSubtitle": "Latest bookings from your properties.",
+      "reservations": {
+        "guest": "Guest",
+        "propertyRoom": "Property / Room",
+        "checkInOut": "Check-in / Check-out",
+        "amount": "Amount",
+        "status": "Status"
+      },
+      "items": "items",
+      "noRoomAssigned": "No Room Assigned",
+      "to": "to",
+      "unknownProperty": "Unknown Property",
+      "trafficOverviewTitle": "Traffic Overview",
+      "trafficOverviewSubtitle": "Weekly sessions & conversions",
+      "sessions": "Sessions",
+      "conversions": "Conversions",
+      "dailyConversionRate": "Daily Conversion Rate",
+      "thisWeek": "This week",
+      "propertyMix": "Property Mix",
+      "revenueBySegment": "Revenue by segment",
+      "byPercent": "by %",
+      "error": {
+        "failedToLoadDashboardData": "Failed to load dashboard data. Ensure data.json is present."
+      },
+      "summary": {
+        "totalProperties": "Total Properties",
+        "totalBookings": "Total Bookings",
+        "totalRevenue": "Total Revenue",
+        "avgRating": "Avg Rating"
+      }
+    }
   }
 }

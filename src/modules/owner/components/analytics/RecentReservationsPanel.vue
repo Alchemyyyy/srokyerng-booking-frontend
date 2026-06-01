@@ -1,4 +1,6 @@
 <script setup>
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import AppTable from '@/shared/components/AppTable.vue';
 
 import '@/assets/styles/variables.css';
@@ -18,26 +20,29 @@ defineProps({
     },
 });
 
-const columns = [
-    { key: 'guestName', label: 'Guest' },
-    { key: 'propertyName', label: 'Property / Room' },
-    { key: 'dates', label: 'Check In - Out' },
-    { key: 'amount', label: 'Amount' },
-    { key: 'status', label: 'Status' },
-];
+const { t } = useI18n();
+
+const columns = computed(() => [
+    { key: 'guestName', label: t('owner.analytics.reservations.guest') },
+    { key: 'propertyName', label: t('owner.analytics.reservations.propertyRoom') },
+    { key: 'dates', label: t('owner.analytics.reservations.checkInOut') },
+    { key: 'amount', label: t('owner.analytics.reservations.amount') },
+    { key: 'status', label: t('owner.analytics.reservations.status') },
+]);
 </script>
 
 <template>
     <section class="rounded-2xl border border-(--color-border) bg-(--color-surface) p-6 shadow-(--shadow-card)">
         <div class="mb-4 flex items-center justify-between">
             <div>
-                <h3 class="text-lg font-bold text-(--color-text)">Recent Reservations</h3>
-                <p class="text-xs text-(--color-muted)">Latest bookings across your properties.</p>
+                <h3 class="text-lg font-bold text-(--color-text)">{{ t('owner.analytics.recentReservationsTitle') }}
+                </h3>
+                <p class="text-xs text-(--color-muted)">{{ t('owner.analytics.recentReservationsSubtitle') }}</p>
             </div>
 
             <span
                 class="rounded-full bg-(--color-primary-soft) px-2.5 py-1 text-xs font-semibold text-(--color-primary)">
-                {{ reservations.length }} items
+                {{ reservations.length }} {{ t('owner.analytics.items') }}
             </span>
         </div>
 
@@ -49,14 +54,16 @@ const columns = [
             <template #cell-propertyName="{ row }">
                 <div class="flex flex-col">
                     <span class="font-medium text-(--color-text)">{{ row.propertyName }}</span>
-                    <span class="text-xs text-(--color-muted)">{{ row.roomName || 'No Room Assigned' }}</span>
+                    <span class="text-xs text-(--color-muted)">{{ row.roomName || t('owner.analytics.noRoomAssigned')
+                        }}</span>
                 </div>
             </template>
 
             <template #cell-dates="{ row }">
                 <div class="flex flex-col">
                     <span class="text-(--color-text)">{{ formatDate(row.checkIn) }}</span>
-                    <span class="text-xs text-(--color-muted)">to {{ formatDate(row.checkOut) }}</span>
+                    <span class="text-xs text-(--color-muted)">{{ t('owner.analytics.to') }} {{ formatDate(row.checkOut)
+                        }}</span>
                 </div>
             </template>
 

@@ -1,10 +1,14 @@
 <script setup>
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import AppHeader from '@/shared/components/DashboardHeader.vue';
 import { getInitials } from '@/shared/utils/getInitials';
 
-const userName = 'Owner Name';
+const { t } = useI18n();
 
-const user = { initials: getInitials(userName), };
+const userName = computed(() => t('owner.profile.name'));
+
+const user = computed(() => ({ initials: getInitials(userName.value) }));
 </script>
 
 <template>

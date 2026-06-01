@@ -2,6 +2,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import { useTheme } from '@/modules/admin/composables/useTheme';
 
@@ -20,22 +21,24 @@ const isOpen = ref(false);
 const triggerRef = ref(null);
 const dropdownRef = ref(null);
 
+const { t } = useI18n();
+
 const THEME_OPTIONS = [
     {
         key: 'light',
-        label: 'Light',
+        labelKey: 'components.themeToggle.light',
         icon: SunIcon
     },
 
     {
         key: 'dark',
-        label: 'Dark',
+        labelKey: 'components.themeToggle.dark',
         icon: MoonIcon
     },
 
     {
         key: 'system',
-        label: 'System',
+        labelKey: 'components.themeToggle.system',
         icon: ComputerDesktopIcon
     }
 ];
@@ -99,7 +102,7 @@ onBeforeUnmount(() => {
             <component :is="activeOption.icon" class="w-4 h-4 shrink-0" />
 
             <span class="hidden sm:block">
-                {{ activeOption.label }}
+                {{ t(activeOption.labelKey) }}
             </span>
 
             <ChevronDownIcon class="w-3.5 h-3.5 shrink-0 transition-transform duration-200"
@@ -130,26 +133,24 @@ onBeforeUnmount(() => {
                     <component :is="option.icon" class="w-4 h-4 shrink-0" />
 
                     <span class="flex-1">
-                        {{ option.label }}
+                        {{ t(option.labelKey) }}
                     </span>
 
                     <CheckIcon class="w-3.5 h-3.5 shrink-0 transition-opacity" :class="option.key === currentTheme.value
-                            ? 'opacity-100'
-                            : 'opacity-0'
+                        ? 'opacity-100'
+                        : 'opacity-0'
                         " />
                 </button>
 
                 <div class="mx-3 my-1 h-px bg-(--color-border)" />
 
                 <p class="px-3 py-1.5 text-[10px] leading-snug text-(--color-muted)">
-                    <template v-if="
-                        currentTheme === 'system'
-                    ">
-                        Follows your OS preference
+                    <template v-if="currentTheme === 'system'">
+                        {{ t('components.themeToggle.followsOs') }}
                     </template>
 
                     <template v-else>
-                        Overrides OS preference
+                        {{ t('components.themeToggle.overridesOs') }}
                     </template>
                 </p>
             </div>

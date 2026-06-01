@@ -1,6 +1,9 @@
 <script setup>
 import { ref } from 'vue';
+import { computed } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
+import { getInitials } from '@/shared/utils/getInitials';
 import { useTheme } from '@/modules/admin/composables/useTheme';
 import { useSidebar } from '@/shared/composables/useSidebar';
 import {
@@ -9,7 +12,7 @@ import {
     XMarkIcon
 } from '@heroicons/vue/24/outline';
 
-defineProps({
+const props = defineProps({
     menuItems: Array,
     bottomItems: {
         type: Array,
@@ -22,20 +25,24 @@ defineProps({
     },
     user: {
         type: Object,
-        default: () => ({
-            initials: 'AD',
-            name: 'Admin User',
-            role: 'Super Admin'
-        })
+        default: () => ({})
     },
     navigationLabel: {
         type: String,
-        default: 'Navigation'
+        default: ''
     }
 });
 
 const { resolvedTheme } = useTheme();
+const { t, locale } = useI18n();
 const route = useRoute();
+
+// const sidebarTitle = computed(() => props.title || t('app.name'));
+const sidebarNavigationLabel = computed(() => props.navigationLabel || t('owner.sidebar.navigation'));
+const sidebarNavigationLabelClass = computed(() => (locale.value === 'en' ? 'text-[9px]' : 'text-[12px]'));
+const displayUserName = computed(() => props.user?.name || t('owner.profile.name'));
+const displayUserRole = computed(() => props.user?.role || t('owner.profile.role'));
+const displayUserInitials = computed(() => props.user?.initials || getInitials(displayUserName.value));
 
 // 👉 sidebar state
 const {
@@ -65,23 +72,24 @@ const isActive = (path) => route.path === path;
                 <img :src="logo" class="transition-all duration-300"
                     :class="isSidebarOpen ? 'h-16 w-auto brightness-200' : 'h-8 w-auto brightness-200'" />
 
-                <span v-if="isSidebarOpen" class="font-kantumruy text-xl font-extrabold tracking-wider" :class="resolvedTheme === 'dark'
+                <span v-if="isSidebarOpen" class="font-kantumruy-pro text-xl font-extrabold tracking-wider" :class="resolvedTheme === 'dark'
                     ? 'text-(--color-primary)'
                     : 'text-(--color-surface)'">
-                    {{ title }}
+                    <!-- {{ sidebarTitle }} -->
+                    ស្រុកយើង
                 </span>
             </div>
 
             <!-- NAVIGATION -->
             <div class="flex-1 flex flex-col overflow-y-auto py-4 px-2 gap-1">
 
-                <p v-if="isSidebarOpen" class="text-[9px] font-semibold uppercase tracking-[1.4px] px-2 pb-1.5"
-                    style="color: rgba(255,255,255,0.28);">
-                    {{ navigationLabel }}
+                <p v-if="isSidebarOpen" class="font-semibold uppercase tracking-[1.4px] px-2 pb-1.5"
+                    :class="sidebarNavigationLabelClass" style="color: rgba(255,255,255, 0.50); height: 24px;">
+                    {{ sidebarNavigationLabel }}
                 </p>
 
                 <router-link v-for="item in menuItems" :key="item.path" :to="item.path" :class="[
-                    'sidebar-item group relative flex items-center gap-2 w-full rounded-lg px-2 py-2 text-[12px]',
+                    'sidebar-item group relative flex items-center gap-2 w-full rounded-lg px-2 py-2 text-[15px]',
                     isActive(item.path)
                         ? 'sidebar-item--active'
                         : 'sidebar-item--idle',
@@ -103,10 +111,10 @@ const isActive = (path) => route.path === path;
             </div>
 
             <!-- BOTTOM -->
-            <div class="px-2 py-2 border-t border-white/10">
+            <div class="px-2 py-2 border-t border-(--color-border)">
 
                 <router-link v-for="item in bottomItems" :key="item.path" :to="item.path" :class="[
-                    'sidebar-item flex items-center gap-2 w-full rounded-lg px-2 py-2 text-[12px]',
+                    'sidebar-item flex items-center gap-2 w-full rounded-lg px-2 py-2 text-[15px]',
                     isActive(item.path)
                         ? 'sidebar-item--active'
                         : 'sidebar-item--idle',
@@ -122,21 +130,21 @@ const isActive = (path) => route.path === path;
                 <!-- USER -->
                 <div class="flex items-center gap-2 rounded-lg px-2 py-2 mt-2 sidebar-user"
                     :class="!isSidebarOpen ? 'justify-center' : ''">
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-[12px] font-bold text-white"
                         style="background: rgba(57,149,198,0.35);">
-                        {{ user.initials }}
+                        {{ displayUserInitials }}
                     </div>
 
                     <div v-if="isSidebarOpen" class="flex flex-col min-w-0 flex-1">
-                        <span class="text-xs font-semibold truncate text-white/85">
-                            {{ user.name }}
+                        <span class="text-[15px] font-semibold truncate text-white/85">
+                            {{ displayUserName }}
                         </span>
-                        <span class="text-[10px] text-white/40 truncate">
-                            {{ user.role }}
+                        <span class="text-[12px] text-white/40 truncate">
+                            {{ displayUserRole }}
                         </span>
                     </div>
 
-                    <ArrowRightStartOnRectangleIcon v-if="isSidebarOpen" class="w-4 h-4 text-white" />
+                    <ArrowRightStartOnRectangleIcon v-if="isSidebarOpen" class="w-5 h-5 text-white" />
                 </div>
 
             </div>
@@ -148,7 +156,7 @@ const isActive = (path) => route.path === path;
 
 <style scoped>
 .sidebar-item {
-    color: rgba(255, 255, 255, 0.55);
+    color: rgba(255, 255, 255, 0.80);
 }
 
 .sidebar-item--idle:hover,

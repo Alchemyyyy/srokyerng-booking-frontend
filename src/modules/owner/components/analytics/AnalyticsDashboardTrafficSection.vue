@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from 'vue-i18n';
+
 defineProps({
     weeklySessions: {
         type: Array,
@@ -41,6 +43,8 @@ defineProps({
         required: true,
     },
 });
+
+const { t } = useI18n();
 </script>
 
 <template>
@@ -48,13 +52,13 @@ defineProps({
         <article class="card card-full">
             <div class="card-hdr">
                 <div>
-                    <h2 class="card-title">Traffic Overview</h2>
-                    <p class="card-sub">Weekly sessions &amp; conversions</p>
+                    <h2 class="card-title">{{ t('owner.analytics.trafficOverviewTitle') }}</h2>
+                    <p class="card-sub">{{ t('owner.analytics.trafficOverviewSubtitle') }}</p>
                 </div>
 
                 <div class="legend-inline">
-                    <span><i class="swatch swatch--sessions"></i> Sessions</span>
-                    <span><i class="swatch swatch--conversions"></i> Conversions</span>
+                    <span><i class="swatch swatch--sessions"></i> {{ t('owner.analytics.sessions') }}</span>
+                    <span><i class="swatch swatch--conversions"></i> {{ t('owner.analytics.conversions') }}</span>
                 </div>
             </div>
 
@@ -73,11 +77,11 @@ defineProps({
         <article class="card card-full card-wide-split">
             <div class="card-hdr">
                 <div>
-                    <h2 class="card-title">Daily Conversion Rate</h2>
-                    <p class="card-sub">This week</p>
+                    <h2 class="card-title">{{ t('owner.analytics.dailyConversionRate') }}</h2>
+                    <p class="card-sub">{{ t('owner.analytics.thisWeek') }}</p>
                 </div>
 
-                <span class="badge badge-blue">This week</span>
+                <span class="badge badge-blue">{{ t('owner.analytics.thisWeek') }}</span>
             </div>
 
             <div class="rate-list">
@@ -94,11 +98,11 @@ defineProps({
         <article class="card">
             <div class="card-hdr">
                 <div>
-                    <h2 class="card-title">Property Mix</h2>
-                    <p class="card-sub">Revenue by segment</p>
+                    <h2 class="card-title">{{ t('owner.analytics.propertyMix') }}</h2>
+                    <p class="card-sub">{{ t('owner.analytics.revenueBySegment') }}</p>
                 </div>
 
-                <span class="badge badge-coral">by %</span>
+                <span class="badge badge-coral">{{ t('owner.analytics.byPercent') }}</span>
             </div>
 
             <div class="seg-bar seg-bar--wide" aria-hidden="true">
@@ -123,19 +127,20 @@ defineProps({
         <article class="card">
             <div class="card-hdr">
                 <div>
-                    <h2 class="card-title">Recent Reservations</h2>
-                    <p class="card-sub">Latest bookings from your properties</p>
+                    <h2 class="card-title">{{ t('owner.analytics.recentReservationsTitle') }}</h2>
+                    <p class="card-sub">{{ t('owner.analytics.recentReservationsTrafficSubtitle') }}</p>
                 </div>
 
-                <span class="badge badge-teal">{{ activeReservations.length }} items</span>
+                <span class="badge badge-teal">{{ activeReservations.length }} {{ t('owner.analytics.items') }}</span>
             </div>
 
             <div class="activity-list">
                 <div v-for="reservation in activeReservations" :key="reservation.id" class="act-row act-row--compact">
                     <div class="act-body">
                         <p class="act-title">{{ reservation.guestName }}</p>
-                        <p class="act-time">{{ reservation.propertyName }} · {{ formatDate(reservation.checkIn) }} to {{
-                            formatDate(reservation.checkOut) }}</p>
+                        <p class="act-time">{{ reservation.propertyName }} · {{ formatDate(reservation.checkIn) }} {{
+                            t('owner.analytics.to') }} {{
+                                formatDate(reservation.checkOut) }}</p>
                     </div>
                     <div class="act-side">
                         <span :class="['badge', `status-${reservation.statusTone}`]">{{ reservation.status }}</span>

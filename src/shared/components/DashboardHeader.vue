@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 
 import ThemeToggle from './ThemeToggle1.vue';
 import LanguageToggle from './LanguageToggle.vue';
@@ -28,9 +29,13 @@ defineProps({
 });
 
 const route = useRoute();
+const { t } = useI18n();
+
+const homeLabel = computed(() => t('nav.home'));
+const searchLabel = computed(() => t('owner.header.search'));
 
 const routeLabel = computed(() => {
-    return route.meta.title || 'Dashboard';
+    return route.meta.title || t('nav.dashboard');
 });
 
 const isScrolled = ref(false);
@@ -58,7 +63,7 @@ const { isSidebarOpen } = useSidebar();
         <!-- Breadcrumb -->
         <nav class="flex items-center gap-1.5 text-sm flex-1 min-w-0" aria-label="Breadcrumb">
             <span class="text-(--color-muted) font-medium">
-                Home
+                {{ homeLabel }}
             </span>
 
             <ChevronRightIcon class="w-3.5 h-3.5 text-(--color-muted) shrink-0" />
@@ -77,7 +82,7 @@ const { isSidebarOpen } = useSidebar();
                    transition-all duration-200">
             <MagnifyingGlassIcon class="w-3.5 h-3.5 shrink-0" />
 
-            <span>Search…</span>
+            <span>{{ searchLabel }}</span>
 
             <kbd class="text-[10px] px-1.5 py-0.5 rounded bg-(--color-border)">
                 ⌘K

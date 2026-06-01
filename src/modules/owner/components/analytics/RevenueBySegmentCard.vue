@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
     Chart as ChartJS,
     ArcElement,
@@ -34,7 +35,7 @@ const props = defineProps({
     },
     periodLabel: {
         type: String,
-        default: 'Q2 2026',
+        default: '',
     },
     animationSeed: {
         type: Number,
@@ -43,6 +44,10 @@ const props = defineProps({
 });
 
 const { resolvedTheme } = useTheme();
+const { t } = useI18n();
+
+const currentQuarter = Math.ceil((new Date().getMonth() + 1) / 3);
+const displayPeriodLabel = computed(() => props.periodLabel || `Q${currentQuarter} ${new Date().getFullYear()}`);
 
 const chartVersion = ref(0);
 let animationFrameId = null;
@@ -158,10 +163,10 @@ onBeforeUnmount(() => {
         class="segment-card rounded-2xl border border-(--color-border) bg-(--color-surface) p-6 shadow-(--shadow-card)">
         <div class="card-hdr">
             <div>
-                <div class="card-title">Revenue by Segment</div>
-                <div class="card-sub">Current quarter</div>
+                <div class="card-title">{{ t('owner.analytics.revenueBySegmentTitle') }}</div>
+                <div class="card-sub">{{ t('owner.analytics.currentQuarter') }}</div>
             </div>
-            <span class="badge badge-teal">{{ periodLabel }}</span>
+            <span class="badge badge-teal">{{ displayPeriodLabel }}</span>
         </div>
 
         <div class="chart-wrap">
