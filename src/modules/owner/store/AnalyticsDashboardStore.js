@@ -70,7 +70,8 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
     const loading = ref(true);
     const error = ref(null);
     const activeTab = ref('overview');
-    const monthWindow = ref(6);
+    const monthWindow = ref(12);
+    const selectedYear = ref(null);
     const tabs = ref([
         { key: 'overview', label: 'Overview' },
         { key: 'revenue', label: 'Revenue' },
@@ -100,10 +101,100 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
             lastUpdated: null,
         },
         properties: [],
+        rooms: [],
         recentReservations: [],
     });
 
     const analyticsData = computed(() => dashboardData.value.analytics || {});
+
+    const yearlyPerformance = computed(() => {
+        const source = analyticsData.value.yearlyPerformance;
+
+        if (!Array.isArray(source)) {
+            return [];
+        }
+
+        return source
+            .map((entry) => ({
+                year: Number(entry.year) || 0,
+                summary: entry.summary || null,
+                segmentPerformance: Array.isArray(entry.segmentPerformance) ? entry.segmentPerformance : [],
+                monthlyPerformance: Array.isArray(entry.monthlyPerformance)
+                    ? entry.monthlyPerformance.map((item) => ({
+                        label: item.label,
+                        revenue: Number(item.revenue) || 0,
+                        expenses: Number(item.expenses) || 0,
+                        profit: Number(item.profit) || (Number(item.revenue) || 0) - (Number(item.expenses) || 0),
+                    }))
+                    : [],
+            }))
+            .filter((entry) => entry.year > 0);
+    });
+
+    const yearOptions = computed(() => [...new Set(yearlyPerformance.value.map((entry) => entry.year))].sort((left, right) => right - left));
+
+    const selectedYearEntry = computed(() => {
+        const availableYears = yearlyPerformance.value;
+
+        if (!availableYears.length) {
+            return null;
+        }
+
+        const fallbackYear = yearOptions.value[0] || new Date().getFullYear();
+        const targetYear = Number(selectedYear.value) || fallbackYear;
+
+        return availableYears.find((entry) => entry.year === targetYear) || availableYears[0];
+    });
+
+    const selectedYearLabel = computed(() => selectedYearEntry.value?.year || selectedYear.value || yearOptions.value[0] || new Date().getFullYear());
+
+    const selectedYearSummary = computed(() => {
+        const summary = selectedYearEntry.value?.summary || dashboardData.value.summary || {};
+        const properties = dashboardData.value.properties || [];
+
+        return {
+            ...summary,
+            totalProperties: properties.length,
+        };
+    });
+
+    const selectedYearSegments = computed(() => {
+        const selectedYearPerformance = selectedYearEntry.value?.segmentPerformance;
+
+        if (Array.isArray(selectedYearPerformance) && selectedYearPerformance.length > 0) {
+            const total = selectedYearPerformance.reduce((sum, item) => sum + (Number(item.value) || 0), 0) || 1;
+
+            return selectedYearPerformance.map((item, index) => ({
+                id: item.name,
+                name: item.name,
+                type: item.name,
+                revenue: Number(item.value) || 0,
+                share: Math.round(((Number(item.value) || 0) / total) * 100),
+                color: palette[index % palette.length],
+            }));
+        }
+
+        return [];
+    });
+
+    const selectedYearSeries = computed(() => {
+        if (selectedYearEntry.value) {
+            return selectedYearEntry.value.monthlyPerformance;
+        }
+
+        const source = analyticsData.value.monthlyPerformance;
+
+        if (Array.isArray(source) && source.length > 0) {
+            return source.map((item) => ({
+                label: item.label,
+                revenue: Number(item.revenue) || 0,
+                expenses: Number(item.expenses) || 0,
+                profit: Number(item.profit) || (Number(item.revenue) || 0) - (Number(item.expenses) || 0),
+            }));
+        }
+
+        return deriveMonthlyPerformance();
+    });
 
     const deriveMonthlyPerformance = () => {
         const summary = dashboardData.value.summary || {};
@@ -128,18 +219,7 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
     };
 
     const monthlySeries = computed(() => {
-        const source = analyticsData.value.monthlyPerformance;
-
-        if (Array.isArray(source) && source.length > 0) {
-            return source.map((item) => ({
-                label: item.label,
-                revenue: Number(item.revenue) || 0,
-                expenses: Number(item.expenses) || 0,
-                profit: Number(item.profit) || (Number(item.revenue) || 0) - (Number(item.expenses) || 0),
-            }));
-        }
-
-        return deriveMonthlyPerformance();
+        return selectedYearSeries.value;
     });
 
     const visibleMonthlySeries = computed(() => monthlySeries.value.slice(0, monthWindow.value));
@@ -202,47 +282,77 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
         })),
     );
 
-    const propertyBreakdown = computed(() => {
-        const source = analyticsData.value.segmentPerformance;
+    const propertyBreakdown = computed(() => selectedYearSegments.value.length > 0
+        ? selectedYearSegments.value
+        : (() => {
+            const source = analyticsData.value.segmentPerformance;
 
-        if (Array.isArray(source) && source.length > 0) {
-            const total = source.reduce((sum, item) => sum + (Number(item.value) || 0), 0) || 1;
+            if (Array.isArray(source) && source.length > 0) {
+                const total = source.reduce((sum, item) => sum + (Number(item.value) || 0), 0) || 1;
 
-            return source.map((item, index) => ({
-                id: item.name,
-                name: item.name,
-                type: item.name,
-                revenue: Number(item.value) || 0,
-                share: Math.round(((Number(item.value) || 0) / total) * 100),
-                color: palette[index % palette.length],
-            }));
-        }
+                return source.map((item, index) => ({
+                    id: item.name,
+                    name: item.name,
+                    type: item.name,
+                    revenue: Number(item.value) || 0,
+                    share: Math.round(((Number(item.value) || 0) / total) * 100),
+                    color: palette[index % palette.length],
+                }));
+            }
 
-        const properties = dashboardData.value.properties || [];
-        const totalRevenue = properties.reduce((sum, property) => sum + (Number(property.revenue) || 0), 0) || 1;
+            const properties = dashboardData.value.properties || [];
+            const totalRevenue = properties.reduce((sum, property) => sum + (Number(property.revenue) || 0), 0) || 1;
 
-        return properties
-            .slice(0, 4)
-            .map((property, index) => ({
-                id: property.id,
-                name: property.type,
-                type: property.location,
-                revenue: Number(property.revenue) || 0,
-                share: Math.round(((Number(property.revenue) || 0) / totalRevenue) * 100),
-                color: palette[index % palette.length],
-            }))
-            .sort((left, right) => right.revenue - left.revenue);
-    });
+            return properties
+                .slice(0, 4)
+                .map((property, index) => ({
+                    id: property.id,
+                    name: property.type,
+                    type: property.location,
+                    revenue: Number(property.revenue) || 0,
+                    share: Math.round(((Number(property.revenue) || 0) / totalRevenue) * 100),
+                    color: palette[index % palette.length],
+                }))
+                .sort((left, right) => right.revenue - left.revenue);
+        })());
 
     const segmentBreakdown = computed(() => propertyBreakdown.value.slice(0, 4));
+
+    const propertyLookup = computed(() => {
+        const properties = dashboardData.value.properties || [];
+
+        return properties.reduce((lookup, property) => {
+            lookup[property.id] = property;
+            return lookup;
+        }, {});
+    });
+
+    const roomLookup = computed(() => {
+        const rooms = dashboardData.value.rooms || [];
+
+        return rooms.reduce((lookup, room) => {
+            lookup[room.id] = room;
+            return lookup;
+        }, {});
+    });
 
     const reservationRows = computed(() => (dashboardData.value.recentReservations || []).slice(0, 5));
 
     const activeReservations = computed(() =>
-        reservationRows.value.map((reservation) => ({
-            ...reservation,
-            statusTone: reservation.status === 'cancelled' ? 'danger' : reservation.status === 'paid' ? 'success' : 'warning',
-        })),
+        reservationRows.value.map((reservation) => {
+            const room = reservation.roomId ? roomLookup.value[reservation.roomId] : null;
+            const property = reservation.propertyId ? propertyLookup.value[reservation.propertyId] : null;
+
+            return {
+                ...reservation,
+                propertyName: property?.name || reservation.propertyName || 'Unknown Property',
+                roomName: room?.type || reservation.roomName || 'No Room Assigned',
+                roomType: room?.type || reservation.roomType || '',
+                propertyId: property?.id || reservation.propertyId || '',
+                roomId: room?.id || reservation.roomId || '',
+                statusTone: reservation.status === 'cancelled' ? 'danger' : reservation.status === 'paid' ? 'success' : 'warning',
+            };
+        }),
     );
 
     const activityFeed = computed(() => {
@@ -287,7 +397,7 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
     });
 
     const summaryCards = computed(() => {
-        const summary = dashboardData.value.summary || {};
+        const summary = selectedYearSummary.value || {};
 
         return [
             {
@@ -353,7 +463,18 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            dashboardData.value = await response.json();
+            const data = await response.json();
+            dashboardData.value = data;
+
+            const availableYears = Array.isArray(data.analytics?.yearlyPerformance)
+                ? data.analytics.yearlyPerformance.map((entry) => Number(entry.year)).filter((year) => Number.isFinite(year))
+                : [];
+
+            if (availableYears.length > 0) {
+                selectedYear.value = availableYears.includes(Number(selectedYear.value))
+                    ? Number(selectedYear.value)
+                    : Math.max(...availableYears);
+            }
         } catch (requestError) {
             error.value = 'Failed to load dashboard data. Ensure data.json is present.';
             console.error('Dashboard Fetch Error:', requestError);
@@ -370,9 +491,13 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
         activeTab,
         monthWindow,
         dashboardData,
+        selectedYear,
+        yearOptions,
+        selectedYearLabel,
         tabs,
         analyticsData,
         summaryCards,
+        selectedYearSummary,
         monthlySeries,
         visibleMonthlySeries,
         revenuePoints,
@@ -385,7 +510,9 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
         weeklySessionsPoints,
         weeklyConversionRates,
         propertyBreakdown,
+        propertyLookup,
         segmentBreakdown,
+        roomLookup,
         reservationRows,
         activityFeed,
         activeReservations,
