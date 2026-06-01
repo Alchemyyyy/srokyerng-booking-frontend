@@ -10,6 +10,7 @@ export const useAuthStore = defineStore("auth", () => {
   const restoringSession = ref(false);
   const loading = ref(false);
   const error = ref(null);
+  let restorePromise = null;
 
   const isAuthenticated = computed(() => Boolean(accessToken.value && user.value));
   const isAdmin = computed(() => user.value?.role === "admin");
@@ -90,16 +91,25 @@ export const useAuthStore = defineStore("auth", () => {
       return user.value;
     }
 
+    if (restorePromise) {
+      return restorePromise;
+    }
+
     restoringSession.value = true;
 
-    try {
-      return await refreshSession();
-    } catch {
-      return null;
-    } finally {
-      initialized.value = true;
-      restoringSession.value = false;
-    }
+    restorePromise = (async () => {
+      try {
+        return await refreshSession();
+      } catch {
+        return null;
+      } finally {
+        initialized.value = true;
+        restoringSession.value = false;
+        restorePromise = null;
+      }
+    })();
+
+    return restorePromise;
   };
 
   const logout = async () => {
