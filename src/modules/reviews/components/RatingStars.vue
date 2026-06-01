@@ -4,7 +4,7 @@
       v-for="star in 5"
       :key="star"
       class="star-btn"
-      :class="{ active: star <= modelValue }"
+      :class="{ active: star <= (hovered || modelValue) }"
       @click="$emit('update:modelValue', star)"
       @mouseover="hovered = star"
       @mouseleave="hovered = 0"
@@ -24,10 +24,7 @@
 import { ref } from "vue";
 
 defineProps({
-  modelValue: {
-    type: Number,
-    default: 0,
-  },
+  modelValue: { type: Number, default: 0 },
 });
 
 defineEmits(["update:modelValue"]);
@@ -42,38 +39,21 @@ const labels = ["Poor", "Fair", "Good", "Very Good", "Excellent"];
   align-items: center;
   gap: 4px;
 }
-
 .star-btn {
   border: none;
   background: transparent;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  cursor: pointer;
+  width: 36px; height: 36px;
+  padding: 0; cursor: pointer;
   color: #d1d5db;
   transition: color 0.15s ease, transform 0.15s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
 }
-
-.star-btn svg {
-  width: 28px;
-  height: 28px;
-}
-
-.star-btn:hover {
-  transform: scale(1.15);
-}
-
-.star-btn.active {
-  color: #f59e0b;
-}
-
+.star-btn svg { width: 28px; height: 28px; }
+.star-btn:hover { transform: scale(1.15); }
+.star-btn.active { color: #f59e0b; }
 .rating-label {
   margin-left: 10px;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 14px; font-weight: 600;
   color: #1a56db;
 }
 </style>
