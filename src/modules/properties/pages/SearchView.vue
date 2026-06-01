@@ -6,6 +6,7 @@ import { useI18n } from "vue-i18n";
 import aboutHero from "@/assets/images/about/hero/hero_section.png";
 import AppButton from "@/shared/components/AppButton.vue";
 import { getStoredTheme } from "@/shared/services/themeStorage";
+import PropertyFilter from "@/modules/properties/components/PropertyFilter.vue";
 
 const { t, locale } = useI18n({ useScope: "global" });
 const route = useRoute();
@@ -526,7 +527,9 @@ const resultsSummary = computed(() => {
                     >
                       {{ t("propertiesPage.hero.smartBrowse") }}
                     </p>
-                    <h2 class="mt-2 max-w-xs text-2xl font-black leading-tight text-white">
+                    <h2
+                      class="mt-2 max-w-xs text-2xl font-black leading-tight text-white"
+                    >
                       {{ t("propertiesPage.hero.shapeYourStay") }}
                     </h2>
                   </div>
@@ -540,8 +543,12 @@ const resultsSummary = computed(() => {
                 </div>
 
                 <div class="mt-6 grid max-w-md gap-3 sm:grid-cols-2">
-                  <div class="rounded-[22px] border border-white/12 bg-white/10 px-4 py-3 backdrop-blur-md">
-                    <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-100/65">
+                  <div
+                    class="rounded-[22px] border border-white/12 bg-white/10 px-4 py-3 backdrop-blur-md"
+                  >
+                    <p
+                      class="text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-100/65"
+                    >
                       {{ t("home.search.properties") }}
                     </p>
                     <p class="mt-2 text-2xl font-black text-white">
@@ -551,8 +558,12 @@ const resultsSummary = computed(() => {
                       {{ heroStats[0].note }}
                     </p>
                   </div>
-                  <div class="rounded-[22px] border border-white/12 bg-white/10 px-4 py-3 backdrop-blur-md">
-                    <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-100/65">
+                  <div
+                    class="rounded-[22px] border border-white/12 bg-white/10 px-4 py-3 backdrop-blur-md"
+                  >
+                    <p
+                      class="text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-100/65"
+                    >
                       {{ t("propertiesPage.stats.averageRating") }}
                     </p>
                     <p class="mt-2 text-2xl font-black text-white">
@@ -704,148 +715,16 @@ const resultsSummary = computed(() => {
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)]">
           <aside class="lg:sticky lg:top-32 lg:self-start">
-            <div
-              class="properties-panel rounded-[30px] border p-6 backdrop-blur-xl"
-            >
-              <div class="flex items-center justify-between gap-4">
-                <div>
-                  <p
-                    class="text-xs font-semibold uppercase tracking-[0.22em] text-(--color-primary)"
-                  >
-                    {{ t("propertiesPage.filters.title") }}
-                  </p>
-                  <h2 class="mt-2 text-2xl font-black text-(--color-text)">
-                    {{ t("propertiesPage.filters.refineTrip") }}
-                  </h2>
-                </div>
-                <span
-                  class="rounded-full bg-(--color-primary-soft) px-3 py-1 text-sm font-semibold text-(--color-primary)"
-                >
-                  {{ activeFilterCount }}
-                </span>
-              </div>
-
-              <div class="mt-6">
-                <label
-                  class="text-xs font-semibold uppercase tracking-[0.22em] text-(--color-muted)"
-                >
-                  {{ t("propertiesPage.filters.maxPricePerNight") }}
-                </label>
-                <div
-                  class="mt-3 flex items-center justify-between text-sm font-semibold text-(--color-text)"
-                >
-                  <span>{{ formatPrice(0) }}</span>
-                  <span>{{ formatPrice(filters.maxPrice) }}</span>
-                </div>
-                <input
-                  v-model="filters.maxPrice"
-                  type="range"
-                  min="30"
-                  max="220"
-                  step="5"
-                  class="property-range mt-3 w-full"
-                  style="accent-color: var(--color-primary)"
-                />
-              </div>
-
-              <div class="mt-8">
-                <p
-                  class="text-xs font-semibold uppercase tracking-[0.22em] text-(--color-muted)"
-                >
-                  {{ t("home.search.city") }}
-                </p>
-                <div class="mt-3 space-y-2">
-                  <button
-                    v-for="city in cityOptions.slice(1)"
-                    :key="city.value"
-                    type="button"
-                    class="flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition"
-                    :class="
-                      filters.city === city.value
-                        ? 'border-(--color-primary)/30 bg-(--color-primary-soft) text-(--color-primary)'
-                        : 'border-(--color-border) bg-(--color-surface) text-(--color-text) hover:border-(--color-primary)/20 hover:bg-(--color-surface-soft)'
-                    "
-                    @click="
-                      filters.city =
-                        filters.city === city.value ? 'all' : city.value
-                    "
-                  >
-                    <span>{{ city.label }}</span>
-                    <span class="text-xs text-(--color-muted)">
-                      {{ propertyCountByCity(city.value) }}
-                    </span>
-                  </button>
-                </div>
-              </div>
-
-              <div class="mt-8">
-                <p
-                  class="text-xs font-semibold uppercase tracking-[0.22em] text-(--color-muted)"
-                >
-                  {{ t("home.search.type") }}
-                </p>
-                <div class="mt-3 flex flex-wrap gap-2">
-                  <button
-                    v-for="type in typeOptions.slice(1)"
-                    :key="type.value"
-                    type="button"
-                    class="rounded-full border px-3.5 py-2 text-sm font-semibold transition"
-                    :class="
-                      filters.type === type.value
-                        ? 'border-(--color-primary)/30 bg-(--color-primary-soft) text-(--color-primary)'
-                        : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:bg-(--color-surface-soft) hover:text-(--color-text)'
-                    "
-                    @click="
-                      filters.type =
-                        filters.type === type.value ? 'all' : type.value
-                    "
-                  >
-                    {{ type.label }}
-                  </button>
-                </div>
-              </div>
-
-              <div class="mt-8">
-                <p
-                  class="text-xs font-semibold uppercase tracking-[0.22em] text-(--color-muted)"
-                >
-                  {{ t("propertiesPage.filters.minimumRating") }}
-                </p>
-                <div class="mt-3 flex flex-wrap gap-2">
-                  <button
-                    v-for="rating in minimumRatings"
-                    :key="rating"
-                    type="button"
-                    class="rounded-full border px-3.5 py-2 text-sm font-semibold transition"
-                    :class="
-                      filters.minRating === rating
-                        ? 'border-(--color-primary)/30 bg-(--color-primary-soft) text-(--color-primary)'
-                        : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:bg-(--color-surface-soft) hover:text-(--color-text)'
-                    "
-                    @click="filters.minRating = rating"
-                  >
-                    {{
-                      rating === 0
-                        ? t("propertiesPage.filters.all")
-                        : `${rating}+`
-                    }}
-                  </button>
-                </div>
-              </div>
-
-              <div
-                class="mt-8 rounded-[24px] bg-[linear-gradient(145deg,#082b58,#0f67b3)] p-5 text-white shadow-[0_18px_40px_rgba(7,42,103,0.22)]"
-              >
-                <p
-                  class="text-xs font-semibold uppercase tracking-[0.22em] text-white/62"
-                >
-                  {{ t("propertiesPage.whyBrowse.title") }}
-                </p>
-                <ul class="mt-4 space-y-3 text-sm leading-6 text-white/82">
-                  <li v-for="item in whyBrowseItems" :key="item">{{ item }}</li>
-                </ul>
-              </div>
-            </div>
+            <PropertyFilter
+              v-model="filters"
+              :activeFilterCount="activeFilterCount"
+              :cityOptions="cityOptions"
+              :typeOptions="typeOptions"
+              :minimumRatings="minimumRatings"
+              :whyBrowseItems="whyBrowseItems"
+              :propertyCountByCity="propertyCountByCity"
+              @reset="resetFilters"
+            />
           </aside>
 
           <section id="property-results" class="min-w-0">

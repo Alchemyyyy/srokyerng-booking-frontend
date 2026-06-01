@@ -5,7 +5,6 @@ import PropertyCard from "../components/PropertyCard.vue";
 const loading = ref(true);
 const properties = ref([]);
 
-
 const isEditModalOpen = ref(false);
 const editingProperty = ref(null);
 
@@ -107,7 +106,7 @@ const handleAddProperty = () => {
 
 const fetchPropertiesList = async () => {
   try {
-    const res = await fetch("/data.json");
+    const res = await fetch("/data.json ");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     properties.value = data.properties || [];
@@ -218,117 +217,200 @@ onMounted(fetchPropertiesList);
       </div>
     </section>
 
-
     <!-- Add Property Modal -->
-<Teleport to="body">
-  <Transition
-    enter-active-class="transition duration-200 ease-out"
-    enter-from-class="opacity-0 scale-95"
-    enter-to-class="opacity-100 scale-100"
-    leave-active-class="transition duration-150 ease-in"
-    leave-from-class="opacity-100 scale-100"
-    leave-to-class="opacity-0 scale-95"
-  >
-    <div
-      v-if="isModalOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4"
-    >
-      <div
-        class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
-        @click="closeModal"
-      />
-      <div class="relative bg-white w-full max-w-lg rounded-[22px] shadow-2xl overflow-hidden z-10">
-        <!-- Header -->
-        <div class="bg-[#1062b3] px-6 py-4 flex items-center justify-between">
-          <h3 class="text-[16px] font-bold text-white tracking-wide">Add New Property</h3>
-          <button @click="closeModal" class="text-white/80 hover:text-white transition p-1.5 hover:bg-white/10 rounded-full">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="opacity-0 scale-95"
+        enter-to-class="opacity-100 scale-100"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="opacity-100 scale-100"
+        leave-to-class="opacity-0 scale-95"
+      >
+        <div
+          v-if="isModalOpen"
+          class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        >
+          <div
+            class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
+            @click="closeModal"
+          />
+          <div
+            class="relative bg-white w-full max-w-lg rounded-[22px] shadow-2xl overflow-hidden z-10"
+          >
+            <!-- Header -->
+            <div
+              class="bg-[#1062b3] px-6 py-4 flex items-center justify-between"
+            >
+              <h3 class="text-[16px] font-bold text-white tracking-wide">
+                Add New Property
+              </h3>
+              <button
+                @click="closeModal"
+                class="text-white/80 hover:text-white transition p-1.5 hover:bg-white/10 rounded-full"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="2.5"
+                  stroke="currentColor"
+                  class="w-4 h-4"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M6 18 18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <!-- Form -->
+            <form
+              @submit.prevent="handleAddProperty"
+              class="p-6 space-y-4 text-[11px]"
+            >
+              <div>
+                <label
+                  class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5"
+                >
+                  Property Name <span class="text-red-500">*</span>
+                </label>
+                <input
+                  v-model="newProperty.name"
+                  type="text"
+                  placeholder="e.g. Sunset Villa"
+                  required
+                  class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none transition placeholder-slate-300"
+                />
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label
+                    class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5"
+                    >Type <span class="text-red-500">*</span></label
+                  >
+                  <div class="relative">
+                    <select
+                      v-model="newProperty.type"
+                      class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none bg-white appearance-none transition"
+                    >
+                      <option>Hotel</option>
+                      <option>Villa</option>
+                      <option>Apartment</option>
+                      <option>Homestay</option>
+                    </select>
+                    <span
+                      class="absolute right-3.5 top-3.5 text-slate-400 pointer-events-none text-[9px]"
+                      >▼</span
+                    >
+                  </div>
+                </div>
+                <div>
+                  <label
+                    class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5"
+                    >Location <span class="text-red-500">*</span></label
+                  >
+                  <div class="relative">
+                    <select
+                      v-model="newProperty.location"
+                      class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none bg-white appearance-none transition"
+                    >
+                      <option>Phnom Penh</option>
+                      <option>Siem Reap</option>
+                      <option>Kampot</option>
+                      <option>Sihanoukville</option>
+                      <option>Battambang</option>
+                      <option>Koh Rong</option>
+                    </select>
+                    <span
+                      class="absolute right-3.5 top-3.5 text-slate-400 pointer-events-none text-[9px]"
+                      >▼</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label
+                  class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5"
+                  >Address</label
+                >
+                <input
+                  v-model="newProperty.address"
+                  type="text"
+                  placeholder="Street address"
+                  class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none transition placeholder-slate-300"
+                />
+              </div>
+
+              <div class="w-1/2 pr-2">
+                <label
+                  class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5"
+                  >Starting Price / Night ($)</label
+                >
+                <input
+                  v-model.number="newProperty.startingPrice"
+                  type="number"
+                  min="0"
+                  class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none transition"
+                />
+              </div>
+
+              <div>
+                <label
+                  class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5"
+                  >Description</label
+                >
+                <textarea
+                  v-model="newProperty.description"
+                  rows="3"
+                  placeholder="Brief description for guests..."
+                  class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none transition resize-none placeholder-slate-300"
+                />
+              </div>
+
+              <div>
+                <label
+                  class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5 text-[10px]"
+                  >Thumbnail Image Link URL</label
+                >
+                <input
+                  v-model="newProperty.image"
+                  type="url"
+                  placeholder="https://images.unsplash.com/your-photo-link"
+                  class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none transition placeholder-slate-300"
+                />
+              </div>
+
+              <p class="text-[11px] text-[#1e3a8a]/70 font-medium pt-1">
+                New properties require admin approval before they're visible to
+                guests.
+              </p>
+
+              <div
+                class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 mt-5"
+              >
+                <button
+                  type="button"
+                  @click="closeModal"
+                  class="border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold px-5 py-2 rounded-xl transition text-xs cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  class="bg-[#0064d2] hover:bg-blue-700 text-white font-bold px-5 py-2 rounded-xl transition text-xs shadow-md shadow-blue-700/10 cursor-pointer"
+                >
+                  Add Property
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-        <!-- Form -->
-        <form @submit.prevent="handleAddProperty" class="p-6 space-y-4 text-[11px]">
-          <div>
-            <label class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5">
-              Property Name <span class="text-red-500">*</span>
-            </label>
-            <input v-model="newProperty.name" type="text" placeholder="e.g. Sunset Villa" required
-              class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none transition placeholder-slate-300" />
-          </div>
-
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5">Type <span class="text-red-500">*</span></label>
-              <div class="relative">
-                <select v-model="newProperty.type" class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none bg-white appearance-none transition">
-                  <option>Hotel</option>
-                  <option>Villa</option>
-                  <option>Apartment</option>
-                  <option>Homestay</option>
-                </select>
-                <span class="absolute right-3.5 top-3.5 text-slate-400 pointer-events-none text-[9px]">▼</span>
-              </div>
-            </div>
-            <div>
-              <label class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5">Location <span class="text-red-500">*</span></label>
-              <div class="relative">
-                <select v-model="newProperty.location" class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none bg-white appearance-none transition">
-                  <option>Phnom Penh</option>
-                  <option>Siem Reap</option>
-                  <option>Kampot</option>
-                  <option>Sihanoukville</option>
-                  <option>Battambang</option>
-                  <option>Koh Rong</option>
-                </select>
-                <span class="absolute right-3.5 top-3.5 text-slate-400 pointer-events-none text-[9px]">▼</span>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <label class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5">Address</label>
-            <input v-model="newProperty.address" type="text" placeholder="Street address"
-              class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none transition placeholder-slate-300" />
-          </div>
-
-          <div class="w-1/2 pr-2">
-            <label class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5">Starting Price / Night ($)</label>
-            <input v-model.number="newProperty.startingPrice" type="number" min="0"
-              class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none transition" />
-          </div>
-
-          <div>
-            <label class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5">Description</label>
-            <textarea v-model="newProperty.description" rows="3" placeholder="Brief description for guests..."
-              class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none transition resize-none placeholder-slate-300" />
-          </div>
-
-          <div>
-            <label class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5 text-[10px]">Thumbnail Image Link URL</label>
-            <input v-model="newProperty.image" type="url" placeholder="https://images.unsplash.com/your-photo-link"
-              class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none transition placeholder-slate-300" />
-          </div>
-
-          <p class="text-[11px] text-[#1e3a8a]/70 font-medium pt-1">
-            New properties require admin approval before they're visible to guests.
-          </p>
-
-          <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 mt-5">
-            <button type="button" @click="closeModal"
-              class="border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold px-5 py-2 rounded-xl transition text-xs cursor-pointer">
-              Cancel
-            </button>
-            <button type="submit"
-              class="bg-[#0064d2] hover:bg-blue-700 text-white font-bold px-5 py-2 rounded-xl transition text-xs shadow-md shadow-blue-700/10 cursor-pointer">
-              Add Property
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </Transition>
-</Teleport>
+      </Transition>
+    </Teleport>
     <!-- Edit Property Modal -->
     <Teleport to="body">
       <Transition

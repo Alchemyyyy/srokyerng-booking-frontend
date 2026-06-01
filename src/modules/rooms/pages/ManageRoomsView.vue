@@ -28,7 +28,7 @@ onMounted(fetchRoomsData);
 
 <template>
   <div
-    class="my-25 space-y-6 min-h-screen text-(--color-text) transition-colors duration-300 owner-dashboard my-25 transition-all ml-64"
+    class="my-25 space-y-6 min-h-screen text-(--color-text) transition-colors duration-300 owner-dashboard ml-64 p-6"
   >
     <header
       class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
@@ -98,90 +98,128 @@ onMounted(fetchRoomsData);
         </p>
       </div>
 
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-else class="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <div
           v-for="(room, index) in filteredRooms"
           :key="room.id"
-          class="rounded-xl border border-(--color-border) bg-(--color-surface) flex flex-col justify-between overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
+          class="rounded-xl border border-(--color-border) bg-(--color-surface) flex flex-col sm:flex-row overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
         >
-          <div class="p-5 space-y-4">
-            <div class="flex items-start justify-between gap-2">
-              <div>
-                <h3
-                  class="text-lg font-bold tracking-tight text-(--color-text)"
+          <div
+            class="w-full sm:w-[200px] h-48 sm:h-auto overflow-hidden relative flex-shrink-0 bg-(--color-surface-soft)"
+          >
+            <img
+              :src="
+                room.image ||
+                'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80'
+              "
+              :alt="room.type"
+              class="w-full h-full object-cover"
+            />
+            <span
+              style="
+                background-color: var(--color-primary-strong);
+                color: var(--color-text-inverse);
+              "
+              class="absolute top-2.5 left-2.5 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase opacity-90"
+            >
+              ID: {{ room.id }}
+            </span>
+          </div>
+
+          <div class="flex-1 flex flex-col justify-between">
+            <div class="p-5 space-y-3.5">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <h3
+                    class="text-base font-bold tracking-tight text-(--color-text)"
+                  >
+                    {{ room.type }}
+                  </h3>
+                  <p class="text-xs text-(--color-muted) mt-0.5">
+                    Double · {{ room.propertyName }}
+                  </p>
+                </div>
+
+                <span
+                  :class="[
+                    'px-2.5 py-0.5 rounded-lg text-[11px] font-bold border flex items-center gap-1',
+                    getRoomMeta(room, index).status === 'Available'
+                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                      : '',
+                    getRoomMeta(room, index).status === 'Occupied'
+                      ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                      : '',
+                    getRoomMeta(room, index).status === 'Maintenance'
+                      ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                      : '',
+                  ]"
                 >
-                  {{ room.type }}
-                </h3>
-                <p class="text-xs text-(--color-muted) mt-0.5">
-                  Double · {{ room.propertyName }}
-                </p>
+                  <span class="w-1.5 h-1.5 bg-current rounded-full"></span>
+                  {{ getRoomMeta(room, index).status }}
+                </span>
               </div>
 
-              <span
-                :class="[
-                  'px-3 py-1 rounded-full text-xs font-bold tracking-wide border',
-                  getRoomMeta(room, index).status === 'Available'
-                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                    : '',
-                  getRoomMeta(room, index).status === 'Occupied'
-                    ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                    : '',
-                  getRoomMeta(room, index).status === 'Maintenance'
-                    ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                    : '',
-                ]"
+              <div
+                class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-medium text-(--color-muted)"
               >
-                ● {{ getRoomMeta(room, index).status }}
-              </span>
+                <span class="flex items-center gap-1.5">
+                  <UserGroupIcon
+                    class="h-4 w-4 opacity-70"
+                    aria-hidden="true"
+                  />
+                  {{ getRoomMeta(room, index).guests }} guests
+                </span>
+                <span class="flex items-center gap-1.5">
+                  <ArrowsPointingOutIcon
+                    class="h-4 w-4 opacity-70"
+                    aria-hidden="true"
+                  />
+                  {{ getRoomMeta(room, index).size }}
+                </span>
+              </div>
+
+              <div
+                class="flex items-center gap-1.5 text-xs text-(--color-muted)"
+              >
+                <BanknotesIcon class="h-4 w-4 opacity-70" aria-hidden="true" />
+                <span class="font-medium">Base Rate:</span>
+                <strong class="text-(--color-text) font-bold text-sm">
+                  ${{ room.basePrice }}
+                  <span class="text-xs font-medium text-(--color-muted)"
+                    >/ night</span
+                  >
+                </strong>
+              </div>
+
+              <p
+                class="text-xs text-(--color-muted) line-clamp-2 pt-0.5 font-normal leading-relaxed"
+              >
+                {{ getRoomMeta(room, index).description }}
+              </p>
             </div>
 
             <div
-              class="flex items-center gap-4 text-xs font-medium text-(--color-muted)"
+              class="px-5 py-3 border-t border-(--color-border) bg-(--color-surface-soft) flex items-center justify-between"
             >
-              <span class="flex items-center gap-1">
-                <UserGroupIcon class="h-4 w-4" aria-hidden="true" />
-                {{ getRoomMeta(room, index).guests }} guests
-              </span>
-              <span class="flex items-center gap-1">
-                <BanknotesIcon class="h-4 w-4" aria-hidden="true" />
-                <strong class="text-(--color-text) font-bold">
-                  ${{ room.basePrice }} /night</strong
-                >
-              </span>
-              <span class="flex items-center gap-1">
-                <ArrowsPointingOutIcon class="h-4 w-4" aria-hidden="true" />
-                {{ getRoomMeta(room, index).size }}
-              </span>
+              <button
+                class="inline-flex items-center justify-center px-3 py-1 rounded-lg border border-(--color-border) bg-(--color-surface) text-(--color-primary) hover:bg-(--color-surface-soft) transition-all gap-1.5 cursor-pointer"
+              >
+                <PencilSquareIcon class="h-3.5 w-3.5" aria-hidden="true" />
+                <span class="text-xs font-semibold">Edit Template</span>
+              </button>
+
+              <button
+                @click="
+                  alert(
+                    `Delete system prompt triggered for instance context: ${room.id}`,
+                  )
+                "
+                class="p-1.5 text-rose-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all cursor-pointer"
+                title="Purge configuration reference"
+              >
+                <TrashIcon class="h-4 w-4" aria-hidden="true" />
+              </button>
             </div>
-
-            <p
-              class="text-sm text-(--color-muted) line-clamp-2 pt-1 font-normal leading-relaxed"
-            >
-              {{ getRoomMeta(room, index).description }}
-            </p>
-          </div>
-
-          <div
-            class="px-5 py-3 border-t border-(--color-border) bg-(--color-surface-soft) flex items-center justify-between"
-          >
-            <button
-              class="inline-flex items-center justify-center px-4 py-1 rounded-sm border border-(--color-border) bg-(--color-surface) text-(--color-primary) hover:bg-(--color-surface-soft) transition-all gap-1.5"
-            >
-              <PencilSquareIcon class="h-4 w-4" aria-hidden="true" />
-              <span class="text-xs font-medium">Edit</span>
-            </button>
-
-            <button
-              @click="
-                alert(
-                  `Delete system prompt triggered for instance context: ${room.id}`,
-                )
-              "
-              class="p-2 text-rose-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-md transition-all"
-              title="Purge configuration reference"
-            >
-              <TrashIcon class="h-4 w-4" aria-hidden="true" />
-            </button>
           </div>
         </div>
       </div>
@@ -189,12 +227,4 @@ onMounted(fetchRoomsData);
   </div>
 </template>
 
-<style scoped>
-/* Smooth grid list scale transitions hook */
-.line-clamp-2 {
-  display: -webkit-box;
-  /* -webkit-line-clamp: 2; */
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-</style>
+<style scoped></style>

@@ -1,7 +1,7 @@
 import SearchView from "@/modules/properties/pages/SearchView.vue";
 import PropertyDetailView from "./pages/PropertyDetailView.vue";
-import RoomsView from "../rooms/pages/RoomsView.vue";
-import PropertyRoomsView from "../properties/pages/PropertyRoomsView.vue";
+import PropertyRoomsView from "../rooms/pages/PropertyRoomsView.vue";
+import RoomDetailView from "../rooms/pages/RoomDetailView.vue";
 
 export const propertyRoutes = [
   {
@@ -15,15 +15,16 @@ export const propertyRoutes = [
     component: PropertyDetailView,
     meta: { navbarSolid: true },
   },
-  // { path: "properties/:propertyId/rooms", component: PropertyRoomsView },
   {
-    path: "/properties/:propertyId/rooms",
+    path: "properties/:propertyId/rooms",
     name: "property-rooms",
     component: PropertyRoomsView,
+    meta: { navbarSolid: true },
   },
   {
-    path: "/rooms/:id",
+    path: "room/:id",
     name: "room-detail",
-    component: RoomsView,
+    component: RoomDetailView,
+    meta: { navbarSolid: true },
   },
 ];
