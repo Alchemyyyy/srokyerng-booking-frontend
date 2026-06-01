@@ -746,5 +746,42 @@
     "checkIn": "Check-In",
     "checkOut": "Check-Out",
     "description": "A stunning beachfront resort offering pristine white sand beaches, crystal-clear waters, and unforgettable sunset views."
+  },
+
+  "roomDetail": {
+    "breadcrumb": {
+      "home": "Home",
+      "properties": "Properties",
+      "rooms": "Rooms"
+    },
+    "liveAvailability": "Live Availability Verified",
+    "featuredSpace": "Featured Space",
+    "featuredSpaceLabel": "Master Bedroom & Lounge",
+    "exploreGallery": "Explore Gallery",
+    "signatureRoom": "Signature Space Room",
+    "showMap": "Show Map",
+    "maxAllowed": "Max Allowed",
+    "guests": "Guests",
+    "beddingConfig": "Bedding Config",
+    "floorDimension": "Floor Dimension",
+    "architectureStory": "The Architecture Story",
+    "includedLuxuries": "Included Premium Luxuries",
+    "ratesFrom": "Rates Starting From",
+    "perNight": "/ night",
+    "bestRate": "Best Rate Match",
+    "arrivalDate": "Arrival Date",
+    "departureDate": "Departure Date",
+    "accompaniedGuests": "Accompanied Guests",
+    "adult1": "1 Adult Guest",
+    "adult2": "2 Adult Guests",
+    "adult3": "3 Adult Guests",
+    "adult4": "4 Adult Guests",
+    "baseStayRate": "Base Stay Rate",
+    "resortSurcharges": "Resort Surcharges & Cleaning",
+    "included": "INCLUDED",
+    "aggregateTotal": "Aggregate Total Due",
+    "confirmReservation": "Confirm & Secure Reservation",
+    "noDeposit": "No upfront deposit required today.",
+    "hotel": "Angkor Palace Luxury Hotel Resort"
   }
 }

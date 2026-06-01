@@ -744,5 +744,41 @@
     "checkIn": "ថ្ងៃចូល",
     "checkOut": "ថ្ងៃចេញ",
     "description": "រមណីយដ្ឋានមាត់សមុទ្រដ៏គួរឱ្យភ្ញាក់ផ្អើលដែលផ្តល់ជូននូវឆ្នេរខ្សាច់សស្អាត ទឹកសមុទ្រថ្លាឆ្លុះ និងទិដ្ឋភាពថ្ងៃលិចដែលមិនអាចបំភ្លេចបាន។"
+  },
+  "roomDetail": {
+    "breadcrumb": {
+      "home": "ទំព័រដើម",
+      "properties": "អចលនទ្រព្យ",
+      "rooms": "បន្ទប់"
+    },
+    "liveAvailability": "បានផ្ទៀងផ្ទាត់ភាពទំនេរផ្ទាល់",
+    "featuredSpace": "កន្លែងពិសេស",
+    "featuredSpaceLabel": "បន្ទប់គេង និងកន្លែងសម្រាក",
+    "exploreGallery": "រុករករូបភាព",
+    "signatureRoom": "បន្ទប់ពិសេស",
+    "showMap": "មើលផែនទី",
+    "maxAllowed": "ភ្ញៀវវត្ថុអតិបរមា",
+    "guests": "នាក់",
+    "beddingConfig": "ប្រភេទគ្រែ",
+    "floorDimension": "ទំហំបន្ទប់",
+    "architectureStory": "អំពីបន្ទប់",
+    "includedLuxuries": "សេវាកម្មប្រណីតដែលរួមបញ្ចូល",
+    "ratesFrom": "តម្លៃចាប់ពី",
+    "perNight": "/ យប់",
+    "bestRate": "តម្លៃល្អបំផុត",
+    "arrivalDate": "ថ្ងៃចូល",
+    "departureDate": "ថ្ងៃចេញ",
+    "accompaniedGuests": "ចំនួនភ្ញៀវវត្ថុ",
+    "adult1": "មនុស្សពេញវ័យ ១ នាក់",
+    "adult2": "មនុស្សពេញវ័យ ២ នាក់",
+    "adult3": "មនុស្សពេញវ័យ ៣ នាក់",
+    "adult4": "មនុស្សពេញវ័យ ៤ នាក់",
+    "baseStayRate": "តម្លៃស្នាក់នៅមូលដ្ឋាន",
+    "resortSurcharges": "ថ្លៃបន្ថែម និងសំអាត",
+    "included": "រួមបញ្ចូលហើយ",
+    "aggregateTotal": "ចំនួនសរុបត្រូវបង់",
+    "confirmReservation": "បញ្ជាក់ និងធានាការកក់",
+    "noDeposit": "មិនចាំបាច់បង់ប្រាក់ជាមុនទេ។",
+    "hotel": "សណ្ឋាគារ អង្គរ ប៉ាឡា ប្រណីត"
   }
 }

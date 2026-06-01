@@ -266,29 +266,6 @@ watch(
         </button>
         <LanguageToggle />
 
-        <div
-          v-if="!isNavbarSolid"
-          class="inline-flex rounded-full border-white/20 bg-white/10 backdrop-blur-md p-1"
-        >
-          <button
-            v-for="option in [
-              { value: 'en', label: 'EN' },
-              { value: 'km', label: 'ខ្មែរ' },
-            ]"
-            :key="option.value"
-            type="button"
-            :class="[
-              'rounded-full px-3 py-1.5 text-sm font-semibold transition',
-              locale === option.value
-                ? 'bg-(--color-primary) text-white'
-                : 'text-white/70 hover:bg-white/10 hover:text-white',
-            ]"
-            @click="setLocale(option.value)"
-          >
-            {{ option.label }}
-          </button>
-        </div>
-
         <template v-if="authStore.isAuthenticated">
           <div
             class="flex items-center gap-3 rounded-full bg-(--color-surface-soft) px-3 py-2 ring-1 ring-(--color-border)"
