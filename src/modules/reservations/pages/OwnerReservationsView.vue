@@ -3,8 +3,8 @@ import { ref, computed, onMounted } from "vue";
 import AppTable from "@/shared/components/AppTable.vue";
 import "@/assets/styles/variables.css";
 import {
-  CurrencyDollarIcon,
-  CalendarIcon,
+  BanknotesIcon,
+  ClipboardDocumentListIcon,
   ClockIcon,
 } from "@heroicons/vue/24/outline";
 
@@ -119,9 +119,9 @@ onMounted(fetchReservations);
             background-color: var(--color-success-soft);
             color: var(--color-success);
           "
-          class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg"
+          class="w-10 h-10 rounded-xl flex items-center justify-center"
         >
-          $
+          <BanknotesIcon class="w-5 h-5" />
         </div>
       </div>
 
@@ -149,7 +149,7 @@ onMounted(fetchReservations);
           "
           class="w-10 h-10 rounded-xl flex items-center justify-center"
         >
-          📊
+          <ClipboardDocumentListIcon class="w-5 h-5" />
         </div>
       </div>
 
@@ -182,9 +182,9 @@ onMounted(fetchReservations);
                   color: 'var(--color-muted)',
                 }
           "
-          class="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold"
+          class="w-10 h-10 rounded-xl flex items-center justify-center"
         >
-          ⏳
+          <ClockIcon class="w-5 h-5" />
         </div>
       </div>
     </section>
