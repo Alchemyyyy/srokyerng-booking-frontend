@@ -130,6 +130,10 @@
     "summary": {
       "uploading": "Uploading...",
       "uploadImage": "Upload image",
+      "viewImage": "View profile image",
+      "cropImage": "Crop image",
+      "cropDescription": "Move and resize the crop area so your face is centered in the avatar.",
+      "applyCrop": "Apply crop",
       "previewSelected": "Preview selected. Save to update your profile image.",
       "saveImage": "Save image"
     },

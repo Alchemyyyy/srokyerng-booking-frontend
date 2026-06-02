@@ -3,6 +3,8 @@ import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
 import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 import { useI18n } from "vue-i18n";
 import { onBeforeRouteLeave, useRouter } from "vue-router";
+import { Cropper } from "vue-advanced-cropper";
+import "vue-advanced-cropper/dist/style.css";
 import AppAlert from "@/shared/components/AppAlert.vue";
 import AppButton from "@/shared/components/AppButton.vue";
 import AppModal from "@/shared/components/AppModal.vue";
@@ -29,6 +31,8 @@ const savingPassword = ref(false);
 const uploadingImage = ref(false);
 const error = ref("");
 const success = ref("");
+const cropModalOpen = ref(false);
+const cropperRef = ref(null);
 const savedProfileSnapshot = ref(null);
 const leaveConfirmationOpen = ref(false);
 const pendingLeaveResolver = ref(null);
@@ -39,6 +43,7 @@ const {
   selectedImagePreviewUrl,
   hasSelectedImage,
   selectProfileImage,
+  applyProfileImageCrop,
   cancelProfileImageSelection,
 } = useProfileImageUpload({
   t,
@@ -252,6 +257,16 @@ const uploadProfileImage = async () => {
   }
 };
 
+const openCropModal = () => {
+  cropModalOpen.value = true;
+};
+
+const applyCrop = async () => {
+  const result = cropperRef.value?.getResult();
+  await applyProfileImageCrop(result?.canvas);
+  cropModalOpen.value = false;
+};
+
 const goBack = async () => {
   const canLeave = await requestLeaveConfirmation();
 
@@ -365,6 +380,7 @@ onUnmounted(() => {
             :has-selected-image="hasSelectedImage"
             :selected-image-name="selectedImageFile?.name"
             @select-image="selectProfileImage"
+            @edit-image="openCropModal"
             @save-image="uploadProfileImage"
             @cancel-image="cancelProfileImageSelection"
           />
@@ -419,6 +435,46 @@ onUnmounted(() => {
           @click="resolveLeaveConfirmation(true)"
         >
           {{ t("profile.leave.confirm") }}
+        </AppButton>
+      </template>
+    </AppModal>
+
+    <AppModal
+      :open="cropModalOpen"
+      :title="t('profile.summary.cropImage')"
+      panel-class="max-w-xl"
+      @close="cropModalOpen = false"
+    >
+      <div class="space-y-5">
+        <p class="text-sm leading-6 text-(--color-muted)">
+          {{ t("profile.summary.cropDescription") }}
+        </p>
+
+        <Cropper
+          ref="cropperRef"
+          class="h-[360px] rounded-lg bg-black"
+          :src="selectedImagePreviewUrl"
+          :stencil-props="{ aspectRatio: 1 }"
+          image-restriction="stencil"
+          :auto-zoom="true"
+        />
+      </div>
+
+      <template #footer>
+        <AppButton
+          type="button"
+          variant="secondary"
+          class="!rounded-lg"
+          @click="cropModalOpen = false"
+        >
+          {{ t("common.cancel") }}
+        </AppButton>
+        <AppButton
+          type="button"
+          class="!rounded-lg"
+          @click="applyCrop"
+        >
+          {{ t("profile.summary.applyCrop") }}
         </AppButton>
       </template>
     </AppModal>

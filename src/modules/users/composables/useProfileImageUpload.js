@@ -16,6 +16,28 @@ export const useProfileImageUpload = ({ onError, onSuccess, t } = {}) => {
     }
   };
 
+  const applyProfileImageCrop = async (canvas) => {
+    if (!selectedImageFile.value || !canvas) {
+      return;
+    }
+
+    const blob = await new Promise((resolve) =>
+      canvas.toBlob(resolve, selectedImageFile.value.type || "image/jpeg", 0.92),
+    );
+
+    if (!blob) {
+      return;
+    }
+
+    const croppedFile = new File([blob], selectedImageFile.value.name, {
+      type: blob.type || selectedImageFile.value.type,
+    });
+
+    revokeSelectedImagePreview();
+    selectedImageFile.value = croppedFile;
+    selectedImagePreviewUrl.value = URL.createObjectURL(croppedFile);
+  };
+
   const selectProfileImage = (event) => {
     const [file] = event.target.files || [];
     event.target.value = "";
@@ -54,6 +76,7 @@ export const useProfileImageUpload = ({ onError, onSuccess, t } = {}) => {
     selectedImagePreviewUrl,
     hasSelectedImage,
     selectProfileImage,
+    applyProfileImageCrop,
     cancelProfileImageSelection,
     revokeSelectedImagePreview,
   };
