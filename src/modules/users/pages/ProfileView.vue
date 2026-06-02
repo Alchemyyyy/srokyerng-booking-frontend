@@ -13,6 +13,7 @@ import ProfileSummaryCard from "@/modules/users/components/ProfileSummaryCard.vu
 import ProfileCompletionCard from "@/modules/users/components/ProfileCompletionCard.vue";
 import ProfileDetailsForm from "@/modules/users/components/ProfileDetailsForm.vue";
 import PasswordChangeForm from "@/modules/users/components/PasswordChangeForm.vue";
+import SessionManagementCard from "@/modules/users/components/SessionManagementCard.vue";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { userService } from "@/modules/users/services/user.service";
 import { useProfileImageUpload } from "@/modules/users/composables/useProfileImageUpload";
@@ -406,6 +407,8 @@ onUnmounted(() => {
             :saving="savingPassword"
             @submit="changePassword"
           />
+
+          <SessionManagementCard />
         </div>
       </div>
     </section>

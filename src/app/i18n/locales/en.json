@@ -174,6 +174,28 @@
       "helper": "Use at least 8 characters. You will stay signed in after a normal password change.",
       "submit": "Change password"
     },
+    "sessions": {
+      "title": "Active sessions",
+      "description": "Review where your account is signed in and revoke sessions you no longer use.",
+      "activeCount": "{count} active",
+      "loading": "Loading sessions...",
+      "empty": "No active sessions found.",
+      "currentDevice": "Current or recent device",
+      "unknownDevice": "Unknown device",
+      "browser": "Browser",
+      "platform": "Platform",
+      "ipAddress": "IP address",
+      "lastUsed": "Last used",
+      "created": "Created",
+      "expires": "Expires",
+      "revoke": "Revoke",
+      "logoutAll": "Sign out all sessions",
+      "logoutAllHint": "This signs out every active refresh session for your account, including this browser.",
+      "refresh": "Refresh sessions",
+      "fetched": "Sessions refreshed",
+      "revoked": "Session revoked",
+      "loggedOutAll": "All sessions signed out"
+    },
     "leave": {
       "title": "Leave profile settings?",
       "message": "You have unsaved profile changes. If you leave now, your changes will be lost.",
@@ -190,6 +212,11 @@
       "updateProfile": "Could not update profile",
       "changePassword": "Could not change password",
       "uploadImage": "Could not upload profile image"
+    },
+    "sessionErrors": {
+      "load": "Could not load sessions",
+      "revoke": "Could not revoke session",
+      "logoutAll": "Could not sign out all sessions"
     },
     "validation": {
       "fullNameRequired": "Full name is required",
