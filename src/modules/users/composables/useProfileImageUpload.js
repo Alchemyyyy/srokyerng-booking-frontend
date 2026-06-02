@@ -3,7 +3,7 @@ import { computed, onUnmounted, ref } from "vue";
 const MAX_PROFILE_IMAGE_SIZE = 2 * 1024 * 1024;
 const ALLOWED_PROFILE_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
-export const useProfileImageUpload = ({ onError, onSuccess } = {}) => {
+export const useProfileImageUpload = ({ onError, onSuccess, t } = {}) => {
   const selectedImageFile = ref(null);
   const selectedImagePreviewUrl = ref("");
 
@@ -28,12 +28,12 @@ export const useProfileImageUpload = ({ onError, onSuccess } = {}) => {
     onSuccess?.("");
 
     if (!ALLOWED_PROFILE_IMAGE_TYPES.includes(file.type)) {
-      onError?.("Profile image must be a JPG, PNG, or WebP file");
+      onError?.(t?.("profile.validation.profileImageType") || "Profile image must be a JPG, PNG, or WebP file");
       return;
     }
 
     if (file.size > MAX_PROFILE_IMAGE_SIZE) {
-      onError?.("Profile image must be 2MB or smaller");
+      onError?.(t?.("profile.validation.profileImageSize") || "Profile image must be 2MB or smaller");
       return;
     }
 

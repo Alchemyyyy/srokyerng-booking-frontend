@@ -4,8 +4,11 @@ import {
   CheckCircleIcon,
   XCircleIcon,
 } from "@heroicons/vue/24/outline";
+import { useI18n } from "vue-i18n";
 import AppButton from "@/shared/components/AppButton.vue";
 import UserAvatar from "@/shared/components/UserAvatar.vue";
+
+const { t } = useI18n({ useScope: "global" });
 
 defineProps({
   userLabel: {
@@ -84,7 +87,7 @@ defineEmits(["select-image", "save-image", "cancel-image"]);
         class="mt-5 inline-flex cursor-pointer items-center gap-2 rounded-lg border border-(--color-border) px-4 py-2 text-sm font-semibold text-(--color-muted) transition hover:border-(--color-primary) hover:text-(--color-primary)"
       >
         <CameraIcon class="h-5 w-5" />
-        {{ uploadingImage ? "Uploading..." : "Upload image" }}
+        {{ uploadingImage ? t("profile.summary.uploading") : t("profile.summary.uploadImage") }}
         <input
           type="file"
           class="sr-only"
@@ -102,7 +105,7 @@ defineEmits(["select-image", "save-image", "cancel-image"]);
           {{ selectedImageName }}
         </p>
         <p class="mt-1 text-xs text-(--color-muted)">
-          Preview selected. Save to update your profile image.
+          {{ t("profile.summary.previewSelected") }}
         </p>
         <div class="mt-3 grid grid-cols-2 gap-2">
           <AppButton
@@ -113,7 +116,7 @@ defineEmits(["select-image", "save-image", "cancel-image"]);
             :loading="uploadingImage"
             @click="$emit('save-image')"
           >
-            Save image
+            {{ t("profile.summary.saveImage") }}
           </AppButton>
           <AppButton
             type="button"
@@ -123,7 +126,7 @@ defineEmits(["select-image", "save-image", "cancel-image"]);
             :disabled="uploadingImage"
             @click="$emit('cancel-image')"
           >
-            Cancel
+            {{ t("common.cancel") }}
           </AppButton>
         </div>
       </div>

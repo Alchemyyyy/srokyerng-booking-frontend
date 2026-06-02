@@ -4,6 +4,9 @@ import {
   ShieldCheckIcon,
   XCircleIcon,
 } from "@heroicons/vue/24/outline";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n({ useScope: "global" });
 
 defineProps({
   completionPercent: {
@@ -23,9 +26,9 @@ defineProps({
       <div class="flex items-start gap-3">
         <ShieldCheckIcon class="mt-0.5 h-6 w-6 text-(--color-primary)" />
         <div>
-          <h3 class="font-bold">Profile completion</h3>
+          <h3 class="font-bold">{{ t("profile.completion.title") }}</h3>
           <p class="mt-1 text-sm text-(--color-muted)">
-            Complete your profile so bookings and account updates are easier to manage.
+            {{ t("profile.completion.description") }}
           </p>
         </div>
       </div>

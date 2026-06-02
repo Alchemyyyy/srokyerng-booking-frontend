@@ -1,7 +1,7 @@
 import { reactive } from "vue";
 import { hasMinPasswordLength } from "@/shared/utils/validators";
 
-export const useProfileValidation = ({ profileForm, passwordForm }) => {
+export const useProfileValidation = ({ profileForm, passwordForm, t }) => {
   const profileErrors = reactive({
     full_name: "",
     phone: "",
@@ -30,11 +30,11 @@ export const useProfileValidation = ({ profileForm, passwordForm }) => {
     clearProfileErrors();
 
     if (!profileForm.full_name.trim()) {
-      profileErrors.full_name = "Full name is required";
+      profileErrors.full_name = t("profile.validation.fullNameRequired");
     }
 
     if (profileForm.phone && !/^[0-9+()\-\s]{7,20}$/.test(profileForm.phone)) {
-      profileErrors.phone = "Phone number format is invalid";
+      profileErrors.phone = t("profile.validation.phoneInvalid");
     }
 
     if (profileForm.date_of_birth) {
@@ -43,7 +43,7 @@ export const useProfileValidation = ({ profileForm, passwordForm }) => {
       today.setHours(0, 0, 0, 0);
 
       if (Number.isNaN(birthDate.getTime()) || birthDate > today) {
-        profileErrors.date_of_birth = "Date of birth cannot be in the future";
+        profileErrors.date_of_birth = t("profile.validation.dateOfBirthFuture");
       }
     }
 
@@ -54,19 +54,19 @@ export const useProfileValidation = ({ profileForm, passwordForm }) => {
     clearPasswordErrors();
 
     if (!passwordForm.current_password) {
-      passwordErrors.current_password = "Current password is required";
+      passwordErrors.current_password = t("profile.validation.currentPasswordRequired");
     }
 
     if (!passwordForm.new_password) {
-      passwordErrors.new_password = "New password is required";
+      passwordErrors.new_password = t("profile.validation.newPasswordRequired");
     } else if (!hasMinPasswordLength(passwordForm.new_password)) {
-      passwordErrors.new_password = "New password must be at least 8 characters";
+      passwordErrors.new_password = t("profile.validation.newPasswordMinLength");
     }
 
     if (!passwordForm.confirm_password) {
-      passwordErrors.confirm_password = "Confirm password is required";
+      passwordErrors.confirm_password = t("profile.validation.confirmPasswordRequired");
     } else if (passwordForm.new_password !== passwordForm.confirm_password) {
-      passwordErrors.confirm_password = "New password and confirmation do not match";
+      passwordErrors.confirm_password = t("profile.validation.passwordMismatch");
     }
 
     return (

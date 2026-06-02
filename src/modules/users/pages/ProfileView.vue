@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
 import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
+import { useI18n } from "vue-i18n";
 import { onBeforeRouteLeave, useRouter } from "vue-router";
 import AppAlert from "@/shared/components/AppAlert.vue";
 import AppButton from "@/shared/components/AppButton.vue";
@@ -20,6 +21,7 @@ import { useToastStore } from "@/shared/store/toastStore";
 const router = useRouter();
 const authStore = useAuthStore();
 const toastStore = useToastStore();
+const { t } = useI18n({ useScope: "global" });
 
 const loading = ref(false);
 const savingProfile = ref(false);
@@ -39,6 +41,7 @@ const {
   selectProfileImage,
   cancelProfileImageSelection,
 } = useProfileImageUpload({
+  t,
   onError: (message) => {
     if (message) {
       toastStore.danger(message);
@@ -70,6 +73,7 @@ const {
 } = useProfileValidation({
   profileForm,
   passwordForm,
+  t,
 });
 
 const user = ref(null);
@@ -78,11 +82,11 @@ const userLabel = computed(() => user.value?.full_name || user.value?.email || "
 
 const roleLabel = computed(() => {
   const role = user.value?.role || "member";
-  return role.charAt(0).toUpperCase() + role.slice(1);
+  return t(`profile.roles.${role}`);
 });
 
 const emailVerificationLabel = computed(() =>
-  user.value?.email_verified_at ? "Verified" : "Not verified",
+  user.value?.email_verified_at ? t("profile.verified") : t("profile.notVerified"),
 );
 const emailVerificationToneClass = computed(() =>
   user.value?.email_verified_at
@@ -93,10 +97,10 @@ const avatarPreviewUrl = computed(
   () => selectedImagePreviewUrl.value || user.value?.profile_image_url,
 );
 const profileCompletionItems = computed(() => [
-  { label: "Name", complete: Boolean(user.value?.full_name) },
-  { label: "Phone", complete: Boolean(user.value?.phone) },
-  { label: "Email", complete: Boolean(user.value?.email_verified_at) },
-  { label: "Photo", complete: Boolean(user.value?.profile_image_url) },
+  { label: t("profile.completion.items.name"), complete: Boolean(user.value?.full_name) },
+  { label: t("profile.completion.items.phone"), complete: Boolean(user.value?.phone) },
+  { label: t("profile.completion.items.email"), complete: Boolean(user.value?.email_verified_at) },
+  { label: t("profile.completion.items.photo"), complete: Boolean(user.value?.profile_image_url) },
 ]);
 const profileCompletionPercent = computed(() => {
   const completed = profileCompletionItems.value.filter((item) => item.complete).length;
@@ -164,7 +168,7 @@ const loadProfile = async () => {
     syncForm(response.data);
     syncAuthUser(response.data);
   } catch (requestError) {
-    error.value = requestError.message || "Could not load profile";
+    error.value = requestError.message || t("profile.errors.loadProfile");
   } finally {
     loading.value = false;
   }
@@ -191,9 +195,9 @@ const saveProfile = async () => {
 
     syncForm(response.data);
     syncAuthUser(response.data);
-    toastStore.success("Profile updated");
+    toastStore.success(t("profile.toast.profileUpdated"));
   } catch (requestError) {
-    toastStore.danger(requestError.message || "Could not update profile");
+    toastStore.danger(requestError.message || t("profile.errors.updateProfile"));
   } finally {
     savingProfile.value = false;
   }
@@ -218,9 +222,9 @@ const changePassword = async () => {
     passwordForm.current_password = "";
     passwordForm.new_password = "";
     passwordForm.confirm_password = "";
-    toastStore.success("Password changed");
+    toastStore.success(t("profile.toast.passwordChanged"));
   } catch (requestError) {
-    toastStore.danger(requestError.message || "Could not change password");
+    toastStore.danger(requestError.message || t("profile.errors.changePassword"));
   } finally {
     savingPassword.value = false;
   }
@@ -240,9 +244,9 @@ const uploadProfileImage = async () => {
     syncForm(response.data);
     syncAuthUser(response.data);
     cancelProfileImageSelection();
-    toastStore.success("Profile image updated");
+    toastStore.success(t("profile.toast.imageUpdated"));
   } catch (requestError) {
-    toastStore.danger(requestError.message || "Could not upload profile image");
+    toastStore.danger(requestError.message || t("profile.errors.uploadImage"));
   } finally {
     uploadingImage.value = false;
   }
@@ -306,14 +310,16 @@ onUnmounted(() => {
             @click="goBack"
           >
             <ArrowLeftIcon class="h-4 w-4" />
-            Back
+            {{ t("common.back") }}
           </AppButton>
           <p class="text-sm font-semibold uppercase tracking-[0.18em] text-(--color-primary)">
-            Account
+            {{ t("profile.account") }}
           </p>
-          <h1 class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Profile settings</h1>
+          <h1 class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+            {{ t("profile.title") }}
+          </h1>
           <p class="mt-2 max-w-2xl text-sm text-(--color-muted)">
-            Manage your personal details, profile image, and account password.
+            {{ t("profile.subtitle") }}
           </p>
         </div>
       </header>
@@ -342,7 +348,7 @@ onUnmounted(() => {
         v-if="loading"
         class="rounded-lg border border-(--color-border) bg-(--color-surface) p-8 text-center shadow-(--shadow-card)"
       >
-        <LoadingSpinner label="Loading profile..." />
+        <LoadingSpinner :label="t('profile.loading')" />
       </div>
 
       <div v-else class="grid gap-6 lg:grid-cols-[340px_1fr]">
@@ -390,11 +396,11 @@ onUnmounted(() => {
 
     <AppModal
       :open="leaveConfirmationOpen"
-      title="Leave profile settings?"
+      :title="t('profile.leave.title')"
       @close="resolveLeaveConfirmation(false)"
     >
       <p class="text-sm leading-6 text-(--color-muted)">
-        You have unsaved profile changes. If you leave now, your changes will be lost.
+        {{ t("profile.leave.message") }}
       </p>
 
       <template #footer>
@@ -404,7 +410,7 @@ onUnmounted(() => {
           class="!rounded-lg"
           @click="resolveLeaveConfirmation(false)"
         >
-          Stay here
+          {{ t("profile.leave.stay") }}
         </AppButton>
         <AppButton
           type="button"
@@ -412,7 +418,7 @@ onUnmounted(() => {
           class="!rounded-lg"
           @click="resolveLeaveConfirmation(true)"
         >
-          Leave without saving
+          {{ t("profile.leave.confirm") }}
         </AppButton>
       </template>
     </AppModal>

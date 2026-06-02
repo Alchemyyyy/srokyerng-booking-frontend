@@ -7,6 +7,7 @@ import {
   CheckCircleIcon,
   EnvelopeOpenIcon,
 } from "@heroicons/vue/24/outline";
+import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import AppButton from "@/shared/components/AppButton.vue";
 import EmptyState from "@/shared/components/EmptyState.vue";
@@ -20,25 +21,13 @@ const router = useRouter();
 const authStore = useAuthStore();
 const notificationStore = useNotificationStore();
 const toastStore = useToastStore();
+const { t, te, locale } = useI18n({ useScope: "global" });
 
-const filters = [
-  { label: "All", value: "all" },
-  { label: "Unread", value: "unread" },
-  { label: "Read", value: "read" },
-];
-
-const notificationTypeLabel = {
-  reservation_created: "Reservation created",
-  reservation_confirmed: "Reservation confirmed",
-  reservation_cancelled: "Reservation cancelled",
-  payment_submitted: "Payment submitted",
-  payment_verified: "Payment verified",
-  payment_rejected: "Payment rejected",
-  property_approved: "Property approved",
-  property_rejected: "Property rejected",
-  password_changed: "Password changed",
-  system: "System",
-};
+const filters = computed(() => [
+  { label: t("notifications.filters.all"), value: "all" },
+  { label: t("notifications.filters.unread"), value: "unread" },
+  { label: t("notifications.filters.read"), value: "read" },
+]);
 
 const notificationToneClass = {
   reservation_created: "bg-(--color-info-soft) text-(--color-info)",
@@ -55,34 +44,34 @@ const notificationToneClass = {
 
 const pageTitle = computed(() => {
   if (notificationStore.currentStatus === "unread") {
-    return "Unread notifications";
+    return t("notifications.pageTitles.unread");
   }
 
   if (notificationStore.currentStatus === "read") {
-    return "Read notifications";
+    return t("notifications.pageTitles.read");
   }
 
-  return "Notifications";
+  return t("notifications.pageTitles.all");
 });
 
 const emptyTitle = computed(() => {
   if (notificationStore.currentStatus === "unread") {
-    return "No unread notifications";
+    return t("notifications.empty.unreadTitle");
   }
 
   if (notificationStore.currentStatus === "read") {
-    return "No read notifications";
+    return t("notifications.empty.readTitle");
   }
 
-  return "No notifications yet";
+  return t("notifications.empty.allTitle");
 });
 
 const emptyMessage = computed(() => {
   if (notificationStore.currentStatus === "all") {
-    return "Important booking, payment, property, and account updates will appear here.";
+    return t("notifications.empty.allMessage");
   }
 
-  return "Try switching filters to see other notifications.";
+  return t("notifications.empty.filteredMessage");
 });
 
 const formatDate = (value) => {
@@ -90,7 +79,7 @@ const formatDate = (value) => {
     return "";
   }
 
-  return new Intl.DateTimeFormat("en", {
+  return new Intl.DateTimeFormat(locale.value, {
     month: "short",
     day: "numeric",
     hour: "2-digit",
@@ -98,7 +87,10 @@ const formatDate = (value) => {
   }).format(new Date(value));
 };
 
-const getTypeLabel = (type) => notificationTypeLabel[type] || "Notification";
+const getTypeLabel = (type) => {
+  const key = `notifications.types.${type}`;
+  return te(key) ? t(key) : t("notifications.types.default");
+};
 const getToneClass = (type) =>
   notificationToneClass[type] || "bg-(--color-info-soft) text-(--color-info)";
 
@@ -115,7 +107,7 @@ const loadNotifications = async (status = notificationStore.currentStatus) => {
   try {
     return await notificationStore.fetchNotifications({ status, page: 1 });
   } catch (requestError) {
-    toastStore.danger(requestError.message || "Could not load notifications");
+    toastStore.danger(requestError.message || t("notifications.errors.load"));
     return [];
   }
 };
@@ -127,27 +119,27 @@ const markAsRead = async (notification) => {
 
   try {
     await notificationStore.markAsRead(notification.id);
-    toastStore.success("Notification marked as read");
+    toastStore.success(t("notifications.toast.markRead"));
   } catch (requestError) {
-    toastStore.danger(requestError.message || "Could not update notification");
+    toastStore.danger(requestError.message || t("notifications.errors.updateOne"));
   }
 };
 
 const markAllAsRead = async () => {
   try {
     await notificationStore.markAllAsRead();
-    toastStore.success("All notifications marked as read");
+    toastStore.success(t("notifications.toast.markAllRead"));
   } catch (requestError) {
-    toastStore.danger(requestError.message || "Could not update notifications");
+    toastStore.danger(requestError.message || t("notifications.errors.update"));
   }
 };
 
 const archiveNotification = async (notification) => {
   try {
     await notificationStore.archive(notification.id);
-    toastStore.success("Notification archived");
+    toastStore.success(t("notifications.toast.archived"));
   } catch (requestError) {
-    toastStore.danger(requestError.message || "Could not archive notification");
+    toastStore.danger(requestError.message || t("notifications.errors.archive"));
   }
 };
 
@@ -158,7 +150,7 @@ onMounted(async () => {
       notificationStore.fetchUnreadCount(),
     ]);
   } catch (requestError) {
-    toastStore.danger(requestError.message || "Could not load notifications");
+    toastStore.danger(requestError.message || t("notifications.errors.load"));
   }
 });
 </script>
@@ -176,16 +168,16 @@ onMounted(async () => {
             @click="goBack"
           >
             <ArrowLeftIcon class="h-4 w-4" />
-            Back
+            {{ t("common.back") }}
           </AppButton>
           <p class="text-sm font-semibold uppercase tracking-[0.18em] text-(--color-primary)">
-            Inbox
+            {{ t("notifications.inbox") }}
           </p>
           <h1 class="mt-2 text-3xl font-bold tracking-tight text-(--color-text)">
             {{ pageTitle }}
           </h1>
           <p class="mt-2 max-w-2xl text-sm text-(--color-muted)">
-            Track account, booking, payment, and property updates in one place.
+            {{ t("notifications.pageSubtitle") }}
           </p>
         </div>
 
@@ -195,7 +187,7 @@ onMounted(async () => {
           :disabled="notificationStore.actionLoading || !notificationStore.hasUnread"
           @click="markAllAsRead"
         >
-          Mark all as read
+          {{ t("notifications.markAllAsRead") }}
         </button>
       </header>
 
@@ -220,8 +212,10 @@ onMounted(async () => {
         </div>
 
         <p class="text-sm text-(--color-muted)">
-          {{ notificationStore.pagination.total }} total &middot;
-          {{ notificationStore.unreadCount }} unread
+          {{ t("notifications.totalUnread", {
+            total: notificationStore.pagination.total,
+            unread: notificationStore.unreadCount
+          }) }}
         </p>
       </div>
 
@@ -236,7 +230,7 @@ onMounted(async () => {
         v-if="notificationStore.listLoading"
         class="rounded-lg border border-(--color-border) bg-(--color-surface) p-8 text-center shadow-(--shadow-card)"
       >
-        <LoadingSpinner label="Loading notifications..." />
+        <LoadingSpinner :label="t('notifications.loading')" />
       </div>
 
       <EmptyState
@@ -273,7 +267,7 @@ onMounted(async () => {
                   v-if="!notification.is_read"
                   class="inline-flex items-center rounded-full bg-(--color-primary) px-2.5 py-1 text-xs font-bold text-white"
                 >
-                  New
+                  {{ t("notifications.new") }}
                 </span>
                 <span class="text-xs font-medium text-(--color-muted)">
                   {{ formatDate(notification.created_at) }}
@@ -293,7 +287,7 @@ onMounted(async () => {
                 v-if="!notification.is_read"
                 type="button"
                 class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-(--color-border) text-(--color-muted) transition hover:border-(--color-success) hover:text-(--color-success)"
-                title="Mark as read"
+                :title="t('notifications.markAsRead')"
                 :disabled="notificationStore.actionLoading"
                 @click="markAsRead(notification)"
               >
@@ -303,7 +297,7 @@ onMounted(async () => {
               <span
                 v-else
                 class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-(--color-success-soft) text-(--color-success)"
-                title="Read"
+                :title="t('notifications.read')"
               >
                 <EnvelopeOpenIcon class="h-5 w-5" />
               </span>
@@ -311,7 +305,7 @@ onMounted(async () => {
               <button
                 type="button"
                 class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-(--color-border) text-(--color-muted) transition hover:border-(--color-danger) hover:text-(--color-danger)"
-                title="Archive"
+                :title="t('notifications.archive')"
                 :disabled="notificationStore.actionLoading"
                 @click="archiveNotification(notification)"
               >

@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { RouterLink, useRoute } from "vue-router";
 import { BellIcon } from "@heroicons/vue/24/outline";
+import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useNotificationStore } from "@/modules/notifications/store/notificationStore";
 import { getNotificationRouteByRole } from "@/shared/utils/roleRoutes";
@@ -18,6 +19,7 @@ const authStore = useAuthStore();
 const notificationStore = useNotificationStore();
 const toastStore = useToastStore();
 const route = useRoute();
+const { t, locale } = useI18n({ useScope: "global" });
 
 const dropdownOpen = ref(false);
 const bellRef = ref(null);
@@ -40,7 +42,7 @@ const formatDate = (value) => {
     return "";
   }
 
-  return new Intl.DateTimeFormat("en", {
+  return new Intl.DateTimeFormat(locale.value, {
     month: "short",
     day: "numeric",
     hour: "2-digit",
@@ -102,9 +104,9 @@ const markAllAsRead = async () => {
 
   try {
     await notificationStore.markAllAsRead();
-    toastStore.success("All notifications marked as read");
+    toastStore.success(t("notifications.toast.markAllRead"));
   } catch (requestError) {
-    toastStore.danger(requestError.message || "Could not update notifications");
+    toastStore.danger(requestError.message || t("notifications.errors.update"));
   }
 };
 
@@ -142,7 +144,7 @@ watch(
       type="button"
       :class="buttonClass"
       :aria-expanded="dropdownOpen"
-      aria-label="Notifications"
+      :aria-label="t('notifications.title')"
       @click.stop="toggleDropdown"
     >
       <BellIcon class="h-5 w-5" />
@@ -160,9 +162,11 @@ watch(
     >
       <div class="flex items-center justify-between gap-4 border-b border-(--color-border) px-5 py-4">
         <div class="min-w-0">
-          <p class="text-base font-bold leading-6 text-(--color-text)">Notifications</p>
+          <p class="text-base font-bold leading-6 text-(--color-text)">
+            {{ t("notifications.title") }}
+          </p>
           <p class="mt-0.5 text-sm text-(--color-muted)">
-            {{ notificationStore.unreadCount }} unread updates
+            {{ t("notifications.unreadUpdates", { count: notificationStore.unreadCount }) }}
           </p>
         </div>
 
@@ -179,7 +183,7 @@ watch(
           v-if="notificationStore.listLoading"
           class="px-5 py-12 text-center text-sm font-medium text-(--color-muted)"
         >
-          Loading notifications...
+          {{ t("notifications.loading") }}
         </div>
 
         <div
@@ -189,9 +193,11 @@ watch(
           <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-(--color-surface-soft) text-(--color-muted)">
             <BellIcon class="h-6 w-6" />
           </div>
-          <p class="mt-4 text-base font-bold text-(--color-text)">No notifications yet</p>
+          <p class="mt-4 text-base font-bold text-(--color-text)">
+            {{ t("notifications.emptyTitle") }}
+          </p>
           <p class="mx-auto mt-2 max-w-xs text-sm leading-6 text-(--color-muted)">
-            Account and booking updates will appear here.
+            {{ t("notifications.emptyMessage") }}
           </p>
         </div>
 
@@ -238,14 +244,14 @@ watch(
           :disabled="!canMarkAllAsRead"
           @click="markAllAsRead"
         >
-          Mark all read
+          {{ t("notifications.markAllRead") }}
         </button>
         <RouterLink
           :to="notificationRoute"
           class="inline-flex min-h-9 items-center justify-center rounded-full bg-(--color-primary) px-4 text-xs font-bold !text-white transition hover:bg-(--color-primary-strong) hover:!text-white"
           @click="closeDropdown"
         >
-          View all
+          {{ t("notifications.viewAll") }}
         </RouterLink>
       </div>
     </div>
@@ -253,7 +259,7 @@ watch(
     <RouterLink
       :to="notificationRoute"
       class="absolute inset-0 lg:hidden"
-      aria-label="Open notifications"
+      :aria-label="t('notifications.ariaOpen')"
     />
   </div>
 </template>

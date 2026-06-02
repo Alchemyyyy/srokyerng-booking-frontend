@@ -3,6 +3,7 @@
     "name": "SrokYerng Booking"
   },
   "common": {
+    "back": "Back",
     "cancel": "Cancel",
     "confirm": "Confirm",
     "createAccount": "Create account",
@@ -112,6 +113,151 @@
     "phone": "+855 12 345 678",
     "rights": "All rights reserved.",
     "madeWith": "Made with ❤️ in Cambodia"
+  },
+  "profile": {
+    "account": "Account",
+    "title": "Profile settings",
+    "subtitle": "Manage your personal details, profile image, and account password.",
+    "loading": "Loading profile...",
+    "verified": "Verified",
+    "notVerified": "Not verified",
+    "roles": {
+      "admin": "Admin",
+      "owner": "Owner",
+      "customer": "Customer",
+      "member": "Member"
+    },
+    "summary": {
+      "uploading": "Uploading...",
+      "uploadImage": "Upload image",
+      "previewSelected": "Preview selected. Save to update your profile image.",
+      "saveImage": "Save image"
+    },
+    "completion": {
+      "title": "Profile completion",
+      "description": "Complete your profile so bookings and account updates are easier to manage.",
+      "items": {
+        "name": "Name",
+        "phone": "Phone",
+        "email": "Email",
+        "photo": "Photo"
+      }
+    },
+    "details": {
+      "title": "Personal information",
+      "description": "Update your public profile details.",
+      "fullName": "Full name",
+      "fullNamePlaceholder": "Your full name",
+      "phonePlaceholder": "012345678",
+      "gender": "Gender",
+      "preferNotToSay": "Prefer not to say",
+      "male": "Male",
+      "female": "Female",
+      "other": "Other",
+      "dateOfBirth": "Date of birth",
+      "address": "Address",
+      "addressPlaceholder": "Your address",
+      "unsavedChanges": "Unsaved changes.",
+      "helper": "These details are used for booking communication and account recovery.",
+      "saveProfile": "Save profile"
+    },
+    "password": {
+      "title": "Change password",
+      "description": "You will receive a security notification after changing it.",
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "Confirm password",
+      "helper": "Use at least 8 characters. You will stay signed in after a normal password change.",
+      "submit": "Change password"
+    },
+    "leave": {
+      "title": "Leave profile settings?",
+      "message": "You have unsaved profile changes. If you leave now, your changes will be lost.",
+      "stay": "Stay here",
+      "confirm": "Leave without saving"
+    },
+    "toast": {
+      "profileUpdated": "Profile updated",
+      "passwordChanged": "Password changed",
+      "imageUpdated": "Profile image updated"
+    },
+    "errors": {
+      "loadProfile": "Could not load profile",
+      "updateProfile": "Could not update profile",
+      "changePassword": "Could not change password",
+      "uploadImage": "Could not upload profile image"
+    },
+    "validation": {
+      "fullNameRequired": "Full name is required",
+      "phoneInvalid": "Phone number format is invalid",
+      "dateOfBirthFuture": "Date of birth cannot be in the future",
+      "currentPasswordRequired": "Current password is required",
+      "newPasswordRequired": "New password is required",
+      "newPasswordMinLength": "New password must be at least 8 characters",
+      "confirmPasswordRequired": "Confirm password is required",
+      "passwordMismatch": "New password and confirmation do not match",
+      "profileImageType": "Profile image must be a JPG, PNG, or WebP file",
+      "profileImageSize": "Profile image must be 2MB or smaller"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "inbox": "Inbox",
+    "pageSubtitle": "Track account, booking, payment, and property updates in one place.",
+    "unreadUpdates": "{count} unread updates",
+    "totalUnread": "{total} total · {unread} unread",
+    "ariaOpen": "Open notifications",
+    "loading": "Loading notifications...",
+    "markAllRead": "Mark all read",
+    "markAllAsRead": "Mark all as read",
+    "viewAll": "View all",
+    "new": "New",
+    "read": "Read",
+    "markAsRead": "Mark as read",
+    "archive": "Archive",
+    "emptyTitle": "No notifications yet",
+    "emptyMessage": "Account and booking updates will appear here.",
+    "filters": {
+      "all": "All",
+      "unread": "Unread",
+      "read": "Read"
+    },
+    "pageTitles": {
+      "all": "Notifications",
+      "unread": "Unread notifications",
+      "read": "Read notifications"
+    },
+    "empty": {
+      "allTitle": "No notifications yet",
+      "unreadTitle": "No unread notifications",
+      "readTitle": "No read notifications",
+      "allMessage": "Important booking, payment, property, and account updates will appear here.",
+      "filteredMessage": "Try switching filters to see other notifications."
+    },
+    "types": {
+      "reservation_created": "Reservation created",
+      "reservation_confirmed": "Reservation confirmed",
+      "reservation_cancelled": "Reservation cancelled",
+      "payment_submitted": "Payment submitted",
+      "payment_verified": "Payment verified",
+      "payment_rejected": "Payment rejected",
+      "property_approved": "Property approved",
+      "property_rejected": "Property rejected",
+      "password_changed": "Password changed",
+      "system": "System",
+      "default": "Notification"
+    },
+    "toast": {
+      "markAllRead": "All notifications marked as read",
+      "markRead": "Notification marked as read",
+      "archived": "Notification archived"
+    },
+    "errors": {
+      "load": "Could not load notifications",
+      "update": "Could not update notifications",
+      "updateOne": "Could not update notification",
+      "archive": "Could not archive notification"
+    }
   },
   "home": {
     "hero": {

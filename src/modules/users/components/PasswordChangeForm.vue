@@ -1,7 +1,10 @@
 <script setup>
 import { KeyIcon } from "@heroicons/vue/24/outline";
+import { useI18n } from "vue-i18n";
 import AppButton from "@/shared/components/AppButton.vue";
 import AppInput from "@/shared/components/AppInput.vue";
+
+const { t } = useI18n({ useScope: "global" });
 
 defineProps({
   form: {
@@ -29,9 +32,9 @@ defineEmits(["submit"]);
     <div class="mb-5 flex items-center gap-3">
       <KeyIcon class="h-6 w-6 text-(--color-primary)" />
       <div>
-        <h2 class="text-xl font-bold">Change password</h2>
+        <h2 class="text-xl font-bold">{{ t("profile.password.title") }}</h2>
         <p class="text-sm text-(--color-muted)">
-          You will receive a security notification after changing it.
+          {{ t("profile.password.description") }}
         </p>
       </div>
     </div>
@@ -40,21 +43,21 @@ defineEmits(["submit"]);
       <AppInput
         v-model="form.current_password"
         type="password"
-        label="Current password"
+        :label="t('profile.password.current')"
         :error="errors.current_password"
         required
       />
       <AppInput
         v-model="form.new_password"
         type="password"
-        label="New password"
+        :label="t('profile.password.new')"
         :error="errors.new_password"
         required
       />
       <AppInput
         v-model="form.confirm_password"
         type="password"
-        label="Confirm password"
+        :label="t('profile.password.confirm')"
         :error="errors.confirm_password"
         required
       />
@@ -62,7 +65,7 @@ defineEmits(["submit"]);
 
     <div class="mt-6 flex flex-col gap-3 border-t border-(--color-border) pt-5 sm:flex-row sm:items-center sm:justify-between">
       <p class="text-xs text-(--color-muted)">
-        Use at least 8 characters. You will stay signed in after a normal password change.
+        {{ t("profile.password.helper") }}
       </p>
       <AppButton
         type="submit"
@@ -71,7 +74,7 @@ defineEmits(["submit"]);
         :disabled="saving"
         :loading="saving"
       >
-        Change password
+        {{ t("profile.password.submit") }}
       </AppButton>
     </div>
   </form>
