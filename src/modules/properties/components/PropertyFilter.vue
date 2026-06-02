@@ -1,4 +1,5 @@
 <script setup>
+import AppButton from "@/shared/components/AppButton.vue";
 import { useI18n } from "vue-i18n";
 
 const { t } = useI18n({ useScope: "global" });
@@ -193,13 +194,9 @@ const formatPrice = (value) => `$${value}`;
     </div>
 
     <!-- Reset Button -->
-    <button
-      type="button"
-      @click="$emit('reset')"
-      class="mt-6 w-full rounded-2xl border border-(--color-border) py-3 text-sm font-semibold text-(--color-muted) transition hover:border-(--color-primary)/30 hover:bg-(--color-primary-soft) hover:text-(--color-primary)"
-    >
+    <AppButton variant="secondary" class="mt-6 w-full" @click="$emit('reset')">
       {{ t("propertiesPage.actions.resetFilters") }}
-    </button>
+    </AppButton>
   </div>
 </template>
 

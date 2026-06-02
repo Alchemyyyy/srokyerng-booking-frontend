@@ -1,27 +1,214 @@
 <script setup>
-import { onMounted } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
 import AppButton from "@/shared/components/AppButton.vue";
 import { useRoomStore } from "../store/roomStore";
-import {
-  ArrowsPointingOutIcon,
-  BanknotesIcon,
-  PencilSquareIcon,
-  PlusIcon,
-  TrashIcon,
-  UserGroupIcon,
-} from "@heroicons/vue/24/outline";
+import RoomCard from "../components/RoomCard.vue";
+import RoomCardSkeleton from "../components/RoomCardSkeleton.vue";
+import RoomFormModal from "../components/RoomFormModal.vue";
+import RoomDeleteModal from "../components/RoomDeleteModal.vue";
+
+import { PlusIcon } from "@heroicons/vue/24/outline";
 
 const roomStore = useRoomStore();
 const {
   loading,
   error,
+  rawProperties,
   selectedPropertyId,
   propertyFilterTabs,
   filteredRooms,
 } = storeToRefs(roomStore);
-const { fetchRoomsData, getRoomMeta, setSelectedPropertyId } = roomStore;
+const {
+  fetchRoomsData,
+  getRoomMeta,
+  setSelectedPropertyId,
+  addRoom,
+  updateRoom,
+  deleteRoom,
+} = roomStore;
+
+const availableProperties = computed(() => rawProperties.value || []);
+const currentPage = ref(1);
+const perPage = 4;
+const notice = ref("");
+const addFormErrors = ref({});
+const editFormErrors = ref({});
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(filteredRooms.value.length / perPage)),
+);
+const paginatedRooms = computed(() => {
+  const start = (currentPage.value - 1) * perPage;
+  return filteredRooms.value.slice(start, start + perPage);
+});
+
+watch(selectedPropertyId, () => {
+  currentPage.value = 1;
+});
+
+watch(filteredRooms, () => {
+  if (currentPage.value > totalPages.value) {
+    currentPage.value = totalPages.value;
+  }
+});
+
+const setNotice = (message) => {
+  notice.value = message;
+};
+
+const clearNotice = () => {
+  notice.value = "";
+};
+
+const emptyRoom = () => ({
+  propertyId: availableProperties.value[0]?.id || "",
+  type: "",
+  guests: 2,
+  size: "",
+  bedType: "",
+  description: "",
+  basePrice: 0,
+  inventory: 1,
+  available: 1,
+  image: "",
+});
+
+const isAddRoomModalOpen = ref(false);
+const isEditRoomModalOpen = ref(false);
+const isDeleteRoomModalOpen = ref(false);
+const editingRoomId = ref(null);
+const deletingRoom = ref(null);
+const addRoomForm = ref(emptyRoom());
+const editRoomForm = ref(emptyRoom());
+
+const openAddRoomModal = () => {
+  addRoomForm.value = emptyRoom();
+  addFormErrors.value = {};
+  isAddRoomModalOpen.value = true;
+};
+
+const closeAddRoomModal = () => {
+  isAddRoomModalOpen.value = false;
+};
+
+const openEditRoomModal = (room) => {
+  editingRoomId.value = room.id;
+  editRoomForm.value = {
+    propertyId: room.propertyId,
+    type: room.type,
+    guests: room.guests,
+    size: room.size,
+    bedType: room.bedType,
+    description: room.description,
+    basePrice: room.basePrice,
+    inventory: room.inventory,
+    available: room.available,
+    image: room.image || "",
+  };
+  editFormErrors.value = {};
+  isEditRoomModalOpen.value = true;
+};
+
+const closeEditRoomModal = () => {
+  isEditRoomModalOpen.value = false;
+  editingRoomId.value = null;
+};
+
+const openDeleteRoomModal = (room) => {
+  deletingRoom.value = room;
+  isDeleteRoomModalOpen.value = true;
+};
+
+const closeDeleteRoomModal = () => {
+  isDeleteRoomModalOpen.value = false;
+  deletingRoom.value = null;
+};
+
+const handleAddRoom = () => {
+  addFormErrors.value = {};
+  const selectedProperty = availableProperties.value.find(
+    (property) => property.id === addRoomForm.value.propertyId,
+  );
+
+  const errors = {};
+  if (!addRoomForm.value.propertyId)
+    errors.propertyId = "Please choose a property.";
+  if (!addRoomForm.value.type) errors.type = "Room type is required.";
+  if (!addRoomForm.value.size) errors.size = "Size is required.";
+  addFormErrors.value = errors;
+
+  if (Object.keys(errors).length > 0 || !selectedProperty) return;
+
+  addRoom({
+    id: `room-${Date.now()}`,
+    propertyId: selectedProperty.id,
+    propertyName: selectedProperty.name,
+    type: addRoomForm.value.type,
+    guests: Number(addRoomForm.value.guests) || 0,
+    size: addRoomForm.value.size,
+    bedType: addRoomForm.value.bedType,
+    description: addRoomForm.value.description,
+    basePrice: Number(addRoomForm.value.basePrice) || 0,
+    inventory: Number(addRoomForm.value.inventory) || 1,
+    available: Number(addRoomForm.value.available) || 1,
+    status: "Pending",
+    image:
+      addRoomForm.value.image ||
+      "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80",
+    amenities: [],
+  });
+
+  closeAddRoomModal();
+  setNotice("Room added successfully.");
+};
+
+const handleEditRoom = () => {
+  editFormErrors.value = {};
+  const selectedProperty = availableProperties.value.find(
+    (property) => property.id === editRoomForm.value.propertyId,
+  );
+
+  const errors = {};
+  if (!editRoomForm.value.propertyId)
+    errors.propertyId = "Please choose a property.";
+  if (!editRoomForm.value.type) errors.type = "Room type is required.";
+  if (!editRoomForm.value.size) errors.size = "Size is required.";
+  editFormErrors.value = errors;
+
+  if (
+    Object.keys(errors).length > 0 ||
+    !selectedProperty ||
+    !editingRoomId.value
+  )
+    return;
+
+  updateRoom(editingRoomId.value, {
+    propertyId: selectedProperty.id,
+    propertyName: selectedProperty.name,
+    type: editRoomForm.value.type,
+    guests: Number(editRoomForm.value.guests) || 0,
+    size: editRoomForm.value.size,
+    bedType: editRoomForm.value.bedType,
+    description: editRoomForm.value.description,
+    basePrice: Number(editRoomForm.value.basePrice) || 0,
+    inventory: Number(editRoomForm.value.inventory) || 1,
+    available: Number(editRoomForm.value.available) || 1,
+    image:
+      editRoomForm.value.image ||
+      "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80",
+  });
+
+  closeEditRoomModal();
+  setNotice("Room updated successfully.");
+};
+
+const handleDeleteRoom = () => {
+  if (!deletingRoom.value) return;
+  deleteRoom(deletingRoom.value.id);
+  closeDeleteRoomModal();
+  setNotice("Room deleted successfully.");
+};
 
 onMounted(fetchRoomsData);
 </script>
@@ -39,7 +226,10 @@ onMounted(fetchRoomsData);
           Manage rooms across all your properties.
         </p>
       </div>
-      <AppButton class="inline-flex items-center gap-2">
+      <AppButton
+        class="inline-flex items-center gap-2"
+        @click="openAddRoomModal"
+      >
         <PlusIcon class="h-4 w-4" aria-hidden="true" />
         <span>Add Room</span>
       </AppButton>
@@ -74,19 +264,28 @@ onMounted(fetchRoomsData);
 
     <main class="relative min-h-100">
       <div
+        v-if="notice"
+        class="mb-4 flex items-center justify-between gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-500"
+      >
+        <span>{{ notice }}</span>
+        <button
+          type="button"
+          class="text-xs font-semibold uppercase tracking-wide"
+          @click="clearNotice"
+        >
+          Dismiss
+        </button>
+      </div>
+
+      <div
         v-if="error"
         class="mb-4 rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-400"
       >
         {{ error }}
       </div>
 
-      <div
-        v-if="loading"
-        class="absolute inset-0 flex items-center justify-center"
-      >
-        <div
-          class="animate-spin rounded-full h-10 w-10 border-2 border-t-(--color-primary) border-(--color-border)"
-        ></div>
+      <div v-if="loading" class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <RoomCardSkeleton v-for="n in perPage" :key="n" />
       </div>
 
       <div
@@ -99,132 +298,81 @@ onMounted(fetchRoomsData);
       </div>
 
       <div v-else class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <div
-          v-for="(room, index) in filteredRooms"
+        <RoomCard
+          v-for="(room, index) in paginatedRooms"
           :key="room.id"
-          class="rounded-xl border border-(--color-border) bg-(--color-surface) flex flex-col sm:flex-row overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
+          :room="room"
+          :status="getRoomMeta(room, (currentPage - 1) * perPage + index)"
+          @edit="openEditRoomModal"
+          @delete="openDeleteRoomModal"
+        />
+      </div>
+
+      <div
+        v-if="!loading && filteredRooms.length > perPage"
+        class="mt-8 flex items-center justify-center gap-2"
+      >
+        <AppButton
+          variant="secondary"
+          size="sm"
+          :disabled="currentPage === 1"
+          @click="currentPage--"
         >
-          <div
-            class="w-full sm:w-[200px] h-48 sm:h-auto overflow-hidden relative flex-shrink-0 bg-(--color-surface-soft)"
-          >
-            <img
-              :src="
-                room.image ||
-                'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80'
-              "
-              :alt="room.type"
-              class="w-full h-full object-cover"
-            />
-            <span
-              style="
-                background-color: var(--color-primary-strong);
-                color: var(--color-text-inverse);
-              "
-              class="absolute top-2.5 left-2.5 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase opacity-90"
-            >
-              ID: {{ room.id }}
-            </span>
-          </div>
+          Previous
+        </AppButton>
 
-          <div class="flex-1 flex flex-col justify-between">
-            <div class="p-5 space-y-3.5">
-              <div class="flex items-start justify-between gap-4">
-                <div>
-                  <h3
-                    class="text-base font-bold tracking-tight text-(--color-text)"
-                  >
-                    {{ room.type }}
-                  </h3>
-                  <p class="text-xs text-(--color-muted) mt-0.5">
-                    Double · {{ room.propertyName }}
-                  </p>
-                </div>
+        <button
+          v-for="page in totalPages"
+          :key="page"
+          class="h-9 w-9 rounded-lg border text-sm font-semibold transition"
+          :class="
+            currentPage === page
+              ? 'bg-(--color-primary) border-(--color-primary) text-white'
+              : 'bg-(--color-surface) border-(--color-border) text-(--color-muted) hover:bg-(--color-surface-soft)'
+          "
+          @click="currentPage = page"
+        >
+          {{ page }}
+        </button>
 
-                <span
-                  :class="[
-                    'px-2.5 py-0.5 rounded-lg text-[11px] font-bold border flex items-center gap-1',
-                    getRoomMeta(room, index).status === 'Available'
-                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                      : '',
-                    getRoomMeta(room, index).status === 'Occupied'
-                      ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                      : '',
-                    getRoomMeta(room, index).status === 'Maintenance'
-                      ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                      : '',
-                  ]"
-                >
-                  <span class="w-1.5 h-1.5 bg-current rounded-full"></span>
-                  {{ getRoomMeta(room, index).status }}
-                </span>
-              </div>
-
-              <div
-                class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-medium text-(--color-muted)"
-              >
-                <span class="flex items-center gap-1.5">
-                  <UserGroupIcon
-                    class="h-4 w-4 opacity-70"
-                    aria-hidden="true"
-                  />
-                  {{ getRoomMeta(room, index).guests }} guests
-                </span>
-                <span class="flex items-center gap-1.5">
-                  <ArrowsPointingOutIcon
-                    class="h-4 w-4 opacity-70"
-                    aria-hidden="true"
-                  />
-                  {{ getRoomMeta(room, index).size }}
-                </span>
-              </div>
-
-              <div
-                class="flex items-center gap-1.5 text-xs text-(--color-muted)"
-              >
-                <BanknotesIcon class="h-4 w-4 opacity-70" aria-hidden="true" />
-                <span class="font-medium">Base Rate:</span>
-                <strong class="text-(--color-text) font-bold text-sm">
-                  ${{ room.basePrice }}
-                  <span class="text-xs font-medium text-(--color-muted)"
-                    >/ night</span
-                  >
-                </strong>
-              </div>
-
-              <p
-                class="text-xs text-(--color-muted) line-clamp-2 pt-0.5 font-normal leading-relaxed"
-              >
-                {{ getRoomMeta(room, index).description }}
-              </p>
-            </div>
-
-            <div
-              class="px-5 py-3 border-t border-(--color-border) bg-(--color-surface-soft) flex items-center justify-between"
-            >
-              <button
-                class="inline-flex items-center justify-center px-3 py-1 rounded-lg border border-(--color-border) bg-(--color-surface) text-(--color-primary) hover:bg-(--color-surface-soft) transition-all gap-1.5 cursor-pointer"
-              >
-                <PencilSquareIcon class="h-3.5 w-3.5" aria-hidden="true" />
-                <span class="text-xs font-semibold">Edit Template</span>
-              </button>
-
-              <button
-                @click="
-                  alert(
-                    `Delete system prompt triggered for instance context: ${room.id}`,
-                  )
-                "
-                class="p-1.5 text-rose-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all cursor-pointer"
-                title="Purge configuration reference"
-              >
-                <TrashIcon class="h-4 w-4" aria-hidden="true" />
-              </button>
-            </div>
-          </div>
-        </div>
+        <AppButton
+          variant="secondary"
+          size="sm"
+          :disabled="currentPage === totalPages"
+          @click="currentPage++"
+        >
+          Next
+        </AppButton>
       </div>
     </main>
+
+    <RoomFormModal
+      :open="isAddRoomModalOpen"
+      title="Add Room"
+      :model-value="addRoomForm"
+      :properties="availableProperties"
+      :errors="addFormErrors"
+      submit-label="Save Room"
+      @close="closeAddRoomModal"
+      @submit="handleAddRoom"
+    />
+
+    <RoomFormModal
+      :open="isEditRoomModalOpen"
+      title="Edit Room"
+      :model-value="editRoomForm"
+      :properties="availableProperties"
+      :errors="editFormErrors"
+      submit-label="Save Changes"
+      @close="closeEditRoomModal"
+      @submit="handleEditRoom"
+    />
+
+    <RoomDeleteModal
+      :open="isDeleteRoomModalOpen"
+      :room="deletingRoom"
+      @close="closeDeleteRoomModal"
+      @confirm="handleDeleteRoom"
+    />
   </div>
 </template>
-
-<style scoped></style>

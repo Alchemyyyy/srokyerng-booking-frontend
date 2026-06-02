@@ -1,52 +1,86 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
+
 import AppTable from "@/shared/components/AppTable.vue";
-import "@/assets/styles/variables.css";
-import {
-  BanknotesIcon,
-  ClipboardDocumentListIcon,
-  ClockIcon,
-} from "@heroicons/vue/24/outline";
+import LoadingSpinner from "@/shared/components/LoadingSpinner.vue";
+import { reservationApi } from "../api/reservation.api";
 
 const loading = ref(true);
-const error = ref(null);
+const error = ref("");
 const recentReservations = ref([]);
 
-const stats = computed(() => {
-  const total = recentReservations.value.reduce(
-    (sum, r) => sum + (r.amount || 0),
-    0,
-  );
-  const pending = recentReservations.value.filter(
-    (r) => r.status === "pending",
-  ).length;
-  return {
-    totalEarnings: total,
-    totalBookings: recentReservations.value.length,
-    pendingCount: pending,
-  };
-});
-
-const reservationColumns = ref([
+const reservationColumns = [
   { key: "id", label: "Booking ID" },
   { key: "guestName", label: "Guest" },
   { key: "propertyName", label: "Property" },
   { key: "amount", label: "Amount" },
   { key: "checkIn", label: "Date" },
   { key: "status", label: "Status" },
-]);
+];
+
+const stats = computed(() => {
+  const totalEarnings = recentReservations.value.reduce(
+    (sum, reservation) => sum + Number(reservation.amount || 0),
+    0,
+  );
+
+  const pendingCount = recentReservations.value.filter(
+    (reservation) =>
+      String(reservation.status || "").toLowerCase() === "pending",
+  ).length;
+
+  return {
+    totalEarnings,
+    totalBookings: recentReservations.value.length,
+    pendingCount,
+  };
+});
+
+const formatCurrency = (value) =>
+  new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Number(value || 0));
+
+const formatDate = (value) => {
+  if (!value) return "-";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
+const normalizeReservations = (items = []) =>
+  items.map((item, index) => ({
+    id: item.id || item.reservationId || `res-${index + 1}`,
+    guestName:
+      item.guestName || item.customerName || item.userName || "Unknown guest",
+    propertyName:
+      item.propertyName || item.property?.name || "Unknown property",
+    amount: Number(item.amount ?? item.totalAmount ?? 0),
+    checkIn: item.checkIn || item.startDate || item.date || "-",
+    checkOut: item.checkOut || item.endDate || "",
+    status: item.status || "pending",
+  }));
 
 const fetchReservations = async () => {
   loading.value = true;
-  error.value = null;
+  error.value = "";
+
   try {
-    const response = await fetch("/data.json");
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    const data = await response.json();
-    recentReservations.value = data.recentReservations || [];
-  } catch (err) {
-    error.value = "Failed to load reservations data.";
-    console.error("Reservations Fetch Error:", err);
+    const response = await reservationApi.listOwnerReservations();
+    const items = Array.isArray(response) ? response : response?.data || [];
+    recentReservations.value = normalizeReservations(items);
+  } catch (requestError) {
+    error.value =
+      requestError?.message || "Failed to load reservations from the server.";
+    recentReservations.value = [];
+    console.error("Reservations fetch error:", requestError);
   } finally {
     loading.value = false;
   }
@@ -56,198 +90,125 @@ onMounted(fetchReservations);
 </script>
 
 <template>
-  <main class="owner-reservations mt-25 ml-64">
+  <main
+    class="owner-reservations ml-64 mt-25 min-h-screen px-6 pb-10 text-(--color-text)"
+  >
     <header
-      class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+      class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
     >
       <div>
-        <h1 class="text-3xl font-bold tracking-tight text-(--color-text)">
-          Reservations Summary
-        </h1>
+        <h1 class="text-3xl font-bold tracking-tight">Reservations Summary</h1>
         <p class="mt-1 text-sm text-(--color-muted)">
-          Overview and detailed status analytics of your rental properties
-          assets.
+          Overview of recent reservations from the backend.
         </p>
       </div>
 
       <button
+        type="button"
+        class="inline-flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2 text-xs font-semibold transition hover:bg-(--color-surface-soft)"
+        :disabled="loading"
         @click="fetchReservations"
-        style="
-          border-color: var(--color-border);
-          background-color: var(--color-surface);
-        "
-        class="px-4 py-2 text-xs font-semibold rounded-xl border hover:bg-(--color-surface-soft) transition duration-200 cursor-pointer flex items-center gap-2"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="2"
-          stroke="currentColor"
-          class="w-3.5 h-3.5"
-          :class="{ 'animate-spin': loading }"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
-          />
-        </svg>
-        Refresh Stream
+        <LoadingSpinner v-if="loading" class="h-4 w-4" />
+        <span>{{ loading ? "Refreshing..." : "Refresh" }}</span>
       </button>
     </header>
-    <section class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
+
+    <section class="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-3">
       <div
-        style="
-          background-color: var(--color-surface);
-          border-color: var(--color-border);
-          box-shadow: var(--shadow-card);
-        "
-        class="border p-5 rounded-xl flex items-center justify-between"
+        class="rounded-xl border border-(--color-border) bg-(--color-surface) p-5 shadow-(--shadow-card)"
       >
-        <div class="space-y-1">
-          <span
-            class="text-[11px] font-bold uppercase tracking-wider text-(--color-muted)"
-            >Total Earnings</span
-          >
-          <h3 class="text-2xl font-bold tracking-tight text-(--color-text)">
-            ${{ stats.totalEarnings }}
-          </h3>
-        </div>
-        <div
-          style="
-            background-color: var(--color-success-soft);
-            color: var(--color-success);
-          "
-          class="w-10 h-10 rounded-xl flex items-center justify-center"
+        <span
+          class="text-[11px] font-bold uppercase tracking-wider text-(--color-muted)"
         >
-          <BanknotesIcon class="w-5 h-5" />
-        </div>
+          Total Earnings
+        </span>
+        <h3 class="mt-1 text-2xl font-bold">
+          ${{ formatCurrency(stats.totalEarnings) }}
+        </h3>
       </div>
 
       <div
-        style="
-          background-color: var(--color-surface);
-          border-color: var(--color-border);
-          box-shadow: var(--shadow-card);
-        "
-        class="border p-5 rounded-xl flex items-center justify-between"
+        class="rounded-xl border border-(--color-border) bg-(--color-surface) p-5 shadow-(--shadow-card)"
       >
-        <div class="space-y-1">
-          <span
-            class="text-[11px] font-bold uppercase tracking-wider text-(--color-muted)"
-            >Total Bookings</span
-          >
-          <h3 class="text-2xl font-bold tracking-tight text-(--color-text)">
-            {{ stats.totalBookings }}
-          </h3>
-        </div>
-        <div
-          style="
-            background-color: var(--color-primary-soft);
-            color: var(--color-primary);
-          "
-          class="w-10 h-10 rounded-xl flex items-center justify-center"
+        <span
+          class="text-[11px] font-bold uppercase tracking-wider text-(--color-muted)"
         >
-          <ClipboardDocumentListIcon class="w-5 h-5" />
-        </div>
+          Total Bookings
+        </span>
+        <h3 class="mt-1 text-2xl font-bold">{{ stats.totalBookings }}</h3>
       </div>
 
       <div
-        style="
-          background-color: var(--color-surface);
-          border-color: var(--color-border);
-          box-shadow: var(--shadow-card);
-        "
-        class="border p-5 rounded-xl flex items-center justify-between"
+        class="rounded-xl border border-(--color-border) bg-(--color-surface) p-5 shadow-(--shadow-card)"
       >
-        <div class="space-y-1">
-          <span
-            class="text-[11px] font-bold uppercase tracking-wider text-(--color-muted)"
-            >Pending Action</span
-          >
-          <h3 class="text-2xl font-bold tracking-tight text-(--color-text)">
-            {{ stats.pendingCount }}
-          </h3>
-        </div>
-        <div
-          :style="
-            stats.pendingCount > 0
-              ? {
-                  backgroundColor: 'var(--color-warning-soft)',
-                  color: 'var(--color-warning)',
-                }
-              : {
-                  backgroundColor: 'var(--color-surface-soft)',
-                  color: 'var(--color-muted)',
-                }
-          "
-          class="w-10 h-10 rounded-xl flex items-center justify-center"
+        <span
+          class="text-[11px] font-bold uppercase tracking-wider text-(--color-muted)"
         >
-          <ClockIcon class="w-5 h-5" />
-        </div>
+          Pending Action
+        </span>
+        <h3 class="mt-1 text-2xl font-bold">{{ stats.pendingCount }}</h3>
       </div>
     </section>
 
-    <section class="reservations-list">
-      <div v-if="recentReservations.length === 0" class="empty-state">
+    <section class="space-y-4">
+      <div
+        v-if="error"
+        class="rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-600"
+      >
+        {{ error }}
+      </div>
+
+      <div
+        v-if="loading"
+        class="rounded-xl border border-(--color-border) bg-(--color-surface) px-5 py-10 text-center text-(--color-muted)"
+      >
+        Loading reservations...
+      </div>
+
+      <div
+        v-else-if="recentReservations.length === 0"
+        class="rounded-xl border border-dashed border-(--color-border) bg-(--color-surface) px-5 py-10 text-center text-(--color-muted)"
+      >
         No recent reservations found.
       </div>
 
-      <AppTable
-        v-else
-        class="data-table"
-        :columns="reservationColumns"
-        :rows="recentReservations"
-      >
-        <template #cell-guestName="{ value }">
-          <span class="font-bold">{{ value }}</span>
-        </template>
-
-        <!-- Customizing the 'Amount' cell -->
+      <AppTable v-else :columns="reservationColumns" :rows="recentReservations">
         <template #cell-amount="{ value }">
-          <span class="font-bold">${{ value }}</span>
+          <span class="font-semibold">${{ formatCurrency(value) }}</span>
         </template>
 
-        <!-- Customizing the 'Status' cell using design tokens -->
         <template #cell-status="{ value }">
-          <span :class="['status-badge', `status-${value}`]">
+          <span
+            class="inline-flex rounded-xl border px-3 py-1.5 text-[10px] font-black uppercase tracking-widest"
+            :class="[
+              String(value).toLowerCase() === 'confirmed'
+                ? 'border-emerald-100 bg-emerald-50 text-emerald-700'
+                : '',
+              String(value).toLowerCase() === 'completed'
+                ? 'border-slate-200 bg-slate-100 text-slate-600'
+                : '',
+              String(value).toLowerCase() === 'cancelled'
+                ? 'border-rose-100 bg-rose-50 text-rose-700'
+                : '',
+              String(value).toLowerCase() === 'pending'
+                ? 'border-amber-100 bg-amber-50 text-amber-700'
+                : '',
+            ]"
+          >
             {{ value }}
           </span>
         </template>
 
-        <!-- Customizing the 'Date' cell -->
         <template #cell-checkIn="{ row }">
           <div class="flex flex-col">
-            <span>{{ row.checkIn }}</span>
-            <span class="text-xs text-(--color-muted)"
-              >to {{ row.checkOut }}</span
-            >
+            <span>{{ formatDate(row.checkIn) }}</span>
+            <span v-if="row.checkOut" class="text-xs text-(--color-muted)">
+              to {{ formatDate(row.checkOut) }}
+            </span>
           </div>
         </template>
       </AppTable>
     </section>
   </main>
 </template>
-
-<style scoped>
-/* .owner-reservations {
-  min-height: 100vh;
-  background-color: var(--color-page);
-  color: var(--color-text);
-} */
-
-.reservations-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.status-badge {
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: capitalize;
-}
-</style>
