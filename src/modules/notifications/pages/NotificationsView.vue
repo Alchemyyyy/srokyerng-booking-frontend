@@ -2,15 +2,24 @@
 import { computed, onMounted } from "vue";
 import {
   ArchiveBoxIcon,
+  ArrowLeftIcon,
   BellAlertIcon,
   CheckCircleIcon,
   EnvelopeOpenIcon,
 } from "@heroicons/vue/24/outline";
+import { useRouter } from "vue-router";
+import AppButton from "@/shared/components/AppButton.vue";
 import EmptyState from "@/shared/components/EmptyState.vue";
 import LoadingSpinner from "@/shared/components/LoadingSpinner.vue";
+import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useNotificationStore } from "@/modules/notifications/store/notificationStore";
+import { useToastStore } from "@/shared/store/toastStore";
+import { getDashboardRouteByRole } from "@/shared/utils/roleRoutes";
 
+const router = useRouter();
+const authStore = useAuthStore();
 const notificationStore = useNotificationStore();
+const toastStore = useToastStore();
 
 const filters = [
   { label: "All", value: "all" },
@@ -93,8 +102,22 @@ const getTypeLabel = (type) => notificationTypeLabel[type] || "Notification";
 const getToneClass = (type) =>
   notificationToneClass[type] || "bg-(--color-info-soft) text-(--color-info)";
 
-const loadNotifications = (status = notificationStore.currentStatus) => {
-  return notificationStore.fetchNotifications({ status, page: 1 });
+const goBack = async () => {
+  if (window.history.length > 1) {
+    router.back();
+    return;
+  }
+
+  await router.push(getDashboardRouteByRole(authStore.user?.role) || { name: "public.home" });
+};
+
+const loadNotifications = async (status = notificationStore.currentStatus) => {
+  try {
+    return await notificationStore.fetchNotifications({ status, page: 1 });
+  } catch (requestError) {
+    toastStore.danger(requestError.message || "Could not load notifications");
+    return [];
+  }
 };
 
 const markAsRead = async (notification) => {
@@ -102,22 +125,41 @@ const markAsRead = async (notification) => {
     return;
   }
 
-  await notificationStore.markAsRead(notification.id);
+  try {
+    await notificationStore.markAsRead(notification.id);
+    toastStore.success("Notification marked as read");
+  } catch (requestError) {
+    toastStore.danger(requestError.message || "Could not update notification");
+  }
 };
 
 const markAllAsRead = async () => {
-  await notificationStore.markAllAsRead();
+  try {
+    await notificationStore.markAllAsRead();
+    toastStore.success("All notifications marked as read");
+  } catch (requestError) {
+    toastStore.danger(requestError.message || "Could not update notifications");
+  }
 };
 
 const archiveNotification = async (notification) => {
-  await notificationStore.archive(notification.id);
+  try {
+    await notificationStore.archive(notification.id);
+    toastStore.success("Notification archived");
+  } catch (requestError) {
+    toastStore.danger(requestError.message || "Could not archive notification");
+  }
 };
 
 onMounted(async () => {
-  await Promise.all([
-    notificationStore.fetchNotifications({ status: "all", page: 1 }),
-    notificationStore.fetchUnreadCount(),
-  ]);
+  try {
+    await Promise.all([
+      notificationStore.fetchNotifications({ status: "all", page: 1 }),
+      notificationStore.fetchUnreadCount(),
+    ]);
+  } catch (requestError) {
+    toastStore.danger(requestError.message || "Could not load notifications");
+  }
 });
 </script>
 
@@ -126,6 +168,16 @@ onMounted(async () => {
     <section class="mx-auto max-w-5xl">
       <header class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
+          <AppButton
+            type="button"
+            variant="primary"
+            size="sm"
+            class="mb-4 !rounded-lg"
+            @click="goBack"
+          >
+            <ArrowLeftIcon class="h-4 w-4" />
+            Back
+          </AppButton>
           <p class="text-sm font-semibold uppercase tracking-[0.18em] text-(--color-primary)">
             Inbox
           </p>

@@ -300,7 +300,7 @@ onUnmounted(() => {
         <div>
           <AppButton
             type="button"
-            variant="secondary"
+            variant="primary"
             size="sm"
             class="mb-4 !rounded-lg"
             @click="goBack"

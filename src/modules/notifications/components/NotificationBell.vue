@@ -5,6 +5,7 @@ import { BellIcon } from "@heroicons/vue/24/outline";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useNotificationStore } from "@/modules/notifications/store/notificationStore";
 import { getNotificationRouteByRole } from "@/shared/utils/roleRoutes";
+import { useToastStore } from "@/shared/store/toastStore";
 
 const props = defineProps({
   solid: {
@@ -15,6 +16,7 @@ const props = defineProps({
 
 const authStore = useAuthStore();
 const notificationStore = useNotificationStore();
+const toastStore = useToastStore();
 const route = useRoute();
 
 const dropdownOpen = ref(false);
@@ -22,6 +24,9 @@ const bellRef = ref(null);
 
 const notificationRoute = computed(() => getNotificationRouteByRole(authStore.user?.role));
 const latestNotifications = computed(() => notificationStore.notifications.slice(0, 5));
+const canMarkAllAsRead = computed(
+  () => notificationStore.hasUnread && !notificationStore.actionLoading,
+);
 
 const buttonClass = computed(() => [
   "relative flex h-10 w-10 items-center justify-center rounded-full border transition",
@@ -90,6 +95,19 @@ const markAsRead = async (notification) => {
   await notificationStore.markAsRead(notification.id);
 };
 
+const markAllAsRead = async () => {
+  if (!canMarkAllAsRead.value) {
+    return;
+  }
+
+  try {
+    await notificationStore.markAllAsRead();
+    toastStore.success("All notifications marked as read");
+  } catch (requestError) {
+    toastStore.danger(requestError.message || "Could not update notifications");
+  }
+};
+
 const handleDocumentClick = (event) => {
   if (!bellRef.value?.contains(event.target)) {
     closeDropdown();
@@ -138,74 +156,97 @@ watch(
 
     <div
       v-if="dropdownOpen"
-      class="absolute right-0 mt-3 hidden w-96 overflow-hidden rounded-2xl border border-(--color-border) bg-(--color-surface) shadow-2xl ring-1 ring-black/5 lg:block"
+      class="absolute right-0 mt-3 hidden w-[400px] overflow-hidden rounded-xl border border-(--color-border) bg-(--color-surface) shadow-2xl ring-1 ring-black/5 lg:block"
     >
-      <div class="flex items-center justify-between gap-3 border-b border-(--color-border) px-4 py-3">
-        <div>
-          <p class="text-sm font-bold text-(--color-text)">Notifications</p>
-          <p class="text-xs text-(--color-muted)">
-            {{ notificationStore.unreadCount }} unread
+      <div class="flex items-center justify-between gap-4 border-b border-(--color-border) px-5 py-4">
+        <div class="min-w-0">
+          <p class="text-base font-bold leading-6 text-(--color-text)">Notifications</p>
+          <p class="mt-0.5 text-sm text-(--color-muted)">
+            {{ notificationStore.unreadCount }} unread updates
           </p>
         </div>
+
+        <span
+          v-if="notificationStore.hasUnread"
+          class="shrink-0 rounded-full bg-(--color-primary-soft) px-3 py-1 text-xs font-bold text-(--color-primary)"
+        >
+          {{ notificationStore.unreadLabel }}
+        </span>
+      </div>
+
+      <div class="bg-(--color-surface)">
+        <div
+          v-if="notificationStore.listLoading"
+          class="px-5 py-12 text-center text-sm font-medium text-(--color-muted)"
+        >
+          Loading notifications...
+        </div>
+
+        <div
+          v-else-if="latestNotifications.length === 0"
+          class="px-6 py-12 text-center"
+        >
+          <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-(--color-surface-soft) text-(--color-muted)">
+            <BellIcon class="h-6 w-6" />
+          </div>
+          <p class="mt-4 text-base font-bold text-(--color-text)">No notifications yet</p>
+          <p class="mx-auto mt-2 max-w-xs text-sm leading-6 text-(--color-muted)">
+            Account and booking updates will appear here.
+          </p>
+        </div>
+
+        <div v-else class="max-h-[360px] overflow-y-auto">
+          <button
+            v-for="notification in latestNotifications"
+            :key="notification.id"
+            type="button"
+            class="block w-full border-b border-(--color-border) px-5 py-4 text-left transition last:border-b-0 hover:bg-(--color-surface-soft)"
+            :class="notification.is_read ? '' : 'bg-(--color-primary-soft)/30'"
+            @click="markAsRead(notification)"
+          >
+            <div class="flex items-start gap-3">
+              <span
+                class="mt-2 h-2 w-2 shrink-0 rounded-full"
+                :class="
+                  notification.is_read
+                    ? 'bg-(--color-border)'
+                    : 'bg-(--color-primary)'
+                "
+              />
+              <div class="min-w-0 flex-1">
+                <div class="flex items-start justify-between gap-3">
+                  <p class="line-clamp-1 text-sm font-bold text-(--color-text)">
+                    {{ notification.title }}
+                  </p>
+                  <span class="shrink-0 pt-0.5 text-[11px] font-medium text-(--color-muted)">
+                    {{ formatDate(notification.created_at) }}
+                  </span>
+                </div>
+                <p class="mt-1 line-clamp-2 text-xs leading-5 text-(--color-muted)">
+                  {{ notification.message }}
+                </p>
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between gap-3 border-t border-(--color-border) bg-(--color-surface-soft) px-5 py-3">
+        <button
+          type="button"
+          class="text-xs font-bold text-(--color-primary) transition hover:text-(--color-primary-strong) disabled:cursor-not-allowed disabled:text-(--color-muted)"
+          :disabled="!canMarkAllAsRead"
+          @click="markAllAsRead"
+        >
+          Mark all read
+        </button>
         <RouterLink
           :to="notificationRoute"
-          class="text-xs font-bold text-(--color-primary) hover:text-(--color-primary-strong)"
+          class="inline-flex min-h-9 items-center justify-center rounded-full bg-(--color-primary) px-4 text-xs font-bold !text-white transition hover:bg-(--color-primary-strong) hover:!text-white"
           @click="closeDropdown"
         >
           View all
         </RouterLink>
-      </div>
-
-      <div
-        v-if="notificationStore.listLoading"
-        class="px-4 py-8 text-center text-sm font-medium text-(--color-muted)"
-      >
-        Loading notifications...
-      </div>
-
-      <div
-        v-else-if="latestNotifications.length === 0"
-        class="px-4 py-8 text-center"
-      >
-        <p class="text-sm font-bold text-(--color-text)">No notifications yet</p>
-        <p class="mt-1 text-xs text-(--color-muted)">
-          Account and booking updates will appear here.
-        </p>
-      </div>
-
-      <div v-else class="max-h-[360px] overflow-y-auto">
-        <button
-          v-for="notification in latestNotifications"
-          :key="notification.id"
-          type="button"
-          class="block w-full border-b border-(--color-border) px-4 py-3 text-left transition last:border-b-0 hover:bg-(--color-surface-soft)"
-          :class="notification.is_read ? '' : 'bg-(--color-primary-soft)/40'"
-          @click="markAsRead(notification)"
-        >
-          <div class="flex items-start gap-3">
-            <span
-              class="mt-2 h-2 w-2 shrink-0 rounded-full"
-              :class="
-                notification.is_read
-                  ? 'bg-(--color-border)'
-                  : 'bg-(--color-primary)'
-              "
-            />
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center justify-between gap-3">
-                <p class="truncate text-sm font-bold text-(--color-text)">
-                  {{ notification.title }}
-                </p>
-                <span class="shrink-0 text-[11px] font-medium text-(--color-muted)">
-                  {{ formatDate(notification.created_at) }}
-                </span>
-              </div>
-              <p class="mt-1 line-clamp-2 text-xs leading-5 text-(--color-muted)">
-                {{ notification.message }}
-              </p>
-            </div>
-          </div>
-        </button>
       </div>
     </div>
 
