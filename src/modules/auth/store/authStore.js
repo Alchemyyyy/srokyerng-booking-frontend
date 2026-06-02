@@ -1,9 +1,11 @@
 import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 import { authService } from "@/modules/auth/services/authService";
+import { useNotificationStore } from "@/modules/notifications/store/notificationStore";
 import { setAccessToken, setAuthHandlers } from "@/app/api/http";
 
 export const useAuthStore = defineStore("auth", () => {
+  const notificationStore = useNotificationStore();
   const accessToken = ref(null);
   const user = ref(null);
   const initialized = ref(false);
@@ -27,6 +29,15 @@ export const useAuthStore = defineStore("auth", () => {
     accessToken.value = null;
     user.value = null;
     setAccessToken(null);
+    notificationStore.reset();
+  };
+
+  const refreshNotifications = async () => {
+    try {
+      await notificationStore.fetchUnreadCount();
+    } catch {
+      // Notification count should not block auth/session flow.
+    }
   };
 
   const runWithLoading = async (callback, fallbackMessage) => {
@@ -47,6 +58,7 @@ export const useAuthStore = defineStore("auth", () => {
     return runWithLoading(async () => {
       const response = await authService.login(payload);
       setSession(response.data);
+      await refreshNotifications();
       initialized.value = true;
       return response.data.user;
     }, "Login failed");
@@ -79,6 +91,7 @@ export const useAuthStore = defineStore("auth", () => {
     try {
       const response = await authService.refreshToken();
       setSession(response.data);
+      await refreshNotifications();
       return response.data.user;
     } catch (refreshError) {
       clearSession();
