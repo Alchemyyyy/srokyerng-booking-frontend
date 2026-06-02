@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import LoadingSpinner from "@/shared/components/LoadingSpinner.vue";
+import ToastContainer from "@/shared/components/ToastContainer.vue";
 
 const authStore = useAuthStore();
 const showAppLoader = computed(() => authStore.restoringSession);
@@ -12,4 +13,5 @@ const showAppLoader = computed(() => authStore.restoringSession);
     <LoadingSpinner />
   </div>
   <RouterView v-else />
+  <ToastContainer />
 </template>

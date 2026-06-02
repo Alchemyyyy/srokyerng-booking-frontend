@@ -9,6 +9,7 @@ import {
   getNotificationRouteByRole,
   getProfileRouteByRole,
 } from "@/shared/utils/roleRoutes";
+import UserAvatar from "@/shared/components/UserAvatar.vue";
 
 defineProps({
   solid: {
@@ -36,7 +37,6 @@ const userLabel = computed(() => {
   );
 });
 
-const userInitial = computed(() => userLabel.value.trim().charAt(0).toUpperCase());
 const userEmail = computed(() => authStore.user?.email || "");
 
 const roleLabel = computed(() => {
@@ -99,16 +99,16 @@ watch(
       aria-label="Open account menu"
       @click.stop="toggleMenu"
     >
-      <span
-        class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+      <UserAvatar
+        :name="userLabel"
+        :src="authStore.user?.profile_image_url"
+        size-class="h-7 w-7 text-xs"
         :class="
           solid
-            ? 'bg-(--color-primary-soft) text-(--color-primary)'
-            : 'bg-white/20 text-white'
+            ? ''
+            : '!bg-white/20 !text-white'
         "
-      >
-        {{ userInitial }}
-      </span>
+      />
       <ChevronDownIcon class="h-4 w-4 transition" :class="menuOpen ? 'rotate-180' : ''" />
     </button>
 
@@ -118,11 +118,11 @@ watch(
     >
       <div class="border-b border-(--color-border) px-4 py-4">
         <div class="flex items-center gap-3">
-          <div
-            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-(--color-primary-soft) text-sm font-bold text-(--color-primary)"
-          >
-            {{ userInitial }}
-          </div>
+          <UserAvatar
+            :name="userLabel"
+            :src="authStore.user?.profile_image_url"
+            size-class="h-11 w-11 text-sm"
+          />
           <div class="min-w-0">
             <p class="truncate text-base font-semibold text-(--color-text)">
               {{ userLabel }}
