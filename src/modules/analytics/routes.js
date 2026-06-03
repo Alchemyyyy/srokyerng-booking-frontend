@@ -1,7 +1,7 @@
 export const ownerAnalyticsRoutes = [
   {
     path: "analytics",
-    name: "analytics",
+    name: "owner.analytics",
     component: () => import("@/modules/analytics/pages/OwnerAnalyticsView.vue"),
   },
 ];
@@ -9,7 +9,7 @@ export const ownerAnalyticsRoutes = [
 export const adminAnalyticsRoutes = [
   {
     path: "analytics",
-    name: "analytics",
+    name: "admin.analytics",
     component: () => import("@/modules/analytics/pages/AdminAnalyticsView.vue"),
   },
 ];
