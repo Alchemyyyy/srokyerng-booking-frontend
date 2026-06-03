@@ -10,7 +10,7 @@ export const authApi = {
   },
 
   refreshToken() {
-    return http.post("/auth/refresh-token", null, { skipAuthRefresh: true });
+    return http.post("/auth/refresh-token", {}, { skipAuthRefresh: true });
   },
 
   logout() {

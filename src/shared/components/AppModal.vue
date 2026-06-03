@@ -12,6 +12,10 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  panelClass: {
+    type: String,
+    default: "",
+  },
 });
 
 defineEmits(["close"]);
@@ -29,7 +33,8 @@ const displayTitle = computed(() => props.title || t("components.modalTitle"));
       @click.self="$emit('close')"
     >
       <section
-        class="w-full max-w-lg rounded-lg border border-(--color-border) bg-(--color-surface) p-6 text-(--color-text) shadow-(--shadow-panel)"
+        class="w-full rounded-lg border border-(--color-border) bg-(--color-surface) p-6 text-(--color-text) shadow-(--shadow-panel)"
+        :class="panelClass || 'max-w-lg'"
       >
         <header class="mb-5 flex items-start justify-between gap-4">
           <h2 class="m-0 text-xl font-semibold">{{ displayTitle }}</h2>

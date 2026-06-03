@@ -3,71 +3,26 @@ import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { RouterLink, useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/modules/auth/store/authStore";
-import { ROLES } from "@/shared/constants/roles";
-import { onMounted, onUnmounted } from "vue";
 import lightModeLogo from "@/assets/images/logos/logo.png";
 import darkModeLogo from "@/assets/images/logos/logo2.png";
 
 import LanguageToggle from "@/shared/components/LanguageToggle.vue";
 import ThemeToggle from "@/shared/components/ThemeToggle.vue";
-import { getStoredTheme, setTheme } from "@/shared/services/themeStorage";
-import { setLocale } from "@/app/i18n";
 import AppButton from "@/shared/components/AppButton.vue";
-
-const currentTheme = ref(getStoredTheme());
-const systemTheme = ref("light");
-let systemThemeQuery;
-let themeObserver;
+import NotificationBell from "@/modules/notifications/components/NotificationBell.vue";
+import NavbarAccountMenu from "@/shared/components/NavbarAccountMenu.vue";
+import UserAvatar from "@/shared/components/UserAvatar.vue";
+import { getDashboardRouteByRole } from "@/shared/utils/roleRoutes";
+import { useNavbarAppearance } from "@/shared/composables/useNavbarAppearance";
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const mobileMenuOpen = ref(false);
-const isScrolled = ref(false);
 const { t, locale } = useI18n({ useScope: "global" });
 
-const toggleTheme = () => {
-  const next = currentTheme.value === "light" ? "dark" : "light";
-  currentTheme.value = next;
-  setTheme(next);
-};
-
-const handleScroll = () => {
-  isScrolled.value = window.scrollY > 50;
-};
-
-const syncThemeState = () => {
-  currentTheme.value = getStoredTheme();
-  systemTheme.value = window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
-};
-
-const handleSystemThemeChange = (event) => {
-  systemTheme.value = event.matches ? "dark" : "light";
-};
-
-onMounted(() => {
-  syncThemeState();
-  handleScroll();
-
-  systemThemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
-  systemThemeQuery.addEventListener("change", handleSystemThemeChange);
-
-  themeObserver = new MutationObserver(syncThemeState);
-  themeObserver.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ["data-theme"],
-  });
-
-  window.addEventListener("scroll", handleScroll);
-});
-
-onUnmounted(() => {
-  window.removeEventListener("scroll", handleScroll);
-  systemThemeQuery?.removeEventListener("change", handleSystemThemeChange);
-  themeObserver?.disconnect();
-});
+const { currentTheme, resolvedTheme, isNavbarSolid, toggleTheme } =
+  useNavbarAppearance(route);
 
 const navigationItems = computed(() => [
   { label: t("nav.home"), to: { name: "public.home" } },
@@ -76,40 +31,18 @@ const navigationItems = computed(() => [
   { label: t("nav.contact"), to: { name: "public.contact" } },
 ]);
 
-const dashboardRoute = computed(() => {
-  switch (authStore.user?.role) {
-    case ROLES.CUSTOMER:
-      return { name: "customer.reservations" };
-    case ROLES.OWNER:
-      return { name: "owner.dashboard" };
-    case ROLES.ADMIN:
-      return { name: "admin.dashboard" };
-    default:
-      return null;
-  }
-});
-
-const resolvedTheme = computed(() =>
-  currentTheme.value === "system" ? systemTheme.value : currentTheme.value,
-);
-
-const isNavbarSolid = computed(
-  () => isScrolled.value || Boolean(route.meta.navbarSolid),
-);
+const dashboardRoute = computed(() => getDashboardRouteByRole(authStore.user?.role));
 
 const userLabel = computed(() => {
   return (
     authStore.user?.name ||
+    authStore.user?.full_name ||
     authStore.user?.fullName ||
     authStore.user?.username ||
     authStore.user?.email ||
     t("nav.signedInAs")
   );
 });
-
-const userInitial = computed(() =>
-  userLabel.value.trim().charAt(0).toUpperCase(),
-);
 
 const isActiveRoute = (name) => route.name === name;
 
@@ -122,7 +55,7 @@ const toggleMobileMenu = () => {
 };
 
 const handleLogout = async () => {
-  authStore.logout();
+  await authStore.logout();
   closeMobileMenu();
   await router.push({ name: "public.home" });
 };
@@ -140,12 +73,12 @@ watch(
     :class="[
       'fixed top-0 z-50 w-full transition-all duration-300',
       isNavbarSolid
-        ? 'border-b border-(--color-border) bg-(--color-surface)/90 backdrop-blur-xl py-3'
-        : 'bg-transparent border-b border-white/10 py-6',
+        ? 'border-b border-(--color-border) bg-(--color-surface)/90 backdrop-blur-xl py-2'
+        : 'bg-transparent border-b border-white/10 py-3',
     ]"
   >
     <div
-      class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8"
+      class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2 sm:px-6 lg:px-8"
     >
       <RouterLink
         :to="{ name: 'public.home' }"
@@ -155,13 +88,13 @@ watch(
           v-if="resolvedTheme === 'dark' || !isNavbarSolid"
           :src="darkModeLogo"
           alt="Srokyerng Booking"
-          class="h-10 w-auto object-contain brightness-200"
+          class="h-9 w-auto object-contain brightness-200"
         />
         <img
           v-else
           :src="lightModeLogo"
           alt="Srokyerng Booking"
-          class="h-10 w-auto object-contain"
+          class="h-9 w-auto object-contain"
         />
         <span
           class="font-kantumruy text-xl font-extrabold tracking-wider leading-none self-center"
@@ -175,7 +108,7 @@ watch(
         </span>
       </RouterLink>
       <nav
-        class="hidden items-center gap-1 rounded-full border p-1 lg:flex mx-4"
+        class="mx-2 hidden min-w-0 items-center gap-0.5 rounded-full border p-1 lg:flex"
         :class="
           isNavbarSolid
             ? 'border-(--color-border) bg-(--color-surface-soft)'
@@ -186,7 +119,7 @@ watch(
           v-for="item in navigationItems"
           :key="item.label"
           :to="item.to"
-          class="rounded-full px-5 py-2 text-sm font-medium transition-all"
+          class="rounded-full px-4 py-2 text-[15px] font-semibold leading-none whitespace-nowrap transition-all"
           :class="[
             isActiveRoute(item.to.name)
               ? isNavbarSolid
@@ -201,8 +134,7 @@ watch(
           {{ item.label }}
         </RouterLink>
       </nav>
-      <!-- <ThemeToggle v-if="isScrolled" /> -->
-      <div class="hidden shrink-0 items-center gap-3 lg:flex">
+      <div class="hidden shrink-0 items-center gap-2 lg:flex">
         <button
           type="button"
           @click="toggleTheme"
@@ -267,43 +199,8 @@ watch(
         <LanguageToggle />
 
         <template v-if="authStore.isAuthenticated">
-          <div
-            class="flex items-center gap-3 rounded-full bg-(--color-surface-soft) px-3 py-2 ring-1 ring-(--color-border)"
-          >
-            <div
-              class="flex h-9 w-9 items-center justify-center rounded-full bg-(--color-primary-soft) text-sm font-bold text-(--color-primary)"
-            >
-              {{ userInitial }}
-            </div>
-            <div class="pr-1">
-              <p
-                class="max-w-40 truncate text-sm font-semibold text-(--color-text)"
-              >
-                {{ userLabel }}
-              </p>
-              <p
-                class="text-xs uppercase tracking-[0.2em] text-(--color-muted)"
-              >
-                {{ authStore.user?.role || "Member" }}
-              </p>
-            </div>
-          </div>
-
-          <RouterLink
-            v-if="dashboardRoute"
-            :to="dashboardRoute"
-            class="rounded-full border border-(--color-border) px-4 py-2 text-sm font-semibold text-(--color-muted) transition hover:border-(--color-primary) hover:text-(--color-primary)"
-          >
-            {{ t("nav.dashboard") }}
-          </RouterLink>
-
-          <button
-            type="button"
-            class="rounded-full bg-(--color-primary) px-4 py-2 text-sm font-semibold text-white transition hover:bg-(--color-primary-strong)"
-            @click="handleLogout"
-          >
-            {{ t("nav.logout") }}
-          </button>
+          <NotificationBell :solid="isNavbarSolid" />
+          <NavbarAccountMenu :solid="isNavbarSolid" />
         </template>
 
         <template v-else>
@@ -395,28 +292,39 @@ watch(
         </nav>
 
         <div v-if="authStore.isAuthenticated" class="space-y-3">
-          <div
-            class="rounded-3xl bg-(--color-surface-soft) p-4 ring-1 ring-(--color-border)"
-          >
-            <p class="text-xs uppercase tracking-[0.2em] text-(--color-muted)">
-              {{ t("nav.signedInAs") }}
-            </p>
-            <p class="mt-2 text-base font-semibold text-(--color-text)">
-              {{ userLabel }}
-            </p>
-            <p class="mt-1 text-sm text-(--color-muted)">
-              {{ authStore.user?.role || "Member" }}
-            </p>
+          <div class="flex items-center justify-between gap-3">
+            <NotificationBell />
+
+            <RouterLink
+              v-if="dashboardRoute"
+              :to="dashboardRoute"
+              class="flex-1 rounded-2xl border border-(--color-border) px-4 py-3 text-center text-sm font-semibold text-(--color-muted) transition hover:border-(--color-primary) hover:text-(--color-primary)"
+              @click="closeMobileMenu"
+            >
+              {{ t("nav.dashboard") }}
+            </RouterLink>
           </div>
 
-          <RouterLink
-            v-if="dashboardRoute"
-            :to="dashboardRoute"
-            class="block rounded-2xl border border-(--color-border) px-4 py-3 text-center text-sm font-semibold text-(--color-muted) transition hover:border-(--color-primary) hover:text-(--color-primary)"
-            @click="closeMobileMenu"
+          <div
+            class="flex items-center gap-3 rounded-3xl bg-(--color-surface-soft) p-4 ring-1 ring-(--color-border)"
           >
-            {{ t("nav.dashboard") }}
-          </RouterLink>
+            <UserAvatar
+              :name="userLabel"
+              :src="authStore.user?.profile_image_url"
+              size-class="h-12 w-12 text-sm"
+            />
+            <div class="min-w-0">
+              <p class="text-xs uppercase tracking-[0.2em] text-(--color-muted)">
+                {{ t("nav.signedInAs") }}
+              </p>
+              <p class="mt-2 truncate text-base font-semibold text-(--color-text)">
+                {{ userLabel }}
+              </p>
+              <p class="mt-1 text-sm text-(--color-muted)">
+                {{ authStore.user?.role || "Member" }}
+              </p>
+            </div>
+          </div>
 
           <button
             type="button"
