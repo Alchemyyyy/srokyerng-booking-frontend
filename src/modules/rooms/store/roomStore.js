@@ -52,6 +52,25 @@ export const useRoomStore = defineStore("rooms", () => {
         selectedPropertyId.value = propertyId;
     };
 
+    const addRoom = (room) => {
+        rooms.value.unshift(room);
+    };
+
+    const updateRoom = (roomId, updatedRoom) => {
+        const index = rooms.value.findIndex((room) => room.id === roomId);
+
+        if (index !== -1) {
+            rooms.value[index] = {
+                ...rooms.value[index],
+                ...updatedRoom,
+            };
+        }
+    };
+
+    const deleteRoom = (roomId) => {
+        rooms.value = rooms.value.filter((room) => room.id !== roomId);
+    };
+
     const fetchRoomsData = async () => {
         loading.value = true;
         error.value = null;
@@ -87,5 +106,8 @@ export const useRoomStore = defineStore("rooms", () => {
         fetchRoomsData,
         getRoomMeta,
         setSelectedPropertyId,
+        addRoom,
+        updateRoom,
+        deleteRoom,
     };
 });
