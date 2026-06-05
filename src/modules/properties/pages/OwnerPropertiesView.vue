@@ -1,39 +1,62 @@
 <script setup>
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, onMounted } from "vue";
 import PropertyCard from "../components/PropertyCard.vue";
-import AppModal from "@/shared/components/AppModal.vue";
-import AppButton from "@/shared/components/AppButton.vue";
-import AppInput from "@/shared/components/AppInput.vue";
-import EmptyState from "@/shared/components/EmptyState.vue";
-import { PlusIcon } from "@heroicons/vue/24/outline";
-import LoadingSpinner from "@/shared/components/LoadingSpinner.vue";
-import PropertyCardSkeleton from "../components/PropertyCardSkeleton.vue";
-import { useSidebar } from "@/shared/composables/useSidebar";
-
-const currentPage = ref(1);
-const perPage = 4;
-
-const { isSidebarOpen } = useSidebar();
 
 const loading = ref(true);
 const properties = ref([]);
 
-// pagination
-const paginatedProperties = computed(() => {
-  const start = (currentPage.value - 1) * perPage;
-  return properties.value.slice(start, start + perPage);
-});
+const isEditModalOpen = ref(false);
+const editingProperty = ref(null);
 
-const totalPages = computed(() => Math.ceil(properties.value.length / perPage));
+// show delete popup
+const showDeleteConfirm = ref(false);
+const deletingPropertyId = ref(null);
 
-watch([properties, totalPages], () => {
-  if (currentPage.value > totalPages.value) {
-    currentPage.value = Math.max(totalPages.value, 1);
+const openDeleteConfirm = (id) => {
+  deletingPropertyId.value = id;
+  showDeleteConfirm.value = true;
+};
+
+const closeDeleteConfirm = () => {
+  showDeleteConfirm.value = false;
+  deletingPropertyId.value = null;
+};
+
+const confirmDelete = () => {
+  properties.value = properties.value.filter(
+    (p) => p.id !== deletingPropertyId.value,
+  );
+  closeDeleteConfirm();
+};
+
+// Modal Visibility State
+const isModalOpen = ref(false);
+
+const openEditModal = (property) => {
+  editingProperty.value = { ...property };
+  isEditModalOpen.value = true;
+};
+
+//close edit modal
+const closeEditModal = () => {
+  isEditModalOpen.value = false;
+  editingProperty.value = null;
+};
+
+const handleDeleteProperty = (id) => {
+  properties.value = properties.value.filter((p) => p.id !== id);
+};
+
+const handleEditProperty = () => {
+  const index = properties.value.findIndex(
+    (p) => p.id === editingProperty.value.id,
+  );
+  if (index !== -1) {
+    properties.value[index] = { ...editingProperty.value };
   }
-});
+  closeEditModal();
+};
 
-// --- Add Modal ---
-const isAddModalOpen = ref(false);
 const newProperty = ref({
   name: "",
   type: "Hotel",
@@ -56,13 +79,14 @@ const resetForm = () => {
   };
 };
 
-const closeAddModal = () => {
-  isAddModalOpen.value = false;
+const closeModal = () => {
+  isModalOpen.value = false;
   resetForm();
 };
 
 const handleAddProperty = () => {
   if (!newProperty.value.name) return;
+
   properties.value.push({
     id: Date.now(),
     name: newProperty.value.name,
@@ -76,68 +100,16 @@ const handleAddProperty = () => {
       newProperty.value.image ||
       "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80",
   });
-  currentPage.value = totalPages.value;
-  closeAddModal();
+
+  closeModal();
 };
 
-// --- Edit Modal ---
-const isEditModalOpen = ref(false);
-const editingProperty = ref(null);
-
-const openEditModal = (property) => {
-  editingProperty.value = { ...property };
-  isEditModalOpen.value = true;
-};
-
-const closeEditModal = () => {
-  isEditModalOpen.value = false;
-  editingProperty.value = null;
-};
-
-const handleEditProperty = () => {
-  if (!editingProperty.value.name) return;
-  const index = properties.value.findIndex(
-    (p) => p.id === editingProperty.value.id,
-  );
-  if (index !== -1) {
-    properties.value[index] = { ...editingProperty.value };
-  }
-  closeEditModal();
-};
-
-// --- Delete Modal ---
-const isDeleteModalOpen = ref(false);
-const deletingPropertyId = ref(null);
-
-const openDeleteModal = (id) => {
-  deletingPropertyId.value = id;
-  isDeleteModalOpen.value = true;
-};
-
-const closeDeleteModal = () => {
-  isDeleteModalOpen.value = false;
-  deletingPropertyId.value = null;
-};
-
-const confirmDelete = () => {
-  properties.value = properties.value.filter(
-    (p) => p.id !== deletingPropertyId.value,
-  );
-  currentPage.value = Math.min(currentPage.value, Math.max(totalPages.value, 1));
-  closeDeleteModal();
-};
-
-// --- Fetch ---
 const fetchPropertiesList = async () => {
   try {
-    const res = await fetch("/data.json");
+    const res = await fetch("/data.json ");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-
-    // temporary delay to see skeleton - remove later
-
     properties.value = data.properties || [];
-    currentPage.value = 1;
   } catch (err) {
     console.error("Failed to load properties:", err);
     properties.value = [];
@@ -145,295 +117,599 @@ const fetchPropertiesList = async () => {
     loading.value = false;
   }
 };
+
 onMounted(fetchPropertiesList);
 </script>
 
 <template>
-  <main class="mt-25" :class="isSidebarOpen ? 'ml-64' : 'ml-20'">
+  <main class="mt-25 ml-64">
     <!-- Page Header -->
-    <header class="mb-5 flex items-center justify-between">
-      <div>
-        <h1 class="text-3xl font-semibold text-(--color-text)">
-          My Properties
-          <span class="text-(--color-muted)">({{ properties.length }})</span>
-        </h1>
-        <p class="mt-2 text-(--color-muted)">
-          Manage your property listings here.
-        </p>
-      </div>
-
-      <div class="flex items-center gap-3">
-        <RouterLink
-          to="/owner/amenities"
-          class="flex items-center gap-2 px-6 py-3 rounded-xl border transition-colors"
-          style="
-            background: var(--color-primary-soft);
-            border-color: var(--color-border);
-            color: var(--color-primary);
-          "
-        >
-          Manage Amenities
-        </RouterLink>
-
-        <AppButton @click="isAddModalOpen = true">
-          <PlusIcon class="w-4 h-4" />
-          Add New Property
-        </AppButton>
-      </div>
+    <header class="mb-5">
+      <h1 class="text-3xl font-semibold text-(--color-text)">
+        My Properties
+        <span class="text-(--color-muted)">({{ properties.length }})</span>
+      </h1>
+      <p class="mt-2 text-(--color-muted)">
+        Manage your property listings here.
+      </p>
     </header>
+
+    <!-- Action Buttons -->
+    <div class="flex items-center justify-end gap-3 mb-5">
+      <RouterLink
+        to="/owner/amenities"
+        class="flex items-center gap-2 px-6 py-3 rounded-xl border transition-colors"
+        style="
+          background: var(--color-primary-soft);
+          border-color: var(--color-border);
+          color: var(--color-primary);
+        "
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-5 h-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M12 2L2 7l10 5 10-5-10-5z" />
+          <path d="M2 17l10 5 10-5" />
+          <path d="M2 12l10 5 10-5" />
+        </svg>
+        Manage Amenities
+      </RouterLink>
+
+      <button
+        @click="isModalOpen = true"
+        class="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all"
+        style="
+          background: var(--color-primary);
+          color: var(--color-text-inverse);
+        "
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-5 h-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+        Add New Property
+      </button>
+    </div>
 
     <!-- Properties List -->
     <section class="mt-6">
       <div
         v-if="loading"
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-start"
+        class="text-center py-16 text-xs text-slate-400 font-medium"
       >
-        <PropertyCardSkeleton v-for="n in 8" :key="n" />
+        Loading properties database...
       </div>
 
-      <EmptyState
+      <div
         v-else-if="properties.length === 0"
-        title="No Properties Found"
-        message="You haven't added any properties yet. Click 'Add New Property' to get started."
+        class="bg-white rounded-2xl border border-dashed border-slate-200/80 p-16 text-center text-xs text-slate-400 font-medium"
       >
-        <template #action>
-          <AppButton @click="isAddModalOpen = true">
-            <PlusIcon class="w-4 h-4" />
-            Add New Property
-          </AppButton>
-        </template>
-      </EmptyState>
+        No properties found. Please add a property to get started.
+      </div>
 
       <div
         v-else
         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-start"
       >
         <PropertyCard
-          v-for="property in paginatedProperties"
+          v-for="property in properties"
           :key="property.id"
           :property="property"
           @edit="openEditModal"
-          @delete="openDeleteModal"
+          @delete="openDeleteConfirm"
         />
       </div>
     </section>
-    <!-- Pagination -->
-    <div
-      v-if="totalPages > 1"
-      class="flex items-center justify-center gap-2 mt-8"
-    >
-      <AppButton
-        variant="secondary"
-        size="sm"
-        :disabled="currentPage === 1"
-        @click="currentPage--"
-      >
-        Previous
-      </AppButton>
 
-      <button
-        v-for="page in totalPages"
-        :key="page"
-        @click="currentPage = page"
-        class="w-9 h-9 rounded-lg text-sm font-semibold transition"
-        :class="
-          currentPage === page
-            ? 'bg-(--color-primary) text-white'
-            : 'bg-(--color-surface) border border-(--color-border) text-(--color-muted) hover:bg-(--color-surface-soft)'
-        "
+    <!-- Add Property Modal -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="opacity-0 scale-95"
+        enter-to-class="opacity-100 scale-100"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="opacity-100 scale-100"
+        leave-to-class="opacity-0 scale-95"
       >
-        {{ page }}
-      </button>
-
-      <AppButton
-        variant="secondary"
-        size="sm"
-        :disabled="currentPage === totalPages"
-        @click="currentPage++"
-      >
-        Next
-      </AppButton>
-    </div>
-
-    <!-- Add Modal -->
-    <AppModal
-      :open="isAddModalOpen"
-      title="Add New Property"
-      @close="closeAddModal"
-    >
-      <form
-        id="add-property-form"
-        class="space-y-4"
-        @submit.prevent="handleAddProperty"
-      >
-        <AppInput
-          v-model="newProperty.name"
-          label="Property Name *"
-          placeholder="e.g. Sunset Villa"
-          required
-        />
-        <div class="grid grid-cols-2 gap-4">
-          <label class="grid gap-2 text-sm font-semibold text-(--color-text)">
-            Type *
-            <select
-              v-model="newProperty.type"
-              class="w-full rounded-sm border border-(--color-border) bg-(--color-input) px-3.5 py-3 text-(--color-text) outline-none focus:border-(--color-primary)"
+        <div
+          v-if="isModalOpen"
+          class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        >
+          <div
+            class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
+            @click="closeModal"
+          />
+          <div
+            class="relative bg-white w-full max-w-lg rounded-[22px] shadow-2xl overflow-hidden z-10"
+          >
+            <!-- Header -->
+            <div
+              class="bg-[#1062b3] px-6 py-4 flex items-center justify-between"
             >
-              <option>Hotel</option>
-              <option>Villa</option>
-              <option>Apartment</option>
-              <option>Homestay</option>
-            </select>
-          </label>
-          <label class="grid gap-2 text-sm font-semibold text-(--color-text)">
-            Location *
-            <select
-              v-model="newProperty.location"
-              class="w-full rounded-sm border border-(--color-border) bg-(--color-input) px-3.5 py-3 text-(--color-text) outline-none focus:border-(--color-primary)"
+              <h3 class="text-[16px] font-bold text-white tracking-wide">
+                Add New Property
+              </h3>
+              <button
+                @click="closeModal"
+                class="text-white/80 hover:text-white transition p-1.5 hover:bg-white/10 rounded-full"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="2.5"
+                  stroke="currentColor"
+                  class="w-4 h-4"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M6 18 18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <!-- Form -->
+            <form
+              @submit.prevent="handleAddProperty"
+              class="p-6 space-y-4 text-[11px]"
             >
-              <option>Phnom Penh</option>
-              <option>Siem Reap</option>
-              <option>Kampot</option>
-              <option>Sihanoukville</option>
-              <option>Battambang</option>
-              <option>Koh Rong</option>
-            </select>
-          </label>
+              <div>
+                <label
+                  class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5"
+                >
+                  Property Name <span class="text-red-500">*</span>
+                </label>
+                <input
+                  v-model="newProperty.name"
+                  type="text"
+                  placeholder="e.g. Sunset Villa"
+                  required
+                  class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none transition placeholder-slate-300"
+                />
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label
+                    class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5"
+                    >Type <span class="text-red-500">*</span></label
+                  >
+                  <div class="relative">
+                    <select
+                      v-model="newProperty.type"
+                      class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none bg-white appearance-none transition"
+                    >
+                      <option>Hotel</option>
+                      <option>Villa</option>
+                      <option>Apartment</option>
+                      <option>Homestay</option>
+                    </select>
+                    <span
+                      class="absolute right-3.5 top-3.5 text-slate-400 pointer-events-none text-[9px]"
+                      >▼</span
+                    >
+                  </div>
+                </div>
+                <div>
+                  <label
+                    class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5"
+                    >Location <span class="text-red-500">*</span></label
+                  >
+                  <div class="relative">
+                    <select
+                      v-model="newProperty.location"
+                      class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none bg-white appearance-none transition"
+                    >
+                      <option>Phnom Penh</option>
+                      <option>Siem Reap</option>
+                      <option>Kampot</option>
+                      <option>Sihanoukville</option>
+                      <option>Battambang</option>
+                      <option>Koh Rong</option>
+                    </select>
+                    <span
+                      class="absolute right-3.5 top-3.5 text-slate-400 pointer-events-none text-[9px]"
+                      >▼</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label
+                  class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5"
+                  >Address</label
+                >
+                <input
+                  v-model="newProperty.address"
+                  type="text"
+                  placeholder="Street address"
+                  class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none transition placeholder-slate-300"
+                />
+              </div>
+
+              <div class="w-1/2 pr-2">
+                <label
+                  class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5"
+                  >Starting Price / Night ($)</label
+                >
+                <input
+                  v-model.number="newProperty.startingPrice"
+                  type="number"
+                  min="0"
+                  class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none transition"
+                />
+              </div>
+
+              <div>
+                <label
+                  class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5"
+                  >Description</label
+                >
+                <textarea
+                  v-model="newProperty.description"
+                  rows="3"
+                  placeholder="Brief description for guests..."
+                  class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none transition resize-none placeholder-slate-300"
+                />
+              </div>
+
+              <div>
+                <label
+                  class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5 text-[10px]"
+                  >Thumbnail Image Link URL</label
+                >
+                <input
+                  v-model="newProperty.image"
+                  type="url"
+                  placeholder="https://images.unsplash.com/your-photo-link"
+                  class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none transition placeholder-slate-300"
+                />
+              </div>
+
+              <p class="text-[11px] text-[#1e3a8a]/70 font-medium pt-1">
+                New properties require admin approval before they're visible to
+                guests.
+              </p>
+
+              <div
+                class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 mt-5"
+              >
+                <button
+                  type="button"
+                  @click="closeModal"
+                  class="border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold px-5 py-2 rounded-xl transition text-xs cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  class="bg-[#0064d2] hover:bg-blue-700 text-white font-bold px-5 py-2 rounded-xl transition text-xs shadow-md shadow-blue-700/10 cursor-pointer"
+                >
+                  Add Property
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-
-        <AppInput
-          v-model="newProperty.address"
-          label="Address"
-          placeholder="Street address"
-        />
-        <AppInput
-          v-model.number="newProperty.startingPrice"
-          label="Starting Price / Night ($)"
-          type="number"
-        />
-        <AppInput
-          v-model="newProperty.description"
-          label="Description"
-          placeholder="Brief description for guests..."
-        />
-        <AppInput
-          v-model="newProperty.image"
-          label="Thumbnail Image URL"
-          type="url"
-          placeholder="https://images.unsplash.com/..."
-        />
-        <p class="text-xs text-(--color-muted)">
-          New properties require admin approval before they're visible to
-          guests.
-        </p>
-      </form>
-
-      <template #footer>
-        <AppButton variant="secondary" type="button" @click="closeAddModal"
-          >Cancel</AppButton
-        >
-        <AppButton type="submit" form="add-property-form"
-          >Add Property</AppButton
-        >
-      </template>
-    </AppModal>
-
-    <!-- Edit Modal -->
-    <AppModal
-      v-if="editingProperty"
-      :open="isEditModalOpen"
-      title="Edit Property"
-      @close="closeEditModal"
-    >
-      <form
-        id="edit-property-form"
-        class="space-y-4"
-        @submit.prevent="handleEditProperty"
+      </Transition>
+    </Teleport>
+    <!-- Edit Property Modal -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="opacity-0 scale-95"
+        enter-to-class="opacity-100 scale-100"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="opacity-100 scale-100"
+        leave-to-class="opacity-0 scale-95"
       >
-        <AppInput
-          v-model="editingProperty.name"
-          label="Property Name *"
-          required
-        />
-        <div class="grid grid-cols-2 gap-4">
-          <label class="grid gap-2 text-sm font-semibold text-(--color-text)">
-            Type *
-            <select
-              v-model="editingProperty.type"
-              class="w-full rounded-sm border border-(--color-border) bg-(--color-input) px-3.5 py-3 text-(--color-text) outline-none focus:border-(--color-primary)"
+        <div
+          v-if="isEditModalOpen && editingProperty"
+          class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        >
+          <div
+            class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
+            @click="closeEditModal"
+          />
+
+          <div
+            class="relative bg-white w-full max-w-lg rounded-[22px] shadow-2xl overflow-hidden z-10"
+          >
+            <!-- Header -->
+            <div
+              class="bg-[#1062b3] px-6 py-4 flex items-center justify-between"
             >
-              <option>Hotel</option>
-              <option>Villa</option>
-              <option>Apartment</option>
-              <option>Homestay</option>
-            </select>
-          </label>
-          <label class="grid gap-2 text-sm font-semibold text-(--color-text)">
-            Location *
-            <select
-              v-model="editingProperty.location"
-              class="w-full rounded-sm border border-(--color-border) bg-(--color-input) px-3.5 py-3 text-(--color-text) outline-none focus:border-(--color-primary)"
+              <h3 class="text-[16px] font-bold text-white tracking-wide">
+                Edit Property
+              </h3>
+              <button
+                @click="closeEditModal"
+                class="text-white/80 hover:text-white transition p-1.5 hover:bg-white/10 rounded-full"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="2.5"
+                  stroke="currentColor"
+                  class="w-4 h-4"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M6 18 18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <!-- Form -->
+            <form
+              @submit.prevent="handleEditProperty"
+              class="p-6 space-y-4 text-[11px]"
             >
-              <option>Phnom Penh</option>
-              <option>Siem Reap</option>
-              <option>Kampot</option>
-              <option>Sihanoukville</option>
-              <option>Battambang</option>
-              <option>Koh Rong</option>
-            </select>
-          </label>
+              <!-- Property Name -->
+              <div>
+                <label
+                  class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5"
+                >
+                  Property Name <span class="text-red-500">*</span>
+                </label>
+                <input
+                  v-model="editingProperty.name"
+                  type="text"
+                  required
+                  class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none transition placeholder-slate-300"
+                />
+              </div>
+
+              <!-- Type & Location -->
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label
+                    class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5"
+                  >
+                    Type <span class="text-red-500">*</span>
+                  </label>
+                  <div class="relative">
+                    <select
+                      v-model="editingProperty.type"
+                      class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none bg-white appearance-none transition"
+                    >
+                      <option>Hotel</option>
+                      <option>Villa</option>
+                      <option>Apartment</option>
+                      <option>Homestay</option>
+                    </select>
+                    <span
+                      class="absolute right-3.5 top-3.5 text-slate-400 pointer-events-none text-[9px]"
+                      >▼</span
+                    >
+                  </div>
+                </div>
+                <div>
+                  <label
+                    class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5"
+                  >
+                    Location <span class="text-red-500">*</span>
+                  </label>
+                  <div class="relative">
+                    <select
+                      v-model="editingProperty.location"
+                      class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none bg-white appearance-none transition"
+                    >
+                      <option>Phnom Penh</option>
+                      <option>Siem Reap</option>
+                      <option>Kampot</option>
+                      <option>Sihanoukville</option>
+                      <option>Battambang</option>
+                      <option>Koh Rong</option>
+                    </select>
+                    <span
+                      class="absolute right-3.5 top-3.5 text-slate-400 pointer-events-none text-[9px]"
+                      >▼</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <!-- Address -->
+              <div>
+                <label
+                  class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5"
+                >
+                  Address
+                </label>
+                <input
+                  v-model="editingProperty.address"
+                  type="text"
+                  placeholder="Street address"
+                  class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none transition placeholder-slate-300"
+                />
+              </div>
+
+              <!-- Starting Price -->
+              <div class="w-1/2 pr-2">
+                <label
+                  class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5"
+                >
+                  Starting Price / Night ($)
+                </label>
+                <input
+                  v-model.number="editingProperty.startingPrice"
+                  type="number"
+                  min="0"
+                  class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none transition"
+                />
+              </div>
+
+              <!-- Description -->
+              <div>
+                <label
+                  class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5"
+                >
+                  Description
+                </label>
+                <textarea
+                  v-model="editingProperty.description"
+                  rows="3"
+                  placeholder="Brief description for guests..."
+                  class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none transition resize-none placeholder-slate-300"
+                />
+              </div>
+
+              <!-- Image URL -->
+              <div>
+                <label
+                  class="block font-bold text-[#475569] uppercase tracking-wide mb-1.5 text-[10px]"
+                >
+                  Thumbnail Image Link URL
+                </label>
+                <input
+                  v-model="editingProperty.image"
+                  type="url"
+                  placeholder="https://images.unsplash.com/your-photo-link"
+                  class="w-full border border-slate-200 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-slate-700 outline-none transition placeholder-slate-300"
+                />
+              </div>
+
+              <!-- Footer Buttons -->
+              <div
+                class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 mt-5"
+              >
+                <button
+                  type="button"
+                  @click="closeEditModal"
+                  class="border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold px-5 py-2 rounded-xl transition text-xs cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  class="bg-[#0064d2] hover:bg-blue-700 text-white font-bold px-5 py-2 rounded-xl transition text-xs shadow-md shadow-blue-700/10 cursor-pointer"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-        <AppInput
-          v-model="editingProperty.address"
-          label="Address"
-          placeholder="Street address"
-        />
-        <AppInput
-          v-model.number="editingProperty.startingPrice"
-          label="Starting Price / Night ($)"
-          type="number"
-        />
-        <AppInput
-          v-model="editingProperty.description"
-          label="Description"
-          placeholder="Brief description for guests..."
-        />
-        <AppInput
-          v-model="editingProperty.image"
-          label="Thumbnail Image URL"
-          type="url"
-          placeholder="https://images.unsplash.com/..."
-        />
-      </form>
+      </Transition>
+    </Teleport>
 
-      <template #footer>
-        <AppButton variant="secondary" type="button" @click="closeEditModal"
-          >Cancel</AppButton
+    <!-- delete modal -->
+    <!-- Delete Confirmation Modal -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="opacity-0 scale-95"
+        enter-to-class="opacity-100 scale-100"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="opacity-100 scale-100"
+        leave-to-class="opacity-0 scale-95"
+      >
+        <div
+          v-if="showDeleteConfirm"
+          class="fixed inset-0 z-50 flex items-center justify-center p-4"
         >
-        <AppButton type="submit" form="edit-property-form"
-          >Save Changes</AppButton
-        >
-      </template>
-    </AppModal>
+          <div
+            class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
+            @click="closeDeleteConfirm"
+          />
 
-    <!-- Delete Modal -->
-    <AppModal
-      :open="isDeleteModalOpen"
-      title="Delete Property"
-      @close="closeDeleteModal"
-    >
-      <p class="text-(--color-muted) text-sm">
-        This property will be permanently deleted and cannot be recovered. Are
-        you sure?
-      </p>
-      <template #footer>
-        <AppButton variant="secondary" @click="closeDeleteModal"
-          >Cancel</AppButton
-        >
-        <AppButton variant="danger" @click="confirmDelete"
-          >Yes, Delete</AppButton
-        >
-      </template>
-    </AppModal>
+          <div
+            class="relative bg-white w-full max-w-sm rounded-[22px] shadow-2xl overflow-hidden z-10"
+          >
+            <!-- Header -->
+            <div class="bg-red-500 px-6 py-4 flex items-center justify-between">
+              <h3 class="text-[16px] font-bold text-white tracking-wide">
+                Delete Property
+              </h3>
+              <button
+                @click="closeDeleteConfirm"
+                class="text-white/80 hover:text-white transition p-1.5 hover:bg-white/10 rounded-full"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="2.5"
+                  stroke="currentColor"
+                  class="w-4 h-4"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M6 18 18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-6 text-center">
+              <div
+                class="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4"
+              >
+                <svg
+                  class="w-7 h-7 text-red-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              </div>
+              <h4 class="text-sm font-bold text-[#0f2942] mb-1">
+                Are you sure?
+              </h4>
+              <p class="text-xs text-slate-400">
+                This property will be permanently deleted and cannot be
+                recovered.
+              </p>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex items-center gap-3 px-6 pb-6">
+              <button
+                @click="closeDeleteConfirm"
+                class="flex-1 border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold px-5 py-2.5 rounded-xl transition text-xs cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                @click="confirmDelete"
+                class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold px-5 py-2.5 rounded-xl transition text-xs shadow-md shadow-red-500/20 cursor-pointer"
+              >
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </main>
 </template>
