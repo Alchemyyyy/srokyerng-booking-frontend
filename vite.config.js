@@ -6,15 +6,23 @@ import { defineConfig } from 'vite'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     tailwindcss(),
     vue(),
-    vueDevTools(),
-  ],
+    mode !== 'production' && vueDevTools(),
+  ].filter(Boolean),
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-})
+  build: {
+    rolldownOptions: {
+      output: {
+        // Avoid circular production chunks between the app entry and Vue/i18n runtime.
+        codeSplitting: false,
+      },
+    },
+  },
+}))
