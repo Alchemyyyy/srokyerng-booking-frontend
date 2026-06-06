@@ -1,46 +1,44 @@
-import api from "@/app/api/http";
+import reviewApi from '../api/review.api.js'
 
-// CREATE
-export const createReview = async (reservationId, payload) => {
-  const response = await api.post(
-    `/reviews/reservations/${reservationId}/reviews`,
-    payload,
-  );
+const reviewService = {
+  async getReviews(propertyId = 1) {
+    const response = await reviewApi.getPropertyReviews(propertyId);
+    return response.data || [];
+  },
 
-  return response.data;
+  async getMyReviews() {
+    const response = await reviewApi.getMyReviews();
+    return response.data || [];
+  },
+
+  async createReview(reservationId, reviewData) {
+    const response = await reviewApi.createReview(reservationId, reviewData);
+    return response.data;
+  },
+
+  async updateReview(reviewId, reviewData) {
+    const response = await reviewApi.updateReview(reviewId, reviewData);
+    return response.data;
+  },
+
+  async deleteReview(reviewId) {
+    const response = await reviewApi.deleteReview(reviewId);
+    return response.data;
+  },
+
+  async getReviewStats() {
+    return {
+      overall: 4.9,
+      totalReviews: 1284,
+      breakdown: [
+        { stars: 5, percent: 89 },
+        { stars: 4, percent: 8 },
+        { stars: 3, percent: 2 },
+        { stars: 2, percent: 1 },
+        { stars: 1, percent: 0 }
+      ]
+    };
+  }
 };
 
-// PROPERTY REVIEWS
-export const getPropertyReviews = async (propertyId) => {
-  const response = await api.get(`/reviews/properties/${propertyId}/reviews`);
-
-  return response.data;
-};
-
-// CUSTOMER REVIEWS
-export const getCustomerReviews = async () => {
-  const response = await api.get(`/reviews/customer/reviews`);
-
-  return response.data;
-};
-
-// UPDATE
-export const updateReview = async (reviewId, payload) => {
-  const response = await api.patch(`/reviews/${reviewId}`, payload);
-
-  return response.data;
-};
-
-// DELETE
-export const deleteReview = async (reviewId) => {
-  const response = await api.delete(`/reviews/${reviewId}`);
-
-  return response.data;
-};
-
-// ADMIN
-export const getAllReviews = async () => {
-  const response = await api.get(`/reviews/admin/reviews`);
-
-  return response.data;
-};
+export default reviewService;
