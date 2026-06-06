@@ -142,6 +142,331 @@
         "name": "Homestays",
         "value": 21450
       }
+    ],
+    "yearlyPerformance": [
+      {
+        "year": 2024,
+        "summary": {
+            "totalProperties": 10,
+            "totalBookings": 1124,
+            "totalRevenue": 152900,
+            "avgRating": 4.5,
+            "trends": {
+                "properties": "+1 property",
+                "bookings": "+12% from 2023",
+                "revenue": "+9% from 2023",
+                "rating": "Good"
+            }
+        },
+        "segmentPerformance": [
+            {
+                "name": "Hotels",
+                "value": 62000
+            },
+            {
+                "name": "Villas",
+                "value": 34000
+            },
+            {
+                "name": "Apartments",
+                "value": 29000
+            },
+            {
+                "name": "Homestays",
+                "value": 27900
+            }
+        ],
+        "monthlyPerformance": [
+            {
+                "label": "Jan",
+                "revenue": 15000,
+                "expenses": 7600,
+                "profit": 7400
+            },
+            {
+                "label": "Feb",
+                "revenue": 15800,
+                "expenses": 8000,
+                "profit": 7800
+            },
+            {
+                "label": "Mar",
+                "revenue": 18000,
+                "expenses": 8800,
+                "profit": 9200
+            },
+            {
+                "label": "Apr",
+                "revenue": 19900,
+                "expenses": 9400,
+                "profit": 10500
+            },
+            {
+                "label": "May",
+                "revenue": 23000,
+                "expenses": 10800,
+                "profit": 12200
+            },
+            {
+                "label": "Jun",
+                "revenue": 25000,
+                "expenses": 11600,
+                "profit": 13400
+            },
+            {
+                "label": "Jul",
+                "revenue": 26300,
+                "expenses": 12200,
+                "profit": 14100
+            },
+            {
+                "label": "Aug",
+                "revenue": 28200,
+                "expenses": 13400,
+                "profit": 14800
+            },
+            {
+                "label": "Sep",
+                "revenue": 29400,
+                "expenses": 13600,
+                "profit": 15800
+            },
+            {
+                "label": "Oct",
+                "revenue": 30700,
+                "expenses": 14200,
+                "profit": 16500
+            },
+            {
+                "label": "Nov",
+                "revenue": 32300,
+                "expenses": 14700,
+                "profit": 17600
+            },
+            {
+                "label": "Dec",
+                "revenue": 35000,
+                "expenses": 16000,
+                "profit": 19000
+            }
+        ]
+      },
+      {
+        "year": 2025,
+        "summary": {
+            "totalProperties": 11,
+            "totalBookings": 1296,
+            "totalRevenue": 171300,
+            "avgRating": 4.7,
+            "trends": {
+                "properties": "+1 property",
+                "bookings": "+14% from 2024",
+                
+                "revenue": "+11% from 2024",
+                "rating": "Very good"
+            }
+        },
+        "segmentPerformance": [
+            {
+                "name": "Hotels",
+                "value": 70000
+            },
+            {
+                "name": "Villas",
+                "value": 39000
+            },
+            {
+                "name": "Apartments",
+                "value": 33000
+            },
+            {
+                "name": "Homestays",
+                "value": 29300
+            }
+        ],
+        "monthlyPerformance": [
+            {
+                "label": "Jan",
+                "revenue": 16800,
+                "expenses": 8400,
+                "profit": 8400
+            },
+            {
+                "label": "Feb",
+                "revenue": 17600,
+                "expenses": 8800,
+                "profit": 8800
+            },
+            {
+                "label": "Mar",
+                "revenue": 20100,
+                "expenses": 9800,
+                "profit": 10300
+            },
+            {
+                "label": "Apr",
+                "revenue": 22300,
+                "expenses": 10400,
+                "profit": 11900
+            },
+            {
+                "label": "May",
+                "revenue": 25800,
+                "expenses": 12000,
+                "profit": 13800
+            },
+            {
+                "label": "Jun",
+                "revenue": 28100,
+                "expenses": 12900,
+                "profit": 15200
+            },
+            {
+                "label": "Jul",
+                "revenue": 29500,
+                "expenses": 13600,
+                "profit": 15900
+            },
+            {
+                "label": "Aug",
+                "revenue": 31600,
+                "expenses": 14900,
+                "profit": 16700
+            },
+            {
+                "label": "Sep",
+                "revenue": 32900,
+                "expenses": 15100,
+                "profit": 17800
+            },
+            {
+                "label": "Oct",
+                "revenue": 34400,
+                "expenses": 15800,
+                "profit": 18600
+            },
+            {
+                "label": "Nov",
+                "revenue": 36100,
+                "expenses": 16400,
+                "profit": 19700
+            },
+            {
+                "label": "Dec",
+                "revenue": 39200,
+                "expenses": 17900,
+                "profit": 21300
+            }
+        ]
+      },
+      {
+        "year": 2026,
+        "summary": {
+            "totalProperties": 12,
+            "totalBookings": 1487,
+            "totalRevenue": 186450,
+            "avgRating": 4.8,
+            "trends": {
+                "properties": "+3 this month",
+                "bookings": "+21% this week",
+                "revenue": "+14% this month",
+                "rating": "Excellent"
+            }
+        },
+        "segmentPerformance": [
+            {
+                "name": "Hotels",
+                "value": 92000
+            },
+            {
+                "name": "Villas",
+                "value": 42000
+                
+            },
+            {
+                "name": "Apartments",
+                "value": 31000
+            },
+            {
+                "name": "Homestays",
+                "value": 21450
+            }
+        ],
+        "monthlyPerformance": [
+            {
+                "label": "Jan",
+                "revenue": 18500,
+                "expenses": 9200,
+                "profit": 9300
+            },
+            {
+                "label": "Feb",
+                "revenue": 19400,
+                "expenses": 9800,
+                "profit": 9600
+            },
+            {
+                "label": "Mar",
+                "revenue": 22300,
+                "expenses": 10800,
+                "profit": 11500
+            },
+            {
+                "label": "Apr",
+                "revenue": 24700,
+                "expenses": 11600,
+                "profit": 13100
+            },
+            {
+                "label": "May",
+                "revenue": 28600,
+                "expenses": 13400,
+                "profit": 15200
+            },
+            {
+                "label": "Jun",
+                "revenue": 31200,
+                "expenses": 14500,
+                "profit": 16700
+            },
+            {
+                "label": "Jul",
+                "revenue": 32800,
+                "expenses": 15200,
+                "profit": 17600
+            },
+            {
+                "label": "Aug",
+                "revenue": 35100,
+                "expenses": 16800,
+                "profit": 18300
+            },
+            {
+                "label": "Sep",
+                "revenue": 36600,
+                "expenses": 17100,
+                "profit": 19500
+            },
+            {
+                "label": "Oct",
+                "revenue": 38200,
+                "expenses": 17800,
+                "profit": 20400
+            },
+            {
+                "label": "Nov",
+                "revenue": 40100,
+                "expenses": 18400,
+                "profit": 21700
+            },
+            {
+                "label": "Dec",
+                "revenue": 43600,
+                "expenses": 19900,
+                "profit": 23700
+            }
+        ]
+      }
     ]
   },
   "paymentStatus": {

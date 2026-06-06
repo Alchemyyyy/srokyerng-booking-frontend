@@ -88,7 +88,14 @@
     "emptyMessage": "There is nothing to show here yet.",
     "emptyTitle": "No data found",
     "modalTitle": "Modal title",
-    "noRecords": "No records found."
+    "noRecords": "No records found.",
+    "themeToggle": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System",
+      "followsOs": "Follows your OS preference",
+      "overridesOs": "Overrides OS preference"
+    }
   },
   "nav": {
     "home": "Home",
@@ -1065,5 +1072,78 @@
     "confirmReservation": "Confirm & Secure Reservation",
     "noDeposit": "No upfront deposit required today.",
     "hotel": "Angkor Palace Luxury Hotel Resort"
+  },
+    "owner": {
+    "profile": {
+      "name": "Owner Name",
+      "role": "Property Owner"
+    },
+    "header": {
+      "search": "Search…"
+    },
+    "sidebar": {
+      "navigation": "Navigation",
+      "dashboard": "Dashboard",
+      "properties": "Properties",
+      "rooms": "Rooms",
+      "reservations": "Reservations",
+      "paymentAccounts": "Payment Accounts",
+      "settings": "Settings"
+    },
+    "analytics": {
+      "loadingDashboard": "Loading owner dashboard...",
+      "retry": "Retry",
+      "dashboardEyebrow": "overview data · Live data",
+      "dashboardTitle": "Analytics Dashboard",
+      "dashboardSubtitle": "Track revenue, booking traffic, and property performance by overview history.",
+      "year": "overview History",
+      "summaryMetrics": "Summary metrics",
+      "approvalTitle": "Listing Approval Status",
+      "quickNavigation": "Quick Navigation",
+      "noApprovalStatuses": "No approval statuses available.",
+      "noQuickLinks": "No quick links configured.",
+      "approval": {
+        "activeListings": "Approved & Active Listings",
+        "pendingAudits": "Pending Compliance Audits",
+        "draftModeSuspended": "Draft Mode / Suspended"
+      },
+      "yearly": "Yearly",
+      "reservationOverviewTitle": "Reservation Overview",
+      "bookingsCompleted": "Bookings Completed",
+      "revenueBySegmentTitle": "Revenue by Segment",
+      "currentQuarter": "Current quarter",
+      "recentReservationsTitle": "Recent Reservations",
+      "recentReservationsSubtitle": "Latest bookings across your properties.",
+      "recentReservationsTrafficSubtitle": "Latest bookings from your properties.",
+      "reservations": {
+        "guest": "Guest",
+        "propertyRoom": "Property / Room",
+        "checkInOut": "Check-in / Check-out",
+        "amount": "Amount",
+        "status": "Status"
+      },
+      "items": "items",
+      "noRoomAssigned": "No Room Assigned",
+      "to": "to",
+      "unknownProperty": "Unknown Property",
+      "trafficOverviewTitle": "Traffic Overview",
+      "trafficOverviewSubtitle": "Weekly sessions & conversions",
+      "sessions": "Sessions",
+      "conversions": "Conversions",
+      "dailyConversionRate": "Daily Conversion Rate",
+      "thisWeek": "This week",
+      "propertyMix": "Property Mix",
+      "revenueBySegment": "Revenue by segment",
+      "byPercent": "by %",
+      "error": {
+        "failedToLoadDashboardData": "Failed to load dashboard data. Ensure data.json is present."
+      },
+      "summary": {
+        "totalProperties": "Total Properties",
+        "totalBookings": "Total Bookings",
+        "totalRevenue": "Total Revenue",
+        "avgRating": "Avg Rating"
+      }
+    }
   }
 }

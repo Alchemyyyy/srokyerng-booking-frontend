@@ -159,7 +159,7 @@ export const useAdminDashboardStore = defineStore("admin-dashboard", () => {
         {
             title: "Review property approvals",
             description: "Check and approve newly submitted properties.",
-            to: { name: "admin.propertyApprovals" },
+            to: { name: "admin.properties.index" },
             count: dashboardData.value.pending.propertyApprovals,
         },
         {

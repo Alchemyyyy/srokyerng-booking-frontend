@@ -1,20 +1,27 @@
 import ComingSoonView from "@/shared/components/ComingSoonView.vue";
-import AdminDashboard from "@/modules/admin/pages/AdminDashboard.vue";
+import AdminAnalyticsView from "@/modules/analytics/pages/AdminAnalyticsView.vue";
+import PropertyApprovalView from "@/modules/admin/pages/PropertyApprovalView.vue";
+import PropertyReviewDetail from "@/modules/admin/pages/PropertyReviewDetail.vue";
 import { ROLES } from "@/shared/constants/roles";
 // import ManageRoomsView from "@/modules/rooms/pages/ManageRoomsView.vue";
 
 export const adminRoutes = [
   {
-    path: "",
+    path: "analytics",
     name: "dashboard",
-    component: AdminDashboard,
+    component: AdminAnalyticsView,
     meta: { requiresAuth: true, roles: [ROLES.ADMIN] },
   },
   {
     path: "property-approvals",
-    name: "propertyApprovals",
-    component: ComingSoonView,
-    props: { title: "Property Approvals" },
+    name: "admin.properties.index",
+    component: PropertyApprovalView,
+    meta: { requiresAuth: true, roles: [ROLES.ADMIN] },
+  },
+  {
+    path: "property-approvals/:id",
+    name: "admin.properties.review",
+    component: PropertyReviewDetail,
     meta: { requiresAuth: true, roles: [ROLES.ADMIN] },
   },
   {

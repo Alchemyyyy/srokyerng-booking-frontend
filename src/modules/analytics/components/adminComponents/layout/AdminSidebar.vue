@@ -15,7 +15,7 @@ import {
 } from '@heroicons/vue/24/outline';
 
 const menuItems = [
-    { name: 'Analytics', path: '/admin/analytics', icon: ChartBarIcon, badge: null },
+    { name: 'Dashboard', path: '/admin', icon: ChartBarIcon, badge: null },
     { name: 'Properties', path: '/admin/property-approvals', icon: BuildingOffice2Icon, badge: 3 },
     { name: 'Rooms', path: '/admin/rooms-showcase', icon: KeyIcon, badge: null },
     { name: 'Reservations', path: '/admin/reservations', icon: CalendarDaysIcon, badge: 7 },
