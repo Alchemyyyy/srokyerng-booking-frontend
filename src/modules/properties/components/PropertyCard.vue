@@ -1,5 +1,7 @@
 <script setup>
 import { computed } from "vue";
+import AppButton from "@/shared/components/AppButton.vue";
+
 import {
   BuildingOffice2Icon,
   PencilSquareIcon,
@@ -105,13 +107,15 @@ const statusBadgeClass = computed(() => {
             Rooms
           </RouterLink>
 
-          <button
+          <AppButton
+            variant="ghost"
+            size="sm"
+            :disabled="property.status === 'approved'"
             @click="emit('edit', property)"
-            class="flex items-center justify-center gap-1 bg-(--color-surface-soft) hover:bg-(--color-border) text-(--color-muted) font-semibold text-[11px] px-2.5 py-2 rounded-lg transition flex-1"
           >
             <PencilSquareIcon class="w-3.5 h-3.5" />
             Edit
-          </button>
+          </AppButton>
 
           <RouterLink
             :to="{

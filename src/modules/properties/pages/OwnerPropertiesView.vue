@@ -9,14 +9,32 @@ import { PlusIcon } from "@heroicons/vue/24/outline";
 import LoadingSpinner from "@/shared/components/LoadingSpinner.vue";
 import PropertyCardSkeleton from "../components/PropertyCardSkeleton.vue";
 import { useSidebar } from "@/shared/composables/useSidebar";
+import { usePropertyStore } from "@/modules/properties/store/propertyStore";
+import { propertyApi } from "@/modules/properties/api/property.api";
+import { useAuthStore } from "@/modules/auth/store/authStore";
 
+const propertyStore = usePropertyStore();
 const currentPage = ref(1);
 const perPage = 4;
+const authStore = useAuthStore();
 
 const { isSidebarOpen } = useSidebar();
 
 const loading = ref(true);
 const properties = ref([]);
+const selectedImages = ref([]);
+const imagePreviewUrls = ref([]);
+
+const currentStep = ref(1);
+const newPropertyId = ref(null);
+const uploadingImages = ref(false);
+
+const categoryMap = {
+  Hotel: 1,
+  Villa: 2,
+  Apartment: 3,
+  Homestay: 4,
+};
 
 // pagination
 const paginatedProperties = computed(() => {
@@ -34,14 +52,25 @@ watch([properties, totalPages], () => {
 
 // --- Add Modal ---
 const isAddModalOpen = ref(false);
+const addErrors = ref({});
+
+const cityCoordinates = {
+  "Phnom Penh": { lat: 11.5564, lng: 104.9282 },
+  "Siem Reap": { lat: 13.3671, lng: 103.8448 },
+  Kampot: { lat: 10.6112, lng: 104.181 },
+  Sihanoukville: { lat: 10.6345, lng: 103.4972 },
+  Battambang: { lat: 13.0957, lng: 103.2022 },
+  "Koh Rong": { lat: 10.7167, lng: 103.25 },
+};
+
 const newProperty = ref({
   name: "",
   type: "Hotel",
   location: "Phnom Penh",
   address: "",
-  startingPrice: 0,
   description: "",
-  image: "",
+  contact_phone: "",
+  contact_email: "",
 });
 
 const resetForm = () => {
@@ -50,59 +79,186 @@ const resetForm = () => {
     type: "Hotel",
     location: "Phnom Penh",
     address: "",
-    startingPrice: 0,
     description: "",
-    image: "",
+    contact_phone: "",
+    contact_email: "",
   };
 };
 
 const closeAddModal = () => {
   isAddModalOpen.value = false;
+  currentStep.value = 1;
+  newPropertyId.value = null;
+  selectedImages.value = [];
+  imagePreviewUrls.value = [];
+  addErrors.value = {};
   resetForm();
 };
+const validateAddForm = () => {
+  const errors = {};
+  if (!newProperty.value.name.trim())
+    errors.name = "Property name is required.";
+  else if (newProperty.value.name.trim().length < 3)
+    errors.name = "Property name must be at least 3 characters.";
 
-const handleAddProperty = () => {
-  if (!newProperty.value.name) return;
-  properties.value.push({
-    id: Date.now(),
-    name: newProperty.value.name,
-    type: newProperty.value.type,
-    location: newProperty.value.location,
-    rooms: 0,
-    bookings: 0,
-    revenue: 0,
-    status: "PENDING",
-    image:
-      newProperty.value.image ||
-      "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80",
-  });
-  currentPage.value = totalPages.value;
-  closeAddModal();
+  if (!newProperty.value.address.trim())
+    errors.address = "Address is required.";
+  else if (newProperty.value.address.trim().length < 5)
+    errors.address = "Address must be at least 5 characters.";
+
+  if (!newProperty.value.contact_phone.trim())
+    errors.contact_phone = "Contact phone is required.";
+
+  if (!newProperty.value.contact_email.trim())
+    errors.contact_email = "Contact email is required.";
+  else if (!/\S+@\S+\.\S+/.test(newProperty.value.contact_email))
+    errors.contact_email = "Invalid email format.";
+
+  return errors;
 };
+
+const handleAddProperty = async () => {
+  addErrors.value = validateAddForm();
+  if (Object.keys(addErrors.value).length > 0) return;
+
+  const coords = cityCoordinates[newProperty.value.location] || {
+    lat: 11.5564,
+    lng: 104.9282,
+  };
+
+  try {
+    const response = await propertyStore.registerProperty({
+      property_name: newProperty.value.name,
+      category_id: categoryMap[newProperty.value.type] || 1,
+      description: newProperty.value.description,
+      address: newProperty.value.address,
+      city: newProperty.value.location,
+      province: newProperty.value.location,
+      country: "Cambodia",
+      latitude: coords.lat,
+      longitude: coords.lng,
+      contact_phone: newProperty.value.contact_phone,
+      contact_email: newProperty.value.contact_email,
+    });
+    console.log("Register response:", JSON.stringify(response));
+    newPropertyId.value = Number(
+      response?.data?.[0]?.id || response?.data?.id || response?.id,
+    );
+    console.log("Property ID to upload to:", newPropertyId.value);
+    currentStep.value = 2;
+  } catch (err) {
+    console.error("Failed to add property:", err);
+  }
+};
+// ==================IMAGE UPLOAD [START]==================
+const handleImageSelect = (event) => {
+  const files = Array.from(event.target.files);
+  selectedImages.value = [...selectedImages.value, ...files];
+  const newPreviews = files.map((file) => URL.createObjectURL(file));
+  imagePreviewUrls.value = [...imagePreviewUrls.value, ...newPreviews];
+};
+const handleUploadImages = async () => {
+  if (!selectedImages.value.length) {
+    properties.value = propertyStore.myProperties;
+    closeAddModal();
+    return;
+  }
+
+  uploadingImages.value = true;
+  try {
+    await authStore.refreshSession();
+
+    const formData = new FormData();
+    selectedImages.value.forEach((file) => {
+      formData.append("images", file);
+    });
+
+    await propertyApi.uploadPropertyImages(newPropertyId.value, formData);
+
+    // ← Replace this section:
+    const imagesResponse = await propertyApi.getAllPropertyImages(
+      newPropertyId.value,
+    );
+    console.log("Images response:", JSON.stringify(imagesResponse)); // ← add
+    const firstImage = Array.isArray(imagesResponse)
+      ? imagesResponse[0]
+      : imagesResponse?.data?.[0] || imagesResponse?.[0];
+    console.log("First image:", firstImage); // ← add
+
+    if (firstImage?.id) {
+      await propertyApi.setCoverImage(newPropertyId.value, firstImage.id);
+    }
+
+    await propertyStore.fetchMyProperties();
+    properties.value = propertyStore.myProperties;
+    closeAddModal();
+  } catch (err) {
+    console.error("Failed to upload images:", err);
+  } finally {
+    uploadingImages.value = false;
+  }
+};
+// ==================IMAGE UPLOAD [END]==================
 
 // --- Edit Modal ---
 const isEditModalOpen = ref(false);
 const editingProperty = ref(null);
 
-const openEditModal = (property) => {
-  editingProperty.value = { ...property };
-  isEditModalOpen.value = true;
-};
+const openEditModal = async (property) => {
+  try {
+    const res = await propertyApi.getMyPropertyById(property.id);
+    const full = Array.isArray(res)
+      ? res[0]
+      : res?.data?.[0] || res?.data || res;
 
+    console.log("Full property:", JSON.stringify(full)); // check fields
+
+    editingProperty.value = {
+      id: property.id,
+      name: full?.property_name || property.name,
+      type: full?.category_name || "Hotel",
+      location: full?.city || "Phnom Penh",
+      address: full?.address || "",
+      description: full?.description || "",
+      contact_phone: full?.contact_phone || "",
+      contact_email: full?.contact_email || "",
+      raw: full,
+    };
+    isEditModalOpen.value = true;
+  } catch (err) {
+    console.error("Failed to load property details:", err);
+  }
+};
 const closeEditModal = () => {
   isEditModalOpen.value = false;
   editingProperty.value = null;
 };
 
-const handleEditProperty = () => {
+const handleEditProperty = async () => {
   if (!editingProperty.value.name) return;
-  const index = properties.value.findIndex(
-    (p) => p.id === editingProperty.value.id,
-  );
-  if (index !== -1) {
-    properties.value[index] = { ...editingProperty.value };
+  try {
+    await authStore.refreshSession(); // ← add this
+
+    await propertyStore.updateProperty(editingProperty.value.id, {
+      property_name: editingProperty.value.name,
+      category_id: categoryMap[editingProperty.value.type] || 1,
+      description: editingProperty.value.description || "",
+      address: editingProperty.value.address || "",
+      city: editingProperty.value.location,
+      province: editingProperty.value.location,
+      country: "Cambodia",
+      latitude: editingProperty.value.raw?.latitude || 0,
+      longitude: editingProperty.value.raw?.longitude || 0,
+      contact_phone: editingProperty.value.raw?.contact_phone || "",
+      contact_email: editingProperty.value.raw?.contact_email || "",
+    });
+
+    await propertyStore.fetchMyProperties(); // ← refresh list
+    properties.value = propertyStore.myProperties;
+    closeEditModal();
+  } catch (err) {
+    console.error("Failed to update property:", err);
   }
-  closeEditModal();
 };
 
 // --- Delete Modal ---
@@ -119,24 +275,21 @@ const closeDeleteModal = () => {
   deletingPropertyId.value = null;
 };
 
-const confirmDelete = () => {
-  properties.value = properties.value.filter(
-    (p) => p.id !== deletingPropertyId.value,
-  );
-  currentPage.value = Math.min(currentPage.value, Math.max(totalPages.value, 1));
-  closeDeleteModal();
+const confirmDelete = async () => {
+  try {
+    await propertyStore.deleteProperty(deletingPropertyId.value);
+    properties.value = propertyStore.myProperties;
+    closeDeleteModal();
+  } catch (err) {
+    console.error("Failed to delete property:", err);
+  }
 };
 
 // --- Fetch ---
 const fetchPropertiesList = async () => {
   try {
-    const res = await fetch("/data.json");
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-
-    // temporary delay to see skeleton - remove later
-
-    properties.value = data.properties || [];
+    await propertyStore.fetchMyProperties();
+    properties.value = propertyStore.myProperties;
     currentPage.value = 1;
   } catch (err) {
     console.error("Failed to load properties:", err);
@@ -258,20 +411,27 @@ onMounted(fetchPropertiesList);
     <!-- Add Modal -->
     <AppModal
       :open="isAddModalOpen"
-      title="Add New Property"
+      :title="currentStep === 1 ? 'Add New Property' : 'Upload Images'"
       @close="closeAddModal"
     >
+      <!-- Step 1: Property Info -->
       <form
+        v-if="currentStep === 1"
         id="add-property-form"
         class="space-y-4"
         @submit.prevent="handleAddProperty"
       >
-        <AppInput
-          v-model="newProperty.name"
-          label="Property Name *"
-          placeholder="e.g. Sunset Villa"
-          required
-        />
+        <div>
+          <AppInput
+            v-model="newProperty.name"
+            label="Property Name *"
+            placeholder="e.g. Sunset Villa"
+          />
+          <span v-if="addErrors.name" class="text-xs text-rose-500">{{
+            addErrors.name
+          }}</span>
+        </div>
+
         <div class="grid grid-cols-2 gap-4">
           <label class="grid gap-2 text-sm font-semibold text-(--color-text)">
             Type *
@@ -301,40 +461,114 @@ onMounted(fetchPropertiesList);
           </label>
         </div>
 
-        <AppInput
-          v-model="newProperty.address"
-          label="Address"
-          placeholder="Street address"
-        />
-        <AppInput
-          v-model.number="newProperty.startingPrice"
-          label="Starting Price / Night ($)"
-          type="number"
-        />
+        <div>
+          <AppInput
+            v-model="newProperty.contact_phone"
+            label="Contact Phone *"
+            placeholder="+855 12 345 678"
+          />
+          <span v-if="addErrors.contact_phone" class="text-xs text-rose-500">{{
+            addErrors.contact_phone
+          }}</span>
+        </div>
+
+        <div>
+          <AppInput
+            v-model="newProperty.contact_email"
+            label="Contact Email *"
+            type="email"
+            placeholder="contact@example.com"
+          />
+          <span v-if="addErrors.contact_email" class="text-xs text-rose-500">{{
+            addErrors.contact_email
+          }}</span>
+        </div>
+
+        <div>
+          <AppInput
+            v-model="newProperty.address"
+            label="Address *"
+            placeholder="Street address"
+          />
+          <span v-if="addErrors.address" class="text-xs text-rose-500">{{
+            addErrors.address
+          }}</span>
+        </div>
+
         <AppInput
           v-model="newProperty.description"
           label="Description"
           placeholder="Brief description for guests..."
         />
-        <AppInput
-          v-model="newProperty.image"
-          label="Thumbnail Image URL"
-          type="url"
-          placeholder="https://images.unsplash.com/..."
-        />
+
         <p class="text-xs text-(--color-muted)">
           New properties require admin approval before they're visible to
           guests.
         </p>
       </form>
 
+      <!-- Step 2: Upload Images -->
+      <div v-else class="space-y-4">
+        <p class="text-sm text-(--color-muted)">
+          Upload images for your property. You can skip this and add images
+          later.
+        </p>
+
+        <label
+          class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-(--color-border) rounded-xl cursor-pointer hover:border-(--color-primary) transition-colors"
+        >
+          <div class="flex flex-col items-center gap-2">
+            <span class="text-3xl">📸</span>
+            <span class="text-sm font-semibold text-(--color-text)"
+              >Click to upload images</span
+            >
+            <span class="text-xs text-(--color-muted)"
+              >PNG, JPG up to 10MB (multiple allowed)</span
+            >
+          </div>
+          <input
+            type="file"
+            class="hidden"
+            accept="image/*"
+            multiple
+            @change="handleImageSelect"
+          />
+        </label>
+
+        <!-- Image Previews -->
+        <div v-if="imagePreviewUrls.length" class="grid grid-cols-3 gap-2">
+          <div
+            v-for="(url, index) in imagePreviewUrls"
+            :key="index"
+            class="relative aspect-square rounded-lg overflow-hidden"
+          >
+            <img :src="url" class="w-full h-full object-cover" />
+          </div>
+        </div>
+      </div>
+
       <template #footer>
-        <AppButton variant="secondary" type="button" @click="closeAddModal"
-          >Cancel</AppButton
-        >
-        <AppButton type="submit" form="add-property-form"
-          >Add Property</AppButton
-        >
+        <!-- Step 1 Footer -->
+        <template v-if="currentStep === 1">
+          <AppButton variant="secondary" type="button" @click="closeAddModal"
+            >Cancel</AppButton
+          >
+          <AppButton type="submit" form="add-property-form">Next →</AppButton>
+        </template>
+
+        <!-- Step 2 Footer -->
+        <template v-else>
+          <AppButton
+            variant="secondary"
+            @click="handleUploadImages"
+            :disabled="uploadingImages"
+          >
+            Skip
+          </AppButton>
+          <AppButton @click="handleUploadImages" :disabled="uploadingImages">
+            {{ uploadingImages ? "Uploading..." : "Upload & Finish" }}
+          </AppButton>
+        </template>
       </template>
     </AppModal>
 
@@ -353,7 +587,19 @@ onMounted(fetchPropertiesList);
         <AppInput
           v-model="editingProperty.name"
           label="Property Name *"
+          placeholder="e.g. Sunset Villa"
           required
+        />
+        <AppInput
+          v-model="editingProperty.contact_phone"
+          label="Contact Phone *"
+          placeholder="+855 12 345 678"
+        />
+        <AppInput
+          v-model="editingProperty.contact_email"
+          label="Contact Email *"
+          type="email"
+          placeholder="contact@example.com"
         />
         <div class="grid grid-cols-2 gap-4">
           <label class="grid gap-2 text-sm font-semibold text-(--color-text)">
@@ -388,21 +634,11 @@ onMounted(fetchPropertiesList);
           label="Address"
           placeholder="Street address"
         />
-        <AppInput
-          v-model.number="editingProperty.startingPrice"
-          label="Starting Price / Night ($)"
-          type="number"
-        />
+
         <AppInput
           v-model="editingProperty.description"
           label="Description"
           placeholder="Brief description for guests..."
-        />
-        <AppInput
-          v-model="editingProperty.image"
-          label="Thumbnail Image URL"
-          type="url"
-          placeholder="https://images.unsplash.com/..."
         />
       </form>
 
