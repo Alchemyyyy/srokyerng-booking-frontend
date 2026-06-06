@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { BuildingOfficeIcon, HomeIcon, CalendarDaysIcon, UserGroupIcon } from '@heroicons/vue/24/outline'
+import { BuildingOffice2Icon, HomeIcon, CalendarDaysIcon, UserGroupIcon } from '@heroicons/vue/24/outline'
 
 const props = defineProps({
   stats: { type: Object, required: true },
@@ -48,10 +48,10 @@ watch(() => props.loading, (isNowLoading) => {
 }, { immediate: true }) // Catches browser webpage refresh runs automatically
 
 const processedMetrics = computed(() => [
-  { label: 'Total Properties', value: displayProperties.value, trend: '↑ 12.5%', sub: 'vs last month', trendClass: 'text-emerald-500', icon: BuildingOfficeIcon, iconClass: 'bg-indigo-500/10 text-[var(--color-primary)]' },
-  { label: 'Total Rooms', value: displayRooms.value, trend: '↑ 8.2%', sub: 'vs last week', trendClass: 'text-emerald-500', icon: HomeIcon, iconClass: 'bg-purple-500/10 text-purple-400' },
-  { label: 'Total Bookings', value: displayBookings.value, trend: '↑ 5.7%', sub: 'active cycles', trendClass: 'text-emerald-500', icon: CalendarDaysIcon, iconClass: 'bg-blue-500/10 text-blue-400' },
-  { label: 'Active Users', value: displayUsers.value, trend: '↓ 2.1%', sub: 'bounce rate', trendClass: 'text-rose-500', icon: UserGroupIcon, iconClass: 'bg-amber-500/10 text-amber-500' },
+  { label: 'Total Properties', value: displayProperties.value, trend: '↑ 12.5%', sub: 'vs last month', trendClass: 'text-emerald-500', icon: BuildingOffice2Icon, iconClass: 'bg-[var(--color-primary-soft)] text-[var(--color-primary)]' },
+  { label: 'Total Rooms', value: displayRooms.value, trend: '↑ 8.2%', sub: 'vs last week', trendClass: 'text-emerald-500', icon: HomeIcon, iconClass: 'bg-[var(--color-info-soft)] text-[var(--color-info)]' },
+  { label: 'Total Bookings', value: displayBookings.value, trend: '↑ 5.7%', sub: 'active cycles', trendClass: 'text-emerald-500', icon: CalendarDaysIcon, iconClass: 'bg-[var(--color-success-soft)] text-[var(--color-success)]' },
+  { label: 'Active Users', value: displayUsers.value, trend: '↓ 2.1%', sub: 'bounce rate', trendClass: 'text-rose-500', icon: UserGroupIcon, iconClass: 'bg-[var(--color-warning-soft)] text-[var(--color-warning)]' },
 ])
 
 const formatNumber = (val) => new Intl.NumberFormat('en-US').format(val)
@@ -94,7 +94,7 @@ const formatNumber = (val) => new Intl.NumberFormat('en-US').format(val)
   border-color: var(--color-primary);
 }
 .metrics-label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--color-muted);
   text-transform: uppercase;

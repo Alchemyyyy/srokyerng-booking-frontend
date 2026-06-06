@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { nextTick, onMounted, ref, watch } from 'vue'
 import { ArrowDownTrayIcon } from '@heroicons/vue/24/outline'
 import {
   Chart as ChartJS,
@@ -32,45 +32,129 @@ const props = defineProps({
   },
   loading: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 })
 
 const emit = defineEmits(['change-history'])
 
 const visibleDatasetIds = ref(['properties', 'rooms'])
 const chartRenderKey = ref(0)
+const chartReady = ref(false)
 
-// Watch the global loading state. When refreshing turns off, update key to trigger entrance animation
-watch(() => props.loading, (isNowLoading) => {
-  if (!isNowLoading) {
-    chartRenderKey.value++
+const restartChartAnimation = async () => {
+  chartReady.value = false
+  await nextTick()
+
+  chartRenderKey.value += 1
+  chartReady.value = true
+}
+
+watch(
+  () => props.loading,
+  async (isNowLoading, wasLoading) => {
+    if (wasLoading && !isNowLoading) {
+      await runChartAnimation()
+    }
   }
-}, { immediate: true }) // Also catches initial load execution
+)
 
-const toggleDataset = (datasetId) => {
+watch(
+  () => props.series,
+  async () => {
+    if (!props.loading) {
+      await runChartAnimation()
+    }
+  },
+  { deep: true }
+)
+
+onMounted(async () => {
+  await runChartAnimation()
+})
+
+const toggleDataset = async (datasetId) => {
   if (!datasetId) return
+
   if (visibleDatasetIds.value.includes(datasetId)) {
     if (visibleDatasetIds.value.length === 1) return
     visibleDatasetIds.value = visibleDatasetIds.value.filter((id) => id !== datasetId)
-    return
+  } else {
+    visibleDatasetIds.value = [...visibleDatasetIds.value, datasetId]
   }
-  visibleDatasetIds.value = [...visibleDatasetIds.value, datasetId]
+
+  await runChartAnimation()
 }
 
-const chartData = computed(() => ({
+// const chartReady = ref(false)
+const animatedChartData = ref({
+  labels: [],
+  datasets: [],
+})
+
+const getVisibleDatasets = () => {
+  return (props.series?.datasets || []).filter((dataset) =>
+    visibleDatasetIds.value.includes(dataset.id)
+  )
+}
+
+const buildChartData = (useZeroValues = false) => ({
   labels: props.series?.labels || [],
-  datasets: (props.series?.datasets || []).filter((dataset) => visibleDatasetIds.value.includes(dataset.id)),
-}))
+  datasets: getVisibleDatasets().map((dataset) => ({
+    ...dataset,
+    data: useZeroValues
+      ? (dataset.data || []).map(() => 0)
+      : dataset.data || [],
+  })),
+})
+
+const runChartAnimation = async () => {
+  chartReady.value = false
+  await nextTick()
+
+  animatedChartData.value = buildChartData(true)
+  chartReady.value = true
+
+  await nextTick()
+
+  requestAnimationFrame(() => {
+    animatedChartData.value = buildChartData(false)
+  })
+}
 
 const lineChartOptions = ref({
   responsive: true,
   maintainAspectRatio: false,
-  plugins: { legend: { labels: { color: 'rgba(169, 189, 209, 0.9)', font: { family: 'Poppins' } } } },
+  animation: {
+    duration: 1200,
+    easing: 'easeOutQuart',
+  },
+  transitions: {
+    active: {
+      animation: {
+        duration: 1200,
+      },
+    },
+  },
+  plugins: {
+    legend: {
+      labels: {
+        color: 'rgba(169, 189, 209, 0.9)',
+        font: { family: 'Poppins' },
+      },
+    },
+  },
   scales: {
-    y: { grid: { color: 'rgba(200, 217, 228, 0.15)' }, ticks: { color: '#4b628f' } },
-    x: { grid: { display: false }, ticks: { color: '#4b628f' } }
-  }
+    y: {
+      beginAtZero: true,
+      grid: { color: 'rgba(200, 217, 228, 0.15)' },
+      ticks: { color: '#4b628f' },
+    },
+    x: {
+      grid: { display: false },
+      ticks: { color: '#4b628f' },
+    },
+  },
 })
 </script>
 
@@ -79,11 +163,14 @@ const lineChartOptions = ref({
     <div class="flex items-center justify-between mb-4 gap-4 flex-wrap">
       <div>
         <h3 class="panel-title">Platform Growth Overview</h3>
-        <p class="panel-subtitle">Historical tracking of system properties, rooms, and registered users</p>
+        <p class="panel-subtitle">
+          Historical tracking of system properties, rooms, and registered users
+        </p>
       </div>
+
       <div class="overview-controls">
-        <div class="history-actions" v-if="historyOptions.length > 0">
-          <button v-for="option in historyOptions" :key="option.value" type="button"
+        <div v-if="historyOptions.length > 0" class="history-actions">
+          <button v-for="option in historyOptions" :key="option.value" type="button" class="cursor-pointer"
             :class="['action-pill', { 'action-pill--active': option.value === selectedHistory }]"
             @click="emit('change-history', option.value)">
             {{ option.label }}
@@ -92,20 +179,21 @@ const lineChartOptions = ref({
 
         <div class="dataset-actions">
           <button v-for="dataset in series.datasets || []" :key="dataset.id || dataset.label" type="button"
+            class="cursor-pointer"
             :class="['action-pill', { 'action-pill--active': visibleDatasetIds.includes(dataset.id) }]"
             @click="toggleDataset(dataset.id)">
             {{ dataset.label }}
           </button>
         </div>
 
-        <button class="export-btn" aria-label="Export dataset link">
+        <button class="export-btn cursor-pointer" aria-label="Export dataset link">
           <ArrowDownTrayIcon class="h-4 w-4" />
         </button>
       </div>
     </div>
 
     <div class="chart-wrapper">
-      <Line :key="chartRenderKey" :data="chartData" :options="lineChartOptions" />
+      <Line v-if="chartReady" :data="animatedChartData" :options="lineChartOptions" />
     </div>
   </div>
 </template>

@@ -988,10 +988,10 @@
     "analytics": {
       "loadingDashboard": "Loading owner dashboard...",
       "retry": "Retry",
-      "dashboardEyebrow": "Yearly data · Live data",
+      "dashboardEyebrow": "overview data · Live data",
       "dashboardTitle": "Analytics Dashboard",
-      "dashboardSubtitle": "Track revenue, booking traffic, and property performance by year.",
-      "year": "Year",
+      "dashboardSubtitle": "Track revenue, booking traffic, and property performance by overview history.",
+      "year": "overview History",
       "summaryMetrics": "Summary metrics",
       "approvalTitle": "Listing Approval Status",
       "quickNavigation": "Quick Navigation",

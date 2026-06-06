@@ -58,26 +58,26 @@ const yearText = computed(() => t('owner.analytics.year'));
 }
 
 .eyebrow {
-    margin: 0 0 0.25rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    font-size: 0.72rem;
-    font-weight: 500;
-    color: var(--color-muted);
+  margin: 0 0 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-primary);
 }
 
 .topbar-subtitle {
-    margin: 0.4rem 0 0;
-    color: var(--color-muted);
-    max-width: 56ch;
+  margin: 0.4rem 0 0;
+  color: var(--color-muted);
+  max-width: 56ch;
 }
 
 .topbar-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    justify-content: flex-end;
-    align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  align-items: center;
 }
 
 .year-picker {
@@ -88,11 +88,11 @@ const yearText = computed(() => t('owner.analytics.year'));
 }
 
 .year-picker__label {
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    font-size: 0.72rem;
-    font-weight: 500;
-    color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--color-muted);
 }
 
 .year-picker__wrapper {
@@ -101,27 +101,19 @@ const yearText = computed(() => t('owner.analytics.year'));
 }
 
 .year-picker__select {
-    width: 100%;
-
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-
-    border: 1px solid var(--color-border);
-    border-radius: 14px;
-
-    background: var(--color-surface);
-    color: var(--color-text);
-
-    padding: 0.7rem 2.8rem 0.7rem 0.9rem;
-
-    font: inherit;
-    font-weight: 600;
-
-    box-shadow: var(--shadow-card);
-    outline: none;
-
-    cursor: pointer;
+  width: 100%;
+  appearance: none;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  padding: 0.5rem 2rem 0.5rem 0.8rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-card);
+  outline: none;
+  cursor: pointer;
 }
 
 .year-picker__select:focus {

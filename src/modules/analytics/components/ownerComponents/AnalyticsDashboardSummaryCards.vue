@@ -149,24 +149,32 @@ onBeforeUnmount(() => {
 
 .metric__icon--blue {
     background: var(--color-primary-soft);
+    color: var(--color-primary);
 }
 
 .metric__icon--teal {
     background: var(--color-success-soft);
+    color: var(--color-success);
 }
 
 .metric__icon--amber {
-    background: var(--color-warning-soft);
+    background: var(--color-info-soft);
+    color: var(--color-info);
 }
 
 .metric__icon--coral {
-    background: var(--color-danger-soft);
+    background: var(--color-warning-soft);   
+    color: var(--color-warning);
 }
 
 .metric__label {
     margin: 0;
     color: var(--color-muted);
-    font-size: 0.85rem;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .metric__value {

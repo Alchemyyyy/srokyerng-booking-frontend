@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
 import {
-    HomeIcon,
+    BuildingOffice2Icon,
     CalendarDaysIcon,
     CurrencyDollarIcon,
     StarIcon,
@@ -265,7 +265,7 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
                 value: integerFormatter.format(summary.totalProperties || 0),
                 delta: summary.trends?.properties || '',
                 tone: 'blue',
-                icon: HomeIcon,
+                icon: BuildingOffice2Icon,
                 kind: 'number',
             },
             {

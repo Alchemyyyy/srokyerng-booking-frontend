@@ -9,6 +9,8 @@ import {
 } from 'chart.js';
 import { Doughnut } from 'vue-chartjs';
 
+import { useTheme } from '@/modules/admin/composables/useTheme';
+
 ChartJS.register(ArcElement, DoughnutController, Tooltip, Legend);
 
 const getCssColor = (token) => {
@@ -32,12 +34,14 @@ const resolveStatusColor = (bgClass) => {
 };
 
 const props = defineProps({
+  animationSeed: { type: Number, default: 0 },
   breakdown: { type: Array, required: true },
   totalProperties: { type: Number, default: 12 },
   loading: { type: Boolean, default: false },
 });
 
 const statusViewMode = ref('count');
+const { resolvedTheme } = useTheme();
 const chartVersion = ref(0);
 const chartData = ref({ labels: [], datasets: [] });
 const chartOptions = ref({
@@ -63,7 +67,7 @@ const chartOptions = ref({
 
 let animationFrameId = null;
 
-const chartKey = computed(() => `approval-${chartVersion.value}`);
+const chartKey = computed(() => `approval-${resolvedTheme.value}-${props.animationSeed}-${chartVersion.value}`);
 
 const statusChartValues = computed(() => {
   if (statusViewMode.value === 'percentage') {
@@ -90,7 +94,7 @@ const rebuildChart = () => {
         data: targetValues.map(() => 0),
         backgroundColor: backgroundColors,
         borderColor: getCssColor('--color-surface'),
-        borderWidth: 0,
+        borderWidth: 3,
         hoverOffset: 4,
       },
     ],
@@ -106,7 +110,7 @@ const rebuildChart = () => {
           data: targetValues,
           backgroundColor: backgroundColors,
           borderColor: getCssColor('--color-surface'),
-          borderWidth: 0,
+          borderWidth: 3,
           hoverOffset: 4,
         },
       ],
@@ -115,7 +119,7 @@ const rebuildChart = () => {
 };
 
 watch(
-  () => [props.loading, props.breakdown, statusViewMode.value],
+  () => [props.loading, props.breakdown, statusViewMode.value, props.animationSeed, resolvedTheme.value],
   ([isLoading]) => {
     if (!isLoading) {
       rebuildChart();

@@ -26,7 +26,7 @@ const emit = defineEmits(['refresh', 'changeHistory'])
         <p class="history-picker__label">Overview history</p>
         <div class="history-picker__wrapper">
           <select class="history-picker__select" :value="selectedHistory"
-            @change="emit('changeHistory', $event.target.value)">
+            @change="emit('change-history', $event.target.value)">
             <option v-for="option in historyOptions" :key="option.value" :value="option.value">
               {{ option.label }}
             </option>
