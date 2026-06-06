@@ -64,14 +64,12 @@ const clearNotice = () => {
 const emptyRoom = () => ({
   propertyId: availableProperties.value[0]?.id || "",
   type: "",
+  roomName: "",
   guests: 2,
-  size: "",
-  bedType: "",
   description: "",
   basePrice: 0,
   inventory: 1,
-  available: 1,
-  image: "",
+  imageFile: null,
 });
 
 const isAddRoomModalOpen = ref(false);
@@ -124,49 +122,69 @@ const closeDeleteRoomModal = () => {
   isDeleteRoomModalOpen.value = false;
   deletingRoom.value = null;
 };
-
-const handleAddRoom = () => {
+const handleAddRoom = async () => {
   addFormErrors.value = {};
+
   const selectedProperty = availableProperties.value.find(
-    (property) => property.id === addRoomForm.value.propertyId,
+    (p) => p.id === addRoomForm.value.propertyId,
   );
 
   const errors = {};
   if (!addRoomForm.value.propertyId)
     errors.propertyId = "Please choose a property.";
   if (!addRoomForm.value.type) errors.type = "Room type is required.";
-  if (!addRoomForm.value.size) errors.size = "Size is required.";
-  addFormErrors.value = errors;
+  if (!addRoomForm.value.roomName?.trim())
+    errors.roomName = "Room name is required.";
+  if (!addRoomForm.value.basePrice || addRoomForm.value.basePrice <= 0)
+    errors.basePrice = "Price is required.";
 
+  addFormErrors.value = errors;
   if (Object.keys(errors).length > 0 || !selectedProperty) return;
 
-  addRoom({
-    id: `room-${Date.now()}`,
-    propertyId: selectedProperty.id,
-    propertyName: selectedProperty.name,
-    type: addRoomForm.value.type,
-    guests: Number(addRoomForm.value.guests) || 0,
-    size: addRoomForm.value.size,
-    bedType: addRoomForm.value.bedType,
-    description: addRoomForm.value.description,
-    basePrice: Number(addRoomForm.value.basePrice) || 0,
-    inventory: Number(addRoomForm.value.inventory) || 1,
-    available: Number(addRoomForm.value.available) || 1,
-    status: "Pending",
-    image:
-      addRoomForm.value.image ||
-      "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80",
-    amenities: [],
-  });
+  try {
+    console.log("🚀 Creating room for property ID:", selectedProperty.id);
 
-  closeAddRoomModal();
-  setNotice("Room added successfully.");
+    const response = await addRoom(selectedProperty.id, {
+      room_type_id: Number(addRoomForm.value.type),
+      room_name: addRoomForm.value.roomName.trim(),
+      description: addRoomForm.value.description?.trim() || "",
+      price_per_night: Number(addRoomForm.value.basePrice),
+      max_guests: Number(addRoomForm.value.guests) || 2,
+      total_rooms: Number(addRoomForm.value.inventory) || 1,
+    });
+
+    const newRoom = response?.data || response;
+
+    if (newRoom?.id && addRoomForm.value.imageFile) {
+      console.log("📸 Uploading image...");
+      const formData = new FormData();
+      formData.append("images", addRoomForm.value.imageFile);
+
+      await roomStore.uploadRoomImages(newRoom.id, formData);
+    }
+
+    closeAddRoomModal();
+    setNotice("Room added successfully.");
+    await fetchRoomsData();
+  } catch (err) {
+    console.error("❌ Create room failed:", err.response?.data || err);
+  }
 };
+// Helper function
+const uploadRoomImage = async (propertyId, roomId, file) => {
+  const formData = new FormData();
+  formData.append("images", file); // Try "images" first
 
-const handleEditRoom = () => {
+  try {
+    await roomStore.uploadRoomImages(propertyId, roomId, formData);
+  } catch (uploadErr) {
+    console.warn("Room created but image upload failed:", uploadErr);
+  }
+};
+const handleEditRoom = async () => {
   editFormErrors.value = {};
   const selectedProperty = availableProperties.value.find(
-    (property) => property.id === editRoomForm.value.propertyId,
+    (p) => p.id === editRoomForm.value.propertyId,
   );
 
   const errors = {};
@@ -175,7 +193,6 @@ const handleEditRoom = () => {
   if (!editRoomForm.value.type) errors.type = "Room type is required.";
   if (!editRoomForm.value.size) errors.size = "Size is required.";
   editFormErrors.value = errors;
-
   if (
     Object.keys(errors).length > 0 ||
     !selectedProperty ||
@@ -183,31 +200,33 @@ const handleEditRoom = () => {
   )
     return;
 
-  updateRoom(editingRoomId.value, {
-    propertyId: selectedProperty.id,
-    propertyName: selectedProperty.name,
-    type: editRoomForm.value.type,
-    guests: Number(editRoomForm.value.guests) || 0,
-    size: editRoomForm.value.size,
-    bedType: editRoomForm.value.bedType,
-    description: editRoomForm.value.description,
-    basePrice: Number(editRoomForm.value.basePrice) || 0,
-    inventory: Number(editRoomForm.value.inventory) || 1,
-    available: Number(editRoomForm.value.available) || 1,
-    image:
-      editRoomForm.value.image ||
-      "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80",
-  });
-
-  closeEditRoomModal();
-  setNotice("Room updated successfully.");
+  try {
+    await updateRoom(selectedProperty.id, editingRoomId.value, {
+      type: editRoomForm.value.type,
+      guests: Number(editRoomForm.value.guests) || 0,
+      size: editRoomForm.value.size,
+      bed_type: editRoomForm.value.bedType,
+      description: editRoomForm.value.description,
+      base_rate: Number(editRoomForm.value.basePrice) || 0,
+      inventory: Number(editRoomForm.value.inventory) || 1,
+      available: Number(editRoomForm.value.available) || 1,
+    });
+    closeEditRoomModal();
+    setNotice("Room updated successfully.");
+  } catch {
+    // error is already set in the store
+  }
 };
 
-const handleDeleteRoom = () => {
+const handleDeleteRoom = async () => {
   if (!deletingRoom.value) return;
-  deleteRoom(deletingRoom.value.id);
-  closeDeleteRoomModal();
-  setNotice("Room deleted successfully.");
+  try {
+    await deleteRoom(deletingRoom.value.property_id, deletingRoom.value.id);
+    closeDeleteRoomModal();
+    setNotice("Room deleted successfully.");
+  } catch {
+    // error is already set in the store
+  }
 };
 
 onMounted(fetchRoomsData);
@@ -236,7 +255,7 @@ onMounted(fetchRoomsData);
     </header>
 
     <nav class="flex flex-wrap gap-3 py-2">
-      <AppButton
+      <button
         v-for="tab in propertyFilterTabs"
         :key="tab.id"
         @click="setSelectedPropertyId(tab.id)"
@@ -246,7 +265,6 @@ onMounted(fetchRoomsData);
             ? 'bg-(--color-primary-soft) border-(--color-primary) text-(--color-primary-strong)'
             : 'bg-(--color-surface) border-(--color-border) text-(--color-muted) hover:text-(--color-text)',
         ]"
-        variant=""
       >
         {{ tab.name }}
         <span
@@ -259,7 +277,7 @@ onMounted(fetchRoomsData);
         >
           {{ tab.roomCount }}
         </span>
-      </AppButton>
+      </button>
     </nav>
 
     <main class="relative min-h-100">

@@ -6,8 +6,12 @@ import {
   TrashIcon,
   UserGroupIcon,
 } from "@heroicons/vue/24/outline";
+import { computed, onMounted } from "vue";
+import { useRoomStore } from "../store/roomStore"; // ← Adjust path if needed
 
-defineProps({
+const roomStore = useRoomStore();
+
+const props = defineProps({
   room: {
     type: Object,
     required: true,
@@ -19,6 +23,27 @@ defineProps({
 });
 
 defineEmits(["edit", "delete"]);
+
+// Get cover image from store (with full URL)
+const coverImage = computed(() => {
+  return roomStore.getCoverImage(props.room.id);
+});
+
+// Fallback image
+const displayImage = computed(() => {
+  return (
+    coverImage.value ||
+    props.room.image ||
+    "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80"
+  );
+});
+
+onMounted(() => {
+  // Ensure images are fetched for this room
+  if (props.room?.id) {
+    roomStore.fetchRoomImages(props.room.id);
+  }
+});
 </script>
 
 <template>
@@ -28,14 +53,22 @@ defineEmits(["edit", "delete"]);
     <div
       class="w-full sm:w-[200px] h-48 sm:h-auto overflow-hidden relative flex-shrink-0 bg-(--color-surface-soft)"
     >
+      <!-- Main Image -->
       <img
-        :src="
-          room.image ||
-          'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80'
-        "
+        :src="displayImage"
         :alt="room.type"
-        class="w-full h-full object-cover"
+        class="w-full h-full object-cover transition-all duration-300"
       />
+
+      <!-- Image count badge -->
+      <span
+        v-if="roomStore.roomImages[room.id]?.length > 1"
+        class="absolute bottom-2.5 right-2.5 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded-lg font-medium"
+      >
+        +{{ roomStore.roomImages[room.id].length - 1 }}
+      </span>
+
+      <!-- Room ID Badge -->
       <span
         style="
           background-color: var(--color-primary-strong);
@@ -45,6 +78,16 @@ defineEmits(["edit", "delete"]);
       >
         ID: {{ room.id }}
       </span>
+
+      <!-- Loading indicator -->
+      <div
+        v-if="!coverImage && !room.image"
+        class="absolute inset-0 flex items-center justify-center bg-black/30"
+      >
+        <div
+          class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"
+        ></div>
+      </div>
     </div>
 
     <div class="flex-1 flex flex-col justify-between">
@@ -86,7 +129,10 @@ defineEmits(["edit", "delete"]);
             {{ status.guests }} guests
           </span>
           <span class="flex items-center gap-1.5">
-            <ArrowsPointingOutIcon class="h-4 w-4 opacity-70" aria-hidden="true" />
+            <ArrowsPointingOutIcon
+              class="h-4 w-4 opacity-70"
+              aria-hidden="true"
+            />
             {{ status.size }}
           </span>
         </div>
@@ -96,11 +142,15 @@ defineEmits(["edit", "delete"]);
           <span class="font-medium">Base Rate:</span>
           <strong class="text-(--color-text) font-bold text-sm">
             ${{ room.basePrice }}
-            <span class="text-xs font-medium text-(--color-muted)">/ night</span>
+            <span class="text-xs font-medium text-(--color-muted)"
+              >/ night</span
+            >
           </strong>
         </div>
 
-        <p class="text-xs text-(--color-muted) line-clamp-2 pt-0.5 font-normal leading-relaxed">
+        <p
+          class="text-xs text-(--color-muted) line-clamp-2 pt-0.5 font-normal leading-relaxed"
+        >
           {{ status.description }}
         </p>
       </div>

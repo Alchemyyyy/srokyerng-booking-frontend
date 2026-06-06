@@ -1,23 +1,18 @@
 import http from "@/app/api/http";
+const BASE =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://api-srokyerng.devspace.linkpc.net/api";
 
 export const reservationApi = {
-  listOwnerReservations(params) {
-    return http.get("/reservations/owner", { params });
+  listOwnerReservations() {
+    return http.get(`${BASE}/owner/reservations`);
   },
 
-  listCustomerReservations(params) {
-    return http.get("/reservations", { params });
+  getOwnerReservationById(reservationId) {
+    return http.get(`${BASE}/owner/reservations/${reservationId}`);
   },
 
-  getReservationById(reservationId) {
-    return http.get(`/reservations/${reservationId}`);
-  },
-
-  createReservation(payload) {
-    return http.post("/reservations", payload);
-  },
-
-  checkAvailability(payload) {
-    return http.post("/reservations/check-availability", payload);
+  getMyReservations() {
+    return http.get(`${BASE}/customer/reservations`);
   },
 };

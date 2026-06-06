@@ -6,6 +6,7 @@ import aboutHero from "@/assets/images/about/hero/hero_section.png";
 import member1 from "@/assets/images/about/team/member_1.PNG";
 import member2 from "@/assets/images/about/team/member_2.png";
 import member3 from "@/assets/images/about/team/member_3.png";
+import member4 from "@/assets/images/about/team/member_4.png";
 import member5 from "@/assets/images/about/team/member_5.png";
 import AppButton from "@/shared/components/AppButton.vue";
 import {
@@ -121,7 +122,7 @@ const team = computed(() => [
   {
     name: t("about.team.members.ei-visal.name"),
     role: t("about.team.members.ei-visal.role"),
-    image: null,
+    image: member4,
   },
   {
     name: t("about.team.members.houn-thanun.name"),
@@ -151,12 +152,18 @@ const team = computed(() => [
         class="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(6,41,105,0.94),rgba(18,104,180,0.78)_44%,rgba(18,104,180,0.18)_100%)]"
       ></div>
 
-      <div class="mx-auto grid min-h-[560px] max-w-7xl grid-cols-1 items-center gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
+      <div
+        class="mx-auto grid min-h-[560px] max-w-7xl grid-cols-1 items-center gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8"
+      >
         <div class="max-w-2xl">
-          <p class="text-xs font-bold uppercase tracking-[0.28em] text-(--color-warning)">
+          <p
+            class="text-xs font-bold uppercase tracking-[0.28em] text-(--color-warning)"
+          >
             {{ t("about.hero.eyebrow") }}
           </p>
-          <h1 class="mt-5 text-4xl font-black leading-tight text-white sm:text-5xl lg:text-6xl">
+          <h1
+            class="mt-5 text-4xl font-black leading-tight text-white sm:text-5xl lg:text-6xl"
+          >
             {{ t("about.hero.title") }}
             <span class="block text-(--color-warning)">
               {{ t("about.hero.titleHighlight") }}
@@ -167,7 +174,11 @@ const team = computed(() => [
           </p>
           <div class="mt-8 flex flex-col gap-3 sm:flex-row">
             <RouterLink :to="{ name: 'public.properties' }">
-              <AppButton variant="primary" size="lg" class="w-full !rounded-lg sm:w-auto">
+              <AppButton
+                variant="primary"
+                size="lg"
+                class="w-full !rounded-lg sm:w-auto"
+              >
                 <MagnifyingGlassIcon class="h-5 w-5" />
                 {{ t("about.hero.exploreBtn") }}
               </AppButton>
@@ -186,16 +197,23 @@ const team = computed(() => [
         </div>
 
         <div class="hidden lg:block">
-          <div class="ml-auto max-w-md rounded-3xl border border-white/15 bg-white/12 p-5 text-white shadow-2xl backdrop-blur-md">
+          <div
+            class="ml-auto max-w-md rounded-3xl border border-white/15 bg-white/12 p-5 text-white shadow-2xl backdrop-blur-md"
+          >
             <div class="grid grid-cols-2 gap-3">
               <div
                 v-for="stat in stats"
                 :key="'hero-' + stat.label"
                 class="rounded-2xl bg-white/12 p-5 ring-1 ring-white/10"
               >
-                <component :is="stat.icon" class="mb-5 h-7 w-7 text-(--color-warning)" />
+                <component
+                  :is="stat.icon"
+                  class="mb-5 h-7 w-7 text-(--color-warning)"
+                />
                 <p class="text-2xl font-black">{{ stat.value }}</p>
-                <p class="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-white/62">
+                <p
+                  class="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-white/62"
+                >
                   {{ stat.label }}
                 </p>
               </div>
@@ -206,25 +224,35 @@ const team = computed(() => [
     </section>
 
     <section class="bg-(--color-surface) px-4 py-20 sm:px-6 lg:px-8">
-      <div class="mx-auto grid max-w-7xl gap-14 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+      <div
+        class="mx-auto grid max-w-7xl gap-14 lg:grid-cols-[0.95fr_1.05fr] lg:items-center"
+      >
         <div class="relative min-h-[480px]">
-          <div class="absolute left-0 top-0 h-[420px] w-[82%] overflow-hidden rounded-3xl shadow-(--shadow-panel)">
+          <div
+            class="absolute left-0 top-0 h-[420px] w-[82%] overflow-hidden rounded-3xl shadow-(--shadow-panel)"
+          >
             <img
               src="https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1200&auto=format&fit=crop"
               alt="Boutique hotel pool"
               class="h-full w-full object-cover"
             />
           </div>
-          <div class="absolute bottom-0 right-0 h-60 w-64 overflow-hidden rounded-3xl border-8 border-(--color-surface) bg-(--color-surface) shadow-(--shadow-panel)">
+          <div
+            class="absolute bottom-0 right-0 h-60 w-64 overflow-hidden rounded-3xl border-8 border-(--color-surface) bg-(--color-surface) shadow-(--shadow-panel)"
+          >
             <img
               src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=900&auto=format&fit=crop"
               alt="Comfortable guest room"
               class="h-full w-full object-cover"
             />
           </div>
-          <div class="absolute bottom-12 left-8 rounded-2xl bg-(--color-surface) px-5 py-4 shadow-(--shadow-card) ring-1 ring-(--color-border)">
+          <div
+            class="absolute bottom-12 left-8 rounded-2xl bg-(--color-surface) px-5 py-4 shadow-(--shadow-card) ring-1 ring-(--color-border)"
+          >
             <p class="text-2xl font-black text-(--color-primary)">4.8</p>
-            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-(--color-muted)">
+            <p
+              class="text-xs font-semibold uppercase tracking-[0.18em] text-(--color-muted)"
+            >
               Guest Rating
             </p>
           </div>
@@ -232,7 +260,9 @@ const team = computed(() => [
 
         <div>
           <p class="eyebrow">{{ t("about.story.eyebrow") }}</p>
-          <h2 class="mt-3 max-w-2xl text-3xl font-black leading-tight text-(--color-text) sm:text-4xl lg:text-5xl">
+          <h2
+            class="mt-3 max-w-2xl text-3xl font-black leading-tight text-(--color-text) sm:text-4xl lg:text-5xl"
+          >
             {{ t("about.story.title") }}
           </h2>
           <p class="mt-6 max-w-2xl text-base leading-8 text-(--color-muted)">
@@ -245,7 +275,9 @@ const team = computed(() => [
               :key="feature.title"
               class="rounded-2xl border border-(--color-border) bg-(--color-surface-soft) p-5"
             >
-              <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-(--color-primary-soft) text-(--color-primary)">
+              <div
+                class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-(--color-primary-soft) text-(--color-primary)"
+              >
                 <component :is="feature.icon" class="h-6 w-6" />
               </div>
               <h3 class="text-lg font-bold text-(--color-text)">
@@ -257,7 +289,10 @@ const team = computed(() => [
             </div>
           </div>
 
-          <RouterLink :to="{ name: 'public.properties' }" class="mt-8 inline-flex">
+          <RouterLink
+            :to="{ name: 'public.properties' }"
+            class="mt-8 inline-flex"
+          >
             <AppButton variant="primary" size="lg" class="!rounded-lg">
               {{ t("about.story.discoverBtn") }}
               <ArrowRightIcon class="h-5 w-5" />
@@ -269,10 +304,14 @@ const team = computed(() => [
 
     <section class="bg-(--color-surface-soft) px-4 py-16 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-7xl">
-        <div class="mb-10 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+        <div
+          class="mb-10 flex flex-col justify-between gap-4 md:flex-row md:items-end"
+        >
           <div>
             <p class="eyebrow">{{ t("about.stats.eyebrow") }}</p>
-            <h2 class="mt-2 text-3xl font-black text-(--color-text) sm:text-4xl">
+            <h2
+              class="mt-2 text-3xl font-black text-(--color-text) sm:text-4xl"
+            >
               {{ t("about.stats.title") }}
             </h2>
           </div>
@@ -287,11 +326,17 @@ const team = computed(() => [
             :key="stat.label"
             class="rounded-2xl border border-(--color-border) bg-(--color-surface) p-6 shadow-(--shadow-card) transition hover:-translate-y-1"
           >
-            <div class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-(--color-primary-soft) text-(--color-primary)">
+            <div
+              class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-(--color-primary-soft) text-(--color-primary)"
+            >
               <component :is="stat.icon" class="h-6 w-6" />
             </div>
-            <p class="text-3xl font-black text-(--color-text)">{{ stat.value }}</p>
-            <p class="mt-2 text-xs font-bold uppercase tracking-[0.2em] text-(--color-muted)">
+            <p class="text-3xl font-black text-(--color-text)">
+              {{ stat.value }}
+            </p>
+            <p
+              class="mt-2 text-xs font-bold uppercase tracking-[0.2em] text-(--color-muted)"
+            >
               {{ stat.label }}
             </p>
           </div>
@@ -309,31 +354,67 @@ const team = computed(() => [
         </div>
 
         <div class="grid gap-5 lg:grid-cols-3">
-          <div class="rounded-3xl bg-gradient-to-br from-(--color-primary) to-(--color-secondary) p-8 text-white shadow-(--shadow-panel)">
-            <div class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-white/15 ring-1 ring-white/15">
+          <div
+            class="rounded-3xl bg-gradient-to-br from-(--color-primary) to-(--color-secondary) p-8 text-white shadow-(--shadow-panel)"
+          >
+            <div
+              class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-white/15 ring-1 ring-white/15"
+            >
               <BoltIcon class="h-6 w-6" />
             </div>
-            <p class="text-xs font-bold uppercase tracking-[0.24em] text-white/62">01</p>
-            <h3 class="mt-3 text-2xl font-black">{{ t("about.mission.title") }}</h3>
-            <p class="mt-4 text-sm leading-7 text-white/82">{{ t("about.mission.desc") }}</p>
+            <p
+              class="text-xs font-bold uppercase tracking-[0.24em] text-white/62"
+            >
+              01
+            </p>
+            <h3 class="mt-3 text-2xl font-black">
+              {{ t("about.mission.title") }}
+            </h3>
+            <p class="mt-4 text-sm leading-7 text-white/82">
+              {{ t("about.mission.desc") }}
+            </p>
           </div>
 
-          <div class="rounded-3xl border border-(--color-border) bg-(--color-surface-soft) p-8">
-            <div class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-(--color-surface) text-(--color-primary) ring-1 ring-(--color-border)">
+          <div
+            class="rounded-3xl border border-(--color-border) bg-(--color-surface-soft) p-8"
+          >
+            <div
+              class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-(--color-surface) text-(--color-primary) ring-1 ring-(--color-border)"
+            >
               <EyeIcon class="h-6 w-6" />
             </div>
-            <p class="text-xs font-bold uppercase tracking-[0.24em] text-(--color-muted)">02</p>
-            <h3 class="mt-3 text-2xl font-black text-(--color-text)">{{ t("about.vision.title") }}</h3>
-            <p class="mt-4 text-sm leading-7 text-(--color-muted)">{{ t("about.vision.desc") }}</p>
+            <p
+              class="text-xs font-bold uppercase tracking-[0.24em] text-(--color-muted)"
+            >
+              02
+            </p>
+            <h3 class="mt-3 text-2xl font-black text-(--color-text)">
+              {{ t("about.vision.title") }}
+            </h3>
+            <p class="mt-4 text-sm leading-7 text-(--color-muted)">
+              {{ t("about.vision.desc") }}
+            </p>
           </div>
 
-          <div class="rounded-3xl border border-(--color-border) bg-(--color-surface-soft) p-8">
-            <div class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-(--color-surface) text-(--color-primary) ring-1 ring-(--color-border)">
+          <div
+            class="rounded-3xl border border-(--color-border) bg-(--color-surface-soft) p-8"
+          >
+            <div
+              class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-(--color-surface) text-(--color-primary) ring-1 ring-(--color-border)"
+            >
               <SparklesIcon class="h-6 w-6" />
             </div>
-            <p class="text-xs font-bold uppercase tracking-[0.24em] text-(--color-muted)">03</p>
-            <h3 class="mt-3 text-2xl font-black text-(--color-text)">{{ t("about.why.title") }}</h3>
-            <p class="mt-4 text-sm leading-7 text-(--color-muted)">{{ t("about.why.subtitle") }}</p>
+            <p
+              class="text-xs font-bold uppercase tracking-[0.24em] text-(--color-muted)"
+            >
+              03
+            </p>
+            <h3 class="mt-3 text-2xl font-black text-(--color-text)">
+              {{ t("about.why.title") }}
+            </h3>
+            <p class="mt-4 text-sm leading-7 text-(--color-muted)">
+              {{ t("about.why.subtitle") }}
+            </p>
           </div>
         </div>
       </div>
@@ -341,10 +422,14 @@ const team = computed(() => [
 
     <section class="bg-(--color-surface-soft) px-4 py-20 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-7xl">
-        <div class="mb-10 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+        <div
+          class="mb-10 flex flex-col justify-between gap-4 md:flex-row md:items-end"
+        >
           <div>
             <p class="eyebrow">{{ t("about.why.eyebrow") }}</p>
-            <h2 class="mt-2 text-3xl font-black text-(--color-text) sm:text-4xl">
+            <h2
+              class="mt-2 text-3xl font-black text-(--color-text) sm:text-4xl"
+            >
               {{ t("about.why.title") }}
             </h2>
           </div>
@@ -360,14 +445,30 @@ const team = computed(() => [
             class="group rounded-3xl border border-(--color-border) bg-(--color-surface) p-6 shadow-(--shadow-card) transition hover:-translate-y-1 hover:border-(--color-primary)"
           >
             <div class="flex gap-5">
-              <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-(--color-primary-soft) text-(--color-primary)">
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                  <path stroke-linecap="round" stroke-linejoin="round" :d="item.icon" />
+              <div
+                class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-(--color-primary-soft) text-(--color-primary)"
+              >
+                <svg
+                  class="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    :d="item.icon"
+                  />
                 </svg>
               </div>
               <div>
-                <h3 class="text-lg font-bold text-(--color-text)">{{ item.title }}</h3>
-                <p class="mt-2 text-sm leading-7 text-(--color-muted)">{{ item.desc }}</p>
+                <h3 class="text-lg font-bold text-(--color-text)">
+                  {{ item.title }}
+                </h3>
+                <p class="mt-2 text-sm leading-7 text-(--color-muted)">
+                  {{ item.desc }}
+                </p>
               </div>
             </div>
           </div>
@@ -382,9 +483,13 @@ const team = computed(() => [
           <h2 class="mt-3 text-3xl font-black text-(--color-text) sm:text-4xl">
             Guests Love Their Stay With SrokYerng Booking
           </h2>
-          <div class="mt-6 flex items-center justify-center gap-1 text-(--color-warning)">
+          <div
+            class="mt-6 flex items-center justify-center gap-1 text-(--color-warning)"
+          >
             <span v-for="n in 5" :key="'score-star-' + n">&#9733;</span>
-            <span class="ml-3 text-sm font-bold text-(--color-text)">4.8/5</span>
+            <span class="ml-3 text-sm font-bold text-(--color-text)"
+              >4.8/5</span
+            >
           </div>
         </div>
 
@@ -395,18 +500,30 @@ const team = computed(() => [
             class="rounded-3xl border border-(--color-border) bg-(--color-surface-soft) p-6"
           >
             <div class="mb-5 flex gap-1 text-sm text-(--color-warning)">
-              <span v-for="star in testimonial.rating" :key="testimonial.name + star">&#9733;</span>
+              <span
+                v-for="star in testimonial.rating"
+                :key="testimonial.name + star"
+                >&#9733;</span
+              >
             </div>
-            <p class="text-sm leading-7 text-(--color-muted)">"{{ testimonial.text }}"</p>
-            <div class="mt-7 flex items-center gap-3 border-t border-(--color-border) pt-5">
+            <p class="text-sm leading-7 text-(--color-muted)">
+              "{{ testimonial.text }}"
+            </p>
+            <div
+              class="mt-7 flex items-center gap-3 border-t border-(--color-border) pt-5"
+            >
               <img
                 :src="testimonial.avatar"
                 :alt="testimonial.name"
                 class="h-12 w-12 rounded-full object-cover"
               />
               <div>
-                <h3 class="text-sm font-bold text-(--color-text)">{{ testimonial.name }}</h3>
-                <p class="text-xs text-(--color-muted)">from {{ testimonial.location }}</p>
+                <h3 class="text-sm font-bold text-(--color-text)">
+                  {{ testimonial.name }}
+                </h3>
+                <p class="text-xs text-(--color-muted)">
+                  from {{ testimonial.location }}
+                </p>
               </div>
             </div>
           </article>
@@ -432,7 +549,9 @@ const team = computed(() => [
             :key="member.name"
             class="group overflow-hidden rounded-3xl border border-(--color-border) bg-(--color-surface) text-center shadow-(--shadow-card) transition hover:-translate-y-1 hover:border-(--color-primary)"
           >
-            <div class="bg-gradient-to-b from-(--color-primary-soft) to-transparent px-6 pb-4 pt-8">
+            <div
+              class="bg-gradient-to-b from-(--color-primary-soft) to-transparent px-6 pb-4 pt-8"
+            >
               <div
                 class="mx-auto flex h-32 w-32 items-center justify-center overflow-hidden rounded-full bg-white shadow-lg shadow-blue-900/10 ring-4 ring-white"
               >
@@ -469,7 +588,9 @@ const team = computed(() => [
         <p class="mx-auto mt-5 max-w-3xl leading-8 text-(--color-muted)">
           {{ t("about.thanks.message") }}
         </p>
-        <div class="mt-12 grid grid-cols-1 items-center gap-6 rounded-3xl border border-(--color-border) bg-(--color-surface-soft) p-6 sm:grid-cols-3">
+        <div
+          class="mt-12 grid grid-cols-1 items-center gap-6 rounded-3xl border border-(--color-border) bg-(--color-surface-soft) p-6 sm:grid-cols-3"
+        >
           <img
             src="@/assets/images/about/thanks/mptc_logo.png"
             alt="MPTC Logo"
@@ -490,7 +611,9 @@ const team = computed(() => [
     </section>
 
     <section class="bg-(--color-surface-soft) px-4 py-20 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-7xl overflow-hidden rounded-3xl bg-gradient-to-r from-(--color-primary-strong) via-(--color-primary) to-(--color-secondary) px-6 py-16 text-center shadow-(--shadow-panel) sm:px-10 lg:px-16">
+      <div
+        class="mx-auto max-w-7xl overflow-hidden rounded-3xl bg-gradient-to-r from-(--color-primary-strong) via-(--color-primary) to-(--color-secondary) px-6 py-16 text-center shadow-(--shadow-panel) sm:px-10 lg:px-16"
+      >
         <h2 class="text-3xl font-black text-white sm:text-4xl">
           {{ t("about.cta.title") }}
         </h2>
