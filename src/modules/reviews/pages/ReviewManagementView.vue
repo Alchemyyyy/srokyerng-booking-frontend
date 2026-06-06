@@ -1,922 +1,1167 @@
 <template>
-  <div class="reviews-page">
+  <div class="review-management">
 
-    <!-- ═══════════════ NAVBAR ═══════════════ -->
-    <nav class="navbar">
-      <div class="nav-inner">
-        <div class="nav-logo">
-          <div class="logo-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-              <polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-          </div>
-          <span class="logo-text">SrokYerng</span>
-        </div>
-        <div class="nav-links">
-          <a href="#" class="nav-link">Home</a>
-          <a href="#" class="nav-link">Stays</a>
-          <a href="#" class="nav-link">Experiences</a>
-          <a href="#" class="nav-link">Deals</a>
-          <a href="#" class="nav-link">Destinations</a>
-        </div>
-        <div class="nav-actions">
-          <button class="nav-icon-btn">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          </button>
-          <button class="nav-icon-btn">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          </button>
-          <div class="nav-user">
-            <img src="https://i.pravatar.cc/32?img=47" alt="User" class="user-avatar" />
-            <span class="user-name">Hi, Sotheara</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
-        </div>
-      </div>
-    </nav>
-
-    <!-- ═══════════════ HERO ═══════════════ -->
+    <!-- ── HERO ── -->
     <section class="hero">
-      <div class="hero-overlay"></div>
-      <img
-        class="hero-bg"
-        src="https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=1600&h=700&fit=crop&q=80"
-        alt="Grand Palace Hotel"
-      />
-      <div class="hero-content">
+      
+      <div class="hero-overlay" />
+      <div class="container">
         <nav class="breadcrumb">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          <span>Stays</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          <span class="breadcrumb-link" @click="router.back()">Stays</span>
+          <span class="sep">›</span>
           <span>Grand Palace Hotel</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          <span class="breadcrumb-active">Reviews</span>
+          <span class="sep">›</span>
+          <span class="active-crumb">Reviews</span>
         </nav>
 
-        <h1>Guest Reviews &amp;<br/>Experience</h1>
-        <p class="hero-desc">Real stories from real guests who have stayed and loved their experience.</p>
+        <h1 class="hero-title">Guest Reviews &amp; Experience</h1>
+        <p class="hero-sub">Real stories from real guests who have stayed and loved their experience.</p>
 
-        <div class="hero-actions">
-          <div class="hero-rating-badge">
-            <span class="star-gold">★</span>
-            <span class="badge-score">4.9</span>
-            <span class="badge-label">Exceptional</span>
-            <span class="badge-sep">·</span>
-            <span class="badge-count">1,284 reviews</span>
+        <div class="hero-badge-row">
+          <!-- Glassmorphism rating card -->
+          <div class="glass-card">
+            <div class="glass-star">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#f59e0b">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+            </div>
+            <span class="glass-score">4.9</span>
+            <span class="glass-label">Exceptional</span>
+            <span class="glass-count">1,284 reviews</span>
           </div>
-          <router-link to="reservations/new/review" class="write-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+
+          <button class="btn-write-review" @click="goToWriteReview">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
             Write a Review
-          </router-link>
+          </button>
         </div>
       </div>
     </section>
 
-    <!-- ═══════════════ FILTER TABS ═══════════════ -->
-    <div class="filter-bar-wrap">
-      <div class="filter-bar">
-        <div class="tabs-scroll">
+    <!-- ── FILTER TABS ── -->
+    <div class="tabs-bar">
+      <div class="container tabs-inner">
+        <div class="tabs">
           <button
-            v-for="tab in tabs"
+            v-for="tab in filterTabs"
             :key="tab.key"
             class="tab-btn"
             :class="{ active: activeTab === tab.key }"
             @click="activeTab = tab.key"
-          >{{ tab.label }}</button>
+          >
+            {{ tab.label }}
+          </button>
         </div>
-        <div class="sort-wrap">
-          <select v-model="sortBy" class="sort-select">
-            <option value="recent">Most Recent</option>
-            <option value="highest">Highest Rating</option>
-            <option value="lowest">Lowest Rating</option>
-          </select>
-        </div>
+        <select v-model="sortBy" class="sort-select">
+          <option value="recent">Most Recent</option>
+          <option value="highest">Highest Rated</option>
+          <option value="lowest">Lowest Rated</option>
+        </select>
       </div>
     </div>
 
-    <!-- ═══════════════ STATS ═══════════════ -->
-    <div class="stats-section">
-
-      <!-- Overall + Breakdown combined -->
-      <div class="stats-combined-card">
-
-        <!-- Overall Rating -->
-        <div class="overall-block">
-          <p class="block-title">Overall Rating</p>
-          <div class="big-score">4.9<span>/5</span></div>
-          <div class="stars-display">
-            <span v-for="i in 4" :key="i" class="star-blue">★</span>
-            <span class="star-blue star-half-el">★</span>
-          </div>
-          <p class="score-label">Exceptional</p>
-          <p class="based-on">Based on 1,284 reviews</p>
-        </div>
-
-        <div class="stats-divider"></div>
-
-        <!-- Breakdown -->
-        <div class="breakdown-block">
-          <p class="block-title">Rating Breakdown</p>
-          <div class="breakdown-list">
-            <div class="breakdown-row" v-for="bar in ratingBars" :key="bar.label">
-              <span class="bar-label">{{ bar.label }}</span>
-              <div class="bar-track">
-                <div class="bar-fill" :style="{ width: bar.pct + '%' }"></div>
-              </div>
-              <span class="bar-pct">{{ bar.pct }}%</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- What guests loved most -->
-      <div class="loved-card">
-        <p class="block-title">What guests loved most</p>
-        <div class="loved-list">
-          <div class="loved-row" v-for="item in lovedItems" :key="item.label">
-            <span class="loved-icon" v-html="item.icon"></span>
-            <span class="loved-name">{{ item.label }}</span>
-            <span class="loved-score">{{ item.score }}</span>
-          </div>
-        </div>
-        <a href="#" class="see-all-link">See all categories →</a>
-      </div>
-
-    </div>
-
-    <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
-    <div class="main-content">
+    <!-- ── MAIN CONTENT ── -->
+    <div class="container main-layout">
 
       <!-- LEFT: Reviews -->
       <div class="reviews-col">
 
+        <!-- Stats Row (below tabs on mobile) -->
+        <div class="stats-row mobile-stats">
+          <StatsPanel
+            :breakdown="breakdown"
+            :lovedCategories="lovedCategories"
+            :overall="4.9"
+            :totalReviews="1284"
+            @write-review="goToWriteReview"
+          />
+        </div>
+
         <!-- Search + Filters -->
-        <div class="search-filter-row">
-          <div class="search-box">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            <input v-model="searchQuery" type="text" placeholder="Search reviews..." />
+        <div class="filter-bar">
+          <div class="search-wrap">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search reviews..."
+              class="search-input"
+            />
           </div>
 
-          <div class="filter-dropdown">
-            <select v-model="filterRating">
-              <option value="">All Ratings</option>
-              <option v-for="r in [5,4,3,2,1]" :key="r" :value="r">{{ r }} Stars</option>
-            </select>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
+          <select v-model="filterRating" class="filter-select">
+            <option value="">All Ratings</option>
+            <option value="5">5 Stars</option>
+            <option value="4">4 Stars</option>
+            <option value="3">3 Stars</option>
+          </select>
 
-          <div class="filter-dropdown">
-            <select v-model="filterTraveler">
-              <option value="">All Travelers</option>
-              <option>Solo Traveler</option>
-              <option>Couple</option>
-              <option>Family</option>
-              <option>Business</option>
-            </select>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
+          <select v-model="filterType" class="filter-select">
+            <option value="">All Travelers</option>
+            <option value="Couple">Couple</option>
+            <option value="Family">Family</option>
+            <option value="Solo Traveler">Solo Traveler</option>
+            <option value="Business">Business</option>
+          </select>
 
-          <div class="filter-dropdown">
-            <select v-model="filterLang">
-              <option value="">All Languages</option>
-              <option>English</option>
-              <option>French</option>
-              <option>Korean</option>
-            </select>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
+          <select v-model="filterLang" class="filter-select">
+            <option value="">All Languages</option>
+            <option value="en">English</option>
+            <option value="fr">French</option>
+          </select>
 
-          <button class="filter-btn">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          <button class="btn-filter">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/>
+              <line x1="10" y1="18" x2="14" y2="18"/>
+            </svg>
             Filter
           </button>
         </div>
 
-        <!-- Review list -->
-        <div class="review-list">
+        <!-- Review Cards -->
+        <template v-if="filteredReviews.length > 0">
           <ReviewCard
             v-for="review in filteredReviews"
             :key="review.id"
             :review="review"
           />
-          <div v-if="loading" class="list-state">
-            <div class="spinner"></div>
-            <span>Loading reviews…</span>
-          </div>
-          <div v-if="!loading && filteredReviews.length === 0" class="list-state">
-            No reviews match your filters.
-          </div>
+        </template>
+        <div v-else class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <p>No reviews match your search.</p>
         </div>
 
         <!-- Load More -->
-        <div class="load-more-wrap">
-          <button class="load-more-btn" @click="loadMore">
-            Load More Reviews
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-        </div>
-
+        <button class="btn-load-more" @click="loadMore">
+          Load More Reviews
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
       </div>
 
       <!-- RIGHT: Sidebar -->
-      <div class="sidebar">
-
-        <!-- Share -->
-        <div class="sidebar-card share-card">
-          <div class="share-icon-wrap">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a56db" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          </div>
-          <h4>Share Your Experience</h4>
-          <p>Have you stayed at Grand Palace Hotel? We'd love to hear about your experience and help other travelers.</p>
-          <router-link to="reservations/new/review" class="write-btn-sidebar">Write a Review</router-link>
-        </div>
-
-        <!-- Guidelines -->
-        <div class="sidebar-card">
-          <h4>Review Guidelines</h4>
-          <ul class="guide-list">
-            <li v-for="g in guidelines" :key="g.title">
-              <div class="guide-dot" v-html="g.icon"></div>
-              <div>
-                <strong>{{ g.title }}</strong>
-                <p>{{ g.desc }}</p>
-              </div>
-            </li>
-          </ul>
-          <a href="#" class="learn-more">Learn more →</a>
-        </div>
-
-        <!-- Help -->
-        <div class="sidebar-card help-card">
-          <div class="help-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a56db" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.59 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6.13 6.13l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-          </div>
-          <div>
-            <strong>Need Help?</strong>
-            <p>Our guest support team is here to assist you 24/7</p>
-            <a href="#" class="contact-link">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-              Contact Support
-            </a>
-          </div>
-        </div>
-
-      </div>
+      <aside class="sidebar-col">
+        <StatsPanel
+          :breakdown="breakdown"
+          :lovedCategories="lovedCategories"
+          :overall="4.9"
+          :totalReviews="1284"
+          @write-review="goToWriteReview"
+        />
+      </aside>
     </div>
 
-    <!-- ═══════════════ CTA BANNER ═══════════════ -->
-    <div class="cta-banner">
-      <div class="cta-icon">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <!-- ── CTA FOOTER BANNER ── -->
+    <section class="cta-banner">
+      <div class="container cta-inner">
+        <div class="cta-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <div class="cta-text">
+          <h3>Join thousands of happy travelers</h3>
+          <p>Book your next stay and create your own memorable experience.</p>
+        </div>
+        <button class="btn-cta">Explore Stays</button>
       </div>
-      <div class="cta-text">
-        <h3>Join thousands of happy travelers</h3>
-        <p>Book your next stay and create your own memorable experience.</p>
-      </div>
-      <a href="#" class="cta-btn">Explore Stays</a>
-    </div>
-
-    <!-- ═══════════════ FOOTER ═══════════════ -->
-    <footer class="footer">
-      <div class="footer-inner">
-        <div class="footer-brand">
-          <div class="footer-logo">
-            <div class="logo-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            </div>
-            <span class="logo-text">SrokYerng</span>
-          </div>
-          <p class="brand-desc">Discover luxury stays across Cambodia. Comfort, elegance, and unforgettable experiences.</p>
-          <div class="social-links">
-            <a href="#" class="social-btn">f</a>
-            <a href="#" class="social-btn">in</a>
-            <a href="#" class="social-btn">▶</a>
-            <a href="#" class="social-btn">♪</a>
-          </div>
-        </div>
-
-        <div class="footer-col">
-          <h5>Explore</h5>
-          <a href="#">Stays</a>
-          <a href="#">Experiences</a>
-          <a href="#">Destinations</a>
-          <a href="#">Deals</a>
-        </div>
-        <div class="footer-col">
-          <h5>Company</h5>
-          <a href="#">About Us</a>
-          <a href="#">Careers</a>
-          <a href="#">Press</a>
-          <a href="#">Blog</a>
-        </div>
-        <div class="footer-col">
-          <h5>Support</h5>
-          <a href="#">Help Center</a>
-          <a href="#">Contact Us</a>
-          <a href="#">Terms &amp; Conditions</a>
-          <a href="#">Privacy Policy</a>
-        </div>
-        <div class="footer-col">
-          <h5>Contact</h5>
-          <p class="contact-item">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.59 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6.13 6.13l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-            +855 12 345 678
-          </p>
-          <p class="contact-item">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            support@srokyerng.com
-          </p>
-          <p class="contact-item">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Mon - Sun: 24/7
-          </p>
-        </div>
-      </div>
-
-      <div class="footer-bottom">
-        <p>© 2024 SrokYerng. All rights reserved.</p>
-        <div class="payment-icons">
-          <span class="pay-badge visa">VISA</span>
-          <span class="pay-badge master">MC</span>
-          <span class="pay-badge aba">ABA PAY</span>
-          <span class="pay-badge paypal">PayPal</span>
-        </div>
-      </div>
-    </footer>
-
+    </section>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import ReviewCard from "../components/ReviewCard.vue";
-import { getPropertyReviews } from "../services/reviewService.js";
+import { ref, computed, defineComponent } from 'vue'
+import { useRouter } from 'vue-router'
+import ReviewCard from '../components/ReviewCard.vue'
+import RatingStars from '../components/RatingStars.vue'
+import reviewService from '../services/reviewService.js'
 
-const activeTab      = ref("all");
-const sortBy         = ref("recent");
-const searchQuery    = ref("");
-const filterRating   = ref("");
-const filterTraveler = ref("");
-const filterLang     = ref("");
-const reviews        = ref([]);
-const loading        = ref(false);
-
-const tabs = [
-  { key: "all",      label: "All Reviews (1,284)" },
-  { key: "photos",   label: "Photos (356)" },
-  { key: "comments", label: "With Comments (982)" },
-  { key: "families", label: "Families (420)" },
-  { key: "couples",  label: "Couples (612)" },
-  { key: "solo",     label: "Solo Travelers (252)" },
-];
-
-const ratingBars = [
-  { label: "5 Stars", pct: 89 },
-  { label: "4 Stars", pct: 8  },
-  { label: "3 Stars", pct: 2  },
-  { label: "2 Stars", pct: 1  },
-  { label: "1 Star",  pct: 0  },
-];
-
-const lovedItems = [
-  { label: "Cleanliness",     score: "4.9", icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a56db" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>` },
-  { label: "Service",         score: "4.9", icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a56db" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>` },
-  { label: "Location",        score: "4.8", icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a56db" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>` },
-  { label: "Value for money", score: "4.7", icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a56db" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>` },
-  { label: "Comfort",         score: "4.8", icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a56db" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>` },
-];
-
-const guidelines = [
-  { title: "Be honest and respectful", desc: "Share your genuine experience",                               icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a56db" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>` },
-  { title: "Focus on your stay",        desc: "Comment on the property, service, and amenities",            icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a56db" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>` },
-  { title: "Avoid personal details",    desc: "Do not share personal information about yourself or others", icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a56db" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>` },
-  { title: "Photos are welcome",        desc: "Add photos to help others see what to expect",               icon: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a56db" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>` },
-];
-
-const sampleReviews = [
-  {
-    id: 1,
-    user: { name: "Jessica Parker" },
-    country: "United States",
-    travelerType: "Couple",
-    stayInfo: "2 nights · May 2024",
-    rating: 5.0,
-    title: "Absolutely unforgettable experience!",
-    comment: "From the moment we arrived, everything was perfect. The staff went above and beyond to make our stay special. The room was clean, spacious, and the view was breathtaking.",
-    created_at: new Date(Date.now() - 2 * 86400000).toISOString(),
-    tags: ["Cleanliness", "Service", "Location", "Comfort", "Value"],
-    photo: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=200&h=150&fit=crop",
-    photoCount: 4,
+// ── Inline StatsPanel sub-component to keep architecture clean ──
+const StatsPanel = defineComponent({
+  name: 'StatsPanel',
+  props: {
+    breakdown: Array,
+    lovedCategories: Array,
+    overall: Number,
+    totalReviews: Number
   },
-  {
-    id: 2,
-    user: { name: "Daniel Kim" },
-    country: "South Korea",
-    travelerType: "Family",
-    stayInfo: "3 nights · May 2024",
-    rating: 5.0,
-    title: "Perfect for family vacation",
-    comment: "Our kids loved the pool and the breakfast buffet was amazing. Great location and very convenient. We will come back for sure!",
-    created_at: new Date(Date.now() - 7 * 86400000).toISOString(),
-    tags: ["Cleanliness", "Family Friendly", "Service", "Location"],
-    photo: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=200&h=150&fit=crop",
-    photoCount: 6,
-  },
-  {
-    id: 3,
-    user: { name: "Sophie Martin" },
-    country: "France",
-    travelerType: "Solo Traveler",
-    stayInfo: "1 night · April 2024",
-    rating: 4.8,
-    title: "Beautiful hotel with great atmosphere",
-    comment: "The design and ambiance are stunning. My room was incredibly comfortable and the service was top-notch.",
-    created_at: new Date(Date.now() - 14 * 86400000).toISOString(),
-    tags: ["Cleanliness", "Service", "Comfort", "Design"],
-    photo: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=200&h=150&fit=crop",
-    photoCount: 3,
-  },
-];
+  emits: ['write-review'],
+  components: { RatingStars },
+  template: `
+    <div class="stats-panel">
+      <!-- Overall Rating -->
+      <div class="stat-card">
+        <h4 class="stat-card-title">Overall Rating</h4>
+        <div class="big-score">{{ overall }}<span class="score-denom">/5</span></div>
+        <RatingStars :model-value="overall" readonly size="md" />
+        <div class="exceptional-label">Exceptional</div>
+        <div class="based-on">Based on {{ totalReviews.toLocaleString() }} reviews</div>
+      </div>
+
+      <!-- Rating Breakdown -->
+      <div class="stat-card">
+        <h4 class="stat-card-title">Rating Breakdown</h4>
+        <div v-for="item in breakdown" :key="item.stars" class="breakdown-row">
+          <span class="star-label">{{ item.stars }} Stars</span>
+          <div class="bar-track">
+            <div class="bar-fill" :style="{ width: item.percent + '%' }"></div>
+          </div>
+          <span class="pct-label">{{ item.percent }}%</span>
+        </div>
+      </div>
+
+      <!-- What guests loved most -->
+      <div class="stat-card">
+        <h4 class="stat-card-title">What guests loved most</h4>
+        <div v-for="cat in lovedCategories" :key="cat.name" class="cat-row">
+          <div class="cat-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <span class="cat-name">{{ cat.name }}</span>
+          <span class="cat-score">{{ cat.score }}</span>
+        </div>
+        <button class="see-all-link">See all categories →</button>
+      </div>
+
+      <!-- Share Your Experience -->
+      <div class="stat-card share-card">
+        <div class="share-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2">
+            <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+        </div>
+        <h4>Share Your Experience</h4>
+        <p>Have you stayed at Grand Palace Hotel? We'd love to hear about your experience and help other travelers.</p>
+        <button class="btn-share-write" @click="$emit('write-review')">Write a Review</button>
+      </div>
+
+      <!-- Review Guidelines -->
+      <div class="stat-card guidelines-card">
+        <h4 class="stat-card-title">Review Guidelines</h4>
+        <div v-for="guide in guidelines" :key="guide.text" class="guide-row">
+          <div class="guide-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2">
+              <path :d="guide.icon"/>
+            </svg>
+          </div>
+          <div>
+            <div class="guide-label">{{ guide.label }}</div>
+            <div class="guide-sub">{{ guide.text }}</div>
+          </div>
+        </div>
+        <a href="#" class="learn-more-link">Learn more →</a>
+      </div>
+
+      <!-- Need Help -->
+      <div class="stat-card help-card">
+        <div class="help-row">
+          <div>
+            <h5>Need Help?</h5>
+            <p>Our guest support team is here to assist you 24/7</p>
+          </div>
+          <div class="help-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.5">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.86a16 16 0 0 0 6 6l1.27-.94a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+        </div>
+        <a href="#" class="contact-support">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          Contact Support
+        </a>
+      </div>
+    </div>
+  `,
+  setup() {
+    const guidelines = [
+      { label: 'Be honest and respectful', text: 'Share your genuine experience', icon: 'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z' },
+      { label: 'Focus on your stay', text: 'Comment on the property, service, and amenities', icon: 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' },
+      { label: 'Avoid personal details', text: "Do not share personal information about yourself or others", icon: 'M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24' },
+      { label: 'Photos are welcome', text: 'Add photos to help others see what to expect', icon: 'M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z' }
+    ]
+    return { guidelines }
+  }
+})
+
+// ── Main component logic ──
+const router = useRouter()
+
+const activeTab = ref('all')
+const searchQuery = ref('')
+const filterRating = ref('')
+const filterType = ref('')
+const filterLang = ref('')
+const sortBy = ref('recent')
+
+const filterTabs = [
+  { key: 'all', label: 'All Reviews (1,284)' },
+  { key: 'photos', label: 'Photos (356)' },
+  { key: 'comments', label: 'With Comments (982)' },
+  { key: 'families', label: 'Families (420)' },
+  { key: 'couples', label: 'Couples (612)' },
+  { key: 'solo', label: 'Solo Travelers (252)' },
+]
+
+const reviews = ref([])
+
+const fetchReviews = async () => {
+  try {
+    const data = await reviewService.getReviews()
+    // Enrich mock data to match screenshot
+    reviews.value = [
+      {
+        id: 1,
+        user: { name: 'Jessica Parker', country: 'United States', type: 'Couple', avatar: 'JP' },
+        rating: 5.0,
+        date: '2 days ago',
+        nights: '2 nights',
+        stayDate: 'May 2024',
+        title: 'Absolutely unforgettable experience!',
+        content: 'From the moment we arrived, everything was perfect. The staff went above and beyond to make our stay special. The room was clean, spacious, and the view was breathtaking.',
+        image: 'https://picsum.photos/300/200?random=1',
+        imageCount: 4,
+        tags: ['Cleanliness', 'Service', 'Location', 'Comfort', 'Value']
+      },
+      {
+        id: 2,
+        user: { name: 'Daniel Kim', country: 'South Korea', type: 'Family', avatar: 'DK' },
+        rating: 5.0,
+        date: '1 week ago',
+        nights: '3 nights',
+        stayDate: 'May 2024',
+        title: 'Perfect for family vacation',
+        content: 'Our kids loved the pool and the breakfast buffet was amazing. Great location and very convenient. The room was spacious with wonderful views. We will come back for sure!',
+        image: 'https://picsum.photos/300/200?random=2',
+        imageCount: 6,
+        tags: ['Family Friendly', 'Service', 'Location']
+      },
+      {
+        id: 3,
+        user: { name: 'Sophie Martin', country: 'France', type: 'Solo Traveler', avatar: 'SM' },
+        rating: 4.8,
+        date: '2 weeks ago',
+        nights: '1 night',
+        stayDate: 'April 2024',
+        title: 'Beautiful hotel with great atmosphere',
+        content: 'The design and ambiance are stunning. My room was incredibly comfortable and the service was top-notch. Would definitely recommend to anyone visiting.',
+        image: 'https://picsum.photos/300/200?random=3',
+        imageCount: 3,
+        tags: ['Cleanliness', 'Service', 'Comfort', 'Design']
+      }
+    ]
+  } catch {
+    reviews.value = []
+  }
+}
+
+fetchReviews()
+
+const breakdown = ref([
+  { stars: 5, percent: 89 },
+  { stars: 4, percent: 8 },
+  { stars: 3, percent: 2 },
+  { stars: 2, percent: 1 },
+  { stars: 1, percent: 0 }
+])
+
+const lovedCategories = ref([
+  { name: 'Cleanliness', score: '4.9' },
+  { name: 'Service', score: '4.9' },
+  { name: 'Location', score: '4.8' },
+  { name: 'Value for money', score: '4.7' },
+  { name: 'Comfort', score: '4.8' }
+])
 
 const filteredReviews = computed(() => {
-  let list = reviews.value.length ? reviews.value : sampleReviews;
-  if (searchQuery.value) {
-    const q = searchQuery.value.toLowerCase();
+  let list = [...reviews.value]
+
+  if (searchQuery.value.trim()) {
+    const q = searchQuery.value.toLowerCase()
     list = list.filter(r =>
-      r.comment?.toLowerCase().includes(q) ||
-      r.title?.toLowerCase().includes(q) ||
-      r.user?.name?.toLowerCase().includes(q)
-    );
+      r.title.toLowerCase().includes(q) ||
+      r.content.toLowerCase().includes(q) ||
+      r.user.name.toLowerCase().includes(q)
+    )
   }
-  if (filterRating.value)   list = list.filter(r => Math.floor(r.rating) === Number(filterRating.value));
-  if (filterTraveler.value) list = list.filter(r => r.travelerType === filterTraveler.value);
-  if (sortBy.value === "highest") list = [...list].sort((a, b) => b.rating - a.rating);
-  if (sortBy.value === "lowest")  list = [...list].sort((a, b) => a.rating - b.rating);
-  return list;
-});
 
-const loadMore = () => {};
-
-onMounted(async () => {
-  try {
-    loading.value = true;
-    // const data = await getPropertyReviews(propertyId);
-    // reviews.value = data;
-  } catch (e) {
-    console.error(e);
-  } finally {
-    loading.value = false;
+  if (filterRating.value) {
+    list = list.filter(r => Math.floor(r.rating) === Number(filterRating.value))
   }
-});
+
+  if (filterType.value) {
+    list = list.filter(r => r.user.type === filterType.value)
+  }
+
+  if (activeTab.value === 'families') list = list.filter(r => r.user.type === 'Family')
+  if (activeTab.value === 'couples') list = list.filter(r => r.user.type === 'Couple')
+  if (activeTab.value === 'solo') list = list.filter(r => r.user.type === 'Solo Traveler')
+
+  return list
+})
+
+const goToWriteReview = () => {
+  router.push({ name: 'review-create', params: { reservationId: '0' } })
+}
+
+const loadMore = () => {
+  // Pagination placeholder
+}
 </script>
 
 <style scoped>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-.reviews-page {
+/* ── CSS Variables ── */
+.review-management {
+  background: var(--bg-page);
   min-height: 100vh;
-  background: #f8fafc;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  /* font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; */
 }
 
-/* ── NAVBAR ────────────────────────────────── */
-.navbar {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  z-index: 100;
-}
-.nav-inner {
-  max-width: 1280px;
-  margin: auto;
-  padding: 0 40px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  gap: 40px;
-}
-.nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-.logo-icon {
-  width: 36px; height: 36px;
-  background: #1a56db;
-  border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-}
-.logo-text { font-size: 18px; font-weight: 800; color: white; }
-.nav-links { display: flex; gap: 4px; flex: 1; justify-content: center; }
-.nav-link {
-  padding: 8px 14px;
-  font-size: 14px;
-  color: rgba(255,255,255,0.88);
-  text-decoration: none;
-  border-radius: 8px;
-  transition: background 0.2s;
-  font-weight: 500;
-}
-.nav-link:hover { background: rgba(255,255,255,0.12); }
-.nav-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
-.nav-icon-btn {
-  width: 36px; height: 36px;
-  background: rgba(255,255,255,0.12);
-  border: none;
-  border-radius: 50%;
-  color: white;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: background 0.2s;
-}
-.nav-icon-btn:hover { background: rgba(255,255,255,0.22); }
-.nav-user {
-  display: flex; align-items: center; gap: 8px;
-  background: rgba(255,255,255,0.12);
-  border-radius: 30px;
-  padding: 4px 12px 4px 4px;
-  cursor: pointer;
-  color: white;
-  font-size: 13px;
-  font-weight: 600;
-}
-.user-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
-
-/* ── HERO ──────────────────────────────────── */
+/* ── HERO ── */
 .hero {
   position: relative;
-  height: 480px;
-  overflow: hidden;
+  min-height: 340px;
+  /* background:
+    linear-gradient(to bottom, rgba(10, 15, 30, 0.68) 0%, rgba(10, 15, 30, 0.55) 100%),
+    url('https://images.unsplash.com/photo-1582719508461-905c673771fd?w=1920&q=80') center/cover no-repeat; */
+  display: flex;
+  align-items: flex-end;
+  padding: 0 0 52px;
 }
-.hero-bg {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  object-fit: cover;
-  object-position: center 40%;
-}
+
 .hero-overlay {
-  position: absolute; inset: 0;
-  background: linear-gradient(90deg,
-    rgba(5,15,50,0.92) 0%,
-    rgba(5,15,50,0.72) 40%,
-    rgba(5,15,50,0.2) 100%);
-  z-index: 1;
-}
-.hero-content {
   position: absolute;
-  z-index: 2;
-  top: 50%; left: 80px;
-  transform: translateY(-50%);
-  max-width: 580px;
-  color: white;
-  padding-top: 40px;
-}
-.breadcrumb {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 13px;
-  color: rgba(255,255,255,0.7);
-  margin-bottom: 20px;
-}
-.breadcrumb-active { color: white; font-weight: 600; }
-.hero-content h1 {
-  font-size: 54px;
-  font-weight: 800;
-  line-height: 1.1;
-  margin-bottom: 16px;
-  letter-spacing: -0.5px;
-}
-.hero-desc {
-  font-size: 16px;
-  color: rgba(255,255,255,0.82);
-  line-height: 1.7;
-  margin-bottom: 28px;
-  max-width: 420px;
-}
-.hero-actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-.hero-rating-badge {
-  display: flex; align-items: center; gap: 8px;
-  background: rgba(255,255,255,0.12);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 30px;
-  padding: 10px 20px;
-}
-.star-gold { color: #f59e0b; font-size: 18px; }
-.badge-score { font-size: 18px; font-weight: 800; }
-.badge-label { font-size: 14px; font-weight: 600; }
-.badge-sep { color: rgba(255,255,255,0.4); }
-.badge-count { font-size: 13px; color: rgba(255,255,255,0.72); }
-.write-btn {
-  display: inline-flex; align-items: center; gap: 10px;
-  height: 52px; padding: 0 24px;
-  background: #1a56db;
-  color: white;
-  border-radius: 12px;
-  font-size: 14px; font-weight: 700;
-  text-decoration: none;
-  transition: all 0.2s;
-  box-shadow: 0 8px 24px rgba(26,86,219,0.4);
-}
-.write-btn:hover { background: #1447c0; transform: translateY(-1px); }
-
-/* ── FILTER BAR ────────────────────────────── */
-.filter-bar-wrap {
-  background: white;
-  border-bottom: 1px solid #e5e7eb;
-  position: sticky; top: 0; z-index: 50;
-}
-.filter-bar {
-  max-width: 1280px; margin: auto;
-  padding: 0 40px;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.tabs-scroll {
-  display: flex; overflow-x: auto; scrollbar-width: none;
-}
-.tabs-scroll::-webkit-scrollbar { display: none; }
-.tab-btn {
-  padding: 18px 16px;
-  background: none; border: none;
-  font-size: 14px; font-weight: 500;
-  color: #6b7280;
-  cursor: pointer; white-space: nowrap;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s;
-}
-.tab-btn:hover { color: #1a56db; }
-.tab-btn.active { color: #1a56db; font-weight: 700; border-bottom-color: #1a56db; }
-.sort-wrap { flex-shrink: 0; }
-.sort-select {
-  border: 1.5px solid #e5e7eb; border-radius: 8px;
-  padding: 8px 12px; font-size: 13px;
-  color: #374151; outline: none; cursor: pointer; background: white;
-}
-
-/* ── STATS ─────────────────────────────────── */
-.stats-section {
-  max-width: 1280px; margin: 32px auto 0;
-  padding: 0 40px;
-  display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 20px;
-}
-.stats-combined-card {
-  background: white;
-  border-radius: 16px;
-  padding: 28px 32px;
-  display: flex; align-items: stretch;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
-  border: 1px solid #f1f5f9;
-}
-.overall-block { min-width: 180px; padding-right: 32px; }
-.stats-divider { width: 1px; background: #e5e7eb; margin: 0 32px 0 0; flex-shrink: 0; }
-.breakdown-block { flex: 1; }
-.block-title { font-size: 14px; font-weight: 700; color: #111827; margin: 0 0 20px; }
-.big-score { font-size: 52px; font-weight: 800; color: #111827; line-height: 1; margin-bottom: 10px; }
-.big-score span { font-size: 20px; color: #9ca3af; font-weight: 400; }
-.stars-display { display: flex; gap: 3px; margin-bottom: 8px; }
-.star-blue { font-size: 22px; color: #1a56db; }
-.star-half-el { opacity: 0.5; }
-.score-label { font-size: 16px; font-weight: 700; color: #111827; margin-bottom: 4px; }
-.based-on { font-size: 12px; color: #9ca3af; }
-.breakdown-list { display: flex; flex-direction: column; gap: 12px; }
-.breakdown-row { display: flex; align-items: center; gap: 12px; }
-.bar-label { font-size: 13px; color: #374151; min-width: 52px; }
-.bar-track { flex: 1; height: 8px; background: #f1f5f9; border-radius: 99px; overflow: hidden; }
-.bar-fill { height: 100%; background: #1a56db; border-radius: 99px; }
-.bar-pct { font-size: 12px; color: #6b7280; min-width: 34px; text-align: right; }
-.loved-card {
-  background: white; border-radius: 16px; padding: 28px 24px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
-  border: 1px solid #f1f5f9;
-  display: flex; flex-direction: column;
-}
-.loved-list { display: flex; flex-direction: column; gap: 13px; margin-bottom: 16px; }
-.loved-row { display: flex; align-items: center; gap: 10px; }
-.loved-icon {
-  width: 28px; height: 28px;
-  background: #eff6ff; border-radius: 7px;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.loved-name { font-size: 13px; color: #374151; flex: 1; }
-.loved-score { font-size: 14px; font-weight: 700; color: #111827; }
-.see-all-link { font-size: 13px; color: #1a56db; font-weight: 600; text-decoration: none; margin-top: auto; }
-.see-all-link:hover { text-decoration: underline; }
-
-/* ── MAIN CONTENT ──────────────────────────── */
-.main-content {
-  max-width: 1280px; margin: 32px auto;
-  padding: 0 40px;
-  display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 28px;
-}
-
-/* Search + filter */
-.search-filter-row {
-  display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;
-}
-.search-box {
-  flex: 1; min-width: 200px; height: 44px;
-  border: 1.5px solid #e5e7eb; border-radius: 10px;
-  padding: 0 16px; background: white;
-  display: flex; align-items: center; gap: 10px;
-}
-.search-box input {
-  flex: 1; border: none; outline: none;
-  font-size: 13px; color: #374151;
-}
-.filter-dropdown {
-  position: relative;
-  display: flex; align-items: center;
-}
-.filter-dropdown select {
-  height: 44px; padding: 0 32px 0 12px;
-  border: 1.5px solid #e5e7eb; border-radius: 10px;
-  font-size: 13px; color: #374151;
-  outline: none; background: white; cursor: pointer;
-  appearance: none;
-}
-.filter-dropdown > svg {
-  position: absolute; right: 10px;
+  inset: 0;
+  background: linear-gradient(to right, rgba(10,15,35,0.6) 0%, transparent 70%);
   pointer-events: none;
 }
-.filter-btn {
-  height: 44px; padding: 0 16px;
-  border: 1.5px solid #e5e7eb; border-radius: 10px;
-  background: white; color: #374151;
-  font-size: 13px; font-weight: 600; cursor: pointer;
-  display: flex; align-items: center; gap: 6px;
-  transition: all 0.2s; white-space: nowrap;
-}
-.filter-btn:hover { border-color: #1a56db; color: #1a56db; }
 
-/* Review list */
-.review-list {
-  background: white; border-radius: 16px; padding: 0 24px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
-  border: 1px solid #f1f5f9;
+.container {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 28px;
+  position: relative;
+  width: 100%;
 }
-.list-state {
-  display: flex; align-items: center; justify-content: center;
-  gap: 12px; padding: 48px 0;
-  font-size: 14px; color: #9ca3af;
-}
-.spinner {
-  width: 20px; height: 20px;
-  border: 2px solid #e5e7eb; border-top-color: #1a56db;
-  border-radius: 50%; animation: spin 0.7s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.load-more-wrap { display: flex; justify-content: center; margin-top: 20px; }
-.load-more-btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 12px 28px;
-  border: 1.5px solid #e5e7eb; border-radius: 30px;
-  background: white; font-size: 14px; font-weight: 600;
-  color: #374151; cursor: pointer; transition: all 0.2s;
-}
-.load-more-btn:hover { border-color: #1a56db; color: #1a56db; }
 
-/* ── SIDEBAR ────────────────────────────────── */
-.sidebar { display: flex; flex-direction: column; gap: 20px; }
-.sidebar-card {
-  background: white; border-radius: 16px; padding: 24px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
-  border: 1px solid #f1f5f9;
+/* Breadcrumb */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255,255,255,0.7);
+  font-size: 0.85rem;
+  margin-bottom: 18px;
 }
-.sidebar-card h4 { font-size: 15px; font-weight: 700; color: #111827; margin: 0 0 10px; }
-.sidebar-card p  { font-size: 13px; color: #6b7280; margin: 0 0 16px; line-height: 1.6; }
-.share-icon-wrap {
-  width: 44px; height: 44px;
-  background: #eff6ff; border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: 14px;
-}
-.write-btn-sidebar {
-  display: flex; align-items: center; justify-content: center;
-  height: 44px; background: #1a56db;
-  color: white; border-radius: 10px;
-  font-size: 14px; font-weight: 600;
-  text-decoration: none; transition: background 0.2s;
-}
-.write-btn-sidebar:hover { background: #1447c0; }
-.guide-list { list-style: none; padding: 0; margin: 0 0 12px; display: flex; flex-direction: column; gap: 14px; }
-.guide-list li { display: flex; gap: 10px; align-items: flex-start; }
-.guide-dot {
-  width: 30px; height: 30px;
-  background: #eff6ff; border-radius: 8px;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.guide-list strong { display: block; font-size: 13px; font-weight: 600; color: #111827; }
-.guide-list p { margin: 2px 0 0; font-size: 12px; color: #6b7280; }
-.learn-more { font-size: 13px; color: #1a56db; font-weight: 600; text-decoration: none; }
-.learn-more:hover { text-decoration: underline; }
-.help-card { display: flex; gap: 14px; align-items: flex-start; }
-.help-icon {
-  width: 48px; height: 48px;
-  background: #eff6ff; border-radius: 12px;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.help-card strong { display: block; font-size: 14px; font-weight: 700; color: #111827; margin-bottom: 4px; }
-.help-card p { font-size: 13px; color: #6b7280; margin: 0 0 8px; }
-.contact-link {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-size: 13px; font-weight: 600; color: #1a56db; text-decoration: none;
-}
-.contact-link:hover { text-decoration: underline; }
 
-/* ── CTA BANNER ─────────────────────────────── */
-.cta-banner {
-  background: linear-gradient(135deg, #0a1f5c 0%, #1a56db 100%);
-  padding: 48px 80px;
-  display: flex; align-items: center; gap: 24px;
-  margin-top: 40px;
-}
-.cta-icon {
-  width: 72px; height: 72px;
-  background: rgba(255,255,255,0.1);
-  border-radius: 18px;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.cta-text { flex: 1; color: white; }
-.cta-text h3 { font-size: 22px; font-weight: 800; margin: 0 0 6px; }
-.cta-text p  { font-size: 14px; color: rgba(255,255,255,0.78); margin: 0; }
-.cta-btn {
-  flex-shrink: 0; height: 52px; padding: 0 32px;
-  background: white; color: #1a56db;
-  border-radius: 30px; font-size: 15px; font-weight: 700;
+.breadcrumb a,
+.breadcrumb-link {
+  color: rgba(255,255,255,0.8);
   text-decoration: none;
-  display: flex; align-items: center;
-  transition: all 0.2s; white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s;
 }
-.cta-btn:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.25); transform: translateY(-1px); }
 
-/* ── FOOTER ─────────────────────────────────── */
-.footer { background: #0f172a; color: white; padding: 56px 0 0; }
-.footer-inner {
-  max-width: 1280px; margin: auto;
-  padding: 0 80px 40px;
-  display: grid;
-  grid-template-columns: 280px 1fr 1fr 1fr 1fr;
-  gap: 40px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+.breadcrumb a:hover,
+.breadcrumb-link:hover { color: white; }
+
+.breadcrumb .sep { opacity: 0.5; }
+
+.breadcrumb .active-crumb { color: white; font-weight: 500; }
+
+/* Hero Text */
+.hero-title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.15;
+  margin: 0 0 12px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  letter-spacing: -0.02em;
 }
-.footer-brand .footer-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-.brand-desc { font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.7; margin-bottom: 20px; }
-.social-links { display: flex; gap: 8px; }
-.social-btn {
-  width: 34px; height: 34px;
-  background: rgba(255,255,255,0.08);
+
+.hero-sub {
+  color: rgba(255,255,255,0.88);
+  font-size: 1.05rem;
+  max-width: 560px;
+  line-height: 1.55;
+  margin: 0 0 28px;
+}
+
+/* Hero Badge */
+.hero-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.glass-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 12px;
+  padding: 10px 20px;
+}
+
+.glass-star {
+  background: #f59e0b;
   border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 700;
-  text-decoration: none; transition: background 0.2s;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.social-btn:hover { background: rgba(255,255,255,0.15); }
-.footer-col { display: flex; flex-direction: column; gap: 10px; }
-.footer-col h5 { font-size: 14px; font-weight: 700; color: white; margin-bottom: 4px; }
-.footer-col a {
-  font-size: 13px; color: rgba(255,255,255,0.55);
-  text-decoration: none; transition: color 0.2s;
-}
-.footer-col a:hover { color: white; }
-.contact-item {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 13px; color: rgba(255,255,255,0.55);
-}
-.footer-bottom {
-  max-width: 1280px; margin: auto;
-  padding: 20px 80px;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.footer-bottom p { font-size: 13px; color: rgba(255,255,255,0.4); }
-.payment-icons { display: flex; gap: 8px; }
-.pay-badge {
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 11px; font-weight: 700;
-  border: 1px solid rgba(255,255,255,0.15);
-}
-.visa   { color: #fff; background: #1a1f71; }
-.master { color: #fff; background: #eb001b; }
-.aba    { color: #fff; background: #0066cc; }
-.paypal { color: #fff; background: #003087; }
 
-/* ── RESPONSIVE ──────────────────────────────── */
-@media (max-width: 1100px) {
-  .stats-section,
-  .main-content { grid-template-columns: 1fr; padding: 0 24px; }
-  .stats-combined-card { flex-direction: column; gap: 24px; }
-  .stats-divider { width: 100%; height: 1px; margin: 0; }
-  .overall-block { padding-right: 0; }
-  .hero-content { left: 40px; }
-  .footer-inner { grid-template-columns: 1fr 1fr; gap: 28px; }
-  .cta-banner { padding: 40px 40px; }
+.glass-score {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: white;
 }
+
+.glass-label {
+  color: rgba(255,255,255,0.9);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.glass-count {
+  color: rgba(255,255,255,0.65);
+  font-size: 0.85rem;
+  padding-left: 4px;
+  border-left: 1px solid rgba(255,255,255,0.3);
+  margin-left: 4px;
+}
+
+.btn-write-review {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 13px 26px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
+}
+
+.btn-write-review:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+}
+
+/* ── TABS BAR ── */
+.tabs-bar {
+  background: white;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.tabs-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabs-inner::-webkit-scrollbar { display: none; }
+
+.tabs {
+  display: flex;
+  gap: 0;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 16px 20px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tab-btn:hover { color: var(--primary); }
+
+.tab-btn.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  font-weight: 700;
+}
+
+.sort-select {
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  color: var(--text-body);
+  background: white;
+  cursor: pointer;
+  outline: none;
+  min-width: 140px;
+}
+
+/* ── MAIN LAYOUT ── */
+.main-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 36px;
+  padding: 40px 28px;
+  max-width: var(--max-w);
+  margin: 0 auto;
+  align-items: start;
+}
+
+/* Hide mobile stats on desktop */
+.mobile-stats { display: none; }
+
+/* ── FILTER BAR ── */
+.filter-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.search-wrap {
+  flex: 1;
+  min-width: 220px;
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-faint);
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 11px 16px 11px 42px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: var(--text-body);
+  background: white;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.search-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.filter-select {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 0.88rem;
+  color: var(--text-body);
+  background: white;
+  cursor: pointer;
+  outline: none;
+  min-width: 130px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  transition: border-color 0.2s;
+}
+
+.filter-select:focus { border-color: var(--primary); }
+
+.btn-filter {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 20px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-body);
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-filter:hover {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 60px 20px;
+  color: var(--text-faint);
+  font-size: 0.95rem;
+}
+
+/* Load More */
+.btn-load-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 16px;
+  background: white;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-body);
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.btn-load-more:hover {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ── SIDEBAR (StatsPanel deep styles) ── */
+.sidebar-col {
+  position: sticky;
+  top: 65px;
+}
+
+/* ── CTA BANNER ── */
+.cta-banner {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #1d4ed8 100%);
+  padding: 50px 0;
+  margin-top: 60px;
+}
+
+.cta-inner {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.cta-icon {
+  background: rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cta-text {
+  flex: 1;
+  min-width: 200px;
+}
+
+.cta-text h3 {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+
+.cta-text p {
+  color: rgba(255,255,255,0.7);
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.btn-cta {
+  background: white;
+  color: #1d4ed8;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 30px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+.btn-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+}
+
+/* ── TABLET ── */
+@media (max-width: 1024px) {
+  .main-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar-col { display: none; }
+  .mobile-stats { display: block; margin-bottom: 28px; }
+}
+
+/* ── MOBILE ── */
 @media (max-width: 640px) {
-  .hero-content h1 { font-size: 36px; }
-  .nav-links { display: none; }
-  .cta-banner { flex-direction: column; text-align: center; }
-  .footer-inner { grid-template-columns: 1fr; padding: 0 24px 32px; }
-  .footer-bottom { flex-direction: column; gap: 16px; text-align: center; padding: 20px 24px; }
+  .hero {
+    padding: 80px 0 40px;
+    min-height: 280px;
+  }
+
+  .hero-title { font-size: 1.8rem; }
+  .hero-sub { font-size: 0.95rem; }
+
+  .main-layout { padding: 24px 16px; gap: 20px; }
+
+  .filter-bar { gap: 8px; }
+  .filter-select { min-width: 100px; font-size: 0.82rem; }
+  .search-input { font-size: 0.85rem; }
+
+  .tab-btn { padding: 14px 12px; font-size: 0.82rem; }
+  .tabs-bar { overflow-x: auto; }
+
+  .cta-inner { flex-direction: column; text-align: center; }
+  .btn-cta { width: 100%; }
+
+  .glass-card { padding: 8px 14px; }
+}
+
+/* ── DARK MODE ── */
+@media (prefers-color-scheme: dark) {
+  .review-management {
+    --bg-page: #0f172a;
+    --bg-card: #1e293b;
+    --text-heading: #f1f5f9;
+    --text-body: #cbd5e1;
+    --text-muted: #94a3b8;
+    --text-faint: #64748b;
+    --border: #334155;
+    --border-light: #1e293b;
+    --primary-light: rgba(37, 99, 235, 0.1);
+  }
+
+  .tabs-bar, .sort-select, .filter-select, .search-input, .btn-filter, .btn-load-more {
+    background: #1e293b;
+    color: #cbd5e1;
+    border-color: #334155;
+  }
+
+  .hero { background-image: linear-gradient(to bottom, rgba(5,10,20,0.8), rgba(5,10,20,0.65)), url('https://images.unsplash.com/photo-1582719508461-905c673771fd?w=1920&q=80'); }
+}
+</style>
+
+<!-- Global styles for the inline StatsPanel sub-component (not scoped) -->
+<style>
+.stats-panel { display: flex; flex-direction: column; gap: 16px; }
+
+.stat-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 22px 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.stat-card-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 16px;
+}
+
+.big-score {
+  font-size: 3rem;
+  font-weight: 800;
+  color: #1d4ed8;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.score-denom {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.exceptional-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 8px 0 4px;
+}
+
+.based-on {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+/* Breakdown */
+.breakdown-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.star-label {
+  font-size: 0.82rem;
+  color: #475569;
+  min-width: 52px;
+  white-space: nowrap;
+}
+
+.bar-track {
+  flex: 1;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
+  border-radius: 99px;
+  transition: width 0.8s ease;
+}
+
+.pct-label {
+  font-size: 0.82rem;
+  color: #475569;
+  min-width: 32px;
+  text-align: right;
+}
+
+/* Category rows */
+.cat-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.cat-row:last-of-type { border-bottom: none; }
+
+.cat-icon {
+  width: 24px;
+  height: 24px;
+  background: #eff6ff;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #2563eb;
+}
+
+.cat-name {
+  flex: 1;
+  font-size: 0.88rem;
+  color: #334155;
+}
+
+.cat-score {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.see-all-link {
+  display: block;
+  color: #2563eb;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 12px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  text-decoration: none;
+}
+
+/* Share card */
+.share-card .share-icon {
+  width: 44px;
+  height: 44px;
+  background: #eff6ff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.share-card h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 8px;
+}
+
+.share-card p {
+  font-size: 0.85rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0 0 16px;
+}
+
+.btn-share-write {
+  width: 100%;
+  padding: 12px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-share-write:hover { background: #1d4ed8; }
+
+/* Guidelines */
+.guide-row {
+  display: flex;
+  gap: 12px;
+  margin: 12px 0;
+  align-items: flex-start;
+}
+
+.guide-icon {
+  width: 28px;
+  height: 28px;
+  background: #eff6ff;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #2563eb;
+}
+
+.guide-label {
+  font-size: 0.87rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.guide-sub {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.learn-more-link {
+  display: block;
+  color: #2563eb;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 12px;
+  text-decoration: none;
+}
+
+/* Help card */
+.help-card h5 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 4px;
+}
+
+.help-card p {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.help-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.help-icon {
+  width: 48px;
+  height: 48px;
+  background: #eff6ff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.contact-support {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+/* Dark mode for stats panel */
+@media (prefers-color-scheme: dark) {
+  .stat-card {
+    background: #1e293b;
+    border-color: #334155;
+  }
+
+  .stat-card-title, .big-score, .exceptional-label, .cat-score, .guide-label, .share-card h4, .help-card h5 {
+    color: #f1f5f9;
+  }
+
+  .cat-name, .star-label, .pct-label, .share-card p, .based-on, .help-card p, .guide-sub {
+    color: #94a3b8;
+  }
+
+  .bar-track { background: #334155; }
+  .cat-row { border-color: #334155; }
+  .cat-icon, .share-card .share-icon, .guide-icon, .help-icon { background: rgba(37,99,235,0.15); }
 }
 </style>

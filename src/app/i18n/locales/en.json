@@ -748,6 +748,111 @@
     "description": "A stunning beachfront resort offering pristine white sand beaches, crystal-clear waters, and unforgettable sunset views."
   },
 
+  "reviewCreate": {
+    "breadcrumb": {
+      "stays": "Stays",
+      "reviews": "Reviews",
+      "write": "Write a Review"
+    },
+    "hero": {
+      "title": "Guest Reviews & Experiences",
+      "subtitle": "Real stories from real guests who have stayed and loved their experience.",
+      "score": "4.9",
+      "label": "Exceptional",
+      "count": "1,284 reviews",
+      "writeReview": "Write a Review"
+    },
+    "form": {
+      "title": "Share Your Experience",
+      "subtitle": "Your honest review helps other guests make informed decisions.",
+      "ratingHeading": "Overall Rating",
+      "required": "Required",
+      "optional": "Choose one",
+      "experienceHeading": "What stood out most?",
+      "moodHeading": "How was your stay?",
+      "reviewTitle": "Review Title",
+      "yourReview": "Your Review",
+      "reviewTitlePlaceholder": "Summarize your stay in a few words...",
+      "reviewContentPlaceholder": "Tell us about the cleanliness, service, location, and overall experience...",
+      "ratingRecommendation": "95% of guests recommend this property",
+      "travelerTypeHeading": "Traveler Type",
+      "categoryHeading": "Category Ratings",
+      "tags": {
+        "luxury": "Luxury",
+        "relaxing": "Relaxing",
+        "greatFood": "Great Food",
+        "greatLocation": "Great Location",
+        "cleanRooms": "Clean Rooms",
+        "greatService": "Great Service",
+        "familyFriendly": "Family Friendly",
+        "greatValue": "Great Value"
+      },
+      "categories": {
+        "cleanliness": "Cleanliness",
+        "service": "Service",
+        "location": "Location",
+        "value": "Value for Money",
+        "comfort": "Comfort"
+      },
+      "addPhotosHeading": "Add Photos",
+      "uploadHint": "Click to upload or drag & drop",
+      "uploadSub": "PNG, JPG up to 10MB each (max 10 photos)",
+      "submitReview": "Submit Review",
+      "submitting": "Submitting..."
+    },
+    "travelers": {
+      "solo": "Solo Traveler",
+      "couple": "Couple",
+      "family": "Family",
+      "business": "Business",
+      "friends": "Friends"
+    },
+    "preview": {
+      "title": "Your Review Preview",
+      "subtitle": "Your review will appear like this.",
+      "outOf": "out of 5",
+      "defaultTitle": "Amazing Experience!",
+      "defaultText": "Tell other travelers about the cleanliness, service, location, and overall experience..."
+    },
+    "progress": {
+      "title": "Review Progress",
+      "description": "Complete the review to make it helpful for future guests.",
+      "steps": {
+        "overallRating": "Overall Rating",
+        "reviewTitle": "Review Title",
+        "yourReview": "Your Review",
+        "categoryRatings": "Category Ratings",
+        "addPhotos": "Add Photos",
+        "submitReview": "Submit Review"
+      }
+    },
+    "hotelCard": {
+      "name": "Grand Palace Hotel",
+      "reviewCount": "· {count} reviews",
+      "location": "Siem Reap, Cambodia"
+    },
+    "tips": {
+      "title": "Tips for a great review",
+      "staff": "Mention specific staff members by name if they stood out",
+      "roomQuality": "Describe room quality, cleanliness, and amenities",
+      "value": "Comment on the value for the price paid",
+      "photos": "Add photos to make your review more helpful",
+      "specific": "Be specific — details help future guests the most"
+    },
+    "errors": {
+      "titleRequired": "Please enter a review title.",
+      "titleMinLength": "Title must be at least 5 characters.",
+      "contentRequired": "Please write your review.",
+      "contentMinLength": "Review must be at least 20 characters.",
+      "ratingRequired": "Please select a rating."
+    }
+  },
+
+  "reviewCard": {
+    "verifiedGuest": "Verified Guest",
+    "photoAlt": "Review photo"
+  },
+
   "roomDetail": {
     "breadcrumb": {
       "home": "Home",
