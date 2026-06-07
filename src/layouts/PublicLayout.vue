@@ -3,7 +3,7 @@ import { computed } from "vue";
 import { RouterView, useRoute } from "vue-router";
 import PublicNavbar from "@/shared/components/PublicNavbar.vue";
 import PublicFooter from "@/shared/components/PublicFooter.vue";
-
+import ToastContainer from "@/shared/components/ToastContainer.vue";
 const route = useRoute();
 const showNavbar = computed(() => !route.meta.publicOnly);
 const showFooter = computed(() => !route.meta.publicOnly);
@@ -16,5 +16,6 @@ const showFooter = computed(() => !route.meta.publicOnly);
       <RouterView />
     </main>
     <PublicFooter v-if="showFooter" />
+    <ToastContainer />
   </div>
 </template>

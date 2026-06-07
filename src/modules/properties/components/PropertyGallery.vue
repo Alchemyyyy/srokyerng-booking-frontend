@@ -33,14 +33,24 @@ const emit = defineEmits(["save", "share"]);
 </script>
 
 <template>
-  <section class="mx-auto max-w-7xl px-4 pt-[112px] sm:px-6 md:pt-[124px] lg:px-8 lg:pt-[132px]">
+  <section
+    class="mx-auto max-w-7xl px-4 pt-[112px] sm:px-6 md:pt-[124px] lg:px-8 lg:pt-[132px]"
+  >
     <!-- Breadcrumb -->
     <div class="flex flex-wrap items-center gap-2 text-sm">
-      <span class="text-(--color-primary)">{{ t("propertyDetail.home") }}</span>
+      <RouterLink
+        :to="{ name: 'public.home' }"
+        class="text-(--color-primary) hover:opacity-80 transition"
+      >
+        {{ t("propertyDetail.home") }}
+      </RouterLink>
       <ChevronRightIcon class="h-3.5 w-3.5 text-(--color-muted)" />
-      <span class="text-(--color-primary)">{{
-        t("propertyDetail.search")
-      }}</span>
+      <RouterLink
+        :to="{ name: 'public.properties' }"
+        class="text-(--color-primary) hover:opacity-80 transition"
+      >
+        {{ t("propertyDetail.search") }}
+      </RouterLink>
       <ChevronRightIcon class="h-3.5 w-3.5 text-(--color-muted)" />
       <span class="text-(--color-text)">{{ property.name }}</span>
     </div>
@@ -55,7 +65,7 @@ const emit = defineEmits(["save", "share"]);
           class="group relative overflow-hidden rounded-[26px] border border-white/6 bg-(--color-surface-soft) md:col-span-2 xl:col-span-1 xl:row-span-2"
         >
           <img
-            :src="property.images[0]"
+            :src="property.images?.[0] || property.image"
             class="h-[240px] w-full object-cover transition duration-700 group-hover:scale-[1.03] sm:h-[300px] md:h-[360px] xl:h-full"
             alt="Main view"
           />
@@ -69,7 +79,7 @@ const emit = defineEmits(["save", "share"]);
           class="group relative overflow-hidden rounded-[26px] border border-white/6 bg-(--color-surface-soft)"
         >
           <img
-            :src="property.images[1]"
+            :src="property.images?.[1] || property.image"
             class="h-[180px] w-full object-cover transition duration-700 group-hover:scale-[1.03] sm:h-[220px] md:h-[240px] xl:h-full"
             alt="Interior"
           />
@@ -80,7 +90,7 @@ const emit = defineEmits(["save", "share"]);
           class="group relative overflow-hidden rounded-[26px] border border-white/6 bg-(--color-surface-soft)"
         >
           <img
-            :src="property.images[2]"
+            :src="property.images?.[2] || property.image"
             class="h-[180px] w-full object-cover transition duration-700 group-hover:scale-[1.03] sm:h-[220px] md:h-[240px] xl:h-full"
             alt="Property surroundings"
           />

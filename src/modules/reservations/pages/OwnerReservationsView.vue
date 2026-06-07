@@ -4,10 +4,12 @@ import { computed, onMounted, ref } from "vue";
 import AppTable from "@/shared/components/AppTable.vue";
 import LoadingSpinner from "@/shared/components/LoadingSpinner.vue";
 import { reservationApi } from "../api/reservation.api";
+import { useAuthStore } from "@/modules/auth/store/authStore";
 
 const loading = ref(true);
 const error = ref("");
 const recentReservations = ref([]);
+const authStore = useAuthStore();
 
 const reservationColumns = [
   { key: "id", label: "Booking ID" },
@@ -54,33 +56,28 @@ const formatDate = (value) => {
     year: "numeric",
   });
 };
-
 const normalizeReservations = (items = []) =>
   items.map((item, index) => ({
-    id: item.id || item.reservationId || `res-${index + 1}`,
-    guestName:
-      item.guestName || item.customerName || item.userName || "Unknown guest",
-    propertyName:
-      item.propertyName || item.property?.name || "Unknown property",
-    amount: Number(item.amount ?? item.totalAmount ?? 0),
-    checkIn: item.checkIn || item.startDate || item.date || "-",
-    checkOut: item.checkOut || item.endDate || "",
-    status: item.status || "pending",
+    id: item.id || `res-${index + 1}`,
+    guestName: item.customer_name || item.customerName || "Unknown guest",
+    propertyName: item.property_name || item.propertyName || "Unknown property",
+    amount: Number(item.total_amount || item.amount || 0),
+    checkIn: item.check_in_date || item.checkIn || "-",
+    checkOut: item.check_out_date || item.checkOut || "",
+    status: item.reservation_status || item.status || "pending",
   }));
 
 const fetchReservations = async () => {
   loading.value = true;
   error.value = "";
-
   try {
+    await authStore.refreshSession(); // ← add this
     const response = await reservationApi.listOwnerReservations();
     const items = Array.isArray(response) ? response : response?.data || [];
     recentReservations.value = normalizeReservations(items);
   } catch (requestError) {
-    error.value =
-      requestError?.message || "Failed to load reservations from the server.";
+    error.value = requestError?.message || "Failed to load reservations.";
     recentReservations.value = [];
-    console.error("Reservations fetch error:", requestError);
   } finally {
     loading.value = false;
   }

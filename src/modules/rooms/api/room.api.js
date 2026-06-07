@@ -3,7 +3,7 @@ import http from "@/app/api/http";
 export const roomApi = {
   getMyRooms(propertyId) {
     if (propertyId && propertyId !== "all") {
-      return http.get(`/properties/${propertyId}/rooms/my`);
+      return http.get(`/properties/${propertyId}/rooms`); // ✅ remove /my
     }
     return http.get(`/properties/rooms/my`);
   },
@@ -13,13 +13,10 @@ export const roomApi = {
   },
 
   updateRoom(propertyId, roomId, roomData) {
-    // ← Fixed: added propertyId
-    return http.patch(`/properties/${propertyId}/rooms/${roomId}`, roomData);
+    return http.patch(`/rooms/${roomId}`, roomData); // ✅ just roomId
   },
-
   deleteRoom(propertyId, roomId) {
-    // ← Fixed
-    return http.delete(`/properties/${propertyId}/rooms/${roomId}`);
+    return http.delete(`/rooms/${roomId}`); // ✅ just roomId, no propertyId
   },
 
   // Fixed: Use consistent endpoint

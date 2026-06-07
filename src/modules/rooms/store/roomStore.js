@@ -1,7 +1,7 @@
 import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 import { roomService } from "@/modules/rooms/services/roomService";
-import { getOwnerProperties } from "@/modules/properties/services/propertyService";
+import { usePropertyStore } from "@/modules/properties/store/propertyStore";
 
 const BASE_URL = "https://api-srokyerng.devspace.linkpc.net";
 
@@ -16,12 +16,14 @@ export const useRoomStore = defineStore("rooms", () => {
   const roomImages = ref({}); // { roomId: [{id, image_url, is_cover, ...}] }
 
   const propertyFilterTabs = computed(() => {
-    const propertyTabs = rawProperties.value.map((property) => {
-      const roomCount = rooms.value.filter(
-        (room) => room.property_id === property.id,
-      ).length;
-      return { id: property.id, name: property.name, roomCount };
-    });
+    const propertyTabs = rawProperties.value
+      .filter((property) => property != null) // 👈 add this filter
+      .map((property) => {
+        const roomCount = rooms.value.filter(
+          (room) => room.property_id === property.id,
+        ).length;
+        return { id: property.id, name: property.name, roomCount };
+      });
     return [
       { id: "all", name: "All", roomCount: rooms.value.length },
       ...propertyTabs,
@@ -104,18 +106,15 @@ export const useRoomStore = defineStore("rooms", () => {
     loading.value = true;
     error.value = null;
     try {
-      const propertiesRes = await getOwnerProperties();
+      const propertyStore = usePropertyStore();
+      await propertyStore.fetchMyProperties();
 
-      const propertiesList = Array.isArray(propertiesRes)
-        ? propertiesRes
-        : propertiesRes?.data || [];
-
-      rawProperties.value = propertiesList.map((p) => ({
+      rawProperties.value = propertyStore.myProperties.map((p) => ({
         id: p.id,
-        name: p.property_name,
+        name: p.name,
         city: p.city,
-        status: p.status_name,
-        cover_image: p.cover_image,
+        status: p.status,
+        cover_image: p.image,
       }));
 
       const allRooms = [];
@@ -164,16 +163,47 @@ export const useRoomStore = defineStore("rooms", () => {
 
   const addRoom = async (propertyId, roomData) => {
     try {
-      const res = await roomService.createRoom(propertyId, roomData);
+      // 1. Extract imageFile before sending to API
+      const { imageFile, ...roomDataWithoutImage } = roomData;
+
+      // 2. Create the room first
+      const res = await roomService.createRoom(
+        propertyId,
+        roomDataWithoutImage,
+      );
+      console.log("createRoom response:", res); // 👈 add this
+
       const newRoom = res?.data || res;
-      if (newRoom) rooms.value.push(newRoom);
+      console.log("newRoom:", newRoom); // 👈 and this
+      console.log("newRoom.id:", newRoom?.id); // 👈 and this
+      console.log("createRoom response:", res);
+      console.log("newRoom:", newRoom);
+      console.log("newRoom.id:", newRoom?.id);
+
+      if (newRoom) {
+        rooms.value.push(newRoom);
+
+        // 3. Upload image if one was selected
+        if (imageFile && newRoom.id) {
+          const formData = new FormData();
+          formData.append("images", imageFile);
+          try {
+            await roomService.uploadRoomImages(newRoom.id, formData);
+            // Refresh images cache for this room
+            delete roomImages.value[newRoom.id]; // clear cache
+            await fetchRoomImages(newRoom.id); // reload fresh
+          } catch (imgErr) {
+            console.error("Room created but image upload failed:", imgErr);
+          }
+        }
+      }
+
       return res;
     } catch (err) {
       error.value = err.response?.data?.message || "Failed to add room.";
       throw err;
     }
   };
-
   // Inside useRoomStore
   const uploadRoomImages = async (roomId, formData) => {
     try {

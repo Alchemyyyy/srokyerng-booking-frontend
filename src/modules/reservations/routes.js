@@ -16,6 +16,12 @@ export const reservationRoutes = [
     path: "booking-history",
     name: "booking-history",
     component: BookingHistoryView,
+    meta: { requiresAuth: true, navbarSolid: false, roles: [ROLES.CUSTOMER] },
+  },
+  {
+    path: "booking/create",
+    name: "booking-create",
+    component: BookingCreateView,
     meta: { requiresAuth: true, roles: [ROLES.CUSTOMER] },
   },
   {
@@ -25,8 +31,8 @@ export const reservationRoutes = [
     meta: { requiresAuth: true, roles: [ROLES.CUSTOMER] },
   },
   {
-    path: "booking/create",
-    name: "booking-create",
+    path: "rooms/:id/book",
+    name: "room-book",
     component: BookingCreateView,
     meta: { requiresAuth: true, roles: [ROLES.CUSTOMER] },
   },

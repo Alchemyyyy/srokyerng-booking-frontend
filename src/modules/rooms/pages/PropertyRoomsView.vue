@@ -1,62 +1,53 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import RoomFilter from "@/modules/rooms/components/RoomFilter.vue";
+import LoadingSpinner from "@/shared/components/LoadingSpinner.vue";
+import http from "@/app/api/http";
 
-const rooms = ref([
-  {
-    id: 1,
-    name: "Deluxe Premium Room",
-    image:
-      "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80",
-    guests: "2 Guests",
-    beds: "1 King Bed",
-    size: "28 m²",
-    price: 40,
-    amenities: [
-      "Free WiFi",
-      "Air Conditioning",
-      "Smart TV",
-      "Private En-Suite Bathroom",
-    ],
-    hasBreakfast: true,
-  },
-  {
-    id: 2,
-    name: "Superior Signature Room",
-    image:
-      "https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=600&q=80",
-    guests: "2 Guests",
-    beds: "2 Single Beds",
-    size: "32 m²",
-    price: 55,
-    amenities: [
-      "Free WiFi",
-      "Air Conditioning",
-      "Smart TV",
-      "Private En-Suite Bathroom",
-    ],
-    hasBreakfast: true,
-  },
-  {
-    id: 3,
-    name: "Executive Family Room",
-    image:
-      "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=600&q=80",
-    guests: "4 Guests",
-    beds: "2 Queen Beds",
-    size: "45 m²",
-    price: 80,
-    amenities: [
-      "Free WiFi",
-      "Air Conditioning",
-      "Smart TV",
-      "Private En-Suite Bathroom",
-    ],
-    hasBreakfast: true,
-  },
-]);
+const route = useRoute();
+const router = useRouter();
+const propertyId = route.params.propertyId;
 
-// ✅ Single filters object for RoomFilter v-model
+const loading = ref(false);
+const property = ref(null);
+const rooms = ref([]);
+
+onMounted(async () => {
+  loading.value = true;
+  try {
+    const propRes = await http.get(`/properties/${propertyId}`);
+    const p = propRes.data?.data || propRes.data;
+    property.value = {
+      name: p.property_name || p.name,
+      city: p.city,
+      rating: p.average_rating || 4.8,
+      image: p.cover_image,
+    };
+
+    const roomsRes = await http.get(`/properties/${propertyId}/rooms`);
+    const rawRooms = roomsRes.data?.data || roomsRes.data || [];
+    const BASE_URL = "https://api-srokyerng.devspace.linkpc.net";
+
+    rooms.value = rawRooms.map((r) => ({
+      id: r.id,
+      name: r.room_name,
+      type: r.type_name || "",
+      price: r.price_per_night || 0,
+      guests: r.max_guests || 2,
+      description: r.description || "",
+      image: r.cover_image
+        ? `${BASE_URL}${r.cover_image}`
+        : "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80",
+      amenities: [],
+    }));
+  } catch (err) {
+    console.error("Failed to load rooms:", err);
+  } finally {
+    loading.value = false;
+  }
+});
+
 const filters = ref({
   priceRange: 150,
   selectedCapacity: "2 Guests",
@@ -73,43 +64,23 @@ const resetFilters = () => {
   };
 };
 
-// ✅ Computed filtered + sorted rooms
 const filteredRooms = computed(() => {
   let result = rooms.value;
-
-  // Filter by price
   result = result.filter((r) => r.price <= filters.value.priceRange);
-
-  // Filter by capacity
   const capMap = { "1 Guest": 1, "2 Guests": 2, "3 Guests": 3, "4+ Guests": 4 };
   const minGuests = capMap[filters.value.selectedCapacity] || 0;
-  result = result.filter((r) => {
-    const guestCount = parseInt(r.guests);
-    return filters.value.selectedCapacity === "4+ Guests"
-      ? guestCount >= 4
-      : guestCount >= minGuests;
-  });
-
-  // Filter by facilities
-  if (filters.value.selectedFacilities.length > 0) {
-    result = result.filter((r) =>
-      filters.value.selectedFacilities.every((fac) =>
-        r.amenities.includes(fac),
-      ),
-    );
-  }
-
-  // Sort
-  if (filters.value.sortBy === "Price: Low to High") {
+  result = result.filter((r) =>
+    filters.value.selectedCapacity === "4+ Guests"
+      ? r.guests >= 4
+      : r.guests >= minGuests,
+  );
+  if (filters.value.sortBy === "Price: Low to High")
     result = [...result].sort((a, b) => a.price - b.price);
-  } else if (filters.value.sortBy === "Price: High to Low") {
+  else if (filters.value.sortBy === "Price: High to Low")
     result = [...result].sort((a, b) => b.price - a.price);
-  }
-
   return result;
 });
 </script>
-
 <template>
   <div
     style="
@@ -134,9 +105,9 @@ const filteredRooms = computed(() => {
           >Properties</RouterLink
         >
         <span>/</span>
-        <span style="color: var(--color-text)" class="font-semibold"
-          >Angkor Palace Hotel</span
-        >
+        <span style="color: var(--color-text)" class="font-semibold">{{
+          property?.name || ""
+        }}</span>
       </div>
     </div>
 
@@ -169,7 +140,9 @@ const filteredRooms = computed(() => {
             class="text-2xl md:text-3xl font-bold tracking-tight leading-tight"
           >
             Available Rooms at <br />
-            <span style="color: var(--color-primary)">Angkor Palace Hotel</span>
+            <span style="color: var(--color-primary)">{{
+              property?.name || "Loading..."
+            }}</span>
           </h1>
           <p
             style="color: var(--color-muted)"
@@ -275,190 +248,144 @@ const filteredRooms = computed(() => {
         </div>
 
         <!-- Room Cards -->
-        <div
-          v-for="room in filteredRooms"
-          :key="room.id"
-          style="
-            background-color: var(--color-surface);
-            border-color: var(--color-border);
-            box-shadow: var(--shadow-card);
-            border-radius: var(--radius-md);
-          "
-          class="border overflow-hidden p-4 flex flex-col md:flex-row gap-6 items-stretch hover:opacity-95 transition-all duration-300"
-        >
-          <!-- Image -->
+        <div v-if="loading" class="flex justify-center py-20">
+          <LoadingSpinner />
+        </div>
+
+        <template v-else>
           <div
-            style="border-radius: var(--radius-sm)"
-            class="w-full md:w-[240px] aspect-[4/3] md:h-auto overflow-hidden flex-shrink-0 relative"
+            v-for="room in filteredRooms"
+            :key="room.id"
+            style="
+              background-color: var(--color-surface);
+              border-color: var(--color-border);
+              box-shadow: var(--shadow-card);
+              border-radius: var(--radius-md);
+            "
+            class="border overflow-hidden p-4 flex flex-col md:flex-row gap-6 items-stretch hover:opacity-95 transition-all duration-300"
           >
-            <img
-              :src="room.image"
-              :alt="room.name"
-              class="w-full h-full object-cover"
-            />
+            <!-- Image -->
             <div
-              style="
-                background-color: var(--color-primary-strong);
-                color: var(--color-text-inverse);
-              "
-              class="absolute top-3 left-3 px-2.5 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase"
+              style="border-radius: var(--radius-sm)"
+              class="w-full md:w-[240px] aspect-[4/3] md:h-auto overflow-hidden flex-shrink-0 relative"
             >
-              Luxury Collection
+              <img
+                :src="room.image"
+                :alt="room.name"
+                class="w-full h-full object-cover"
+              />
             </div>
-          </div>
 
-          <!-- Info -->
-          <div class="flex-1 flex flex-col justify-between py-1">
-            <div class="space-y-3">
-              <div class="flex items-start justify-between gap-4">
-                <div>
-                  <h4
-                    style="
-                      color: var(--color-text);
-                      font-family: var(--font-secondary);
-                    "
-                    class="text-base font-bold tracking-tight"
-                  >
-                    {{ room.name }}
-                  </h4>
-                  <p
-                    style="color: var(--color-muted)"
-                    class="text-[11px] font-medium mt-0.5"
-                  >
-                    Premium Quality Verified · Non-Smoking Suite
-                  </p>
+            <!-- Info -->
+            <div class="flex-1 flex flex-col justify-between py-1">
+              <div class="space-y-3">
+                <div class="flex items-start justify-between gap-4">
+                  <div>
+                    <h4
+                      style="color: var(--color-text)"
+                      class="text-base font-bold tracking-tight"
+                    >
+                      {{ room.name }}
+                    </h4>
+                    <p
+                      style="color: var(--color-muted)"
+                      class="text-[11px] font-medium mt-0.5"
+                    >
+                      {{
+                        [room.type, room.description || "Available room"]
+                          .filter(Boolean)
+                          .join(" · ")
+                      }}
+                    </p>
+                  </div>
                 </div>
-                <span
-                  v-if="room.hasBreakfast"
-                  class="text-[9px] border border-emerald-500 text-emerald-600 font-bold px-2 py-0.5 rounded uppercase tracking-wider"
-                >
-                  Breakfast Included
-                </span>
-              </div>
 
-              <!-- Specs -->
-              <div
-                style="color: var(--color-muted)"
-                class="flex flex-wrap items-center gap-2 text-[11px] font-medium"
-              >
-                <span
-                  style="
-                    background-color: var(--color-surface-soft);
-                    border-color: var(--color-border);
-                  "
-                  class="border px-2 py-1 rounded"
-                  >{{ room.guests }}</span
-                >
-                <span
-                  style="
-                    background-color: var(--color-surface-soft);
-                    border-color: var(--color-border);
-                  "
-                  class="border px-2 py-1 rounded"
-                  >{{ room.beds }}</span
-                >
-                <span
-                  style="
-                    background-color: var(--color-surface-soft);
-                    border-color: var(--color-border);
-                  "
-                  class="border px-2 py-1 rounded"
-                  >{{ room.size }}</span
-                >
-              </div>
-
-              <!-- Amenities -->
-              <div
-                style="border-color: var(--color-surface-soft)"
-                class="flex flex-wrap items-center gap-x-3 gap-y-1.5 pt-2 border-t"
-              >
-                <span
-                  v-for="amenity in room.amenities"
-                  :key="amenity"
+                <!-- Specs -->
+                <div
                   style="color: var(--color-muted)"
-                  class="text-[11px] font-medium flex items-center gap-1"
+                  class="flex flex-wrap items-center gap-2 text-[11px] font-medium"
                 >
                   <span
-                    style="background-color: var(--color-primary)"
-                    class="w-1 h-1 rounded-full"
-                  ></span>
-                  {{ amenity }}
-                </span>
+                    style="
+                      background-color: var(--color-surface-soft);
+                      border-color: var(--color-border);
+                    "
+                    class="border px-2 py-1 rounded"
+                  >
+                    {{ room.guests }} Guests
+                  </span>
+                </div>
+              </div>
+
+              <div class="pt-4 md:pt-0">
+                <RouterLink
+                  :to="{ name: 'public.room-detail', params: { id: room.id } }"
+                  style="color: var(--color-primary)"
+                  class="text-[11px] font-bold hover:opacity-80 transition flex items-center gap-1 cursor-pointer"
+                >
+                  View detailed room specs →
+                </RouterLink>
               </div>
             </div>
 
-            <div class="pt-4 md:pt-0">
+            <!-- Price & Book -->
+            <div
+              style="border-color: var(--color-surface-soft)"
+              class="w-full md:w-[160px] flex flex-row md:flex-col justify-between items-center md:items-end md:justify-center border-t md:border-t-0 md:border-l pt-4 md:pt-0 md:pl-6 gap-4"
+            >
+              <div class="md:w-full text-left md:text-right md:mb-4">
+                <span
+                  style="color: var(--color-muted)"
+                  class="text-[10px] font-bold block uppercase tracking-widest"
+                  >Rate From</span
+                >
+                <div
+                  style="color: var(--color-text)"
+                  class="text-2xl font-bold tracking-tight"
+                >
+                  ${{ room.price }}
+                </div>
+                <div
+                  style="color: var(--color-muted)"
+                  class="text-[10px] font-medium"
+                >
+                  per night
+                </div>
+              </div>
               <RouterLink
                 :to="{ name: 'public.room-detail', params: { id: room.id } }"
-                style="color: var(--color-primary)"
-                class="text-[11px] font-bold hover:opacity-80 transition flex items-center gap-1 group/btn cursor-pointer"
+                :style="{
+                  backgroundColor: 'var(--color-primary)',
+                  color: 'var(--color-text-inverse)',
+                }"
+                class="w-full md:w-auto hover:opacity-90 font-bold text-xs px-5 py-2.5 rounded-lg transition-all whitespace-nowrap cursor-pointer text-center"
               >
-                View detailed room specs
-                <span
-                  class="transform group-hover/btn:translate-x-0.5 transition-transform"
-                  >→</span
-                >
+                Book Room
               </RouterLink>
             </div>
           </div>
 
-          <!-- Price & Book -->
+          <!-- Empty State -->
           <div
-            style="border-color: var(--color-surface-soft)"
-            class="w-full md:w-[160px] flex flex-row md:flex-col justify-between items-center md:items-end md:justify-center border-t md:border-t-0 md:border-l pt-4 md:pt-0 md:pl-6 gap-4"
+            v-if="filteredRooms.length === 0"
+            style="
+              background-color: var(--color-surface);
+              border-color: var(--color-border);
+            "
+            class="border border-dashed rounded-2xl p-16 text-center"
           >
-            <div class="md:w-full text-left md:text-right md:mb-4">
-              <span
-                style="color: var(--color-muted)"
-                class="text-[10px] font-bold block uppercase tracking-widest"
-                >Rate From</span
-              >
-              <div
-                style="color: var(--color-text)"
-                class="text-2xl font-bold tracking-tight"
-              >
-                ${{ room.price }}
-              </div>
-              <div
-                style="color: var(--color-muted)"
-                class="text-[10px] font-medium"
-              >
-                per night
-              </div>
-            </div>
-            <RouterLink
-              :to="{ name: 'public.room-detail', params: { id: room.id } }"
-              :style="{
-                backgroundColor: 'var(--color-primary)',
-                color: 'var(--color-text-inverse)',
-              }"
-              class="w-full md:w-auto hover:opacity-90 font-bold text-xs px-5 py-2.5 rounded-lg transition-all whitespace-nowrap cursor-pointer text-center"
+            <p style="color: var(--color-muted)" class="text-sm font-medium">
+              No rooms match your filters. Try adjusting your criteria.
+            </p>
+            <button
+              @click="resetFilters"
+              style="color: var(--color-primary)"
+              class="text-xs font-bold mt-3 hover:opacity-80 transition cursor-pointer"
             >
-              Book Room
-            </RouterLink>
+              Reset Filters
+            </button>
           </div>
-        </div>
-
-        <!-- Empty State -->
-        <div
-          v-if="filteredRooms.length === 0"
-          style="
-            background-color: var(--color-surface);
-            border-color: var(--color-border);
-          "
-          class="border border-dashed rounded-2xl p-16 text-center"
-        >
-          <p style="color: var(--color-muted)" class="text-sm font-medium">
-            No rooms match your filters. Try adjusting your criteria.
-          </p>
-          <button
-            @click="resetFilters"
-            style="color: var(--color-primary)"
-            class="text-xs font-bold mt-3 hover:opacity-80 transition cursor-pointer"
-          >
-            Reset Filters
-          </button>
-        </div>
+        </template>
       </main>
     </div>
   </div>

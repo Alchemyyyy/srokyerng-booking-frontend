@@ -45,4 +45,7 @@ export const propertyApi = {
   deletePropertyImage(propertyId, imageId) {
     return http.delete(`/properties/${propertyId}/images/${imageId}`);
   },
+  getPropertyRooms(propertyId) {
+    return http.get(`/properties/${propertyId}/rooms`);
+  },
 };

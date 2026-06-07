@@ -118,14 +118,11 @@ const statusBadgeClass = computed(() => {
           </AppButton>
 
           <RouterLink
-            :to="{
-              name: 'public.property-rooms',
-              params: { propertyId: property.id },
-            }"
-            class="flex items-center justify-center gap-1 bg-(--color-surface-soft) hover:bg-(--color-border) text-(--color-muted) font-semibold text-[11px] px-2.5 py-3 rounded-lg transition flex-1"
+            :to="{ name: 'owner.property-detail', params: { id: property.id } }"
+            class="flex items-center justify-center gap-1 bg-(--color-surface-soft) hover:bg-(--color-border) text-(--color-muted) font-semibold text-[11px] px-2.5 py-2 rounded-lg transition flex-1"
           >
             <EyeIcon class="w-3.5 h-3.5" />
-            View
+            Detail
           </RouterLink>
         </div>
 

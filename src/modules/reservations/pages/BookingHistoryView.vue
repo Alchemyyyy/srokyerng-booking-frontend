@@ -1,12 +1,27 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { reservationApi } from "../api/reservation.api";
+import { useRouter } from "vue-router";
+import BookingCard from "../components/BookingCard.vue";
+import { useAuthStore } from "@/modules/auth/store/authStore";
 
+const router = useRouter();
 const loading = ref(true);
 const error = ref("");
 const bookings = ref([]);
 const activeFilter = ref("all");
+const authStore = useAuthStore();
 
+const handleCancel = async (id) => {
+  if (!confirm("Are you sure you want to cancel this reservation?")) return;
+  try {
+    await authStore.refreshSession();
+    await reservationApi.cancelReservation(id);
+    await fetchBookings();
+  } catch (err) {
+    console.error("Cancel failed:", err);
+  }
+};
 const filteredBookings = computed(() => {
   if (activeFilter.value === "all") return bookings.value;
   if (activeFilter.value === "upcoming")
@@ -33,8 +48,8 @@ const stats = computed(() => ({
 }));
 
 const normalizeBooking = (item, index) => {
-  const checkIn = item.check_in || item.checkIn || item.start_date || "-";
-  const checkOut = item.check_out || item.checkOut || item.end_date || "-";
+  const checkIn = item.check_in_date || item.check_in || "-";
+  const checkOut = item.check_out_date || item.check_out || "-";
   const nights =
     checkIn !== "-" && checkOut !== "-"
       ? Math.ceil(
@@ -42,33 +57,35 @@ const normalizeBooking = (item, index) => {
         )
       : 0;
 
+  // Format date to YYYY-MM-DD
+  const formatDate = (dateStr) => {
+    if (!dateStr || dateStr === "-") return "-";
+    return new Date(dateStr).toISOString().split("T")[0];
+  };
+
   return {
     id: item.id || index + 1,
-    roomName: item.room?.name || item.roomName || item.room_name || "Room",
+    roomName: item.room_name || item.room?.name || "Room",
     roomImage:
-      item.room?.image ||
-      item.roomImage ||
       "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=400&q=80",
-    location:
-      item.property?.name || item.propertyName || item.location || "Unknown",
-    checkIn,
-    checkOut,
+    location: item.property_name || item.property?.name || "Unknown",
+    checkIn: formatDate(checkIn),
+    checkOut: formatDate(checkOut),
     nights,
-    totalPrice: Number(item.total_price || item.totalPrice || item.amount || 0),
-    status: item.status || "pending",
+    totalPrice: Number(item.total_amount || item.total_price || 0),
+    status: item.reservation_status || item.status || "pending",
   };
 };
-
 const fetchBookings = async () => {
   loading.value = true;
   error.value = "";
   try {
     const response = await reservationApi.getMyReservations();
     const items = Array.isArray(response) ? response : response?.data || [];
+    console.log("Raw booking data:", JSON.stringify(items[0])); // ← add this
     bookings.value = items.map(normalizeBooking);
   } catch (err) {
     error.value = err?.message || "Failed to load reservations.";
-    console.error("Booking fetch error:", err);
   } finally {
     loading.value = false;
   }
@@ -318,180 +335,18 @@ onMounted(fetchBookings);
 
         <!-- List -->
         <div v-else class="space-y-4">
-          <div
+          <BookingCard
             v-for="booking in filteredBookings"
             :key="booking.id"
-            class="bg-white border border-slate-200/60 rounded-3xl p-5 md:p-6 shadow-xl shadow-slate-200/30 hover:border-slate-300 hover:shadow-2xl transition-all duration-300 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6"
-          >
-            <!-- Left: Image + Info -->
-            <div
-              class="flex flex-col sm:flex-row items-start sm:items-center gap-5 w-full lg:w-auto"
-            >
-              <div
-                class="w-full sm:w-28 h-28 sm:h-20 rounded-2xl overflow-hidden bg-slate-100 flex-shrink-0 group"
-              >
-                <img
-                  :src="booking.roomImage"
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-
-              <div class="space-y-1.5">
-                <div class="flex flex-wrap items-center gap-2">
-                  <span
-                    class="text-xs font-black text-[#0f2942] tracking-tight hover:text-[#1062b3] transition cursor-pointer"
-                  >
-                    {{ booking.roomName }}
-                  </span>
-                  <span class="text-[10px] text-slate-400 font-medium"
-                    >· ID: #RES-{{ booking.id }}</span
-                  >
-                </div>
-
-                <p
-                  class="text-xs text-slate-500 font-bold flex items-center gap-1.5"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="2"
-                    stroke="currentColor"
-                    class="w-3.5 h-3.5 text-slate-400"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                    />
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
-                    />
-                  </svg>
-                  {{ booking.location }}
-                </p>
-
-                <div
-                  class="text-xs font-bold text-slate-400 flex items-center flex-wrap gap-x-3 gap-y-1 pt-0.5"
-                >
-                  <span
-                    class="bg-slate-50 border border-slate-100 text-[#0f2942] px-2.5 py-1 rounded-lg"
-                  >
-                    <span
-                      class="text-[9px] uppercase tracking-wider text-slate-400 block font-black"
-                      >In</span
-                    >
-                    {{ booking.checkIn }}
-                  </span>
-                  <span
-                    class="text-[10px] text-slate-300 font-light hidden sm:inline"
-                    >➔</span
-                  >
-                  <span
-                    class="bg-slate-50 border border-slate-100 text-[#0f2942] px-2.5 py-1 rounded-lg"
-                  >
-                    <span
-                      class="text-[9px] uppercase tracking-wider text-slate-400 block font-black"
-                      >Out</span
-                    >
-                    {{ booking.checkOut }}
-                  </span>
-                  <span
-                    class="text-[#1062b3] bg-blue-50/70 border border-blue-100/60 px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider"
-                  >
-                    {{ booking.nights }} Nights
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Right: Price + Status + Actions -->
-            <div
-              class="flex sm:items-center justify-between lg:justify-end gap-6 w-full lg:w-auto border-t lg:border-t-0 border-slate-100 pt-4 lg:pt-0"
-            >
-              <div class="lg:text-right">
-                <span
-                  class="text-[9px] uppercase font-black text-slate-400 tracking-widest block"
-                  >Settled Amount</span
-                >
-                <span class="text-xl font-black text-[#0f2942] tracking-tight"
-                  >${{ booking.totalPrice }}</span
-                >
-                <span class="text-slate-400 text-[10px] font-medium block"
-                  >Paid via Card ending *4921</span
-                >
-              </div>
-
-              <div
-                class="flex flex-col sm:flex-row items-end sm:items-center gap-3"
-              >
-                <!-- Status Badge -->
-                <div
-                  :class="[
-                    'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border shadow-sm',
-                    String(booking.status).toLowerCase() === 'confirmed'
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-100/80'
-                      : '',
-                    String(booking.status).toLowerCase() === 'completed'
-                      ? 'bg-slate-100 text-slate-600 border-slate-200'
-                      : '',
-                    String(booking.status).toLowerCase() === 'cancelled'
-                      ? 'bg-rose-50 text-rose-700 border-rose-100/80'
-                      : '',
-                    String(booking.status).toLowerCase() === 'pending'
-                      ? 'bg-amber-50 text-amber-700 border-amber-100/80'
-                      : '',
-                  ]"
-                >
-                  <span
-                    :class="[
-                      'w-1.5 h-1.5 rounded-full',
-                      String(booking.status).toLowerCase() === 'confirmed'
-                        ? 'bg-emerald-500 animate-pulse'
-                        : '',
-                      String(booking.status).toLowerCase() === 'completed'
-                        ? 'bg-slate-400'
-                        : '',
-                      String(booking.status).toLowerCase() === 'cancelled'
-                        ? 'bg-rose-500'
-                        : '',
-                      String(booking.status).toLowerCase() === 'pending'
-                        ? 'bg-amber-500 animate-pulse'
-                        : '',
-                    ]"
-                  />
-                  {{ booking.status }}
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="flex items-center gap-1.5">
-                  <button
-                    class="bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-extrabold text-[10px] tracking-widest uppercase px-3.5 py-2.5 rounded-xl transition duration-200 cursor-pointer"
-                  >
-                    Receipt
-                  </button>
-                  <button
-                    v-if="
-                      ['confirmed', 'pending'].includes(
-                        String(booking.status).toLowerCase(),
-                      )
-                    "
-                    class="bg-rose-50 hover:bg-rose-100 border border-rose-100 text-rose-700 font-extrabold text-[10px] tracking-widest uppercase px-3.5 py-2.5 rounded-xl transition duration-200 cursor-pointer"
-                  >
-                    Cancel Stay
-                  </button>
-                  <button
-                    v-else
-                    class="bg-[#1062b3] hover:bg-[#0b427b] text-white font-extrabold text-[10px] tracking-widest uppercase px-3.5 py-2.5 rounded-xl shadow-md shadow-blue-600/10 transition duration-200 cursor-pointer"
-                  >
-                    Book Again
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+            :booking="booking"
+            @view="
+              router.push({
+                name: 'customer.booking-detail',
+                params: { id: $event },
+              })
+            "
+            @cancel="handleCancel"
+          />
         </div>
       </div>
     </div>

@@ -93,15 +93,13 @@ const closeAddRoomModal = () => {
 const openEditRoomModal = (room) => {
   editingRoomId.value = room.id;
   editRoomForm.value = {
-    propertyId: room.propertyId,
-    type: room.type,
-    guests: room.guests,
-    size: room.size,
-    bedType: room.bedType,
-    description: room.description,
-    basePrice: room.basePrice,
-    inventory: room.inventory,
-    available: room.available,
+    propertyId: room.property_id, // ✅ use property_id
+    type: room.room_type_id, // ✅ use room_type_id for dropdown
+    roomName: room.room_name || room.type, // ✅ room name
+    guests: room.max_guests || room.guests,
+    description: room.description || "",
+    basePrice: room.price_per_night || room.basePrice,
+    inventory: room.total_rooms || room.inventory,
     image: room.image || "",
   };
   editFormErrors.value = {};
@@ -122,8 +120,8 @@ const closeDeleteRoomModal = () => {
   isDeleteRoomModalOpen.value = false;
   deletingRoom.value = null;
 };
-const handleAddRoom = async () => {
-  addFormErrors.value = {};
+const handleAddRoom = async (formData) => {
+  addRoomForm.value = { ...addRoomForm.value, ...formData };
 
   const selectedProperty = availableProperties.value.find(
     (p) => p.id === addRoomForm.value.propertyId,
@@ -151,17 +149,10 @@ const handleAddRoom = async () => {
       price_per_night: Number(addRoomForm.value.basePrice),
       max_guests: Number(addRoomForm.value.guests) || 2,
       total_rooms: Number(addRoomForm.value.inventory) || 1,
+      imageFile: addRoomForm.value.imageFile, // ✅ now has the file
     });
 
     const newRoom = response?.data || response;
-
-    if (newRoom?.id && addRoomForm.value.imageFile) {
-      console.log("📸 Uploading image...");
-      const formData = new FormData();
-      formData.append("images", addRoomForm.value.imageFile);
-
-      await roomStore.uploadRoomImages(newRoom.id, formData);
-    }
 
     closeAddRoomModal();
     setNotice("Room added successfully.");
@@ -191,7 +182,11 @@ const handleEditRoom = async () => {
   if (!editRoomForm.value.propertyId)
     errors.propertyId = "Please choose a property.";
   if (!editRoomForm.value.type) errors.type = "Room type is required.";
-  if (!editRoomForm.value.size) errors.size = "Size is required.";
+  if (!editRoomForm.value.roomName?.trim())
+    errors.roomName = "Room name is required.";
+  if (!editRoomForm.value.basePrice || editRoomForm.value.basePrice <= 0)
+    errors.basePrice = "Price is required.";
+
   editFormErrors.value = errors;
   if (
     Object.keys(errors).length > 0 ||
@@ -202,19 +197,18 @@ const handleEditRoom = async () => {
 
   try {
     await updateRoom(selectedProperty.id, editingRoomId.value, {
-      type: editRoomForm.value.type,
-      guests: Number(editRoomForm.value.guests) || 0,
-      size: editRoomForm.value.size,
-      bed_type: editRoomForm.value.bedType,
-      description: editRoomForm.value.description,
-      base_rate: Number(editRoomForm.value.basePrice) || 0,
-      inventory: Number(editRoomForm.value.inventory) || 1,
-      available: Number(editRoomForm.value.available) || 1,
+      room_type_id: Number(editRoomForm.value.type), // ✅ correct field name
+      room_name: editRoomForm.value.roomName?.trim(), // ✅ correct field name
+      description: editRoomForm.value.description || "",
+      price_per_night: Number(editRoomForm.value.basePrice), // ✅ correct field name
+      max_guests: Number(editRoomForm.value.guests) || 2, // ✅ correct field name
+      total_rooms: Number(editRoomForm.value.inventory) || 1, // ✅ correct field name
     });
     closeEditRoomModal();
     setNotice("Room updated successfully.");
-  } catch {
-    // error is already set in the store
+    await fetchRoomsData(); // ✅ refresh the list
+  } catch (err) {
+    console.error("❌ Update room failed:", err.response?.data || err);
   }
 };
 
@@ -372,7 +366,7 @@ onMounted(fetchRoomsData);
       :errors="addFormErrors"
       submit-label="Save Room"
       @close="closeAddRoomModal"
-      @submit="handleAddRoom"
+      @submit="(data) => handleAddRoom(data)"
     />
 
     <RoomFormModal

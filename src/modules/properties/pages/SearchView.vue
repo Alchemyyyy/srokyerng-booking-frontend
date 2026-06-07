@@ -119,6 +119,7 @@ const resetFilters = () => {
 };
 
 const openProperty = (propertyId) => {
+  console.log("navigating to property:", propertyId); // check this isn't undefined
   router.push({ name: "public.property-detail", params: { id: propertyId } });
 };
 
@@ -304,7 +305,7 @@ onMounted(() => {
                   <p
                     class="text-[10px] font-bold uppercase tracking-wider text-(--color-primary)"
                   >
-                    Approved Asset
+                    <span>{{ property.type }}</span>
                   </p>
                   <h2
                     class="text-lg font-bold text-(--color-text) line-clamp-1 tracking-tight"

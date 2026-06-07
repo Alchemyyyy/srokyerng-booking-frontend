@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import {
   UsersIcon,
@@ -8,24 +9,69 @@ import {
   PhotoIcon,
   ShieldCheckIcon,
 } from "@heroicons/vue/24/outline";
+import http from "@/app/api/http";
 
 const { t } = useI18n();
+const route = useRoute();
+const router = useRouter();
 
 const room = ref(null);
 const loading = ref(true);
+const checkInDate = ref("");
+const checkOutDate = ref("");
+const guestCount = ref(1);
+
+const BASE_URL = "https://api-srokyerng.devspace.linkpc.net";
+
+const getFullImageUrl = (url) => {
+  if (!url)
+    return "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80";
+  return url.startsWith("http") ? url : `${BASE_URL}${url}`;
+};
 
 const fetchRoom = async () => {
   try {
-    const res = await fetch("/data.json");
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    room.value = data.rooms.find((r) => r.id === "room-101") || null;
+    const res = await http.get(`/rooms/${route.params.id}`);
+    const r = res.data?.data || res.data;
+
+    // fetch room images
+    const imgRes = await http.get(`/rooms/${route.params.id}/images`);
+    const images = imgRes.data?.data || [];
+    const coverImg = images.find((i) => i.is_cover === 1) || images[0];
+
+    room.value = {
+      id: r.id,
+      type: r.room_name,
+      propertyName: r.property_name || "",
+      guests: r.max_guests || 2,
+      bedType: r.bed_type || "-",
+      size: r.room_size || "-",
+      description: r.description || "",
+      basePrice: Number(r.price_per_night) || 0,
+      image: getFullImageUrl(coverImg?.image_url),
+      amenities: r.amenities || [],
+      images: images.map((i) => getFullImageUrl(i.image_url)),
+      propertyId: r.property_id,
+    };
   } catch (err) {
     console.error("Failed to load room:", err);
     room.value = null;
   } finally {
     loading.value = false;
   }
+};
+
+const goToBooking = () => {
+  router.push({
+    name: "customer.room-book",
+    params: { id: route.params.id },
+    query: {
+      propertyId: room.value?.propertyId,
+      checkIn: checkInDate.value || undefined,
+      checkOut: checkOutDate.value || undefined,
+      guests: guestCount.value,
+    },
+  });
 };
 
 onMounted(fetchRoom);
@@ -342,6 +388,7 @@ onMounted(fetchRoom);
               </div>
 
               <!-- Form -->
+              <!-- Form -->
               <form @submit.prevent class="space-y-4">
                 <!-- Dates -->
                 <div
@@ -350,20 +397,26 @@ onMounted(fetchRoom);
                   <div class="space-y-1">
                     <label
                       class="block text-[9px] font-black text-(--color-muted) uppercase tracking-widest"
-                      >{{ t("roomDetail.arrivalDate") }}</label
                     >
+                      {{ t("roomDetail.arrivalDate") }}
+                    </label>
+                    <!-- ✅ Add v-model here -->
                     <input
                       type="date"
+                      v-model="checkInDate"
                       class="w-full bg-transparent text-xs text-(--color-text) outline-none font-bold cursor-pointer"
                     />
                   </div>
                   <div class="space-y-1 border-l border-(--color-border) pl-3">
                     <label
                       class="block text-[9px] font-black text-(--color-muted) uppercase tracking-widest"
-                      >{{ t("roomDetail.departureDate") }}</label
                     >
+                      {{ t("roomDetail.departureDate") }}
+                    </label>
+                    <!-- ✅ Add v-model here -->
                     <input
                       type="date"
+                      v-model="checkOutDate"
                       class="w-full bg-transparent text-xs text-(--color-text) outline-none font-bold cursor-pointer"
                     />
                   </div>
@@ -373,18 +426,20 @@ onMounted(fetchRoom);
                 <div class="space-y-1.5">
                   <label
                     class="block text-[9px] font-black text-(--color-muted) uppercase tracking-widest"
-                    >{{ t("roomDetail.accompaniedGuests") }}</label
                   >
+                    {{ t("roomDetail.accompaniedGuests") }}
+                  </label>
                   <div
                     class="relative bg-(--color-surface) border border-(--color-border) focus-within:border-(--color-primary) rounded-xl px-4 py-3 shadow-sm transition"
                   >
+                    <!-- ✅ Add select with v-model here -->
                     <select
+                      v-model.number="guestCount"
                       class="w-full text-xs text-(--color-text) bg-transparent outline-none appearance-none font-bold cursor-pointer"
                     >
-                      <option>{{ t("roomDetail.adult1") }}</option>
-                      <option>{{ t("roomDetail.adult2") }}</option>
-                      <option>{{ t("roomDetail.adult3") }}</option>
-                      <option>{{ t("roomDetail.adult4") }}</option>
+                      <option v-for="n in room.guests || 2" :key="n" :value="n">
+                        {{ n }} {{ n === 1 ? "Adult" : "Adults" }}
+                      </option>
                     </select>
                     <span
                       class="absolute right-4 top-4 text-(--color-muted) pointer-events-none text-[8px]"
@@ -432,9 +487,11 @@ onMounted(fetchRoom);
                   </div>
                 </div>
 
+                <!-- ✅ Remove the duplicate date inputs below - delete these -->
                 <!-- CTA Button -->
                 <button
-                  type="submit"
+                  type="button"
+                  @click="goToBooking"
                   class="w-full mt-2 bg-(--color-primary) hover:bg-(--color-primary-strong) text-white font-black text-xs py-4 rounded-xl shadow-xl transition-all duration-300 tracking-widest uppercase cursor-pointer"
                 >
                   {{ t("roomDetail.confirmReservation") }}

@@ -2,10 +2,12 @@ import { roomApi } from "@/modules/rooms/api/room.api";
 
 export const roomService = {
   async getMyRooms(propertyId = null) {
-    return res.data; // { success, message, data: [...] }
+    const res = await roomApi.getMyRooms(propertyId); // ✅ missing this
+    return res.data;
   },
 
   async createRoom(propertyId, roomData) {
+    const res = await roomApi.createRoom(propertyId, roomData); // ✅ missing this
     return res.data;
   },
 
@@ -20,6 +22,7 @@ export const roomService = {
   },
 
   async uploadRoomImages(roomId, formData) {
+    const res = await roomApi.uploadRoomImages(roomId, formData); // ✅ missing this
     return res.data;
   },
 

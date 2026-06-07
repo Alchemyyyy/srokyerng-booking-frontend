@@ -22,18 +22,47 @@ const normalizeImages = (item) => {
 };
 
 const normalizeProperty = (item, index, fallbackImage) => {
-  const images = normalizeImages(item);
+  // ✅ Build full image URLs from images array
+  const allImages = Array.isArray(item.images)
+    ? item.images
+        .map((img) => {
+          const url = typeof img === "string" ? img : img?.image_url || "";
+          return url
+            ? url.startsWith("http")
+              ? url
+              : `${BASE_URL}${url}`
+            : "";
+        })
+        .filter(Boolean)
+    : [];
 
-  // Get raw cover image
+  // Get cover image
+  const coverFromImages =
+    item.images?.find((i) => i.is_cover === 1)?.image_url ||
+    item.images?.[0]?.image_url;
+
   const rawCover =
-    item.cover_image || item.coverImage || item.image || images[0];
+    item.cover_image ||
+    item.coverImage ||
+    item.image_url ||
+    coverFromImages ||
+    allImages[0];
 
-  // Fix relative URLs by prepending BASE_URL
   const coverImage = rawCover
     ? rawCover.startsWith("http")
       ? rawCover
       : `${BASE_URL}${rawCover}`
     : fallbackImage;
+
+  // ✅ If less than 3 images, fill with coverImage
+  const imagesArray =
+    allImages.length > 0
+      ? [
+          allImages[0] || coverImage,
+          allImages[1] || coverImage,
+          allImages[2] || coverImage,
+        ]
+      : [coverImage, coverImage, coverImage];
 
   return {
     id: item.id ?? item.property_id ?? index + 1,
@@ -55,14 +84,14 @@ const normalizeProperty = (item, index, fallbackImage) => {
     rooms: item.rooms ?? item.room_count ?? 0,
     bookings: item.bookings ?? item.booking_count ?? 0,
     revenue: item.revenue ?? 0,
-    image: coverImage, // ← now has full URL
+    image: coverImage,
     description:
       item.description ||
       item.short_description ||
       item.address ||
       "Approved property",
     raw: item,
-    images: coverImage,
+    images: imagesArray, // ✅ now an array of 3 images
   };
 };
 
@@ -85,6 +114,7 @@ export const usePropertyStore = defineStore("properties", () => {
     try {
       const response = await propertyApi.getAllApprovedProperties(params);
       const items = Array.isArray(response) ? response : response?.data || [];
+      console.log("First property raw:", JSON.stringify(items[0])); // 👈 add this
       properties.value = items.map((item, index) =>
         normalizeProperty(item, index, fallbackImage),
       );
