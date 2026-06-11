@@ -78,7 +78,13 @@ const normalizeProperty = (item, index, fallbackImage) => {
     )
       .trim()
       .toLowerCase(),
-    price: Number(item.price ?? item.nightly_price ?? item.base_price ?? 0),
+    price: Number(
+      item.price_per_night ??
+        item.price ??
+        item.nightly_price ??
+        item.base_price ??
+        0,
+    ),
     rating: Number(item.rating ?? item.average_rating ?? 4.8),
     reviews: Number(item.reviews ?? item.review_count ?? 0),
     rooms: item.rooms ?? item.room_count ?? 0,

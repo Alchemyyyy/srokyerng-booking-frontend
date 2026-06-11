@@ -1,5 +1,9 @@
 <template>
-  <div class="amenity-page">
+  <div
+    class="amenity-page"
+    :class="isSidebarOpen ? 'ml-64' : 'ml-20'"
+    :style="{ marginLeft: isMobile ? '0' : undefined }"
+  >
     <!-- HEADER -->
     <div class="page-header">
       <div class="header-inner">
@@ -287,6 +291,8 @@ import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
 import AmenitySelector from "../components/AmenitySelector.vue";
+import { useSidebar } from "@/shared/composables/useSidebar";
+
 import {
   getAllAmenities,
   getPropertyAmenities,
@@ -308,6 +314,7 @@ const saveSuccess = ref(false);
 const viewMode = ref("catalogue");
 const myProperties = ref([]);
 const loadingProperties = ref(false);
+const { isSidebarOpen } = useSidebar();
 
 const editModal = ref({
   open: false,
@@ -535,11 +542,11 @@ const chipMeta = {
   `,
   },
 
-"Air Conditioning": {
-  color: "#64748b",
-  bg: "#f8fafc",
-  border: "#e2e8f0",
-  svg: `
+  "Air Conditioning": {
+    color: "#64748b",
+    bg: "#f8fafc",
+    border: "#e2e8f0",
+    svg: `
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M12 2v20"/>
       <path d="M4.93 6.93l14.14 14.14"/>
@@ -547,7 +554,7 @@ const chipMeta = {
       <path d="M4.93 17.07 19.07 2.93"/>
     </svg>
   `,
-},
+  },
 };
 
 const defaultChip = {
@@ -720,7 +727,7 @@ watch(
    PAGE
 ========================================================= */
 
-.amenity-page {
+/* .amenity-page {
   width: calc(100% + 80px);
   margin-left: -40px;
   margin-right: -40px;
@@ -730,6 +737,45 @@ watch(
   transition:
     background 0.25s ease,
     color 0.25s ease;
+} */
+.amenity-page {
+  min-height: 100vh;
+  background: var(--color-page);
+  color: var(--color-text);
+  transition:
+    background 0.25s ease,
+    color 0.25s ease;
+}
+
+.page-header {
+  width: 100%;
+  background: linear-gradient(135deg, #021b3a, #0a4d8c, #38bdf8);
+  padding: 34px 40px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    padding: 24px 16px;
+  }
+  .page-body {
+    padding: 20px 16px 90px;
+  }
+  .page-title {
+    font-size: 28px;
+    margin-top: 8px;
+  }
+  .header-btn {
+    margin-top: 8px;
+    min-width: 100px;
+  }
+  .header-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .header-actions {
+    width: 100%;
+  }
 }
 
 /* =========================================================

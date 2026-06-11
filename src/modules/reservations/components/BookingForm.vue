@@ -2,6 +2,13 @@
 import { ref, computed } from "vue";
 import AppButton from "@/shared/components/AppButton.vue";
 import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
+const paymentMethod = ref("card");
+
+const receiptFile = ref(null);
+
+const handleReceiptUpload = (e) => {
+  receiptFile.value = e.target.files[0] || null;
+};
 
 const props = defineProps({
   room: { type: Object, default: null },
@@ -29,10 +36,7 @@ const form = ref({
   selectedAddons: [],
 });
 
-const steps = [
-  { id: 1, label: "Guest Info" },
-  { id: 2, label: "Payment" },
-];
+const steps = [{ id: 1, label: "Guest Info" }];
 
 const validateStep1 = () => {
   const errors = {};
@@ -209,110 +213,11 @@ const handleSubmit = () => {
           variant="primary"
           size="lg"
           class="mt-8 w-full"
-          @click="goToStep2"
+          :loading="isSubmitting"
+          @click="handleSubmit"
         >
-          Continue to Payment →
+          Confirm Booking →
         </AppButton>
-      </div>
-    </Transition>
-
-    <!-- Step 2: Payment -->
-    <Transition name="slide-fade" mode="out-in">
-      <div
-        v-if="currentStep === 2"
-        key="step2"
-        class="bg-(--color-surface) border border-(--color-border) rounded-3xl p-8 shadow-sm"
-      >
-        <div class="flex items-center justify-between mb-6">
-          <div>
-            <h2 class="text-lg font-black text-(--color-text)">
-              Payment Details
-            </h2>
-            <p class="text-xs text-(--color-muted) mt-0.5">
-              Your transaction is secured with SSL encryption.
-            </p>
-          </div>
-          <span
-            class="text-[10px] font-black uppercase text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full tracking-wider"
-          >
-            🔒 Secure
-          </span>
-        </div>
-
-        <div class="space-y-4">
-          <div class="space-y-1.5">
-            <label
-              class="block text-[11px] font-bold text-(--color-muted) uppercase tracking-wider"
-              >Cardholder Name</label
-            >
-            <input
-              type="text"
-              placeholder="JOHN DOE"
-              class="w-full border border-(--color-border) bg-(--color-surface-soft) focus:border-(--color-primary) rounded-xl px-4 py-3 text-sm outline-none font-bold text-(--color-text) uppercase tracking-wide transition-all"
-            />
-          </div>
-          <div class="space-y-1.5">
-            <label
-              class="block text-[11px] font-bold text-(--color-muted) uppercase tracking-wider"
-              >Card Number</label
-            >
-            <div class="relative">
-              <input
-                type="text"
-                placeholder="•••• •••• •••• ••••"
-                class="w-full border border-(--color-border) bg-(--color-surface-soft) focus:border-(--color-primary) rounded-xl px-4 py-3 text-sm outline-none font-bold text-(--color-text) tracking-widest transition-all"
-              />
-              <span
-                class="absolute right-4 top-1/2 -translate-y-1/2 text-[11px] font-black text-(--color-muted)"
-                >VISA</span
-              >
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-1.5">
-              <label
-                class="block text-[11px] font-bold text-(--color-muted) uppercase tracking-wider"
-                >Expiry</label
-              >
-              <input
-                type="text"
-                placeholder="MM / YY"
-                class="w-full border border-(--color-border) bg-(--color-surface-soft) focus:border-(--color-primary) rounded-xl px-4 py-3 text-sm outline-none font-bold text-(--color-text) text-center tracking-widest transition-all"
-              />
-            </div>
-            <div class="space-y-1.5">
-              <label
-                class="block text-[11px] font-bold text-(--color-muted) uppercase tracking-wider"
-                >CVV</label
-              >
-              <input
-                type="password"
-                placeholder="•••"
-                class="w-full border border-(--color-border) bg-(--color-surface-soft) focus:border-(--color-primary) rounded-xl px-4 py-3 text-sm outline-none font-bold text-(--color-text) text-center tracking-widest transition-all"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div class="flex gap-3 mt-8">
-          <AppButton
-            variant="secondary"
-            size="lg"
-            class="w-1/3"
-            @click="currentStep = 1"
-          >
-            <ArrowLeftIcon class="w-4 h-4" /> Back
-          </AppButton>
-          <AppButton
-            variant="primary"
-            size="lg"
-            class="w-2/3"
-            :loading="isSubmitting"
-            @click="handleSubmit"
-          >
-            Pay ${{ calculatedTotal }}
-          </AppButton>
-        </div>
       </div>
     </Transition>
   </div>

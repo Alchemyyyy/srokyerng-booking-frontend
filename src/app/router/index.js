@@ -15,7 +15,10 @@ import { reservationRoutes } from "@/modules/reservations/routes";
 import { staticRoutes } from "@/modules/static/routes";
 import { ROLES } from "@/shared/constants/roles";
 import { reviewRoutes } from "@/modules/reviews/routes";
-import { adminAnalyticsRoutes, ownerAnalyticsRoutes } from "@/modules/analytics/routes";
+import {
+  adminAnalyticsRoutes,
+  ownerAnalyticsRoutes,
+} from "@/modules/analytics/routes";
 import { chatRoutes } from "@/modules/chats/routes";
 import { notificationRoutes } from "@/modules/notifications/routes";
 import {

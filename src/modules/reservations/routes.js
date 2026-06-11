@@ -3,6 +3,8 @@ import { ROLES } from "@/shared/constants/roles";
 import BookingHistoryView from "./pages/BookingHistoryView.vue";
 import BookingDetailView from "./pages/BookingDetailView.vue";
 import BookingCreateView from "./pages/BookingCreateView.vue";
+import PaymentDetailView from "@/modules/payments/pages/PaymentDetailView.vue";
+import PaymentUploadView from "@/modules/payments/pages/PaymentUploadView.vue";
 
 export const reservationRoutes = [
   {
@@ -35,5 +37,18 @@ export const reservationRoutes = [
     name: "room-book",
     component: BookingCreateView,
     meta: { requiresAuth: true, roles: [ROLES.CUSTOMER] },
+  },
+  // ─── Payment routes ───────────────────────────────────────────────
+  {
+    path: "payments/:paymentId", // ✅ removed leading slash
+    name: "payment-detail",
+    component: PaymentDetailView,
+    meta: { requiresAuth: true, roles: [ROLES.CUSTOMER] },
+  },
+  {
+    path: "payments/:paymentId/upload", // ✅ removed leading slash
+    name: "payment-upload",
+    component: PaymentUploadView,
+    meta: { requiresAuth: true, navbarSolid: true, roles: [ROLES.CUSTOMER] }, // ✅ added auth
   },
 ];

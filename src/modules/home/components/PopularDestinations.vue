@@ -2,48 +2,60 @@
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { computed } from "vue";
+import { usePropertyStore } from "@/modules/properties/store/propertyStore";
+import { onMounted } from "vue";
+
+const propertyStore = usePropertyStore();
 
 const { t, locale } = useI18n({ useScope: "global" });
 const router = useRouter();
+
+onMounted(() => {
+  propertyStore.fetchApprovedProperties().catch(() => {});
+});
+
+const getPropertyCountByCity = (cityName) =>
+  propertyStore.approvedProperties.filter(
+    (p) => p.location?.toLowerCase() === cityName.toLowerCase(),
+  ).length;
 
 const destinations = computed(() => [
   {
     key: "phnomPenh",
     name: t("home.destinations.cities.phnomPenh"),
-    properties: 142,
+    properties: getPropertyCountByCity("Phnom Penh"),
     image:
-      "https://images.unsplash.com/photo-1567339854603-c073327e2595?w=800&auto=format&fit=crop",
+      "https://blog.bangkokair.com/wp-content/uploads/2025/01/Cover_phnom-penh-travel-guide.jpg",
   },
   {
     key: "siemReap",
     name: t("home.destinations.cities.siemReap"),
-    properties: 98,
+    properties: getPropertyCountByCity("Siem Reap"),
     image:
-      "https://images.unsplash.com/photo-1600101960742-a0d60a7cb9ae?w=800&auto=format&fit=crop",
+      "https://rootsabroadtravel.com/wp-content/uploads/2024/03/Wonderful-Things-to-Do-in-Siem-Reap-Cambodia-Beyond-Angkor-Wat-1170x600.jpg",
   },
   {
     key: "sihanoukville",
     name: t("home.destinations.cities.sihanoukville"),
-    properties: 76,
+    properties: getPropertyCountByCity("Sihanoukville"),
     image:
-      "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=800&auto=format&fit=crop",
+      "https://images.trvl-media.com/place/6197589/abd88488-ab47-4926-8fbd-b8561fff1dbf.jpg",
   },
   {
     key: "kampot",
     name: t("home.destinations.cities.kampot"),
-    properties: 54,
+    properties: getPropertyCountByCity("Kampot"),
     image:
-      "https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=800&auto=format&fit=crop",
+      "https://d34vm3j4h7f97z.cloudfront.net/original/4X/8/1/e/81e31f6817402c4a711d09891d53515e0ada2571.jpeg",
   },
   {
     key: "battambang",
     name: t("home.destinations.cities.battambang"),
-    properties: 41,
+    properties: getPropertyCountByCity("Battambang"),
     image:
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&fit=crop",
+      "https://www.remotelands.com/storage/media/4115/conversions/b160729017-banner-size.jpg",
   },
 ]);
-
 const goToCity = (city) => {
   router.push({ name: "public.properties", query: { city: city.name } });
 };
