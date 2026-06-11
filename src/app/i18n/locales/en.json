@@ -946,6 +946,13 @@
       "count": "1,284 reviews",
       "writeReview": "Write a Review"
     },
+    "ratingLabel": {
+      "poor": "Poor",
+      "fair": "Fair",
+      "good": "Good",
+      "veryGood": "Very Good",
+      "excellent": "Excellent"
+      },
     "form": {
       "title": "Share Your Experience",
       "subtitle": "Your honest review helps other guests make informed decisions.",
@@ -1144,6 +1151,67 @@
         "totalRevenue": "Total Revenue",
         "avgRating": "Avg Rating"
       }
+    }
+  },
+  "reviewManagement": {
+    "hero": {
+      "eyebrow": "Your Review History",
+      "title": "Every stay,<br />your voice.",
+      "subtitle": "Manage your reviews, edit your thoughts, and help future travelers make great choices.",
+      "writeReview": "Write a Review",
+      "totalReviews": "Total Reviews",
+      "avgRating": "Avg Rating",
+      "readyToReview": "Ready to Review"
+    },
+    "filter": {
+      "searchPlaceholder": "Search reviews...",
+      "sortRecent": "Most Recent",
+      "sortHighest": "Highest Rated",
+      "sortLowest": "Lowest Rated",
+      "tabAll": "All",
+      "tab4plus": "4+ Stars",
+      "tabReplied": "Owner Replied"
+    },
+    "state": {
+      "loading": "Loading your reviews…",
+      "errorTitle": "Failed to load reviews",
+      "errorFallback": "Something went wrong",
+      "tryAgain": "Try again",
+      "emptyTitle": "No reviews yet",
+      "emptySub": "Share your experience from a completed stay.",
+      "writeFirst": "Write your first review"
+    },
+    "card": {
+      "room": "Room",
+      "to": "to",
+      "propertyResponse": "Property Response",
+      "edit": "Edit",
+      "delete": "Delete",
+      "defaultProperty": "Property"
+    },
+    "sidebar": {
+      "yourStats": "Your Stats",
+      "reviews": "Reviews",
+      "avgRating": "Avg Rating",
+      "completedStays": "Completed Stays",
+      "ctaTitle": "Share your experience",
+      "ctaSub": "Your honest review helps other travelers pick the right stay."
+    },
+    "editModal": {
+      "title": "Edit Review",
+      "ratingLabel": "Rating",
+      "commentLabel": "Comment",
+      "commentPlaceholder": "Share your experience...",
+      "saving": "Saving…",
+      "saveChanges": "Save Changes",
+      "saveFailed": "Failed to update review"
+    },
+    "deleteModal": {
+      "title": "Delete Review",
+      "body": "This will permanently delete your review. This action cannot be undone.",
+      "deleting": "Deleting…",
+      "confirm": "Delete Review",
+      "deleteFailed": "Failed to delete review"
     }
   }
 }

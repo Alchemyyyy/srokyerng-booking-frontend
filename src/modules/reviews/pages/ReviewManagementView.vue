@@ -1,1167 +1,1196 @@
 <template>
-  <div class="review-management">
+  <div class="rm-page">
+    <PublicNavbar />
 
     <!-- ── HERO ── -->
-    <section class="hero">
-      
-      <div class="hero-overlay" />
-      <div class="container">
-        <nav class="breadcrumb">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-            <polyline points="9 22 9 12 15 12 15 22"/>
-          </svg>
-          <span class="breadcrumb-link" @click="router.back()">Stays</span>
-          <span class="sep">›</span>
-          <span>Grand Palace Hotel</span>
-          <span class="sep">›</span>
-          <span class="active-crumb">Reviews</span>
-        </nav>
-
-        <h1 class="hero-title">Guest Reviews &amp; Experience</h1>
-        <p class="hero-sub">Real stories from real guests who have stayed and loved their experience.</p>
-
-        <div class="hero-badge-row">
-          <!-- Glassmorphism rating card -->
-          <div class="glass-card">
-            <div class="glass-star">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="#f59e0b">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-              </svg>
+    <section class="rm-hero">
+      <img class="rm-hero-img" src="../../../assets/images/reviews/banner/BannerReview.png" alt="banner" />
+      <div class="rm-hero-overlay" />
+      <div class="rm-container">
+        <div class="rm-hero-inner">
+          <div class="rm-hero-left">
+            <!-- <p class="rm-eyebrow">{{ $t('reviewManagement.hero.eyebrow') }}</p> -->
+            <h1 class="rm-hero-title" v-html="$t('reviewManagement.hero.title')"></h1>
+            <p class="rm-hero-sub">{{ $t('reviewManagement.hero.subtitle') }}</p>
+            <div class="rm-hero-actions">
+              <button class="rm-btn-primary" @click="goToWriteReview">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                {{ $t('reviewManagement.hero.writeReview') }}
+              </button>
             </div>
-            <span class="glass-score">4.9</span>
-            <span class="glass-label">Exceptional</span>
-            <span class="glass-count">1,284 reviews</span>
           </div>
-
-          <button class="btn-write-review" @click="goToWriteReview">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-            </svg>
-            Write a Review
-          </button>
+          <div class="rm-hero-stats">
+            <div class="rm-stat-pill">
+              <span class="rm-stat-num">{{ totalReviews }}</span>
+              <span class="rm-stat-label">{{ $t('reviewManagement.hero.totalReviews') }}</span>
+            </div>
+            <div class="rm-stat-pill">
+              <span class="rm-stat-num">{{ avgRating }}</span>
+              <span class="rm-stat-label">{{ $t('reviewManagement.hero.avgRating') }}</span>
+            </div>
+            <div class="rm-stat-pill">
+              <span class="rm-stat-num">{{ pendingReviews }}</span>
+              <span class="rm-stat-label">{{ $t('reviewManagement.hero.readyToReview') }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- ── FILTER TABS ── -->
-    <div class="tabs-bar">
-      <div class="container tabs-inner">
-        <div class="tabs">
+    <!-- ── FILTER STRIP ── -->
+    <div class="rm-filter-strip">
+      <div class="rm-container rm-filter-inner">
+        <div class="rm-tabs">
           <button
             v-for="tab in filterTabs"
             :key="tab.key"
-            class="tab-btn"
+            class="rm-tab"
             :class="{ active: activeTab === tab.key }"
             @click="activeTab = tab.key"
-          >
-            {{ tab.label }}
+          >{{ tab.label }}</button>
+        </div>
+        <div class="rm-filter-right">
+          <div class="rm-search-wrap">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input v-model="searchQuery" type="text" :placeholder="$t('reviewManagement.filter.searchPlaceholder')" class="rm-search" />
+          </div>
+          <select v-model="sortBy" class="rm-select">
+            <option value="recent">{{ $t('reviewManagement.filter.sortRecent') }}</option>
+            <option value="highest">{{ $t('reviewManagement.filter.sortHighest') }}</option>
+            <option value="lowest">{{ $t('reviewManagement.filter.sortLowest') }}</option>
+          </select>
+          <button class="rm-refresh-btn" @click="fetchMyReviews" title="Refresh">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
           </button>
         </div>
-        <select v-model="sortBy" class="sort-select">
-          <option value="recent">Most Recent</option>
-          <option value="highest">Highest Rated</option>
-          <option value="lowest">Lowest Rated</option>
-        </select>
       </div>
     </div>
 
-    <!-- ── MAIN CONTENT ── -->
-    <div class="container main-layout">
+    <!-- ── MAIN LAYOUT ── -->
+    <div class="rm-container rm-main">
 
-      <!-- LEFT: Reviews -->
-      <div class="reviews-col">
+      <!-- LEFT: review cards -->
+      <div class="rm-cards-col">
 
-        <!-- Stats Row (below tabs on mobile) -->
-        <div class="stats-row mobile-stats">
-          <StatsPanel
-            :breakdown="breakdown"
-            :lovedCategories="lovedCategories"
-            :overall="4.9"
-            :totalReviews="1284"
-            @write-review="goToWriteReview"
-          />
+        <!-- Loading -->
+        <div v-if="loading" class="rm-loading">
+          <div class="rm-spinner"></div>
+          <p>{{ $t('reviewManagement.state.loading') }}</p>
         </div>
 
-        <!-- Search + Filters -->
-        <div class="filter-bar">
-          <div class="search-wrap">
-            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search reviews..."
-              class="search-input"
-            />
-          </div>
+        <!-- Error -->
+        <div v-else-if="error" class="rm-empty">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <p class="rm-empty-title">{{ $t('reviewManagement.state.errorTitle') }}</p>
+          <p class="rm-empty-sub">{{ error }}</p>
+          <button class="rm-btn-outline" @click="fetchMyReviews">{{ $t('reviewManagement.state.tryAgain') }}</button>
+        </div>
 
-          <select v-model="filterRating" class="filter-select">
-            <option value="">All Ratings</option>
-            <option value="5">5 Stars</option>
-            <option value="4">4 Stars</option>
-            <option value="3">3 Stars</option>
-          </select>
-
-          <select v-model="filterType" class="filter-select">
-            <option value="">All Travelers</option>
-            <option value="Couple">Couple</option>
-            <option value="Family">Family</option>
-            <option value="Solo Traveler">Solo Traveler</option>
-            <option value="Business">Business</option>
-          </select>
-
-          <select v-model="filterLang" class="filter-select">
-            <option value="">All Languages</option>
-            <option value="en">English</option>
-            <option value="fr">French</option>
-          </select>
-
-          <button class="btn-filter">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/>
-              <line x1="10" y1="18" x2="14" y2="18"/>
-            </svg>
-            Filter
-          </button>
+        <!-- Empty -->
+        <div v-else-if="filteredReviews.length === 0" class="rm-empty">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <p class="rm-empty-title">{{ $t('reviewManagement.state.emptyTitle') }}</p>
+          <p class="rm-empty-sub">{{ $t('reviewManagement.state.emptySub') }}</p>
+          <button class="rm-btn-outline" @click="goToWriteReview">{{ $t('reviewManagement.state.writeFirst') }}</button>
         </div>
 
         <!-- Review Cards -->
-        <template v-if="filteredReviews.length > 0">
-          <ReviewCard
+        <template v-else>
+          <div
             v-for="review in filteredReviews"
             :key="review.id"
-            :review="review"
-          />
-        </template>
-        <div v-else class="empty-state">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5">
-            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-          <p>No reviews match your search.</p>
-        </div>
+            class="rm-card"
+          >
+            <!-- Card header -->
+            <div class="rm-card-header">
+              <div class="rm-card-meta">
+                <span class="rm-res-badge">#RES-{{ review.reservation_id }}</span>
+                <span class="rm-property-name">{{ review.property_name || 'Property' }}</span>
+              </div>
+              <div class="rm-card-rating">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <span>{{ review.rating?.toFixed(1) }}</span>
+              </div>
+            </div>
 
-        <!-- Load More -->
-        <button class="btn-load-more" @click="loadMore">
-          Load More Reviews
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
-        </button>
+            <!-- Room + dates -->
+            <div class="rm-card-sub">
+              {{ review.room_name || $t('reviewManagement.card.room') }} &middot;
+              {{ formatDate(review.check_in_date) }} {{ $t('reviewManagement.card.to') }} {{ formatDate(review.check_out_date) }}
+            </div>
+
+            <!-- Stars + date -->
+            <div class="rm-stars-row">
+              <RatingStars :model-value="review.rating" readonly size="sm" />
+              <span class="rm-rating-label">{{ ratingLabel(review.rating) }}</span>
+              <span class="rm-date">{{ formatDate(review.created_at) }}</span>
+            </div>
+
+            <!-- Comment -->
+            <p class="rm-comment">{{ review.comment }}</p>
+
+            <!-- Owner reply -->
+            <div v-if="review.owner_reply" class="rm-owner-reply">
+              <div class="rm-reply-header">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                {{ $t('reviewManagement.card.propertyResponse') }}
+              </div>
+              <p class="rm-reply-text">{{ review.owner_reply }}</p>
+            </div>
+
+            <!-- Actions -->
+            <div class="rm-card-actions">
+              <button class="rm-btn-edit" @click="openEdit(review)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                {{ $t('reviewManagement.card.edit') }}
+              </button>
+              <button class="rm-btn-delete" @click="confirmDelete(review)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                {{ $t('reviewManagement.card.delete') }}
+              </button>
+            </div>
+          </div>
+        </template>
       </div>
 
-      <!-- RIGHT: Sidebar -->
-      <aside class="sidebar-col">
-        <StatsPanel
-          :breakdown="breakdown"
-          :lovedCategories="lovedCategories"
-          :overall="4.9"
-          :totalReviews="1284"
-          @write-review="goToWriteReview"
-        />
+      <!-- RIGHT: sidebar -->
+      <aside class="rm-sidebar">
+
+        <!-- Stats card -->
+        <div class="rm-side-card">
+          <h4 class="rm-side-title">{{ $t('reviewManagement.sidebar.yourStats') }}</h4>
+          <div class="rm-side-stats">
+            <div class="rm-side-stat">
+              <span class="rm-side-stat-num">{{ totalReviews }}</span>
+              <span class="rm-side-stat-label">{{ $t('reviewManagement.sidebar.reviews') }}</span>
+            </div>
+            <div class="rm-side-stat">
+              <span class="rm-side-stat-num">{{ avgRating }}</span>
+              <span class="rm-side-stat-label">{{ $t('reviewManagement.sidebar.avgRating') }}</span>
+            </div>
+          </div>
+          <!-- Breakdown -->
+          <div class="rm-breakdown">
+            <div v-for="n in [5,4,3,2,1]" :key="n" class="rm-bar-row">
+              <span class="rm-bar-label">{{ n }}</span>
+              <div class="rm-bar-track">
+                <div class="rm-bar-fill" :style="{ width: getBreakdownPct(n) + '%' }"></div>
+              </div>
+              <span class="rm-bar-count">{{ getBreakdownCount(n) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Completed stays waiting for review -->
+        <div class="rm-side-card" v-if="pendingReviews > 0">
+          <h4 class="rm-side-title">{{ $t('reviewManagement.sidebar.completedStays') }}</h4>
+          <div v-for="stay in completedStays" :key="stay.id" class="rm-stay-item" @click="router.push(`/customer/reservations/${stay.id}/review`)">
+            <div class="rm-stay-info">
+              <span class="rm-stay-name">{{ stay.property_name || $t('reviewManagement.card.defaultProperty') }}</span>
+              <span class="rm-stay-date">{{ formatDate(stay.check_out_date) }} &middot; #RES-{{ stay.id }}</span>
+            </div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        </div>
+
+        <!-- Write review CTA -->
+        <div class="rm-side-card rm-cta-card">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          <h4>{{ $t('reviewManagement.sidebar.ctaTitle') }}</h4>
+          <p>{{ $t('reviewManagement.sidebar.ctaSub') }}</p>
+          <button class="rm-btn-primary rm-cta-btn" @click="goToWriteReview">{{ $t('reviewManagement.hero.writeReview') }}</button>
+        </div>
+
       </aside>
     </div>
 
-    <!-- ── CTA FOOTER BANNER ── -->
-    <section class="cta-banner">
-      <div class="container cta-inner">
-        <div class="cta-icon">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-            <polyline points="9 22 9 12 15 12 15 22"/>
-          </svg>
+    <!-- ── EDIT MODAL ── -->
+    <teleport to="body">
+      <div v-if="editingReview" class="rm-modal-backdrop" @click.self="closeEdit">
+        <div class="rm-modal">
+          <div class="rm-modal-header">
+            <h3>{{ $t('reviewManagement.editModal.title') }}</h3>
+            <button class="rm-modal-close" @click="closeEdit">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="rm-modal-body">
+            <label class="rm-label">{{ $t('reviewManagement.editModal.ratingLabel') }}</label>
+            <RatingStars v-model="editForm.rating" size="lg" />
+            <label class="rm-label" style="margin-top:20px">{{ $t('reviewManagement.editModal.commentLabel') }}</label>
+            <textarea
+              v-model="editForm.comment"
+              class="rm-textarea"
+              rows="5"
+              :placeholder="$t('reviewManagement.editModal.commentPlaceholder')"
+              maxlength="500"
+            ></textarea>
+            <span class="rm-char-count">{{ editForm.comment.length }}/500</span>
+          </div>
+          <div class="rm-modal-footer">
+            <button class="rm-btn-outline" @click="closeEdit">{{ $t('common.cancel') }}</button>
+            <button class="rm-btn-primary" :disabled="saving" @click="saveEdit">
+              {{ saving ? $t('reviewManagement.editModal.saving') : $t('reviewManagement.editModal.saveChanges') }}
+            </button>
+          </div>
         </div>
-        <div class="cta-text">
-          <h3>Join thousands of happy travelers</h3>
-          <p>Book your next stay and create your own memorable experience.</p>
-        </div>
-        <button class="btn-cta">Explore Stays</button>
       </div>
-    </section>
+    </teleport>
+
+    <!-- ── DELETE CONFIRM ── -->
+    <teleport to="body">
+      <div v-if="deletingReview" class="rm-modal-backdrop" @click.self="cancelDelete">
+        <div class="rm-modal rm-modal-sm">
+          <div class="rm-modal-header">
+            <h3>{{ $t('reviewManagement.deleteModal.title') }}</h3>
+            <button class="rm-modal-close" @click="cancelDelete">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="rm-modal-body">
+            <p style="color:var(--rm-text-muted);margin:0">{{ $t('reviewManagement.deleteModal.body') }}</p>
+          </div>
+          <div class="rm-modal-footer">
+            <button class="rm-btn-outline" @click="cancelDelete">{{ $t('common.cancel') }}</button>
+            <button class="rm-btn-danger" :disabled="deleting" @click="doDelete">
+              {{ deleting ? $t('reviewManagement.deleteModal.deleting') : $t('reviewManagement.deleteModal.confirm') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
+
+    <PublicFooter />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, defineComponent } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import ReviewCard from '../components/ReviewCard.vue'
+import { useI18n } from 'vue-i18n'
 import RatingStars from '../components/RatingStars.vue'
 import reviewService from '../services/reviewService.js'
+import PublicNavbar from '@/shared/components/PublicNavbar.vue'
+import PublicFooter from '@/shared/components/PublicFooter.vue'
 
-// ── Inline StatsPanel sub-component to keep architecture clean ──
-const StatsPanel = defineComponent({
-  name: 'StatsPanel',
-  props: {
-    breakdown: Array,
-    lovedCategories: Array,
-    overall: Number,
-    totalReviews: Number
-  },
-  emits: ['write-review'],
-  components: { RatingStars },
-  template: `
-    <div class="stats-panel">
-      <!-- Overall Rating -->
-      <div class="stat-card">
-        <h4 class="stat-card-title">Overall Rating</h4>
-        <div class="big-score">{{ overall }}<span class="score-denom">/5</span></div>
-        <RatingStars :model-value="overall" readonly size="md" />
-        <div class="exceptional-label">Exceptional</div>
-        <div class="based-on">Based on {{ totalReviews.toLocaleString() }} reviews</div>
-      </div>
-
-      <!-- Rating Breakdown -->
-      <div class="stat-card">
-        <h4 class="stat-card-title">Rating Breakdown</h4>
-        <div v-for="item in breakdown" :key="item.stars" class="breakdown-row">
-          <span class="star-label">{{ item.stars }} Stars</span>
-          <div class="bar-track">
-            <div class="bar-fill" :style="{ width: item.percent + '%' }"></div>
-          </div>
-          <span class="pct-label">{{ item.percent }}%</span>
-        </div>
-      </div>
-
-      <!-- What guests loved most -->
-      <div class="stat-card">
-        <h4 class="stat-card-title">What guests loved most</h4>
-        <div v-for="cat in lovedCategories" :key="cat.name" class="cat-row">
-          <div class="cat-icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-          </div>
-          <span class="cat-name">{{ cat.name }}</span>
-          <span class="cat-score">{{ cat.score }}</span>
-        </div>
-        <button class="see-all-link">See all categories →</button>
-      </div>
-
-      <!-- Share Your Experience -->
-      <div class="stat-card share-card">
-        <div class="share-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2">
-            <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-          </svg>
-        </div>
-        <h4>Share Your Experience</h4>
-        <p>Have you stayed at Grand Palace Hotel? We'd love to hear about your experience and help other travelers.</p>
-        <button class="btn-share-write" @click="$emit('write-review')">Write a Review</button>
-      </div>
-
-      <!-- Review Guidelines -->
-      <div class="stat-card guidelines-card">
-        <h4 class="stat-card-title">Review Guidelines</h4>
-        <div v-for="guide in guidelines" :key="guide.text" class="guide-row">
-          <div class="guide-icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2">
-              <path :d="guide.icon"/>
-            </svg>
-          </div>
-          <div>
-            <div class="guide-label">{{ guide.label }}</div>
-            <div class="guide-sub">{{ guide.text }}</div>
-          </div>
-        </div>
-        <a href="#" class="learn-more-link">Learn more →</a>
-      </div>
-
-      <!-- Need Help -->
-      <div class="stat-card help-card">
-        <div class="help-row">
-          <div>
-            <h5>Need Help?</h5>
-            <p>Our guest support team is here to assist you 24/7</p>
-          </div>
-          <div class="help-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.5">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.86a16 16 0 0 0 6 6l1.27-.94a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
-            </svg>
-          </div>
-        </div>
-        <a href="#" class="contact-support">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-          Contact Support
-        </a>
-      </div>
-    </div>
-  `,
-  setup() {
-    const guidelines = [
-      { label: 'Be honest and respectful', text: 'Share your genuine experience', icon: 'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z' },
-      { label: 'Focus on your stay', text: 'Comment on the property, service, and amenities', icon: 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' },
-      { label: 'Avoid personal details', text: "Do not share personal information about yourself or others", icon: 'M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24' },
-      { label: 'Photos are welcome', text: 'Add photos to help others see what to expect', icon: 'M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z' }
-    ]
-    return { guidelines }
-  }
-})
-
-// ── Main component logic ──
 const router = useRouter()
+const { t, locale } = useI18n()
 
+// ── State ──
+const reviews = ref([])
+const loading = ref(false)
+const error = ref(null)
 const activeTab = ref('all')
 const searchQuery = ref('')
-const filterRating = ref('')
-const filterType = ref('')
-const filterLang = ref('')
 const sortBy = ref('recent')
 
-const filterTabs = [
-  { key: 'all', label: 'All Reviews (1,284)' },
-  { key: 'photos', label: 'Photos (356)' },
-  { key: 'comments', label: 'With Comments (982)' },
-  { key: 'families', label: 'Families (420)' },
-  { key: 'couples', label: 'Couples (612)' },
-  { key: 'solo', label: 'Solo Travelers (252)' },
-]
+// Edit modal
+const editingReview = ref(null)
+const editForm = ref({ rating: 5, comment: '' })
+const saving = ref(false)
 
-const reviews = ref([])
+// Delete confirm
+const deletingReview = ref(null)
+const deleting = ref(false)
 
-const fetchReviews = async () => {
+// Fake completed stays for sidebar (replace with real API later)
+const completedStays = ref([])
+
+// ── Fetch ──
+const fetchMyReviews = async () => {
+  loading.value = true
+  error.value = null
   try {
-    const data = await reviewService.getReviews()
-    // Enrich mock data to match screenshot
-    reviews.value = [
-      {
-        id: 1,
-        user: { name: 'Jessica Parker', country: 'United States', type: 'Couple', avatar: 'JP' },
-        rating: 5.0,
-        date: '2 days ago',
-        nights: '2 nights',
-        stayDate: 'May 2024',
-        title: 'Absolutely unforgettable experience!',
-        content: 'From the moment we arrived, everything was perfect. The staff went above and beyond to make our stay special. The room was clean, spacious, and the view was breathtaking.',
-        image: 'https://picsum.photos/300/200?random=1',
-        imageCount: 4,
-        tags: ['Cleanliness', 'Service', 'Location', 'Comfort', 'Value']
-      },
-      {
-        id: 2,
-        user: { name: 'Daniel Kim', country: 'South Korea', type: 'Family', avatar: 'DK' },
-        rating: 5.0,
-        date: '1 week ago',
-        nights: '3 nights',
-        stayDate: 'May 2024',
-        title: 'Perfect for family vacation',
-        content: 'Our kids loved the pool and the breakfast buffet was amazing. Great location and very convenient. The room was spacious with wonderful views. We will come back for sure!',
-        image: 'https://picsum.photos/300/200?random=2',
-        imageCount: 6,
-        tags: ['Family Friendly', 'Service', 'Location']
-      },
-      {
-        id: 3,
-        user: { name: 'Sophie Martin', country: 'France', type: 'Solo Traveler', avatar: 'SM' },
-        rating: 4.8,
-        date: '2 weeks ago',
-        nights: '1 night',
-        stayDate: 'April 2024',
-        title: 'Beautiful hotel with great atmosphere',
-        content: 'The design and ambiance are stunning. My room was incredibly comfortable and the service was top-notch. Would definitely recommend to anyone visiting.',
-        image: 'https://picsum.photos/300/200?random=3',
-        imageCount: 3,
-        tags: ['Cleanliness', 'Service', 'Comfort', 'Design']
-      }
-    ]
-  } catch {
-    reviews.value = []
+    const data = await reviewService.getMyReviews()
+    reviews.value = Array.isArray(data) ? data : []
+  } catch (e) {
+    error.value = e?.message || t('reviewManagement.state.errorFallback')
+  } finally {
+    loading.value = false
   }
 }
 
-fetchReviews()
+onMounted(fetchMyReviews)
 
-const breakdown = ref([
-  { stars: 5, percent: 89 },
-  { stars: 4, percent: 8 },
-  { stars: 3, percent: 2 },
-  { stars: 2, percent: 1 },
-  { stars: 1, percent: 0 }
-])
+// ── Computed ──
+const totalReviews = computed(() => reviews.value.length)
 
-const lovedCategories = ref([
-  { name: 'Cleanliness', score: '4.9' },
-  { name: 'Service', score: '4.9' },
-  { name: 'Location', score: '4.8' },
-  { name: 'Value for money', score: '4.7' },
-  { name: 'Comfort', score: '4.8' }
+const avgRating = computed(() => {
+  if (!reviews.value.length) return '—'
+  const avg = reviews.value.reduce((s, r) => s + (r.rating || 0), 0) / reviews.value.length
+  return avg.toFixed(1)
+})
+
+const pendingReviews = computed(() => completedStays.value.length)
+
+const filterTabs = computed(() => [
+  { key: 'all', label: `${t('reviewManagement.filter.tabAll')} (${reviews.value.length})` },
+  { key: '4plus', label: t('reviewManagement.filter.tab4plus') },
+  { key: 'replied', label: t('reviewManagement.filter.tabReplied') },
 ])
 
 const filteredReviews = computed(() => {
   let list = [...reviews.value]
 
+  if (activeTab.value === '4plus') list = list.filter(r => r.rating >= 4)
+  if (activeTab.value === 'replied') list = list.filter(r => r.owner_reply)
+
   if (searchQuery.value.trim()) {
     const q = searchQuery.value.toLowerCase()
     list = list.filter(r =>
-      r.title.toLowerCase().includes(q) ||
-      r.content.toLowerCase().includes(q) ||
-      r.user.name.toLowerCase().includes(q)
+      r.comment?.toLowerCase().includes(q) ||
+      r.property_name?.toLowerCase().includes(q)
     )
   }
 
-  if (filterRating.value) {
-    list = list.filter(r => Math.floor(r.rating) === Number(filterRating.value))
-  }
-
-  if (filterType.value) {
-    list = list.filter(r => r.user.type === filterType.value)
-  }
-
-  if (activeTab.value === 'families') list = list.filter(r => r.user.type === 'Family')
-  if (activeTab.value === 'couples') list = list.filter(r => r.user.type === 'Couple')
-  if (activeTab.value === 'solo') list = list.filter(r => r.user.type === 'Solo Traveler')
+  if (sortBy.value === 'highest') list.sort((a, b) => b.rating - a.rating)
+  else if (sortBy.value === 'lowest') list.sort((a, b) => a.rating - b.rating)
+  else list.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
 
   return list
 })
 
-const goToWriteReview = () => {
-  router.push({ name: 'review-create', params: { reservationId: '0' } })
+const getBreakdownCount = (stars) => reviews.value.filter(r => Math.round(r.rating) === stars).length
+const getBreakdownPct = (stars) => {
+  if (!reviews.value.length) return 0
+  return Math.round((getBreakdownCount(stars) / reviews.value.length) * 100)
 }
 
-const loadMore = () => {
-  // Pagination placeholder
+// ── Helpers ──
+const formatDate = (dateStr) => {
+  if (!dateStr) return '—'
+  const loc = locale.value === 'km' ? 'km-KH' : 'en-US'
+  return new Date(dateStr).toLocaleDateString(loc, { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
+const ratingLabel = (r) => {
+  if (r >= 5) return t('reviewCreate.ratingLabel.excellent')
+  if (r >= 4) return t('reviewCreate.ratingLabel.veryGood')
+  if (r >= 3) return t('reviewCreate.ratingLabel.good')
+  if (r >= 2) return t('reviewCreate.ratingLabel.fair')
+  return t('reviewCreate.ratingLabel.poor')
+}
+
+const goToWriteReview = () => {
+  router.push('/customer/reservations/8/review')
+}
+
+// ── Edit ──
+const openEdit = (review) => {
+  editingReview.value = review
+  editForm.value = { rating: review.rating, comment: review.comment || '' }
+}
+
+const closeEdit = () => {
+  editingReview.value = null
+}
+
+const saveEdit = async () => {
+  saving.value = true
+  try {
+    await reviewService.updateReview(editingReview.value.id, {
+      rating: editForm.value.rating,
+      comment: editForm.value.comment,
+    })
+    const idx = reviews.value.findIndex(r => r.id === editingReview.value.id)
+    if (idx !== -1) {
+      reviews.value[idx] = { ...reviews.value[idx], ...editForm.value }
+    }
+    closeEdit()
+  } catch (e) {
+    alert(e?.message || t('reviewManagement.editModal.saveFailed'))
+  } finally {
+    saving.value = false
+  }
+}
+
+// ── Delete ──
+const confirmDelete = (review) => {
+  deletingReview.value = review
+}
+
+const cancelDelete = () => {
+  deletingReview.value = null
+}
+
+const doDelete = async () => {
+  deleting.value = true
+  try {
+    await reviewService.deleteReview(deletingReview.value.id)
+    reviews.value = reviews.value.filter(r => r.id !== deletingReview.value.id)
+    cancelDelete()
+  } catch (e) {
+    alert(e?.message || t('reviewManagement.deleteModal.deleteFailed'))
+  } finally {
+    deleting.value = false
+  }
 }
 </script>
 
 <style scoped>
-/* ── CSS Variables ── */
-.review-management {
-  background: var(--bg-page);
+
+.rm-page {
+  --rm-bg: var(--color-page);
+  --rm-card-bg: var(--color-surface);
+  --rm-border: var(--color-border);
+  --rm-text: var(--color-text);
+  --rm-text-muted: var(--color-muted);
+  --rm-text-faint: var(--color-muted);
+  --rm-primary: var(--color-primary);
+  --rm-primary-dark: var(--color-primary-strong);
+  --rm-danger: var(--color-danger);
+  --rm-hero-h: 320px;
+  background: var(--color-page);
   min-height: 100vh;
-  /* font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; */
+  font-family: var(--font-main);
 }
 
-/* ── HERO ── */
-.hero {
+/* ── Hero ── */
+.rm-hero {
   position: relative;
-  min-height: 340px;
-  /* background:
-    linear-gradient(to bottom, rgba(10, 15, 30, 0.68) 0%, rgba(10, 15, 30, 0.55) 100%),
-    url('https://images.unsplash.com/photo-1582719508461-905c673771fd?w=1920&q=80') center/cover no-repeat; */
+  min-height: var(--rm-hero-h);
   display: flex;
-  align-items: flex-end;
-  padding: 0 0 52px;
+  align-items: center;
+  overflow: hidden;
 }
 
-.hero-overlay {
+.rm-hero-img {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to right, rgba(10,15,35,0.6) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.container {
-  max-width: var(--max-w);
-  margin: 0 auto;
-  padding: 0 28px;
-  position: relative;
   width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 50%;
 }
 
-/* Breadcrumb */
-.breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: rgba(255,255,255,0.7);
-  font-size: 0.85rem;
-  margin-bottom: 18px;
+.rm-hero-bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(ellipse at 80% 50%, rgba(37,99,235,0.25) 0%, transparent 60%),
+    radial-gradient(ellipse at 20% 80%, rgba(99,102,241,0.15) 0%, transparent 50%);
 }
 
-.breadcrumb a,
-.breadcrumb-link {
-  color: rgba(255,255,255,0.8);
-  text-decoration: none;
-  cursor: pointer;
-  transition: color 0.15s;
+.rm-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
 
-.breadcrumb a:hover,
-.breadcrumb-link:hover { color: white; }
-
-.breadcrumb .sep { opacity: 0.5; }
-
-.breadcrumb .active-crumb { color: white; font-weight: 500; }
-
-/* Hero Text */
-.hero-title {
-  font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 800;
-  color: #fff;
-  line-height: 1.15;
-  margin: 0 0 12px;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  letter-spacing: -0.02em;
+.rm-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 32px;
+  width: 100%;
+  position: relative;
 }
 
-.hero-sub {
-  color: rgba(255,255,255,0.88);
-  font-size: 1.05rem;
-  max-width: 560px;
-  line-height: 1.55;
-  margin: 0 0 28px;
-}
-
-/* Hero Badge */
-.hero-badge-row {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.glass-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.22);
-  border-radius: 12px;
-  padding: 10px 20px;
-}
-
-.glass-star {
-  background: #f59e0b;
-  border-radius: 8px;
-  padding: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.glass-score {
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: white;
-}
-
-.glass-label {
-  color: rgba(255,255,255,0.9);
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-.glass-count {
-  color: rgba(255,255,255,0.65);
-  font-size: 0.85rem;
-  padding-left: 4px;
-  border-left: 1px solid rgba(255,255,255,0.3);
-  margin-left: 4px;
-}
-
-.btn-write-review {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 13px 26px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
-}
-
-.btn-write-review:hover {
-  background: var(--primary-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
-}
-
-/* ── TABS BAR ── */
-.tabs-bar {
-  background: white;
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-}
-
-.tabs-inner {
+.rm-hero-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.tabs-inner::-webkit-scrollbar { display: none; }
-
-.tabs {
-  display: flex;
-  gap: 0;
-}
-
-.tab-btn {
-  background: none;
-  border: none;
-  border-bottom: 3px solid transparent;
-  padding: 16px 20px;
-  font-size: 0.88rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: color 0.15s, border-color 0.15s;
-}
-
-.tab-btn:hover { color: var(--primary); }
-
-.tab-btn.active {
-  color: var(--primary);
-  border-bottom-color: var(--primary);
-  font-weight: 700;
-}
-
-.sort-select {
-  flex-shrink: 0;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 14px;
-  font-size: 0.85rem;
-  color: var(--text-body);
-  background: white;
-  cursor: pointer;
-  outline: none;
-  min-width: 140px;
-}
-
-/* ── MAIN LAYOUT ── */
-.main-layout {
-  display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 36px;
-  padding: 40px 28px;
-  max-width: var(--max-w);
-  margin: 0 auto;
-  align-items: start;
-}
-
-/* Hide mobile stats on desktop */
-.mobile-stats { display: none; }
-
-/* ── FILTER BAR ── */
-.filter-bar {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 28px;
+  gap: 40px;
+  padding: 60px 0;
   flex-wrap: wrap;
-  align-items: center;
 }
 
-.search-wrap {
-  flex: 1;
-  min-width: 220px;
-  position: relative;
+.rm-eyebrow {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #60a5fa;
+  margin: 0 0 14px;
 }
 
-.search-icon {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-faint);
-  pointer-events: none;
+.rm-hero-title {
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.1;
+  margin: 80px 0 16px;
+  letter-spacing: -0.03em;
 }
 
-.search-input {
-  width: 100%;
-  padding: 11px 16px 11px 42px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  font-size: 0.9rem;
-  color: var(--text-body);
-  background: white;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+.rm-hero-sub {
+  color: rgba(255,255,255,0.7);
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0 0 28px;
+  max-width: 420px;
 }
 
-.search-input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
+.rm-hero-actions { display: flex; gap: 12px; }
 
-.filter-select {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 11px 14px;
-  font-size: 0.88rem;
-  color: var(--text-body);
-  background: white;
-  cursor: pointer;
-  outline: none;
-  min-width: 130px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-  transition: border-color 0.2s;
-}
-
-.filter-select:focus { border-color: var(--primary); }
-
-.btn-filter {
+.rm-hero-stats {
   display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 11px 20px;
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--text-body);
-  cursor: pointer;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-  transition: background 0.15s, border-color 0.15s;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
-.btn-filter:hover {
-  background: var(--primary-light);
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-/* Empty state */
-.empty-state {
+.rm-stat-pill {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  backdrop-filter: blur(12px);
+  border-radius: var(--radius-md);
+  padding: 16px 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
-  padding: 60px 20px;
-  color: var(--text-faint);
-  font-size: 0.95rem;
+  min-width: 110px;
 }
 
-/* Load More */
-.btn-load-more {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 16px;
-  background: white;
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text-body);
-  cursor: pointer;
-  margin-top: 8px;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+.rm-stat-num {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--color-text-inverse);
+  line-height: 1;
 }
 
-.btn-load-more:hover {
-  background: var(--primary-light);
-  border-color: var(--primary);
-  color: var(--primary);
+.rm-stat-label {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.55);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
 }
 
-/* ── SIDEBAR (StatsPanel deep styles) ── */
-.sidebar-col {
+/* ── Filter strip ── */
+.rm-filter-strip {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
   position: sticky;
-  top: 65px;
+  top: 0;
+  z-index: 20;
+  box-shadow: var(--shadow-card);
 }
 
-/* ── CTA BANNER ── */
-.cta-banner {
-  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #1d4ed8 100%);
-  padding: 50px 0;
-  margin-top: 60px;
-}
-
-.cta-inner {
+.rm-filter-inner {
   display: flex;
   align-items: center;
-  gap: 28px;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 0;
+  padding-bottom: 0;
+  min-height: 56px;
   flex-wrap: wrap;
 }
 
-.cta-icon {
-  background: rgba(255,255,255,0.1);
-  border-radius: 16px;
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
+.rm-tabs { display: flex; gap: 0; }
 
-.cta-text {
-  flex: 1;
-  min-width: 200px;
-}
-
-.cta-text h3 {
-  color: white;
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0 0 6px;
-}
-
-.cta-text p {
-  color: rgba(255,255,255,0.7);
-  margin: 0;
-  font-size: 0.95rem;
-}
-
-.btn-cta {
-  background: white;
-  color: #1d4ed8;
-  border: none;
-  border-radius: 12px;
-  padding: 14px 30px;
-  font-weight: 700;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
-  white-space: nowrap;
-  flex-shrink: 0;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-}
-
-.btn-cta:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-}
-
-/* ── TABLET ── */
-@media (max-width: 1024px) {
-  .main-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .sidebar-col { display: none; }
-  .mobile-stats { display: block; margin-bottom: 28px; }
-}
-
-/* ── MOBILE ── */
-@media (max-width: 640px) {
-  .hero {
-    padding: 80px 0 40px;
-    min-height: 280px;
-  }
-
-  .hero-title { font-size: 1.8rem; }
-  .hero-sub { font-size: 0.95rem; }
-
-  .main-layout { padding: 24px 16px; gap: 20px; }
-
-  .filter-bar { gap: 8px; }
-  .filter-select { min-width: 100px; font-size: 0.82rem; }
-  .search-input { font-size: 0.85rem; }
-
-  .tab-btn { padding: 14px 12px; font-size: 0.82rem; }
-  .tabs-bar { overflow-x: auto; }
-
-  .cta-inner { flex-direction: column; text-align: center; }
-  .btn-cta { width: 100%; }
-
-  .glass-card { padding: 8px 14px; }
-}
-
-/* ── DARK MODE ── */
-@media (prefers-color-scheme: dark) {
-  .review-management {
-    --bg-page: #0f172a;
-    --bg-card: #1e293b;
-    --text-heading: #f1f5f9;
-    --text-body: #cbd5e1;
-    --text-muted: #94a3b8;
-    --text-faint: #64748b;
-    --border: #334155;
-    --border-light: #1e293b;
-    --primary-light: rgba(37, 99, 235, 0.1);
-  }
-
-  .tabs-bar, .sort-select, .filter-select, .search-input, .btn-filter, .btn-load-more {
-    background: #1e293b;
-    color: #cbd5e1;
-    border-color: #334155;
-  }
-
-  .hero { background-image: linear-gradient(to bottom, rgba(5,10,20,0.8), rgba(5,10,20,0.65)), url('https://images.unsplash.com/photo-1582719508461-905c673771fd?w=1920&q=80'); }
-}
-</style>
-
-<!-- Global styles for the inline StatsPanel sub-component (not scoped) -->
-<style>
-.stats-panel { display: flex; flex-direction: column; gap: 16px; }
-
-.stat-card {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 22px 20px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-}
-
-.stat-card-title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 16px;
-}
-
-.big-score {
-  font-size: 3rem;
-  font-weight: 800;
-  color: #1d4ed8;
-  line-height: 1;
-  margin-bottom: 8px;
-}
-
-.score-denom {
-  font-size: 1.4rem;
+.rm-tab {
+  padding: 18px 20px;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: #64748b;
+  color: var(--rm-text-muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
 }
 
-.exceptional-label {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 8px 0 4px;
+.rm-tab:hover { color: var(--rm-text); }
+
+.rm-tab.active {
+  color: var(--rm-primary);
+  border-bottom-color: var(--rm-primary);
 }
 
-.based-on {
-  font-size: 0.82rem;
-  color: #64748b;
-}
-
-/* Breakdown */
-.breakdown-row {
+.rm-filter-right {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 10px 0;
 }
 
-.star-label {
+.rm-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-page);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  color: var(--rm-text-faint);
+}
+
+.rm-search {
+  border: none;
+  background: none;
+  outline: none;
+  font-size: 0.85rem;
+  color: var(--rm-text);
+  width: 160px;
+}
+
+.rm-search::placeholder { color: var(--rm-text-faint); }
+
+.rm-select {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.84rem;
+  color: var(--rm-text);
+  background: var(--color-page);
+  outline: none;
+  cursor: pointer;
+}
+
+.rm-refresh-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-page);
+  color: var(--rm-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.rm-refresh-btn:hover { background: var(--rm-border); color: var(--rm-text); }
+
+/* ── Main layout ── */
+.rm-main {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 28px;
+  padding-top: 32px;
+  padding-bottom: 60px;
+  align-items: start;
+}
+
+/* ── Cards col ── */
+.rm-cards-col { display: flex; flex-direction: column; gap: 16px; }
+
+/* ── Loading / Empty ── */
+.rm-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 60px 0;
+  color: var(--rm-text-muted);
+  font-size: 0.9rem;
+}
+
+.rm-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--rm-border);
+  border-top-color: var(--rm-primary);
+  border-radius: 50%;
+  animation: rm-spin 0.7s linear infinite;
+}
+
+@keyframes rm-spin { to { transform: rotate(360deg); } }
+
+.rm-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 60px 24px;
+  text-align: center;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.rm-empty-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--rm-text);
+  margin: 0;
+}
+
+.rm-empty-sub {
+  font-size: 0.87rem;
+  color: var(--rm-text-muted);
+  margin: 0;
+}
+
+/* ── Review card ── */
+.rm-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.rm-card:hover {
+  box-shadow: var(--shadow-card);
+  transform: translateY(-2px);
+}
+
+.rm-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rm-card-meta { display: flex; align-items: center; gap: 10px; }
+
+.rm-res-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: var(--color-primary-soft);
+  color: var(--rm-primary);
+  padding: 3px 9px;
+  border-radius: 99px;
+  letter-spacing: 0.04em;
+}
+
+.rm-property-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--rm-text);
+}
+
+.rm-card-rating {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--rm-text);
+}
+
+.rm-card-sub {
   font-size: 0.82rem;
-  color: #475569;
-  min-width: 52px;
-  white-space: nowrap;
+  color: var(--rm-text-muted);
 }
 
-.bar-track {
+.rm-stars-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rm-rating-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--rm-text);
+}
+
+.rm-date {
+  font-size: 0.8rem;
+  color: var(--rm-text-faint);
+  margin-left: auto;
+}
+
+.rm-comment {
+  font-size: 0.9rem;
+  color: var(--color-text);
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* Owner reply */
+.rm-owner-reply {
+  background: var(--color-surface-soft);
+  border-left: 3px solid var(--rm-primary);
+  border-radius: 0 10px 10px 0;
+  padding: 12px 16px;
+}
+
+.rm-reply-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--rm-primary);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.rm-reply-text {
+  font-size: 0.87rem;
+  color: var(--rm-text-muted);
+  margin: 0;
+  line-height: 1.55;
+}
+
+/* Card actions */
+.rm-card-actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid var(--rm-border);
+  margin-top: 4px;
+}
+
+.rm-btn-edit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--rm-primary);
+  background: var(--color-primary-soft);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.rm-btn-edit:hover { background: var(--color-primary-soft); }
+
+.rm-btn-delete {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--rm-danger);
+  background: var(--color-danger-soft);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.rm-btn-delete:hover { background: var(--color-danger-soft); }
+
+/* ── Sidebar ── */
+.rm-sidebar { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 72px; }
+
+.rm-side-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+}
+
+.rm-side-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--rm-text);
+  margin: 0 0 16px;
+}
+
+.rm-side-stats {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.rm-side-stat {
   flex: 1;
-  height: 8px;
-  background: #e2e8f0;
+  background: var(--color-surface-soft);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.rm-side-stat-num {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--rm-primary);
+}
+
+.rm-side-stat-label {
+  font-size: 0.72rem;
+  color: var(--rm-text-muted);
+  text-align: center;
+}
+
+/* Breakdown bars */
+.rm-breakdown { display: flex; flex-direction: column; gap: 8px; }
+
+.rm-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rm-bar-label {
+  font-size: 0.78rem;
+  color: var(--rm-text-muted);
+  width: 12px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.rm-bar-track {
+  flex: 1;
+  height: 6px;
+  background: var(--rm-border);
   border-radius: 99px;
   overflow: hidden;
 }
 
-.bar-fill {
+.rm-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #2563eb, #3b82f6);
+  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
   border-radius: 99px;
-  transition: width 0.8s ease;
+  transition: width 0.6s ease;
 }
 
-.pct-label {
-  font-size: 0.82rem;
-  color: #475569;
-  min-width: 32px;
+.rm-bar-count {
+  font-size: 0.72rem;
+  color: var(--rm-text-muted);
+  width: 16px;
   text-align: right;
-}
-
-/* Category rows */
-.cat-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 0;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.cat-row:last-of-type { border-bottom: none; }
-
-.cat-icon {
-  width: 24px;
-  height: 24px;
-  background: #eff6ff;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   flex-shrink: 0;
-  color: #2563eb;
 }
 
-.cat-name {
-  flex: 1;
-  font-size: 0.88rem;
-  color: #334155;
-}
-
-.cat-score {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.see-all-link {
-  display: block;
-  color: #2563eb;
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin-top: 12px;
-  cursor: pointer;
-  background: none;
-  border: none;
-  padding: 0;
-  text-decoration: none;
-}
-
-/* Share card */
-.share-card .share-icon {
-  width: 44px;
-  height: 44px;
-  background: #eff6ff;
-  border-radius: 12px;
+/* Stays */
+.rm-stay-item {
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin-bottom: 12px;
-}
-
-.share-card h4 {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 8px;
-}
-
-.share-card p {
-  font-size: 0.85rem;
-  color: #64748b;
-  line-height: 1.5;
-  margin: 0 0 16px;
-}
-
-.btn-share-write {
-  width: 100%;
-  padding: 12px;
-  background: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-weight: 700;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btn-share-write:hover { background: #1d4ed8; }
-
-/* Guidelines */
-.guide-row {
-  display: flex;
   gap: 12px;
-  margin: 12px 0;
-  align-items: flex-start;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: background 0.1s;
 }
 
-.guide-icon {
-  width: 28px;
-  height: 28px;
-  background: #eff6ff;
-  border-radius: 8px;
+.rm-stay-item:last-child { border-bottom: none; }
+.rm-stay-item:hover { opacity: 0.8; }
+
+.rm-stay-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+
+.rm-stay-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--rm-text);
+}
+
+.rm-stay-date {
+  font-size: 0.76rem;
+  color: var(--rm-text-faint);
+}
+
+/* CTA card */
+.rm-cta-card {
+  background: var(--color-primary-soft);
+  border-color: var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rm-cta-card h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--rm-text);
+  margin: 8px 0 0;
+}
+
+.rm-cta-card p {
+  font-size: 0.83rem;
+  color: var(--rm-text-muted);
+  margin: 0 0 4px;
+  line-height: 1.5;
+}
+
+.rm-cta-btn { width: 100%; justify-content: center; }
+
+/* ── Buttons ── */
+.rm-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  background: var(--rm-primary);
+  color: var(--rm-text);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+  box-shadow: 0 4px 14px var(--color-focus-ring);
+}
+
+.rm-btn-primary:hover {
+  background: var(--rm-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px var(--color-focus-ring);
+  
+}
+
+.rm-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+.rm-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--rm-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.rm-btn-edit, .rm-btn-delete {
+  margin-top: 17px;
+}
+
+.rm-btn-outline:hover { background: var(--color-page); }
+
+.rm-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--rm-danger);
+  color: var(--color-text-inverse);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.rm-btn-danger:hover { background: #dc2626; }
+.rm-btn-danger:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Modal ── */
+.rm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.55);
+  backdrop-filter: blur(4px);
+  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  color: #2563eb;
+  padding: 20px;
 }
 
-.guide-label {
-  font-size: 0.87rem;
-  font-weight: 600;
-  color: #1e293b;
+.rm-modal {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.18);
+  overflow: hidden;
 }
 
-.guide-sub {
-  font-size: 0.8rem;
-  color: #94a3b8;
-  margin-top: 2px;
-}
+.rm-modal-sm { max-width: 400px; }
 
-.learn-more-link {
-  display: block;
-  color: #2563eb;
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin-top: 12px;
-  text-decoration: none;
-}
-
-/* Help card */
-.help-card h5 {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 4px;
-}
-
-.help-card p {
-  font-size: 0.8rem;
-  color: #64748b;
-  margin: 0;
-}
-
-.help-row {
+.rm-modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-border);
 }
 
-.help-icon {
-  width: 48px;
-  height: 48px;
-  background: #eff6ff;
-  border-radius: 12px;
+.rm-modal-header h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--rm-text);
+  margin: 0;
+}
+
+.rm-modal-close {
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  background: var(--color-page);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--rm-text-muted);
+  transition: background 0.15s;
 }
 
-.contact-support {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.82rem;
+.rm-modal-close:hover { background: var(--rm-border); }
+
+.rm-modal-body { padding: 24px; }
+
+.rm-label {
+  display: block;
+  font-size: 0.84rem;
   font-weight: 600;
-  color: #2563eb;
-  text-decoration: none;
+  color: var(--rm-text);
+  margin-bottom: 8px;
 }
 
-/* Dark mode for stats panel */
-@media (prefers-color-scheme: dark) {
-  .stat-card {
-    background: #1e293b;
-    border-color: #334155;
+.rm-textarea {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 0.9rem;
+  color: var(--rm-text);
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.rm-textarea:focus { border-color: var(--rm-primary); }
+
+.rm-char-count {
+  display: block;
+  text-align: right;
+  font-size: 0.76rem;
+  color: var(--rm-text-faint);
+  margin-top: 4px;
+}
+
+.rm-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--rm-border);
+  background: var(--color-surface);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .rm-main {
+    grid-template-columns: 1fr;
   }
 
-  .stat-card-title, .big-score, .exceptional-label, .cat-score, .guide-label, .share-card h4, .help-card h5 {
-    color: #f1f5f9;
+  .rm-sidebar {
+    position: static;
+    order: -1;
   }
 
-  .cat-name, .star-label, .pct-label, .share-card p, .based-on, .help-card p, .guide-sub {
-    color: #94a3b8;
+  .rm-hero-stats {
+    flex-direction: row;
+    flex-wrap: wrap;
   }
 
-  .bar-track { background: #334155; }
-  .cat-row { border-color: #334155; }
-  .cat-icon, .share-card .share-icon, .guide-icon, .help-icon { background: rgba(37,99,235,0.15); }
+  .rm-stat-pill { min-width: 80px; }
+
+  .rm-filter-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 8px 0;
+    gap: 8px;
+  }
+
+  .rm-filter-right { width: 100%; flex-wrap: wrap; }
+  .rm-search-wrap { flex: 1; }
+  .rm-search { width: 100%; }
 }
 </style>
