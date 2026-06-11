@@ -1,25 +1,63 @@
 // ApprovalTable.vue
 <script setup>
-import { useRouter, useRoute } from 'vue-router';
-import { EyeIcon } from '@heroicons/vue/24/outline';
+import { ref, onMounted, onUnmounted } from 'vue';
+import { useRouter, } from 'vue-router';
+import { CheckIcon, XMarkIcon, ChevronDownIcon } from '@heroicons/vue/24/solid';
 
 defineProps({
-    items: { type: Array, required: true }
+    items: { type: Array, required: true },
+    isProcessing: { type: Boolean, default: false }
 });
 
+const emit = defineEmits(['approve', 'reject', 'row-click', 'change-status-click']);
 const router = useRouter();
-const route = useRoute();
 
-const navigateToReview = (id) => {
-    if (id === undefined || id === null) {
-        console.error("Property ID is missing or undefined!");
+// const navigateToReview = (id) => {
+//     if (id === undefined || id === null) {
+//         console.error("Property ID is missing or undefined!");
+//         return;
+//     }
+
+//     router.push({
+//         name: 'admin.properties.review',
+//         params: { id: String(id) }
+//     });
+// };
+
+const activeDropdownId = ref(null);
+const isDropup = ref(false);
+
+const toggleDropdown = (event, id) => {
+    event.stopPropagation(); // ការពារកុំឱ្យជាន់គ្នាជាមួយ Row Click
+    if (activeDropdownId.value === id) {
+        activeDropdownId.value = null;
+    } else {
+        activeDropdownId.value = id;
+
+        const rect = event.currentTarget.getBoundingClientRect();
+        const spaceBottom = window.innerHeight - rect.bottom;
+        isDropup.value = spaceBottom < 180;
+    }
+};
+
+const handleSelectStatus = (id, targetStatus) => {
+    activeDropdownId.value = null;
+    emit('change-status-click', { id, status: targetStatus });
+};
+
+const closeAllDropdowns = () => { activeDropdownId.value = null; };
+onMounted(() => window.addEventListener('click', closeAllDropdowns));
+onUnmounted(() => window.removeEventListener('click', closeAllDropdowns));
+
+const handleRowClick = (event, itemId) => {
+    if (event.target.closest('.action-buttons-container') || event.target.closest('.dropdown-menu-wrapper')) {
+        console.log("Clicked on action elements, preventing row navigation.");
         return;
     }
 
-    router.push({
-        name: 'admin.properties.review',
-        params: { id: String(id) }
-    });
+    if (itemId) {
+        emit('row-click', itemId);
+    }
 };
 </script>
 
@@ -32,11 +70,12 @@ const navigateToReview = (id) => {
                     <th>Host / Owner</th>
                     <th>Geographic Location</th>
                     <th>Audit Status</th>
-                    <th class="text-right">Operations</th>
+                    <th class="text-right">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="item in items" :key="item.id || item.property_id">
+                <tr v-for="item in items" :key="item.id || item.property_id"
+                    @click="handleRowClick($event, item.id || item.property_id  )" style="cursor: pointer;">
                     <td>
                         <div class="property-name">{{ item.property_name || 'Unnamed Property' }}</div>
                         <div class="property-category">{{ item.category_name || 'Standard Listing' }}</div>
@@ -66,10 +105,46 @@ const navigateToReview = (id) => {
                     </td>
 
                     <td class="text-right">
-                        <button @click="navigateToReview(item.id || item.property_id)" class="review-btn">
-                            <EyeIcon class="btn-icon" />
-                            Review
-                        </button>
+                        <div class="action-buttons-container">
+                            <!-- <button @click="navigateToReview(item.id || item.property_id)" class="icon-btn view-btn"
+                                title="View Details">
+                                <EyeIcon class="btn-icon" />
+                            </button> -->
+
+                            <template v-if="item.status_id === 1 || item.status_name?.toLowerCase() === 'pending'">
+                                <button @click="emit('approve', item.id || item.property_id)" :disabled="isProcessing"
+                                    class="action-inline-btn btn-approve-sm">
+                                    <CheckIcon class="btn-icon-sm" /> Approve
+                                </button>
+                                <button @click="emit('reject', item.id || item.property_id)" :disabled="isProcessing"
+                                    class="action-inline-btn btn-reject-sm">
+                                    <XMarkIcon class="btn-icon-sm" /> Reject
+                                </button>
+                            </template>
+
+                            <template v-else>
+                                <div class="dropdown-menu-wrapper">
+                                    <button @click="toggleDropdown($event, item.id || item.property_id)"
+                                        :disabled="isProcessing" class="action-inline-btn btn-edit-sm">
+                                        Edit Status
+                                        <ChevronDownIcon class="btn-icon-sm ml-1" />
+                                    </button>
+
+                                    <div v-if="activeDropdownId === (item.id || item.property_id)"
+                                        class="dropdown-popover" :class="{ 'open-upward': isDropup }">
+                                        <button v-if="item.status_id !== 1"
+                                            @click.stop="handleSelectStatus(item.id || item.property_id, 'pending')"
+                                            class="dropdown-item text-warning-item">Set to Pending</button>
+                                        <button v-if="item.status_id !== 2"
+                                            @click.stop="handleSelectStatus(item.id || item.property_id, 'approve')"
+                                            class="dropdown-item text-success-item">Approve Listing</button>
+                                        <button v-if="item.status_id !== 3"
+                                            @click.stop="handleSelectStatus(item.id || item.property_id, 'reject')"
+                                            class="dropdown-item text-danger-item">Reject Listing</button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
                     </td>
                 </tr>
             </tbody>
@@ -79,7 +154,7 @@ const navigateToReview = (id) => {
 
 <style scoped>
 .table-wrapper {
-    overflow-x: auto;
+    overflow: visible;
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
@@ -155,35 +230,167 @@ const navigateToReview = (id) => {
     display: inline-block;
 }
 
+.status-pending {
+    background-color: var(--color-warning-soft);
+    color: var(--color-warning);
+}
+
+.status-approved {
+    background-color: var(--color-success-soft);
+    color: var(--color-success);
+}
+
+.status-rejected {
+    background-color: var(--color-danger-soft);
+    color: var(--color-danger);
+}
+
 .text-right {
     text-align: right;
 }
 
-.review-btn {
+/* រៀបចំប៊ូតុងឱ្យរត់ជួរដេកស្អាត */
+.action-buttons-container {
     display: inline-flex;
     align-items: center;
-    gap: var(--space-xs);
+    gap: var(--space-md);
+}
+
+.icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-xs);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-primary-soft);
+    cursor: pointer;
+    color: var(--color-primary);
+    transition: all 0.2s;
+}
+
+.icon-btn:hover {
+    color: var(--color-text);
+    background-color: var(--color-surface-soft);
+}
+
+.action-inline-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
     padding: var(--space-xs) var(--space-sm);
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--color-primary);
-    background-color: transparent;
-    border: 1px solid var(--color-primary-soft);
     border-radius: var(--radius-sm);
     cursor: pointer;
+    border: none;
     transition: all 0.2s ease;
-    /* បន្ថែម ២ ជួរនេះដើម្បីធានាការចុចបាន ១០០% ដោយមិនបាច់បារម្ភរឿងធាតុផ្សេងមកបាំង */
-    position: relative;
-    z-index: 1;
 }
 
-.review-btn:hover {
-    background-color: var(--color-primary-soft);
-    border-color: var(--color-primary);
+.btn-approve-sm {
+    background-color: var(--color-success);
+    color: white;
+}
+
+.btn-approve-sm:hover {
+    background-color: #059669;
+}
+
+.btn-reject-sm {
+    background-color: transparent;
+    border: 1px solid var(--color-danger);
+    color: var(--color-danger);
+}
+
+.btn-reject-sm:hover {
+    background-color: var(--color-danger-soft);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .btn-icon {
     width: 0.875rem;
     height: 0.875rem;
+}
+
+.btn-icon-sm {
+    width: 0.75rem;
+    height: 0.75rem;
+}
+
+
+.dropdown-menu-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.btn-edit-sm {
+    background-color: var(--color-surface-soft);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+}
+
+.btn-edit-sm:hover {
+    background-color: var(--color-primary-soft);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.dropdown-popover {
+    position: absolute;
+    right: 0;
+    top: 110%;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-primary);
+    border-radius: 6px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    z-index: 999;
+    min-width: 150px;
+    display: flex;
+    flex-direction: column;
+    padding: 4px 0;
+    /* overflow: hidden; */
+}
+
+.dropdown-item {
+    padding: 8px 12px;
+    font-size: 0.815rem;
+    font-weight: 500;
+    text-align: left;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.15s ease;
+}
+
+.dropdown-item:hover {
+    background-color: var(--color-primary-soft);
+}
+
+.text-warning-item {
+    color: var(--color-warning);
+}
+
+.text-success-item {
+    color: var(--color-success);
+}
+
+.text-danger-item {
+    color: var(--color-danger);
+}
+
+.ml-1 {
+    margin-left: 0.25rem;
+}
+
+.dropdown-popover.open-upward {
+    top: auto;
+    bottom: 120%;
+    /* រុញទៅលើប៊ូតុង Edit Status វិញ */
+    box-shadow: 0 -10px 15px -3px rgba(0, 0, 0, 0.1), 0 -4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 </style>

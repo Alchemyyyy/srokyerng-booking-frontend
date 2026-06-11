@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { usePropertyApproval } from '../composables/usePropertyApproval';
 import PropertyGallery from '@/modules/properties/components/PropertyGallery.vue';
+import AppModal from '@/shared/components/AppModal.vue';
 import { ChevronLeftIcon, CheckIcon, XMarkIcon, ExclamationTriangleIcon } from '@heroicons/vue/24/outline';
 
 const route = useRoute();
@@ -41,10 +42,18 @@ const executeSuspend = async () => {
     const success = await handleSuspend(currentProperty.value.id, reason);
     if (success) fetchPropertyDetail(currentProperty.value.id);
 };
+
+const handleSaveAction = (data) => {
+    console.log('Save action: ', data);
+};
+
+const handleShareAction = (data) => {
+    console.log('Share action: ', data);
+};
 </script>
 
 <template>
-    <div class="review-detail-container mt-25">
+    <div class="review-detail-container my-25">
         <div class="nav-bar">
             <button @click="router.back()" class="back-link">
                 <ChevronLeftIcon class="back-icon" /> Back to approvals
@@ -72,9 +81,9 @@ const executeSuspend = async () => {
                     <!-- <div class="info-section">
                         <h3 class="section-title">Description</h3>
                         <p class="section-text">{{ currentProperty.description }}</p>
-                    </div>
+                    </div> -->
 
-                    <div class="info-section">
+                    <!-- <div class="info-section">
                         <h3 class="section-title">Amenities Included</h3>
                         <div class="amenities-flex">
                             <span v-for="amenity in currentProperty.amenities" :key="amenity" class="amenity-pill">
@@ -90,20 +99,23 @@ const executeSuspend = async () => {
                     <h3 class="sidebar-title">Application Management</h3>
                     <div class="status-summary-box">
                         <div class="label">Current Listing Status</div>
-                        <div class="value">{{ currentProperty.status }}</div>
+                        <div class="value">{{ currentProperty.status_name || currentProperty.status || 'Pending' }}
+                        </div>
                     </div>
 
                     <div class="host-section">
                         <h4 class="host-title-meta">Submitted By</h4>
                         <div class="host-profile">
-                            <div class="host-name">{{ currentProperty.owner?.name }}</div>
-                            <div class="host-email">{{ currentProperty.owner?.email }}</div>
-                            <div class="host-meta">Registered: {{ currentProperty.owner?.joinedDate }}</div>
+                            <div class="host-name">{{ currentProperty.full_name || currentProperty.owner?.name }}</div>
+                            <div class="host-email">{{ currentProperty.owner_email || currentProperty.owner?.email }}
+                            </div>
+                            <div class="host-meta">Registered: {{ currentProperty.owner?.joinedDate || 'N/A' }}</div>
                         </div>
                     </div>
 
                     <div class="actions-group">
-                        <template v-if="currentProperty.status === 'Pending'">
+                        <template
+                            v-if="currentProperty.status_id === 1 || currentProperty.status_name?.toLowerCase() === 'pending'">
                             <button @click="executeApprove" :disabled="processing" class="btn-approve">
                                 <CheckIcon class="action-icon" /> Approve & Publish
                             </button>
@@ -111,7 +123,8 @@ const executeSuspend = async () => {
                                 <XMarkIcon class="action-icon" /> Reject Listing Request
                             </button>
                         </template>
-                        <template v-else-if="currentProperty.status === 'Approved'">
+                        <template
+                            v-else-if="currentProperty.status_id === 2 || currentProperty.status_name?.toLowerCase() === 'approved'">
                             <button @click="executeSuspend" :disabled="processing" class="btn-suspend">
                                 <ExclamationTriangleIcon class="action-icon" /> Suspend Operations
                             </button>
@@ -121,8 +134,8 @@ const executeSuspend = async () => {
             </div>
         </div>
 
-        <div v-if="rejectModalOpen" class="modal-backdrop">
-            <div class="modal-surface">
+        <AppModal :open="rejectModalOpen" @close="rejectModalOpen = false">
+            <div class="modal-surface-content">
                 <div>
                     <h3 class="modal-title">Specify Rejection Reason</h3>
                     <p class="modal-desc">Provide clear feedback to help the host operator adjust the submission
@@ -137,18 +150,19 @@ const executeSuspend = async () => {
                 </div>
                 <div class="modal-footer-actions">
                     <button @click="rejectModalOpen = false" class="btn-cancel">Cancel</button>
-                    <button @click="executeReject" class="btn-confirm-reject">Confirm Rejection</button>
+                    <button @click="executeReject" :disabled="processing" class="btn-confirm-reject">Confirm
+                        Rejection</button>
                 </div>
             </div>
-        </div>
+        </AppModal>
     </div>
 </template>
 
 <style scoped>
+/* រក្សាទុក Style ចាស់ទាំងអស់ ដកតែ .modal-backdrop ចេញ */
 .review-detail-container {
     padding: var(--space-lg);
     max-width: 72rem;
-    /* max-w-6xl */
     margin-left: auto;
     margin-right: auto;
     display: flex;
@@ -209,7 +223,6 @@ const executeSuspend = async () => {
     }
 }
 
-/* CARDS STYLING */
 .card-main,
 .card-action {
     background-color: var(--color-surface);
@@ -233,67 +246,6 @@ const executeSuspend = async () => {
     top: var(--space-lg);
 }
 
-.category-badge {
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--color-primary);
-    background-color: var(--color-primary-soft);
-    padding: var(--space-xs) var(--space-sm);
-    border-radius: var(--radius-sm);
-}
-
-.property-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--color-text);
-    margin-top: var(--space-xs);
-}
-
-.property-location {
-    font-size: 0.875rem;
-    color: var(--color-muted);
-}
-
-.info-section {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
-}
-
-.section-title {
-    font-size: 0.875rem;
-    font-weight: 700;
-    color: var(--color-text);
-    border-bottom: 1px solid var(--color-border);
-    padding-bottom: var(--space-xs);
-}
-
-.section-text {
-    font-size: 0.875rem;
-    color: var(--color-text);
-    line-height: 1.6;
-}
-
-.amenities-flex {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-xs);
-    margin-top: var(--space-xs);
-}
-
-.amenity-pill {
-    font-size: 0.75rem;
-    font-weight: 500;
-    background-color: var(--color-surface-soft);
-    color: var(--color-text);
-    padding: var(--space-xs) var(--space-md);
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--color-border);
-}
-
-/* SIDEBAR ACTIONS UI */
 .sidebar-title {
     font-size: 0.875rem;
     font-weight: 700;
@@ -355,7 +307,6 @@ const executeSuspend = async () => {
     gap: var(--space-xs);
 }
 
-/* OPERATION BUTTONS */
 .btn-approve,
 .btn-reject-trigger,
 .btn-suspend,
@@ -405,29 +356,8 @@ button:disabled {
     height: 1rem;
 }
 
-/* MODAL CONFIGURATION */
-.modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background-color: rgba(6, 21, 46, 0.5);
-    /* ប្រើប្រាស់សម្លេងពណ៌ងងឹត */
-    backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-md);
-    z-index: 50;
-}
-
-.modal-surface {
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-panel);
-    max-width: 28rem;
-    /* max-w-md */
-    width: 100%;
-    padding: var(--space-lg);
+/* STYLE INSIDE APPMODAL */
+.modal-surface-content {
     display: flex;
     flex-direction: column;
     gap: var(--space-md);
