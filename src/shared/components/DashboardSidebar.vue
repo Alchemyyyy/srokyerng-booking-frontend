@@ -206,6 +206,7 @@ const isActive = (path) => route.path === path;
 
 .sidebar-user {
     background: rgba(255, 255, 255, 0.04);
+    cursor: pointer;
 }
 
 .sidebar-user:hover {
