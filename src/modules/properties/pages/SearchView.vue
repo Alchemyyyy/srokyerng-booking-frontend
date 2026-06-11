@@ -333,12 +333,20 @@ onMounted(() => {
                       </p>
                     </div>
                     <div class="text-right">
-                      <p
-                        class="text-xl font-black text-(--color-primary-strong)"
-                      >
-                        {{ formatPrice(property.price) }}
-                      </p>
-                      <p class="text-[10px] text-(--color-muted)">/ night</p>
+                      <div v-if="property.price > 0">
+                        <p
+                          class="text-xl font-black text-(--color-primary-strong)"
+                        >
+                          {{ formatPrice(property.price) }}
+                        </p>
+                        <p class="text-[10px] text-(--color-muted)">/ night</p>
+                      </div>
+                      <div v-else>
+                        <p class="text-sm font-bold text-(--color-muted)">
+                          Price on request
+                        </p>
+                      </div>
+                      <!-- <p class="text-[10px] text-(--color-muted)">/ night</p> -->
                     </div>
                   </div>
                 </div>

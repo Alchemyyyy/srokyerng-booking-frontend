@@ -29,25 +29,45 @@ onMounted(async () => {
     const rawRooms = roomsRes.data?.data || roomsRes.data || [];
     const BASE_URL = "https://api-srokyerng.devspace.linkpc.net";
 
-    rooms.value = rawRooms.map((r) => ({
-      id: r.id,
-      name: r.room_name,
-      type: r.type_name || "",
-      price: r.price_per_night || 0,
-      guests: r.max_guests || 2,
-      description: r.description || "",
-      image: r.cover_image
-        ? `${BASE_URL}${r.cover_image}`
-        : "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80",
-      amenities: [],
-    }));
+    // Fetch images for all rooms in parallel
+    const roomsWithImages = await Promise.all(
+      rawRooms.map(async (r) => {
+        let image =
+          "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80";
+
+        try {
+          const imgRes = await http.get(`/rooms/${r.id}/images`);
+          const images = imgRes.data?.data || imgRes.data || [];
+
+          // Prefer cover image, fallback to first image
+          const cover = images.find((img) => img.is_cover === 1) || images[0];
+          if (cover?.image_url) {
+            image = `${BASE_URL}${cover.image_url}`;
+          }
+        } catch {
+          // keep fallback image
+        }
+
+        return {
+          id: r.id,
+          name: r.room_name,
+          type: r.type_name || "",
+          price: r.price_per_night || 0,
+          guests: r.max_guests || 2,
+          description: r.description || "",
+          image,
+          amenities: [],
+        };
+      }),
+    );
+
+    rooms.value = roomsWithImages;
   } catch (err) {
     console.error("Failed to load rooms:", err);
   } finally {
     loading.value = false;
   }
 });
-
 const filters = ref({
   priceRange: 150,
   selectedCapacity: "2 Guests",
@@ -178,7 +198,11 @@ const filteredRooms = computed(() => {
           class="w-full md:w-[45%] h-48 md:h-52 rounded-xl overflow-hidden border flex-shrink-0"
         >
           <img
-            src="https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1000&q=80"
+            :src="
+              property?.image
+                ? `https://api-srokyerng.devspace.linkpc.net${property.image}`
+                : 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1000&q=80'
+            "
             alt="Room Cover View"
             class="w-full h-full object-cover"
           />

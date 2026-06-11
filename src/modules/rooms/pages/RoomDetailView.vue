@@ -34,9 +34,15 @@ const fetchRoom = async () => {
     const res = await http.get(`/rooms/${route.params.id}`);
     const r = res.data?.data || res.data;
 
-    // fetch room images
-    const imgRes = await http.get(`/rooms/${route.params.id}/images`);
-    const images = imgRes.data?.data || [];
+    // ✅ Separate try for images so it doesn't kill the whole room
+    let images = [];
+    try {
+      const imgRes = await http.get(`/rooms/${route.params.id}/images`);
+      images = imgRes.data?.data || imgRes.data || [];
+    } catch (imgErr) {
+      console.warn("Could not load room images:", imgErr);
+    }
+
     const coverImg = images.find((i) => i.is_cover === 1) || images[0];
 
     room.value = {
@@ -44,8 +50,6 @@ const fetchRoom = async () => {
       type: r.room_name,
       propertyName: r.property_name || "",
       guests: r.max_guests || 2,
-      bedType: r.bed_type || "-",
-      size: r.room_size || "-",
       description: r.description || "",
       basePrice: Number(r.price_per_night) || 0,
       image: getFullImageUrl(coverImg?.image_url),
@@ -176,25 +180,51 @@ onMounted(fetchRoom);
           <div
             class="hidden md:grid grid-cols-2 md:col-span-5 gap-3.5 h-[520px]"
           >
+            <!-- Slot 1 -->
             <div
-              v-for="i in 3"
-              :key="i"
               class="overflow-hidden h-[253px] bg-slate-800 relative group/item"
             >
               <img
-                :src="room.image"
+                :src="room.images[1] || room.images[0]"
                 class="w-full h-full object-cover opacity-95 group-hover/item:scale-105 transition-all duration-700"
               />
               <div
                 class="absolute inset-0 bg-slate-950/10 group-hover/item:bg-transparent transition-all"
               ></div>
             </div>
-            <!-- Explore Gallery -->
+
+            <!-- Slot 2 -->
             <div
               class="overflow-hidden h-[253px] bg-slate-800 relative group/item"
             >
               <img
-                :src="room.image"
+                :src="room.images[2] || room.images[0]"
+                class="w-full h-full object-cover opacity-95 group-hover/item:scale-105 transition-all duration-700"
+              />
+              <div
+                class="absolute inset-0 bg-slate-950/10 group-hover/item:bg-transparent transition-all"
+              ></div>
+            </div>
+
+            <!-- Slot 3 -->
+            <div
+              class="overflow-hidden h-[253px] bg-slate-800 relative group/item"
+            >
+              <img
+                :src="room.images[3] || room.images[0]"
+                class="w-full h-full object-cover opacity-95 group-hover/item:scale-105 transition-all duration-700"
+              />
+              <div
+                class="absolute inset-0 bg-slate-950/10 group-hover/item:bg-transparent transition-all"
+              ></div>
+            </div>
+
+            <!-- Slot 4 — Explore Gallery -->
+            <div
+              class="overflow-hidden h-[253px] bg-slate-800 relative group/item"
+            >
+              <img
+                :src="room.images[4] || room.images[0]"
                 class="w-full h-full object-cover opacity-95 group-hover/item:scale-105 transition-all duration-700"
               />
               <div
@@ -206,7 +236,9 @@ onMounted(fetchRoom);
                 <span
                   class="text-white text-[11px] font-black tracking-widest uppercase bg-white/10 px-3.5 py-2 rounded-xl border border-white/20"
                 >
-                  {{ t("roomDetail.exploreGallery") }}
+                  {{ t("roomDetail.exploreGallery") }} ({{
+                    room.images.length
+                  }})
                 </span>
               </div>
             </div>
@@ -282,9 +314,6 @@ onMounted(fetchRoom);
                   >
                     {{ t("roomDetail.beddingConfig") }}
                   </p>
-                  <p class="text-sm font-black text-(--color-text) mt-0.5">
-                    {{ room.bedType }}
-                  </p>
                 </div>
               </div>
               <!-- Floor Size -->
@@ -301,9 +330,6 @@ onMounted(fetchRoom);
                     class="text-[10px] font-black uppercase text-(--color-muted) tracking-wider"
                   >
                     {{ t("roomDetail.floorDimension") }}
-                  </p>
-                  <p class="text-sm font-black text-(--color-text) mt-0.5">
-                    {{ room.size }}
                   </p>
                 </div>
               </div>

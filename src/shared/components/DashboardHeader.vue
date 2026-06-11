@@ -74,7 +74,7 @@ const { isSidebarOpen } = useSidebar();
         </nav>
 
         <!-- Search -->
-        <button v-if="showSearch" type="button" class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm
+        <!-- <button v-if="showSearch" type="button" class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm
                    bg-(--color-surface-soft) border border-(--color-border)
                    text-(--color-muted)
                    hover:border-(--color-primary)
@@ -87,7 +87,7 @@ const { isSidebarOpen } = useSidebar();
             <kbd class="text-[10px] px-1.5 py-0.5 rounded bg-(--color-border)">
                 ⌘K
             </kbd>
-        </button>
+        </button> -->
 
         <!-- Notifications -->
         <button v-if="showNotifications" type="button" class="relative w-9 h-9 flex items-center justify-center rounded-lg

@@ -1,0 +1,396 @@
+<script setup>
+/**
+ * PaymentUploadView
+ * Left: KHQR/Bakong QR card — right: receipt upload form.
+ * Route: /payments/:id/upload
+ */
+import { ref, computed, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { ArrowLeftIcon, ShieldCheckIcon } from "@heroicons/vue/24/outline";
+import AppButton from "@/shared/components/AppButton.vue";
+import ReceiptUploadForm from "@/modules/payments/components/ReceiptUploadForm.vue";
+import PaymentMethodCard from "@/modules/payments/components/PaymentMethodCard.vue";
+import { usePaymentStore } from "@/modules/payments/store/paymentStore";
+
+const route = useRoute();
+const router = useRouter();
+const paymentStore = usePaymentStore();
+
+const paymentId = computed(() => route.params.paymentId);
+const payment = computed(() => paymentStore.activePayment);
+const isUploading = computed(() => paymentStore.loadingSubmitProof);
+const uploadError = computed(() => paymentStore.errorSubmitProof);
+const uploadSuccess = ref(false);
+
+// The single KHQR account (first entry returned by the API)
+const khqrAccount = computed(() => paymentStore.paymentAccounts[0] ?? null);
+
+const formattedAmount = computed(() => {
+  if (!payment.value?.amount) return null;
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: payment.value.currency ?? "USD",
+  }).format(payment.value.amount);
+});
+
+async function handleSubmit(file) {
+  const ok = await paymentStore.submitPaymentProof(paymentId.value, file);
+  if (ok) {
+    uploadSuccess.value = true;
+    setTimeout(() =>
+      router.push({
+        name: "customer.payment-detail",
+        params: { paymentId: paymentId.value },
+      }),
+    );
+  }
+}
+
+onMounted(async () => {
+  await paymentStore.fetchPaymentById(paymentId.value);
+  if (payment.value?.property_id) {
+    await paymentStore.fetchPaymentAccounts(payment.value.property_id);
+  }
+});
+</script>
+
+<template>
+  <div class="upload-page">
+    <!-- Progress bar -->
+    <div class="upload-page__progress-track" aria-hidden="true">
+      <div class="upload-page__progress-fill" />
+    </div>
+
+    <div class="upload-page__inner">
+      <!-- Back -->
+      <button type="button" class="upload-page__back" @click="router.back()">
+        <ArrowLeftIcon class="upload-page__back-icon" />
+        <span>Back to Booking</span>
+      </button>
+
+      <!-- ── Success screen ── -->
+      <div v-if="uploadSuccess" class="success-state">
+        <div class="success-state__icon-wrap">
+          <ShieldCheckIcon class="success-state__icon" />
+        </div>
+        <h2 class="success-state__heading">Proof submitted!</h2>
+        <p class="success-state__text">
+          We're reviewing your payment. You'll be notified shortly.
+        </p>
+        <p class="success-state__redirect">Redirecting…</p>
+      </div>
+
+      <!-- ── Main grid ── -->
+      <div v-else class="upload-page__grid">
+        <!-- Left: QR + instructions -->
+        <div class="upload-page__left">
+          <div class="upload-page__intro">
+            <h1 class="upload-page__heading">Pay via Bakong</h1>
+            <p class="upload-page__subheading">
+              Scan the QR code with any Cambodian banking app, transfer the
+              exact amount, then upload your receipt.
+            </p>
+
+            <!-- Amount pill -->
+            <div v-if="formattedAmount" class="upload-page__amount-pill">
+              <span class="upload-page__amount-label">Amount due</span>
+              <span class="upload-page__amount-value">{{
+                formattedAmount
+              }}</span>
+            </div>
+          </div>
+
+          <!-- QR card -->
+          <div
+            v-if="paymentStore.loadingAccounts"
+            class="upload-page__qr-loading"
+          >
+            <div class="loader" />
+          </div>
+
+          <PaymentMethodCard
+            v-else
+            :account-name="khqrAccount?.account_name ?? ''"
+            :qr-image-url="khqrAccount?.qr_image_url ?? null"
+            :bakong-id="khqrAccount?.bakong_id ?? ''"
+          />
+
+          <!-- Security badge -->
+          <div class="upload-page__security">
+            <ShieldCheckIcon class="upload-page__security-icon" />
+            <p class="upload-page__security-text">
+              Your transaction is encrypted and secure.
+            </p>
+          </div>
+        </div>
+
+        <!-- Right: upload form -->
+        <div class="upload-page__right">
+          <p class="upload-page__step-label">Step 2 — Upload your receipt</p>
+
+          <ReceiptUploadForm :loading="isUploading" @submit="handleSubmit" />
+
+          <p v-if="uploadError" class="upload-page__error" role="alert">
+            {{ uploadError }}
+          </p>
+
+          <p class="upload-page__formats">
+            Accepted formats: PNG, JPG, PDF · Max 5 MB
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.upload-page {
+  min-height: 100vh;
+  background: var(--color-page);
+  color: var(--color-text);
+  padding-bottom: 5rem;
+}
+
+.upload-page__progress-track {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--color-border);
+  z-index: 50;
+}
+
+.upload-page__progress-fill {
+  height: 100%;
+  width: 66%;
+  background: var(--color-primary);
+  transition: width 0.5s ease;
+}
+
+.upload-page__inner {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 5rem 1.25rem 0;
+}
+
+/* Back */
+.upload-page__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 0;
+  margin-bottom: 2.5rem;
+  transition: color 0.15s;
+}
+.upload-page__back:hover {
+  color: var(--color-primary);
+}
+.upload-page__back:hover .upload-page__back-icon {
+  transform: translateX(-3px);
+}
+.upload-page__back-icon {
+  width: 1rem;
+  height: 1rem;
+  transition: transform 0.15s;
+}
+
+/* Grid */
+.upload-page__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+}
+
+@media (min-width: 900px) {
+  .upload-page__grid {
+    grid-template-columns: 5fr 7fr;
+    align-items: start;
+  }
+}
+
+/* Left */
+.upload-page__left {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.upload-page__heading {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.5rem;
+}
+
+.upload-page__subheading {
+  margin: 0;
+  color: var(--color-muted);
+  line-height: 1.65;
+  font-size: 0.92rem;
+}
+
+/* Amount pill */
+.upload-page__amount-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.4rem 1rem 0.4rem 0.75rem;
+  width: fit-content;
+}
+
+.upload-page__amount-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-muted);
+}
+
+.upload-page__amount-value {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+/* QR loading */
+.upload-page__qr-loading {
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Security */
+.upload-page__security {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: rgba(29, 158, 117, 0.06);
+  border: 1px solid rgba(29, 158, 117, 0.15);
+  border-radius: 14px;
+}
+
+.upload-page__security-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  color: #1d9e75;
+  flex-shrink: 0;
+}
+
+.upload-page__security-text {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1d6b52;
+}
+
+/* Right */
+.upload-page__right {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.upload-page__step-label {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-muted);
+}
+
+.upload-page__error {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  background: rgba(220, 53, 69, 0.07);
+  border: 1px solid rgba(220, 53, 69, 0.2);
+  border-radius: 10px;
+  color: var(--color-danger, #dc3545);
+  font-size: 0.85rem;
+}
+
+.upload-page__formats {
+  margin: 0;
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-muted);
+}
+
+/* Success */
+.success-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 4rem 1rem;
+  gap: 0.75rem;
+}
+
+.success-state__icon-wrap {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  background: rgba(29, 158, 117, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.success-state__icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  color: #1d9e75;
+}
+.success-state__heading {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin: 0;
+}
+.success-state__text {
+  margin: 0;
+  color: var(--color-muted);
+  max-width: 36ch;
+}
+.success-state__redirect {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--color-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Loader */
+.loader {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  border: 3px solid rgba(55, 138, 221, 0.15);
+  border-top-color: var(--color-primary);
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+</style>

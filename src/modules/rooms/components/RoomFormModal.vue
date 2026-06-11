@@ -4,12 +4,15 @@ import http from "@/app/api/http";
 import AppButton from "@/shared/components/AppButton.vue";
 import AppModal from "@/shared/components/AppModal.vue";
 import AppInput from "@/shared/components/AppInput.vue";
+import { useToastStore } from "@/shared/store/toastStore";
+
+const toastStore = useToastStore();
 
 const roomTypes = ref([]);
 onMounted(async () => {
   try {
     const res = await http.get("/rooms/room-types");
-    roomTypes.value = res.data || res || [];
+    roomTypes.value = res.data?.data || res.data || [];
     console.log("Room types:", roomTypes.value); // check what comes back
   } catch (e) {
     console.error("Failed to load room types", e);
@@ -23,58 +26,73 @@ const props = defineProps({
   properties: { type: Array, default: () => [] },
   submitLabel: { type: String, default: "Save" },
   errors: { type: Object, default: () => ({}) },
+  existingImages: { type: Array, default: () => [] },
 });
 
 const emit = defineEmits(["close", "submit"]);
 
-const imageFile = ref(null);
-const imagePreview = ref(null);
+const imageFiles = ref([]);
+const imagePreviews = ref([]);
 
-// Watch modelValue for image changes (edit mode)
 watch(
   () => props.modelValue,
   (newVal) => {
     if (newVal?.image) {
-      imagePreview.value = newVal.image;
+      imagePreviews.value = [newVal.image];
     }
   },
   { immediate: true },
 );
 
 const handleImageSelect = (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+  const files = Array.from(e.target.files);
 
-  if (!file.type.startsWith("image/")) {
-    alert("Please upload a valid image file (jpg, png, webp, etc.)");
-    return;
-  }
-  if (file.size > 5 * 1024 * 1024) {
-    // 5MB limit
-    alert("Image size must be less than 5MB");
+  // Max 10 images
+  if (imageFiles.value.length + files.length > 10) {
+    toastStore.danger("You can upload maximum 10 images", {
+      title: "Too Many Images",
+    });
     return;
   }
 
-  imageFile.value = file;
+  for (const file of files) {
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      toastStore.danger(`${file.name} is not supported. Use JPG or PNG only.`);
+      continue;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toastStore.danger(`${file.name} exceeds 5MB limit.`);
+      continue;
+    }
 
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    imagePreview.value = ev.target.result;
-  };
-  reader.readAsDataURL(file);
+    imageFiles.value.push(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => imagePreviews.value.push(ev.target.result);
+    reader.readAsDataURL(file);
+  }
+};
+
+// Remove image
+const removeImage = (index) => {
+  imageFiles.value.splice(index, 1);
+  imagePreviews.value.splice(index, 1);
 };
 
 const handleSubmit = () => {
   emit("submit", {
     ...props.modelValue,
-    imageFile: imageFile.value, // ← Important: Pass file to parent
+    imageFiles: imageFiles.value,
   });
 };
 
 const closeModal = () => {
-  imageFile.value = null;
-  imagePreview.value = null;
+  imageFiles.value = [];
+  imagePreviews.value = [];
   emit("close");
+};
+const removeExistingImage = (index) => {
+  props.modelValue.existingImages.splice(index, 1);
 };
 </script>
 
@@ -128,39 +146,92 @@ const closeModal = () => {
         </span>
       </label>
       <!-- NEW: Image Upload -->
+      <!-- NEW: Image Upload -->
       <label class="grid gap-2 text-sm font-semibold text-(--color-text)">
-        Room Image
+        Room Images
+        <span class="text-(--color-muted) font-normal text-xs">(max 10)</span>
+
         <div
-          class="border-2 border-dashed border-(--color-border) rounded-xl p-6 text-center hover:border-(--color-primary) transition-colors"
+          v-if="
+            props.modelValue.existingImages?.length > 0 ||
+            imagePreviews.length > 0
+          "
+          class="grid grid-cols-3 gap-2 mb-2"
         >
-          <input
-            type="file"
-            accept="image/*"
-            @change="handleImageSelect"
-            class="hidden"
-            id="room-image-upload"
-          />
-          <label for="room-image-upload" class="cursor-pointer block">
-            <div v-if="imagePreview" class="mb-4">
-              <img
-                :src="imagePreview"
-                class="mx-auto max-h-52 rounded-lg object-cover shadow-sm"
-                alt="Preview"
-              />
-            </div>
-            <div v-else class="text-(--color-muted)">
-              <span class="text-4xl mb-2 block">📸</span>
-              <span class="font-medium">Click to upload image</span>
-              <p class="text-xs mt-1">PNG, JPG, WEBP (max 5MB)</p>
-            </div>
+          <!-- Existing saved images -->
+          <div
+            v-for="(img, index) in props.modelValue.existingImages"
+            :key="'existing-' + index"
+            class="relative group"
+          >
+            <img
+              :src="img"
+              class="w-full h-20 object-cover rounded-lg opacity-80"
+            />
+            <span
+              class="absolute bottom-1 left-1 text-[9px] bg-black/50 text-white px-1 rounded"
+              >Saved</span
+            >
+            <button
+              type="button"
+              @click="removeExistingImage(index)"
+              class="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs hidden group-hover:flex items-center justify-center"
+            >
+              ✕
+            </button>
+          </div>
+
+          <!-- New previews -->
+          <div
+            v-for="(preview, index) in imagePreviews"
+            :key="'new-' + index"
+            class="relative group"
+          >
+            <img :src="preview" class="w-full h-20 object-cover rounded-lg" />
+            <button
+              type="button"
+              @click="removeImage(index)"
+              class="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs hidden group-hover:flex items-center justify-center"
+            >
+              ✕
+            </button>
+          </div>
+
+          <!-- Add more -->
+          <label
+            v-if="
+              (props.modelValue.existingImages?.length || 0) +
+                imagePreviews.length <
+              10
+            "
+            for="room-image-upload"
+            class="w-full h-20 border-2 border-dashed border-(--color-border) rounded-lg flex items-center justify-center cursor-pointer hover:border-(--color-primary) transition-colors"
+          >
+            <span class="text-2xl text-(--color-muted)">+</span>
           </label>
         </div>
-        <span
-          v-if="errors.image"
-          class="text-xs font-medium text-(--color-danger)"
+
+        <!-- Show upload area when no images yet -->
+        <label
+          v-else
+          for="room-image-upload"
+          class="w-full h-24 border-2 border-dashed border-(--color-border) rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-(--color-primary) transition-colors gap-1"
         >
-          {{ errors.image }}
-        </span>
+          <span class="text-2xl text-(--color-muted)">📷</span>
+          <span class="text-xs text-(--color-muted)"
+            >Click to upload images</span
+          >
+        </label>
+
+        <!-- ✅ This was missing! -->
+        <input
+          id="room-image-upload"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          multiple
+          class="hidden"
+          @change="handleImageSelect"
+        />
       </label>
 
       <!-- Rest of your form fields -->

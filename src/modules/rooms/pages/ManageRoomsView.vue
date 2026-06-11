@@ -8,8 +8,11 @@ import RoomCard from "../components/RoomCard.vue";
 import RoomCardSkeleton from "../components/RoomCardSkeleton.vue";
 import RoomFormModal from "../components/RoomFormModal.vue";
 import RoomDeleteModal from "../components/RoomDeleteModal.vue";
+import { useToastStore } from "@/shared/store/toastStore";
 
 import { PlusIcon } from "@heroicons/vue/24/outline";
+
+const toastStore = useToastStore();
 
 const roomStore = useRoomStore();
 const {
@@ -69,7 +72,7 @@ const emptyRoom = () => ({
   description: "",
   basePrice: 0,
   inventory: 1,
-  imageFile: null,
+  imageFile: [],
 });
 
 const isAddRoomModalOpen = ref(false);
@@ -101,7 +104,13 @@ const openEditRoomModal = (room) => {
     basePrice: room.price_per_night || room.basePrice,
     inventory: room.total_rooms || room.inventory,
     image: room.image || "",
+    exitstingImages: [], // ✅ to hold existing image URLs
   };
+  const existingImages = roomStore.roomImages[room.id] || [];
+  editRoomForm.value.existingImages = existingImages.map((img) =>
+    roomStore.getFullImageUrl(img.image_url),
+  );
+
   editFormErrors.value = {};
   isEditRoomModalOpen.value = true;
 };
@@ -122,7 +131,10 @@ const closeDeleteRoomModal = () => {
 };
 const handleAddRoom = async (formData) => {
   addRoomForm.value = { ...addRoomForm.value, ...formData };
-
+  console.log("formData received:", formData); // 👈 add this
+  console.log("imageFiles in formData:", formData?.imageFiles); // 👈 add this
+  addRoomForm.value = { ...addRoomForm.value, ...formData };
+  console.log("addRoomForm after merge:", addRoomForm.value); // 👈 add this
   const selectedProperty = availableProperties.value.find(
     (p) => p.id === addRoomForm.value.propertyId,
   );
@@ -149,13 +161,13 @@ const handleAddRoom = async (formData) => {
       price_per_night: Number(addRoomForm.value.basePrice),
       max_guests: Number(addRoomForm.value.guests) || 2,
       total_rooms: Number(addRoomForm.value.inventory) || 1,
-      imageFile: addRoomForm.value.imageFile, // ✅ now has the file
+      imageFiles: addRoomForm.value.imageFiles,
     });
 
     const newRoom = response?.data || response;
 
     closeAddRoomModal();
-    setNotice("Room added successfully.");
+    toastStore.success("Room added successfully.");
     await fetchRoomsData();
   } catch (err) {
     console.error("❌ Create room failed:", err.response?.data || err);
@@ -172,43 +184,40 @@ const uploadRoomImage = async (propertyId, roomId, file) => {
     console.warn("Room created but image upload failed:", uploadErr);
   }
 };
-const handleEditRoom = async () => {
+const handleEditRoom = async (formData) => {
   editFormErrors.value = {};
-  const selectedProperty = availableProperties.value.find(
-    (p) => p.id === editRoomForm.value.propertyId,
-  );
 
   const errors = {};
-  if (!editRoomForm.value.propertyId)
-    errors.propertyId = "Please choose a property.";
-  if (!editRoomForm.value.type) errors.type = "Room type is required.";
-  if (!editRoomForm.value.roomName?.trim())
-    errors.roomName = "Room name is required.";
-  if (!editRoomForm.value.basePrice || editRoomForm.value.basePrice <= 0)
-    errors.basePrice = "Price is required.";
-
+  if (!formData.propertyId) errors.propertyId = "Please choose a property.";
+  if (!formData.type) errors.type = "Room type is required.";
   editFormErrors.value = errors;
-  if (
-    Object.keys(errors).length > 0 ||
-    !selectedProperty ||
-    !editingRoomId.value
-  )
-    return;
+  if (Object.keys(errors).length > 0 || !editingRoomId.value) return;
 
   try {
-    await updateRoom(selectedProperty.id, editingRoomId.value, {
-      room_type_id: Number(editRoomForm.value.type), // ✅ correct field name
-      room_name: editRoomForm.value.roomName?.trim(), // ✅ correct field name
-      description: editRoomForm.value.description || "",
-      price_per_night: Number(editRoomForm.value.basePrice), // ✅ correct field name
-      max_guests: Number(editRoomForm.value.guests) || 2, // ✅ correct field name
-      total_rooms: Number(editRoomForm.value.inventory) || 1, // ✅ correct field name
+    await updateRoom(formData.propertyId, editingRoomId.value, {
+      room_type_id: Number(formData.type),
+      room_name: formData.roomName,
+      description: formData.description,
+      price_per_night: Number(formData.basePrice),
+      max_guests: Number(formData.guests),
+      total_rooms: Number(formData.inventory),
     });
+
+    // Upload new images if any
+    if (formData.imageFiles?.length) {
+      const fd = new FormData();
+      formData.imageFiles.forEach((file) => fd.append("images", file));
+      try {
+        await roomStore.uploadRoomImages(editingRoomId.value, fd);
+      } catch (imgErr) {
+        console.error("Image upload failed:", imgErr);
+      }
+    }
+
     closeEditRoomModal();
     setNotice("Room updated successfully.");
-    await fetchRoomsData(); // ✅ refresh the list
-  } catch (err) {
-    console.error("❌ Update room failed:", err.response?.data || err);
+  } catch {
+    // error handled in store
   }
 };
 
@@ -217,9 +226,9 @@ const handleDeleteRoom = async () => {
   try {
     await deleteRoom(deletingRoom.value.property_id, deletingRoom.value.id);
     closeDeleteRoomModal();
-    setNotice("Room deleted successfully.");
+    toastStore.success("Room deleted successfully.");
   } catch {
-    // error is already set in the store
+    toastStore.danger("Failed to delete room. Please try again.");
   }
 };
 
@@ -377,7 +386,7 @@ onMounted(fetchRoomsData);
       :errors="editFormErrors"
       submit-label="Save Changes"
       @close="closeEditRoomModal"
-      @submit="handleEditRoom"
+      @submit="(data) => handleEditRoom(data)"
     />
 
     <RoomDeleteModal

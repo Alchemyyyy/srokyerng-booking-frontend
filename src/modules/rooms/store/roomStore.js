@@ -163,37 +163,29 @@ export const useRoomStore = defineStore("rooms", () => {
 
   const addRoom = async (propertyId, roomData) => {
     try {
-      // 1. Extract imageFile before sending to API
-      const { imageFile, ...roomDataWithoutImage } = roomData;
+      const { imageFiles, ...roomDataWithoutImage } = roomData; // ✅ imageFiles array
 
-      // 2. Create the room first
+      console.log("imageFiles:", imageFiles);
+      console.log("imageFiles length:", imageFiles?.length);
       const res = await roomService.createRoom(
         propertyId,
         roomDataWithoutImage,
       );
-      console.log("createRoom response:", res); // 👈 add this
-
       const newRoom = res?.data || res;
-      console.log("newRoom:", newRoom); // 👈 and this
-      console.log("newRoom.id:", newRoom?.id); // 👈 and this
-      console.log("createRoom response:", res);
-      console.log("newRoom:", newRoom);
-      console.log("newRoom.id:", newRoom?.id);
 
       if (newRoom) {
         rooms.value.push(newRoom);
 
-        // 3. Upload image if one was selected
-        if (imageFile && newRoom.id) {
+        // ✅ Upload multiple images
+        if (imageFiles?.length && newRoom.id) {
           const formData = new FormData();
-          formData.append("images", imageFile);
+          imageFiles.forEach((file) => formData.append("images", file)); // ✅ all files
           try {
             await roomService.uploadRoomImages(newRoom.id, formData);
-            // Refresh images cache for this room
-            delete roomImages.value[newRoom.id]; // clear cache
-            await fetchRoomImages(newRoom.id); // reload fresh
+            delete roomImages.value[newRoom.id];
+            await fetchRoomImages(newRoom.id);
           } catch (imgErr) {
-            console.error("Room created but image upload failed:", imgErr);
+            console.error("Image upload failed:", imgErr);
           }
         }
       }
