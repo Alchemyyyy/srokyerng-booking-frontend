@@ -1,11 +1,11 @@
 <script setup>
-import { ref } from 'vue';
-import { computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { getInitials } from '@/shared/utils/getInitials';
-import { useTheme } from '@/modules/admin/composables/useTheme';
 import { useSidebar } from '@/shared/composables/useSidebar';
+import { useTheme } from '@/modules/admin/composables/useTheme';
+import { useAuthStore } from "@/modules/auth/store/authStore"; // 🍍 ភ្ជាប់ AuthStore ពិតប្រាកដ
+import AppModal from '@/shared/components/AppModal.vue';
 import {
     ArrowRightStartOnRectangleIcon,
     Bars3Icon,
@@ -23,34 +23,72 @@ const props = defineProps({
         type: String,
         default: 'ស្រុកយើង'
     },
-    user: {
-        type: Object,
-        default: () => ({})
-    },
     navigationLabel: {
         type: String,
         default: ''
     }
 });
 
+const route = useRoute();
+const router = useRouter();
+const authStore = useAuthStore(); // 👈 ប្រកាសប្រើប្រាស់ AuthStore
 const { resolvedTheme } = useTheme();
 const { t, locale } = useI18n();
-const route = useRoute();
 
-// const sidebarTitle = computed(() => props.title || t('app.name'));
-const sidebarNavigationLabel = computed(() => props.navigationLabel || t('owner.sidebar.navigation'));
-const sidebarNavigationLabelClass = computed(() => (locale.value === 'en' ? 'text-[9px]' : 'text-[12px]'));
-const displayUserName = computed(() => props.user?.name || t('owner.profile.name'));
-const displayUserRole = computed(() => props.user?.role || t('owner.profile.role'));
-const displayUserInitials = computed(() => props.user?.initials || getInitials(displayUserName.value));
+// 👤 --- ទាញទិន្នន័យ User ផ្ទាល់ពី AuthStore ដូចកូដថ្មីរបស់បង ---
+const displayUserName = computed(() => {
+    return (
+        authStore.user?.name ||
+        authStore.user?.full_name ||
+        authStore.user?.fullName ||
+        authStore.user?.username ||
+        authStore.user?.email ||
+        t("owner.profile.name")
+    );
+});
 
-// 👉 sidebar state
+const displayUserRole = computed(() => {
+    const role = authStore.user?.role || "member";
+    return role.charAt(0).toUpperCase() + role.slice(1);
+});
+
+const displayUserInitials = computed(() => {
+    const name = displayUserName.value;
+    return name ? name.substring(0, 2).toUpperCase() : 'US';
+});
+
+// 👉 Sidebar state
 const {
     isSidebarOpen,
     toggleSidebar
 } = useSidebar();
 
 const isActive = (path) => route.path === path;
+
+// 🚪 --- Logout Modals & Actions ---
+const logoutModalOpen = ref(false);
+const isLoggingOut = ref(false);
+
+const handleLogoutClick = () => {
+    logoutModalOpen.value = true;
+};
+
+const executeLogout = async () => {
+    isLoggingOut.value = true;
+    try {
+        // 📡 ហៅ Action logout() ពី AuthStore ពិតប្រាកដរបស់បង
+        await authStore.logout();
+
+        logoutModalOpen.value = false;
+
+        // 🚀 រុញអ្នកប្រើប្រាស់ត្រឡប់ទៅទំព័រដើម ដូចកូដរបស់បងបេះបិទ
+        await router.push({ name: "public.home" });
+    } catch (error) {
+        console.error('Logout failed:', error);
+    } finally {
+        isLoggingOut.value = false;
+    }
+};
 </script>
 
 <template>
@@ -60,11 +98,9 @@ const isActive = (path) => route.path === path;
     ]" style="background: var(--color-surface-strong); border-right: 1px solid rgba(255,255,255,0.06);">
         <div class="flex flex-col w-full">
 
-            <!-- HEADER -->
             <div class="flex flex-col items-center justify-center border-b border-(--color-border) px-3 gap-3 relative transition-all duration-300"
                 :class="isSidebarOpen ? 'h-40' : 'h-30'">
 
-                <!-- toggle button -->
                 <button @click="toggleSidebar" class="absolute top-2 right-2 p-1 rounded-md hover:bg-white/10">
                     <component :is="isSidebarOpen ? XMarkIcon : Bars3Icon" class="w-5 h-5 text-white" />
                 </button>
@@ -75,17 +111,16 @@ const isActive = (path) => route.path === path;
                 <span v-if="isSidebarOpen" class="font-kantumruy-pro text-xl font-extrabold tracking-wider" :class="resolvedTheme === 'dark'
                     ? 'text-(--color-primary)'
                     : 'text-(--color-surface)'">
-                    <!-- {{ sidebarTitle }} -->
                     ស្រុកយើង
                 </span>
             </div>
 
-            <!-- NAVIGATION -->
             <div class="flex-1 flex flex-col overflow-y-auto py-4 px-2 gap-1">
 
                 <p v-if="isSidebarOpen" class="font-semibold uppercase tracking-[1.4px] px-2 pb-1.5"
-                    :class="sidebarNavigationLabelClass" style="color: rgba(255,255,255, 0.50); height: 24px;">
-                    {{ sidebarNavigationLabel }}
+                    :class="locale === 'en' ? 'text-[9px]' : 'text-[12px]'"
+                    style="color: rgba(255,255,255, 0.50); height: 24px;">
+                    {{ props.navigationLabel || t('owner.sidebar.navigation') }}
                 </p>
 
                 <router-link v-for="item in menuItems" :key="item.path" :to="item.path" :class="[
@@ -110,7 +145,6 @@ const isActive = (path) => route.path === path;
                 </router-link>
             </div>
 
-            <!-- BOTTOM -->
             <div class="px-2 py-2 border-t border-(--color-border)">
 
                 <router-link v-for="item in bottomItems" :key="item.path" :to="item.path" :class="[
@@ -127,10 +161,9 @@ const isActive = (path) => route.path === path;
                     <span v-if="isSidebarOpen">{{ item.name }}</span>
                 </router-link>
 
-                <!-- USER -->
-                <div class="flex items-center gap-2 rounded-lg px-2 py-2 mt-2 sidebar-user"
+                <div @click="handleLogoutClick" class="flex items-center gap-2 rounded-lg px-2 py-2 mt-2 sidebar-user"
                     :class="!isSidebarOpen ? 'justify-center' : ''">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-[12px] font-bold text-white"
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-[12px] font-bold text-white flex-shrink-0"
                         style="background: rgba(57,149,198,0.35);">
                         {{ displayUserInitials }}
                     </div>
@@ -144,15 +177,38 @@ const isActive = (path) => route.path === path;
                         </span>
                     </div>
 
-                    <ArrowRightStartOnRectangleIcon v-if="isSidebarOpen" class="w-5 h-5 text-white" />
+                    <ArrowRightStartOnRectangleIcon v-if="isSidebarOpen"
+                        class="w-5 h-5 text-white/60 hover:text-white transition-colors" />
                 </div>
 
             </div>
 
         </div>
     </aside>
-</template>
 
+    <AppModal :open="logoutModalOpen" @close="logoutModalOpen = false">
+        <div class="p-2 text-center">
+            <div class="modal-icon-container bg-(--color-danger-soft)">
+                <ArrowRightStartOnRectangleIcon class="w-14 h-14 text-(--color-danger)" />
+            </div>
+
+            <h3 class="modal-main-title">Confirm Account Logout</h3>
+            <p class="modal-description">Are you sure you want to log out from your admin moderation account?</p>
+
+            <div class="flex gap-3 justify-center mt-6">
+                <button @click="logoutModalOpen = false" :disabled="isLoggingOut" class="btn-modal-cancel">
+                    Cancel
+                </button>
+                <button @click="executeLogout" :disabled="isLoggingOut" class="btn-modal-danger-confirm">
+                    <template v-if="isLoggingOut">
+                        <span>Logging out...</span>
+                    </template>
+                    <template v-else>Yes, Logout</template>
+                </button>
+            </div>
+        </div>
+    </AppModal>
+</template>
 
 <style scoped>
 .sidebar-item {

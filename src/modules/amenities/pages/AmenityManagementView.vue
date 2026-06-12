@@ -1,6 +1,6 @@
 <template>
   <div
-    class="amenity-page"
+    class="amenity-page my-25"
     :class="isSidebarOpen ? 'ml-64' : 'ml-20'"
     :style="{ marginLeft: isMobile ? '0' : undefined }"
   >
@@ -739,12 +739,11 @@ watch(
     color 0.25s ease;
 } */
 .amenity-page {
-  min-height: 100vh;
-  background: var(--color-page);
-  color: var(--color-text);
-  transition:
-    background 0.25s ease,
-    color 0.25s ease;
+  padding: 0 var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .page-header {
