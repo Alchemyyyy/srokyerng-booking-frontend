@@ -163,7 +163,7 @@ const executeLogout = async () => {
 
                 <div @click="handleLogoutClick" class="flex items-center gap-2 rounded-lg px-2 py-2 mt-2 sidebar-user"
                     :class="!isSidebarOpen ? 'justify-center' : ''">
-                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-[12px] font-bold text-white flex-shrink-0"
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-[12px] font-bold text-white shrink-0"
                         style="background: rgba(57,149,198,0.35);">
                         {{ displayUserInitials }}
                     </div>
