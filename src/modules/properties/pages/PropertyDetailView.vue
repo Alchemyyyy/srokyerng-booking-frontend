@@ -16,6 +16,7 @@ import {
 import PropertyGallery from "../components/PropertyGallery.vue";
 import { usePropertyStore } from "../store/propertyStore";
 import { propertyApi } from "../api/property.api";
+import http from "@/app/api/http";
 
 const { t } = useI18n({ useScope: "global" });
 const route = useRoute();
@@ -118,6 +119,117 @@ const goToBooking = () => {
     },
   });
 };
+
+// ── Guest Reviews ──
+const guestReviews = ref([]);
+const activeReviewIndex = ref(0);
+
+const reviewSummary = computed(() => {
+  const list = guestReviews.value;
+  const total = list.length;
+  const average = total
+    ? (list.reduce((sum, r) => sum + (r.rating || 0), 0) / total)
+    : (property.value?.rating || 0);
+
+  const breakdown = [5, 4, 3, 2, 1].map((stars) => {
+    const count = list.filter((r) => Math.round(r.rating) === stars).length;
+    const pct = total ? Math.round((count / total) * 100) : 0;
+    return { stars, count, pct };
+  });
+
+  return {
+    average: Number(average).toFixed(1),
+    total: total || property.value?.reviews || 0,
+    breakdown,
+  };
+});
+
+const activeReview = computed(
+  () => guestReviews.value[activeReviewIndex.value] || {},
+);
+
+const nextReview = () => {
+  if (!guestReviews.value.length) return;
+  activeReviewIndex.value =
+    (activeReviewIndex.value + 1) % guestReviews.value.length;
+};
+
+const prevReview = () => {
+  if (!guestReviews.value.length) return;
+  activeReviewIndex.value =
+    (activeReviewIndex.value - 1 + guestReviews.value.length) %
+    guestReviews.value.length;
+};
+
+const reviewerInitials = (name) => {
+  if (!name) return "?";
+  return name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+};
+
+const ratingWordLabel = (rating) => {
+  const value = Number(rating);
+  if (value >= 4.5) return t("reviewCreate.ratingLabel.excellent");
+  if (value >= 4) return t("reviewCreate.ratingLabel.veryGood");
+  if (value >= 3) return t("reviewCreate.ratingLabel.good");
+  if (value >= 2) return t("reviewCreate.ratingLabel.fair");
+  return t("reviewCreate.ratingLabel.poor");
+};
+
+const fetchPropertyReviews = async () => {
+  try {
+    const propertyId = route.params.id;
+    const res = propertyApi.getPropertyReviews
+      ? await propertyApi.getPropertyReviews(propertyId)
+      : await http.get(`/properties/${propertyId}/reviews`);
+
+    console.log("[reviews] propertyId:", propertyId);
+    console.log("[reviews] raw response:", res);
+
+    const rawReviews = res?.data?.data || res?.data || [];
+    console.log("[reviews] parsed list:", rawReviews);
+
+    guestReviews.value = rawReviews.map((r) => ({
+      id: r.id,
+      author: r.full_name || r.customer_name || r.author || "Guest",
+      date: r.created_at
+        ? new Date(r.created_at).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })
+        : "",
+      rating: Number(r.rating) || 0,
+      title: r.title || "",
+      comment: r.comment || "",
+      roomName: r.room_name || "",
+    }));
+    activeReviewIndex.value = 0;
+  } catch (err) {
+    console.error("[reviews] fetch failed:", err?.response || err);
+    guestReviews.value = [];
+  }
+};
+
+watch(
+  () => route.params.id,
+  () => {
+    fetchPropertyReviews();
+  },
+  { immediate: true },
+);
+
+// ── Write review target ──
+// Writing a review always needs a specific completed reservation
+// (ReviewCreateView route: /customer/reservations/:reservationId/review).
+// The property page doesn't know which reservation that is, so send the
+// user to their "My Reviews" dashboard where completed stays are listed
+// and they can pick one to review.
+const writeReviewLink = { path: "/customer/reviews" };
 </script>
 
 <template>
@@ -140,8 +252,8 @@ const goToBooking = () => {
       <PropertyGallery
         :property="property"
         :selected-room="selectedRoom"
-        :property-rating="property.rating"
-        :review-count="property.reviews"
+        :property-rating="reviewSummary.average"
+        :review-count="reviewSummary.total"
         @save="handleSave"
         @share="handleShare"
       />
@@ -197,6 +309,143 @@ const goToBooking = () => {
                 </button>
               </div>
             </div>
+
+            <!-- Guest Reviews -->
+            <div
+              class="rounded-2xl border border-(--color-border) bg-(--color-surface) p-6 shadow-sm"
+            >
+              <div class="flex items-center justify-between flex-wrap gap-3">
+                <h2 class="flex items-center gap-2 text-md font-bold text-(--color-text)">
+                  {{ t("propertyDetail.guestReviews") }}
+                  <span class="flex items-center gap-1 text-amber-500">
+                    <StarIcon class="h-4 w-4 fill-current" />
+                    <span class="text-sm font-bold">{{ reviewSummary.average }}</span>
+                  </span>
+                  <span class="text-xs font-normal text-(--color-muted)">
+                    ({{ reviewSummary.total }} {{ t("propertyDetail.reviews") }})
+                  </span>
+                </h2>
+                <RouterLink
+                  :to="writeReviewLink"
+                  class="rounded-xl border border-(--color-border) px-4 py-2 text-xs font-bold text-(--color-text) transition hover:bg-(--color-surface-soft)"
+                >
+                  {{ t("propertyDetail.writeReview") }}
+                </RouterLink>
+              </div>
+
+              <div class="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-[260px_1fr]">
+                <!-- Rating summary -->
+                <div
+                  class="rounded-2xl border border-(--color-border) bg-(--color-surface-soft) p-4"
+                >
+                  <p class="text-sm font-bold text-(--color-text)">
+                    {{ ratingWordLabel(reviewSummary.average) }}
+                  </p>
+                  <p class="mt-1 text-3xl font-black text-(--color-text)">
+                    {{ reviewSummary.average }}
+                    <span class="text-base font-semibold text-(--color-muted)">/ 5</span>
+                  </p>
+                  <div class="mt-1 flex items-center gap-1 text-amber-500">
+                    <StarIcon
+                      v-for="n in 5"
+                      :key="n"
+                      class="h-4 w-4"
+                      :class="n <= Math.round(reviewSummary.average) ? 'fill-current' : 'fill-none'"
+                    />
+                  </div>
+                  <p class="mt-2 text-xs text-(--color-muted)">
+                    {{ t("propertyDetail.basedOnReviews", { count: reviewSummary.total }) }}
+                  </p>
+
+                  <div class="mt-4 space-y-2">
+                    <div
+                      v-for="row in reviewSummary.breakdown"
+                      :key="row.stars"
+                      class="flex items-center gap-2 text-xs text-(--color-muted)"
+                    >
+                      <span class="w-16 shrink-0 whitespace-nowrap">{{ row.stars }} {{ t("propertyDetail.stars") }}</span>
+                      <div class="h-1.5 flex-1 rounded-full bg-(--color-border)">
+                        <div
+                          class="h-1.5 rounded-full bg-amber-400"
+                          :style="{ width: row.pct + '%' }"
+                        ></div>
+                      </div>
+                      <span class="w-8 shrink-0 text-right">{{ row.pct }}%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Reviewer card carousel -->
+                <div
+                  v-if="guestReviews.length"
+                  class="relative rounded-2xl border border-(--color-border) bg-(--color-surface-soft) p-4"
+                >
+                  <div class="flex items-start gap-3">
+                    <div
+                      class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-(--color-primary-soft) text-sm font-bold text-(--color-primary)"
+                    >
+                      {{ reviewerInitials(activeReview.author) }}
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <div class="flex flex-wrap items-center justify-between gap-2">
+                        <p class="text-sm font-bold text-(--color-text)">
+                          {{ activeReview.author }}
+                        </p>
+                        <p class="text-xs text-(--color-muted)">
+                          {{ activeReview.date }}
+                        </p>
+                      </div>
+
+                      <div class="mt-1 flex items-center gap-1 text-amber-500">
+                        <StarIcon
+                          v-for="n in 5"
+                          :key="n"
+                          class="h-4 w-4"
+                          :class="n <= activeReview.rating ? 'fill-current' : 'fill-none'"
+                        />
+                      </div>
+
+                      <p v-if="activeReview.title" class="mt-2 text-sm font-bold text-(--color-text)">
+                        {{ activeReview.title }}
+                      </p>
+                      <p class="mt-1 text-xs leading-relaxed text-(--color-muted)">
+                        {{ activeReview.comment }}
+                      </p>
+                      <p v-if="activeReview.roomName" class="mt-2 text-[11px] text-(--color-muted)">
+                        {{ t("propertyDetail.stayedIn", { room: activeReview.roomName }) }}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    v-if="guestReviews.length > 1"
+                    class="mt-3 flex items-center justify-end gap-2"
+                  >
+                    <button
+                      type="button"
+                      class="flex h-8 w-8 items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface) text-(--color-muted) transition hover:bg-(--color-surface-soft)"
+                      @click="prevReview"
+                    >
+                      <ChevronRightIcon class="h-4 w-4 rotate-180" />
+                    </button>
+                    <button
+                      type="button"
+                      class="flex h-8 w-8 items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface) text-(--color-muted) transition hover:bg-(--color-surface-soft)"
+                      @click="nextReview"
+                    >
+                      <ChevronRightIcon class="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <div
+                  v-else
+                  class="flex items-center justify-center rounded-2xl border border-(--color-border) bg-(--color-surface-soft) p-4 text-sm text-(--color-muted)"
+                >
+                  {{ t("propertyDetail.noReviewsYet") }}
+                </div>
+              </div>
+            </div>
           </div>
 
           <div class="h-fit lg:sticky lg:top-6">
@@ -220,7 +469,7 @@ const goToBooking = () => {
                 </div>
                 <div class="flex items-center gap-1 text-amber-500">
                   <StarIcon class="h-4 w-4 fill-current" />
-                  <span class="text-sm font-bold">{{ property.rating }}</span>
+                  <span class="text-sm font-bold">{{ reviewSummary.average }}</span>
                 </div>
               </div>
 
