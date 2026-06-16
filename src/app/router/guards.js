@@ -18,7 +18,14 @@ export const registerRouteGuards = (router) => {
     const authStore = useAuthStore();
     await authStore.restoreSession();
 
+    const isOwnerRegistrationFromCustomerAccount =
+      to.name === "public.registerOwner" && authStore.user?.role === ROLES.CUSTOMER;
+
     if (to.meta.publicOnly && authStore.isAuthenticated) {
+      if (isOwnerRegistrationFromCustomerAccount) {
+        return true;
+      }
+
       return { name: "public.properties" };
     }
 
