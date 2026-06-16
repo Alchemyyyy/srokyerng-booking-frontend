@@ -186,7 +186,7 @@ const executeLogout = async () => {
         </div>
     </aside>
 
-    <AppModal :open="logoutModalOpen" @close="logoutModalOpen = false">
+    <AppModal :open="logoutModalOpen" @close="logoutModalOpen = false" title="Confirm Logout">
         <div class="p-2 text-center">
             <div class="modal-icon-container bg-(--color-danger-soft)">
                 <ArrowRightStartOnRectangleIcon class="w-14 h-14 text-(--color-danger)" />
@@ -267,5 +267,52 @@ const executeLogout = async () => {
 
 .sidebar-user:hover {
     background: rgba(255, 255, 255, 0.08);
+}
+
+.modal-icon-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
+  margin-bottom: var(--space-md);
+}
+
+.modal-main-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--space-sm);
+}
+
+.modal-description {
+  font-size: 0.875rem;
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+
+.btn-modal-cancel {
+  background-color: transparent;
+  color: var(--color-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-lg);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-modal-cancel:hover {
+  background-color: var(--color-surface-soft);
+}
+
+.btn-modal-danger-confirm {
+  background-color: var(--color-danger);
+  color: var(--color-text-inverse);
+  padding: var(--space-sm) var(--space-lg);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
 }
 </style>

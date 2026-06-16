@@ -6,6 +6,7 @@ import { useI18n } from 'vue-i18n';
 import ThemeToggle from './ThemeToggle1.vue';
 import LanguageToggle from './LanguageToggle.vue';
 import { useSidebar } from '@/shared/composables/useSidebar';
+import { useAuthStore } from "@/modules/auth/store/authStore";
 
 import { MagnifyingGlassIcon, BellIcon, ChevronRightIcon } from '@heroicons/vue/24/outline';
 
@@ -30,9 +31,26 @@ defineProps({
 
 const route = useRoute();
 const { t } = useI18n();
+const authStore = useAuthStore();
+
+const displayUserName = computed(() => {
+    return (
+        authStore.user?.name ||
+        authStore.user?.full_name ||
+        authStore.user?.fullName ||
+        authStore.user?.username ||
+        authStore.user?.email ||
+        t("owner.profile.name")
+    );
+});
+
+const displayUserInitials = computed(() => {
+    const name = displayUserName.value;
+    return name ? name.substring(0, 2).toUpperCase() : 'US';
+});
 
 const homeLabel = computed(() => t('nav.home'));
-const searchLabel = computed(() => t('owner.header.search'));
+// const searchLabel = computed(() => t('owner.header.search'));
 
 const routeLabel = computed(() => {
     return route.meta.title || t('nav.dashboard');
@@ -124,7 +142,7 @@ const { isSidebarOpen } = useSidebar();
                    hover:ring-2 hover:ring-(--color-primary)
                    hover:ring-offset-2
                    transition-all duration-200">
-            {{ user.initials }}
+            {{ displayUserInitials }}
         </button>
     </header>
 </template>

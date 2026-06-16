@@ -9,7 +9,7 @@ const props = defineProps({
 
 // Local display values to drive the incremental counting sequence layout
 const displayProperties = ref(0)
-const displayRooms = ref(0)
+const displayPendingProperties = ref(0)
 const displayBookings = ref(0)
 const displayUsers = ref(0)
 
@@ -35,13 +35,13 @@ const animateCount = (start, end, refTarget, duration = 500) => {
 watch(() => props.loading, (isNowLoading) => {
   if (!isNowLoading) {
     animateCount(0, props.stats.properties, displayProperties)
-    animateCount(0, props.stats.rooms, displayRooms)
+    animateCount(0, props.stats.pendingProperties, displayPendingProperties)
     animateCount(0, props.stats.bookings, displayBookings)
     animateCount(0, props.stats.users, displayUsers)
   } else {
     // Reset back to zero during reload transitions
     displayProperties.value = 0
-    displayRooms.value = 0
+    displayPendingProperties.value = 0
     displayBookings.value = 0
     displayUsers.value = 0
   }
@@ -49,7 +49,7 @@ watch(() => props.loading, (isNowLoading) => {
 
 const processedMetrics = computed(() => [
   { label: 'Total Properties', value: displayProperties.value, trend: '↑ 12.5%', sub: 'vs last month', trendClass: 'text-emerald-500', icon: BuildingOffice2Icon, iconClass: 'bg-[var(--color-primary-soft)] text-[var(--color-primary)]' },
-  { label: 'Total Rooms', value: displayRooms.value, trend: '↑ 8.2%', sub: 'vs last week', trendClass: 'text-emerald-500', icon: HomeIcon, iconClass: 'bg-[var(--color-info-soft)] text-[var(--color-info)]' },
+  { label: 'Pending Properties', value: displayPendingProperties.value, trend: '↑ 8.2%', sub: 'vs last week', trendClass: 'text-emerald-500', icon: HomeIcon, iconClass: 'bg-[var(--color-info-soft)] text-[var(--color-info)]' },
   { label: 'Total Bookings', value: displayBookings.value, trend: '↑ 5.7%', sub: 'active cycles', trendClass: 'text-emerald-500', icon: CalendarDaysIcon, iconClass: 'bg-[var(--color-success-soft)] text-[var(--color-success)]' },
   { label: 'Active Users', value: displayUsers.value, trend: '↓ 2.1%', sub: 'bounce rate', trendClass: 'text-rose-500', icon: UserGroupIcon, iconClass: 'bg-[var(--color-warning-soft)] text-[var(--color-warning)]' },
 ])
