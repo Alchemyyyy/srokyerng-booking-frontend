@@ -12,29 +12,39 @@ import { paymentApi } from "../api/payment.api";
 
 // ─── Status helpers ───────────────────────────────────────────────────────────
 
-/** All valid payment statuses in the system. */
+/** All valid payment statuses returned by the API. */
 export const PAYMENT_STATUSES = Object.freeze({
-  PENDING: "pending",
-  UPLOADED: "uploaded",
-  VERIFIED: "verified",
-  REJECTED: "rejected",
-  CANCELLED: "cancelled",
+  PENDING: "pending", // payment created, no receipt yet
+  SUBMITTED: "submitted", // receipt uploaded, awaiting verification
+  PAID: "paid", // verified by owner/admin
+  FAILED: "failed", // rejected — customer can re-upload
 });
 
 /**
- * Returns true when a payment can still have proof uploaded/replaced.
+ * Upload type — passed from the UI to tell submitProof
+ * which first-time endpoint to use.
+ *   "receipt" → POST /payments/:id/receipt  (official bank slip)
+ *   "proof"   → POST /payments/:id/proof    (screenshot / photo evidence)
+ */
+export const UPLOAD_TYPES = Object.freeze({
+  RECEIPT: "receipt",
+  PROOF: "proof",
+});
+
+/**
+ * Returns true when a payment can have proof uploaded or replaced.
  * @param {string} status
  */
 export function canUploadProof(status) {
-  return [PAYMENT_STATUSES.PENDING, PAYMENT_STATUSES.REJECTED].includes(status);
+  return [PAYMENT_STATUSES.PENDING, PAYMENT_STATUSES.FAILED].includes(status);
 }
 
 /**
- * Returns true when a proof upload already exists and can be replaced.
+ * Returns true when proof already exists and needs to be replaced.
  * @param {string} status
  */
 export function canReplaceProof(status) {
-  return status === PAYMENT_STATUSES.REJECTED;
+  return status === PAYMENT_STATUSES.FAILED;
 }
 
 // ─── Customer-facing operations ───────────────────────────────────────────────
@@ -45,7 +55,7 @@ export function canReplaceProof(status) {
  */
 export async function getMyPayments() {
   const res = await paymentApi.getMyPayments();
-  return res?.data ?? res ?? [];
+  return res?.data?.data ?? res?.data ?? res ?? [];
 }
 
 /**
@@ -55,21 +65,22 @@ export async function getMyPayments() {
  */
 export async function getPaymentById(paymentId) {
   const res = await paymentApi.getPaymentById(paymentId);
-  return res.data?.data ?? res.data;
+  return res?.data?.data ?? res?.data ?? res;
 }
 
 /**
  * Create a new payment record.
- * @param {{ bookingId: string|number, amount: number, currency?: string, method?: string }} payload
+ * @param {{ reservation_id: string|number, amount: number }} payload
  * @returns {Promise<Payment>}
  */
 export async function createPayment(payload) {
   const res = await paymentApi.createPayment(payload);
-  return res.data?.data ?? res.data;
+  return res?.data?.data ?? res?.data ?? res;
 }
 
 /**
- * Upload a receipt image/PDF for a payment.
+ * Upload an official receipt for the first time (pending → submitted).
+ * Uses POST /payments/:id/receipt
  * @param {string|number} paymentId
  * @param {File} file
  * @returns {Promise<Payment>}
@@ -78,47 +89,68 @@ export async function uploadReceipt(paymentId, file) {
   const formData = new FormData();
   formData.append("receipt", file);
   const res = await paymentApi.uploadReceipt(paymentId, formData);
-  return res.data ?? res;
+  return res?.data?.data ?? res?.data ?? res;
 }
 
 /**
- * Upload payment proof for the first time (pending → uploaded).
+ * Upload alternative proof for the first time (pending → submitted).
+ * Uses POST /payments/:id/proof
+ * e.g. screenshot, phone photo, other evidence
  * @param {string|number} paymentId
  * @param {File} file
  * @returns {Promise<Payment>}
  */
 export async function uploadProof(paymentId, file) {
   const formData = new FormData();
-  formData.append("proof", file);
+  formData.append("receipt", file); // ✅ key is "receipt" per Postman
   const res = await paymentApi.uploadProof(paymentId, formData);
-  return res.data?.data ?? res.data;
+  return res?.data?.data ?? res?.data ?? res;
 }
 
 /**
- * Replace an existing proof after rejection.
+ * Replace an existing proof after rejection (failed → submitted).
+ * Uses PATCH /payments/:id/proof
  * @param {string|number} paymentId
  * @param {File} file
  * @returns {Promise<Payment>}
  */
 export async function replaceProof(paymentId, file) {
   const formData = new FormData();
-  formData.append("proof", file);
+  formData.append("receipt", file); // ✅ key is "receipt" per Postman
   const res = await paymentApi.replaceProof(paymentId, formData);
-  return res.data?.data ?? res.data;
+  return res?.data?.data ?? res?.data ?? res;
 }
 
 /**
- * Smart upload: calls uploadProof or replaceProof depending on current status.
+ * Smart upload — picks the correct endpoint based on status and upload type:
+ *
+ *   status = "failed"            → PATCH /payments/:id/proof      (replace after rejection)
+ *   status = "pending" + "proof" → POST  /payments/:id/proof      (alternative evidence)
+ *   status = "pending" + "receipt" (default) → POST /payments/:id/receipt (official slip)
+ *
  * @param {string|number} paymentId
  * @param {string} currentStatus
  * @param {File} file
+ * @param {"receipt"|"proof"} uploadType - defaults to "receipt"
  * @returns {Promise<Payment>}
  */
-export async function submitProof(paymentId, currentStatus, file) {
+export async function submitProof(
+  paymentId,
+  currentStatus,
+  file,
+  uploadType = UPLOAD_TYPES.RECEIPT,
+) {
+  // Re-upload after rejection — always use PATCH /proof
   if (canReplaceProof(currentStatus)) {
     return replaceProof(paymentId, file);
   }
-  return uploadProof(paymentId, file);
+
+  // First-time upload — pick endpoint based on what the customer has
+  if (uploadType === UPLOAD_TYPES.PROOF) {
+    return uploadProof(paymentId, file); // POST /proof  (screenshot/photo)
+  }
+
+  return uploadReceipt(paymentId, file); // POST /receipt (official bank slip)
 }
 
 /**
@@ -128,19 +160,17 @@ export async function submitProof(paymentId, currentStatus, file) {
  */
 export async function getProofDetails(paymentId) {
   const res = await paymentApi.getProofDetails(paymentId);
-  return res.data?.data ?? res.data;
+  return res?.data?.data ?? res?.data ?? res;
 }
 
 // ─── Property-level operations ────────────────────────────────────────────────
 
 /**
- * Fetch the KHQR/Bakong payment account for a property.
- * Returns an array; the first entry is the active QR account.
- * Expected shape: { id, account_name, qr_image_url, bakong_id }
+ * Fetch the KHQR/Bakong payment accounts for a property.
  * @param {string|number} propertyId
  * @returns {Promise<PaymentAccount[]>}
  */
 export async function getPropertyPaymentAccounts(propertyId) {
   const res = await paymentApi.getPropertyPaymentAccounts(propertyId);
-  return res.data?.data ?? res.data ?? [];
+  return res?.data?.data ?? res?.data ?? res ?? [];
 }

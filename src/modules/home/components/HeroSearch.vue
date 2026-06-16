@@ -1,10 +1,52 @@
+<script setup>
+import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+import AppButton from "@/shared/components/AppButton.vue";
+import HeroImg from "@/assets/images/home/hero/hero_banner.png";
+const { t, locale } = useI18n({ useScope: "global" });
+const router = useRouter();
+
+const searchForm = ref({
+  city: "",
+  checkIn: "",
+  checkOut: "",
+  guests: 1,
+});
+
+const handleSearch = () => {
+  router.push({
+    name: "public.properties",
+    query: {
+      city: searchForm.value.city,
+      checkIn: searchForm.value.checkIn,
+      checkOut: searchForm.value.checkOut,
+      guests: searchForm.value.guests,
+    },
+  });
+};
+
+const cities = computed(() => [
+  t("home.cities.phnomPenh"),
+  t("home.cities.siemReap"),
+  t("home.cities.sihanoukville"),
+  t("home.cities.battambang"),
+  t("home.cities.kampot"),
+]);
+
+const quickTags = computed(() => [
+  t("home.cities.siemReap"),
+  t("home.cities.phnomPenh"),
+  t("home.cities.kampot"),
+]);
+</script>
 <template>
   <section
     class="relative min-h-screen w-full overflow-hidden flex items-center justify-center pt-44 pb-20"
   >
     <div class="absolute inset-0 z-0">
       <img
-        src="https://images.unsplash.com/photo-1540541338287-41700207dee6?q=80&w=2070&auto=format&fit=crop"
+        :src="HeroImg"
         alt="Cambodian Resort"
         class="h-full w-auto min-w-full object-cover"
       />
@@ -12,7 +54,7 @@
         class="absolute inset-0 backdrop-blur-[2px]"
         style="
           background: linear-gradient(
-            /* 135deg, */ to bottom,
+            to bottom,
             rgba(6, 41, 105, 0.85) 0%,
             rgba(41, 111, 166, 0.8),
             rgba(41, 111, 166, 0.3),
@@ -125,6 +167,7 @@
             </label>
             <input
               type="date"
+              v-model="searchForm.checkIn"
               class="w-full border-none bg-transparent p-0 text-sm font-semibold text-gray-800 outline-none focus:ring-0"
             />
           </div>
@@ -187,46 +230,3 @@
     </div>
   </section>
 </template>
-
-<script setup>
-import { ref, computed } from "vue";
-import { useRouter } from "vue-router";
-import { useI18n } from "vue-i18n";
-import AppButton from "@/shared/components/AppButton.vue";
-
-const { t, locale } = useI18n({ useScope: "global" });
-const router = useRouter();
-
-const searchForm = ref({
-  city: "",
-  checkIn: "",
-  checkOut: "",
-  guests: 1,
-});
-
-const handleSearch = () => {
-  router.push({
-    name: "public.properties",
-    query: {
-      city: searchForm.value.city,
-      checkIn: searchForm.value.checkIn,
-      checkOut: searchForm.value.checkOut,
-      guests: searchForm.value.guests,
-    },
-  });
-};
-
-const cities = computed(() => [
-  t("home.cities.phnomPenh"),
-  t("home.cities.siemReap"),
-  t("home.cities.sihanoukville"),
-  t("home.cities.battambang"),
-  t("home.cities.kampot"),
-]);
-
-const quickTags = computed(() => [
-  t("home.cities.siemReap"),
-  t("home.cities.phnomPenh"),
-  t("home.cities.kampot"),
-]);
-</script>

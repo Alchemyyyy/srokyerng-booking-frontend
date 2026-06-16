@@ -1,3 +1,30 @@
+<script setup>
+import { computed } from "vue";
+import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+import { useAuthStore } from "@/modules/auth/store/authStore";
+import { CheckIcon } from "@heroicons/vue/24/outline";
+
+const { t, locale } = useI18n({ useScope: "global" });
+const router = useRouter();
+const authStore = useAuthStore();
+
+const features = computed(() => [
+  t("home.cta.feature1"),
+  t("home.cta.feature2"),
+  t("home.cta.feature3"),
+  t("home.cta.feature4"),
+]);
+
+const handleCtaClick = () => {
+  router.push(
+    authStore.isAuthenticated
+      ? { name: "owner.dashboard" }
+      : { name: "public.register" },
+  );
+};
+</script>
+
 <template>
   <section
     class="max-w-7xl mx-auto px-4 py-12"
@@ -17,7 +44,7 @@
         <h2 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">
           {{ t("home.cta.ownerTitle") }}
         </h2>
-        <p class="mt-4 text-lg text-blue-10/80 text-gray-200">
+        <p class="mt-4 text-lg text-gray-200">
           {{ t("home.cta.ownerSubtitle") }}
         </p>
 
@@ -27,19 +54,7 @@
             :key="feature"
             class="flex items-center gap-2"
           >
-            <svg
-              class="h-4 w-4 text-blue-300"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="3"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
+            <CheckIcon class="h-4 w-4 text-blue-300 shrink-0" />
             {{ feature }}
           </div>
         </div>
@@ -57,17 +72,3 @@
     </div>
   </section>
 </template>
-
-<script setup>
-import { computed } from "vue";
-import { useI18n } from "vue-i18n";
-
-const { t, locale } = useI18n({ useScope: "global" });
-
-const features = computed(() => [
-  t("home.cta.feature1"),
-  t("home.cta.feature2"),
-  t("home.cta.feature3"),
-  t("home.cta.feature4"),
-]);
-</script>

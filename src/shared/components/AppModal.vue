@@ -33,10 +33,14 @@ const displayTitle = computed(() => props.title || t("components.modalTitle"));
       @click.self="$emit('close')"
     >
       <section
-        class="w-full rounded-lg border border-(--color-border) bg-(--color-surface) p-6 text-(--color-text) shadow-(--shadow-panel)"
+        class="flex flex-col w-full rounded-lg border border-(--color-border) bg-(--color-surface) text-(--color-text) shadow-(--shadow-panel)"
         :class="panelClass || 'max-w-lg'"
+        style="max-height: 90vh"
       >
-        <header class="mb-5 flex items-start justify-between gap-4">
+        <!-- Header — always visible -->
+        <header
+          class="flex-shrink-0 flex items-start justify-between gap-4 px-6 pt-6 pb-4"
+        >
           <h2 class="m-0 text-xl font-semibold">{{ displayTitle }}</h2>
           <button
             type="button"
@@ -47,8 +51,17 @@ const displayTitle = computed(() => props.title || t("components.modalTitle"));
             ×
           </button>
         </header>
-        <slot></slot>
-        <footer v-if="$slots.footer" class="mt-6 flex justify-end gap-3">
+
+        <!-- Body — scrollable -->
+        <div class="flex-1 overflow-y-auto px-6 pb-2">
+          <slot></slot>
+        </div>
+
+        <!-- Footer — always visible -->
+        <footer
+          v-if="$slots.footer"
+          class="flex-shrink-0 flex justify-end gap-3 px-6 py-4 border-t border-(--color-border)"
+        >
           <slot name="footer"></slot>
         </footer>
       </section>

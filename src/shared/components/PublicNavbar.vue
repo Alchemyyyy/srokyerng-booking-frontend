@@ -31,7 +31,9 @@ const navigationItems = computed(() => [
   { label: t("nav.contact"), to: { name: "public.contact" } },
 ]);
 
-const dashboardRoute = computed(() => getDashboardRouteByRole(authStore.user?.role));
+const dashboardRoute = computed(() =>
+  getDashboardRouteByRole(authStore.user?.role),
+);
 
 const userLabel = computed(() => {
   return (
@@ -326,10 +328,14 @@ watch(
               size-class="h-12 w-12 text-sm"
             />
             <div class="min-w-0">
-              <p class="text-xs uppercase tracking-[0.2em] text-(--color-muted)">
+              <p
+                class="text-xs uppercase tracking-[0.2em] text-(--color-muted)"
+              >
                 {{ t("nav.signedInAs") }}
               </p>
-              <p class="mt-2 truncate text-base font-semibold text-(--color-text)">
+              <p
+                class="mt-2 truncate text-base font-semibold text-(--color-text)"
+              >
                 {{ userLabel }}
               </p>
               <p class="mt-1 text-sm text-(--color-muted)">

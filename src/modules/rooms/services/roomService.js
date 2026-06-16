@@ -22,7 +22,7 @@ export const roomService = {
   },
 
   async uploadRoomImages(roomId, formData) {
-    const res = await roomApi.uploadRoomImages(roomId, formData); // ✅ missing this
+    const res = await roomApi.uploadRoomImages(roomId, formData); // missing this
     return res.data;
   },
 

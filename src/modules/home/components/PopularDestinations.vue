@@ -62,7 +62,10 @@ const goToCity = (city) => {
 </script>
 
 <template>
-  <section class="bg-(--color-surface) py-16 px-4 font-sans">
+  <section
+    class="bg-(--color-surface) py-16 px-4"
+    :class="{ 'font-kantumruy': locale === 'km' }"
+  >
     <div class="max-w-7xl mx-auto">
       <!-- Header -->
       <div

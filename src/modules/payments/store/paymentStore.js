@@ -52,17 +52,21 @@ export const usePaymentStore = defineStore("payment", () => {
 
   // ─── Getters ──────────────────────────────────────────────────────────────
 
+  // ✅ Fixed: use payment_status field, not status
   const pendingPayments = computed(() =>
-    payments.value.filter((p) => p.status === PAYMENT_STATUSES.PENDING),
+    payments.value.filter((p) => p.payment_status === PAYMENT_STATUSES.PENDING),
   );
 
+  // ✅ Fixed: use PAID not VERIFIED
   const verifiedPayments = computed(() =>
-    payments.value.filter((p) => p.status === PAYMENT_STATUSES.VERIFIED),
+    payments.value.filter((p) => p.payment_status === PAYMENT_STATUSES.PAID),
   );
 
-  /** Whether the active payment can have proof submitted. */
+  // ✅ Fixed: use payment_status field
   const activeCanUpload = computed(() =>
-    activePayment.value ? canUploadProof(activePayment.value.status) : false,
+    activePayment.value
+      ? canUploadProof(activePayment.value.payment_status)
+      : false,
   );
 
   const isLoading = computed(
@@ -148,22 +152,22 @@ export const usePaymentStore = defineStore("payment", () => {
    * @param {File} file
    * @returns {Promise<boolean>} true on success
    */
-  async function submitPaymentProof(paymentId, file) {
+  async function submitPaymentProof(paymentId, file, uploadType = "receipt") {
     loadingSubmitProof.value = true;
     errorSubmitProof.value = null;
     try {
+      // ✅ Fixed: use payment_status field
       const currentStatus =
-        activePayment.value?.status ?? PAYMENT_STATUSES.PENDING;
+        activePayment.value?.payment_status ?? PAYMENT_STATUSES.PENDING;
 
-      let updated;
-
-      if (currentStatus === PAYMENT_STATUSES.PENDING) {
-        // First time → use /receipt
-        updated = await uploadReceipt(paymentId, file);
-      } else {
-        // Re-upload after rejection → use /proof
-        updated = await submitProof(paymentId, currentStatus, file);
-      }
+      // ✅ Fixed: always go through submitProof which picks
+      // uploadReceipt (first time) or replaceProof (after rejection)
+      const updated = await submitProof(
+        paymentId,
+        currentStatus,
+        file,
+        uploadType,
+      );
 
       activePayment.value = updated;
       const idx = payments.value.findIndex((p) => p.id === updated.id);

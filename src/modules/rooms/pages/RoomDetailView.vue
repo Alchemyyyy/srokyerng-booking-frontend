@@ -10,6 +10,7 @@ import {
   ShieldCheckIcon,
 } from "@heroicons/vue/24/outline";
 import http from "@/app/api/http";
+import AvailabilityCalendar from "@/modules/calendar/components/AvailabilityCalendar.vue";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -34,7 +35,6 @@ const fetchRoom = async () => {
     const res = await http.get(`/rooms/${route.params.id}`);
     const r = res.data?.data || res.data;
 
-    // ✅ Separate try for images so it doesn't kill the whole room
     let images = [];
     try {
       const imgRes = await http.get(`/rooms/${route.params.id}/images`);
@@ -63,6 +63,12 @@ const fetchRoom = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+// ── Auto-fill booking form when customer picks a date range ──────────────────
+const handleRangeSelected = ({ start, end }) => {
+  checkInDate.value = start;
+  checkOutDate.value = end;
 };
 
 const goToBooking = () => {
@@ -113,20 +119,23 @@ onMounted(fetchRoom);
             <a
               href="#"
               class="hover:text-(--color-primary) transition duration-300"
-              >{{ t("roomDetail.breadcrumb.home") }}</a
             >
+              {{ t("roomDetail.breadcrumb.home") }}
+            </a>
             <span class="text-(--color-border) text-[10px] font-light">/</span>
             <a
               href="#"
               class="hover:text-(--color-primary) transition duration-300"
-              >{{ t("roomDetail.breadcrumb.properties") }}</a
             >
+              {{ t("roomDetail.breadcrumb.properties") }}
+            </a>
             <span class="text-(--color-border) text-[10px] font-light">/</span>
             <a
               href="#"
               class="hover:text-(--color-primary) transition duration-300"
-              >{{ t("roomDetail.breadcrumb.rooms") }}</a
             >
+              {{ t("roomDetail.breadcrumb.rooms") }}
+            </a>
             <span class="text-(--color-border) text-[10px] font-light">/</span>
             <span class="text-(--color-text) font-bold tracking-tight">{{
               room.type
@@ -180,7 +189,6 @@ onMounted(fetchRoom);
           <div
             class="hidden md:grid grid-cols-2 md:col-span-5 gap-3.5 h-[520px]"
           >
-            <!-- Slot 1 -->
             <div
               class="overflow-hidden h-[253px] bg-slate-800 relative group/item"
             >
@@ -192,8 +200,6 @@ onMounted(fetchRoom);
                 class="absolute inset-0 bg-slate-950/10 group-hover/item:bg-transparent transition-all"
               ></div>
             </div>
-
-            <!-- Slot 2 -->
             <div
               class="overflow-hidden h-[253px] bg-slate-800 relative group/item"
             >
@@ -205,8 +211,6 @@ onMounted(fetchRoom);
                 class="absolute inset-0 bg-slate-950/10 group-hover/item:bg-transparent transition-all"
               ></div>
             </div>
-
-            <!-- Slot 3 -->
             <div
               class="overflow-hidden h-[253px] bg-slate-800 relative group/item"
             >
@@ -218,8 +222,6 @@ onMounted(fetchRoom);
                 class="absolute inset-0 bg-slate-950/10 group-hover/item:bg-transparent transition-all"
               ></div>
             </div>
-
-            <!-- Slot 4 — Explore Gallery -->
             <div
               class="overflow-hidden h-[253px] bg-slate-800 relative group/item"
             >
@@ -271,17 +273,16 @@ onMounted(fetchRoom);
                 <span class="w-1 h-1 bg-(--color-border) rounded-full"></span>
                 <span>{{ room.propertyName }}</span>
                 <span class="w-1 h-1 bg-(--color-border) rounded-full"></span>
-                <span class="text-(--color-primary) underline cursor-pointer">{{
-                  t("roomDetail.showMap")
-                }}</span>
+                <span class="text-(--color-primary) underline cursor-pointer">
+                  {{ t("roomDetail.showMap") }}
+                </span>
               </div>
             </div>
 
             <!-- Spec Cards -->
             <div class="grid grid-cols-3 gap-4">
-              <!-- Capacity -->
               <div
-                class="bg-(--color-surface) border border-(--color-border) rounded-[24px] p-5 flex flex-col justify-between shadow-xl shadow-(--color-border)/40 hover:border-(--color-border) transition-all duration-300"
+                class="bg-(--color-surface) border border-(--color-border) rounded-[24px] p-5 flex flex-col justify-between shadow-xl shadow-(--color-border)/40"
               >
                 <div
                   class="w-9 h-9 rounded-xl bg-(--color-surface-soft) flex items-center justify-center border border-(--color-border) mb-4"
@@ -299,9 +300,8 @@ onMounted(fetchRoom);
                   </p>
                 </div>
               </div>
-              <!-- Bed Type -->
               <div
-                class="bg-(--color-surface) border border-(--color-border) rounded-[24px] p-5 flex flex-col justify-between shadow-xl shadow-(--color-border)/40 hover:border-(--color-border) transition-all duration-300"
+                class="bg-(--color-surface) border border-(--color-border) rounded-[24px] p-5 flex flex-col justify-between shadow-xl shadow-(--color-border)/40"
               >
                 <div
                   class="w-9 h-9 rounded-xl bg-(--color-surface-soft) flex items-center justify-center border border-(--color-border) mb-4"
@@ -316,9 +316,8 @@ onMounted(fetchRoom);
                   </p>
                 </div>
               </div>
-              <!-- Floor Size -->
               <div
-                class="bg-(--color-surface) border border-(--color-border) rounded-[24px] p-5 flex flex-col justify-between shadow-xl shadow-(--color-border)/40 hover:border-(--color-border) transition-all duration-300"
+                class="bg-(--color-surface) border border-(--color-border) rounded-[24px] p-5 flex flex-col justify-between shadow-xl shadow-(--color-border)/40"
               >
                 <div
                   class="w-9 h-9 rounded-xl bg-(--color-surface-soft) flex items-center justify-center border border-(--color-border) mb-4"
@@ -374,6 +373,29 @@ onMounted(fetchRoom);
                 </div>
               </div>
             </div>
+
+            <!-- ── Availability Calendar ──────────────────────────────────── -->
+            <div class="space-y-4">
+              <h2
+                class="text-xs font-black text-(--color-text) uppercase tracking-widest border-l-2 border-(--color-primary) pl-3"
+              >
+                Availability
+              </h2>
+              <p class="text-xs text-(--color-muted) font-medium">
+                Select your check-in and check-out dates below. Unavailable
+                dates are shown in red.
+              </p>
+              <div
+                class="bg-(--color-surface) border border-(--color-border) rounded-[24px] p-6 shadow-sm"
+              >
+                <AvailabilityCalendar
+                  :room-id="room.id"
+                  mode="customer"
+                  @range-selected="handleRangeSelected"
+                />
+              </div>
+            </div>
+            <!-- ── End Availability Calendar ─────────────────────────────── -->
           </div>
 
           <!-- Right Column: Booking Panel -->
@@ -414,9 +436,8 @@ onMounted(fetchRoom);
               </div>
 
               <!-- Form -->
-              <!-- Form -->
               <form @submit.prevent class="space-y-4">
-                <!-- Dates -->
+                <!-- Dates — auto-filled by calendar selection -->
                 <div
                   class="grid grid-cols-2 gap-3 bg-(--color-surface-soft) border border-(--color-border) p-3 rounded-2xl"
                 >
@@ -426,7 +447,6 @@ onMounted(fetchRoom);
                     >
                       {{ t("roomDetail.arrivalDate") }}
                     </label>
-                    <!-- ✅ Add v-model here -->
                     <input
                       type="date"
                       v-model="checkInDate"
@@ -439,7 +459,6 @@ onMounted(fetchRoom);
                     >
                       {{ t("roomDetail.departureDate") }}
                     </label>
-                    <!-- ✅ Add v-model here -->
                     <input
                       type="date"
                       v-model="checkOutDate"
@@ -447,6 +466,14 @@ onMounted(fetchRoom);
                     />
                   </div>
                 </div>
+
+                <!-- Hint when dates are selected via calendar -->
+                <p
+                  v-if="checkInDate && checkOutDate"
+                  class="text-[10px] text-emerald-600 font-bold flex items-center gap-1"
+                >
+                  ✓ Dates selected from availability calendar
+                </p>
 
                 <!-- Guests -->
                 <div class="space-y-1.5">
@@ -458,7 +485,6 @@ onMounted(fetchRoom);
                   <div
                     class="relative bg-(--color-surface) border border-(--color-border) focus-within:border-(--color-primary) rounded-xl px-4 py-3 shadow-sm transition"
                   >
-                    <!-- ✅ Add select with v-model here -->
                     <select
                       v-model.number="guestCount"
                       class="w-full text-xs text-(--color-text) bg-transparent outline-none appearance-none font-bold cursor-pointer"
@@ -513,7 +539,6 @@ onMounted(fetchRoom);
                   </div>
                 </div>
 
-                <!-- ✅ Remove the duplicate date inputs below - delete these -->
                 <!-- CTA Button -->
                 <button
                   type="button"
