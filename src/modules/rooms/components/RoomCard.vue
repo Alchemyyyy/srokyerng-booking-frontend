@@ -7,9 +7,11 @@ import {
   UserGroupIcon,
 } from "@heroicons/vue/24/outline";
 import { computed, onMounted } from "vue";
-import { useRoomStore } from "../store/roomStore"; // ← Adjust path if needed
+import { useRoomStore } from "../store/roomStore";
+import { useRouter } from "vue-router";
 
 const roomStore = useRoomStore();
+const router = useRouter();
 
 const props = defineProps({
   room: {
@@ -23,6 +25,9 @@ const props = defineProps({
 });
 
 defineEmits(["edit", "delete"]);
+const goToDetail = () => {
+  router.push({ name: "owner.room-detail", params: { id: props.room.id } });
+};
 
 // Get cover image from store (with full URL)
 const coverImage = computed(() => {

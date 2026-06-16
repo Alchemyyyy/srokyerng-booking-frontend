@@ -1,0 +1,567 @@
+<script setup>
+import { ref, computed, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import {
+  ArrowLeftIcon,
+  PencilSquareIcon,
+  TrashIcon,
+  PhotoIcon,
+  CalendarDaysIcon,
+  UsersIcon,
+  CurrencyDollarIcon,
+  HomeModernIcon,
+  XMarkIcon,
+  CheckCircleIcon,
+} from "@heroicons/vue/24/outline";
+import http from "@/app/api/http";
+import AvailabilityCalendar from "@/modules/calendar/components/AvailabilityCalendar.vue";
+import { useToastStore } from "@/shared/store/toastStore";
+
+const route = useRoute();
+const router = useRouter();
+const toast = useToastStore();
+
+const BASE_URL = "https://api-srokyerng.devspace.linkpc.net";
+
+// ── State ─────────────────────────────────────────────────────────────────────
+const room = ref(null);
+const images = ref([]);
+const bookings = ref([]);
+const loading = ref(true);
+const bookingsLoading = ref(false);
+const error = ref(null);
+const activeTab = ref("calendar"); // "calendar" | "bookings" | "images"
+const uploadingImages = ref(false);
+const deletingImageId = ref(null);
+
+const roomId = computed(() => route.params.id);
+
+// ── Fetch room detail ─────────────────────────────────────────────────────────
+const fetchRoom = async () => {
+  try {
+    loading.value = true;
+    error.value = null;
+    const res = await http.get(`/rooms/${roomId.value}`);
+    room.value = res?.data?.data ?? res?.data ?? res;
+  } catch (err) {
+    error.value =
+      err?.response?.data?.message ?? "Failed to load room details.";
+    console.error("[OwnerRoomDetail] fetchRoom:", err);
+  } finally {
+    loading.value = false;
+  }
+};
+
+// ── Fetch room images ─────────────────────────────────────────────────────────
+const fetchImages = async () => {
+  try {
+    const res = await http.get(`/rooms/${roomId.value}/images`);
+    const data = res?.data?.data ?? res?.data ?? [];
+    images.value = Array.isArray(data) ? data : [];
+  } catch (err) {
+    console.error("[OwnerRoomDetail] fetchImages:", err);
+  }
+};
+
+// ── Fetch room bookings ───────────────────────────────────────────────────────
+const fetchBookings = async () => {
+  try {
+    bookingsLoading.value = true;
+    // ✅ Use existing endpoint instead
+    const res = await http.get(`/owner/reservations`);
+    const data = res?.data ?? res ?? [];
+    const all = Array.isArray(data) ? data : [];
+
+    // Filter by current room ID
+    bookings.value = all.filter((b) => b.room_id === Number(roomId.value));
+  } catch (err) {
+    console.error("[OwnerRoomDetail] fetchBookings:", err);
+    bookings.value = [];
+  } finally {
+    bookingsLoading.value = false;
+  }
+};
+
+// ── Image upload ──────────────────────────────────────────────────────────────
+const handleImageUpload = async (event) => {
+  const files = Array.from(event.target.files);
+  if (!files.length) return;
+
+  uploadingImages.value = true;
+  try {
+    const formData = new FormData();
+    files.forEach((f) => formData.append("images", f));
+    await http.post(`/rooms/${roomId.value}/images`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    await fetchImages();
+    toast.success("Images uploaded successfully.", { title: "Uploaded" });
+  } catch (err) {
+    toast.danger(err?.response?.data?.message ?? "Failed to upload images.", {
+      title: "Upload Failed",
+    });
+  } finally {
+    uploadingImages.value = false;
+  }
+};
+
+// ── Delete image ──────────────────────────────────────────────────────────────
+const handleDeleteImage = async (imageId) => {
+  deletingImageId.value = imageId;
+  try {
+    await http.delete(`/rooms/${roomId.value}/images/${imageId}`);
+    images.value = images.value.filter((i) => i.id !== imageId);
+    toast.success("Image deleted.", { title: "Deleted" });
+  } catch (err) {
+    toast.danger(err?.response?.data?.message ?? "Failed to delete image.", {
+      title: "Delete Failed",
+    });
+  } finally {
+    deletingImageId.value = null;
+  }
+};
+
+// ── Set cover image ───────────────────────────────────────────────────────────
+const handleSetCover = async (imageId) => {
+  try {
+    await http.patch(`/rooms/${roomId.value}/images/${imageId}/cover`);
+    images.value = images.value.map((i) => ({
+      ...i,
+      is_cover: i.id === imageId ? 1 : 0,
+    }));
+    toast.success("Cover image updated.", { title: "Updated" });
+  } catch (err) {
+    toast.danger("Failed to set cover image.", { title: "Error" });
+  }
+};
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const getFullImageUrl = (url) => {
+  if (!url) return null;
+  return url.startsWith("http") ? url : `${BASE_URL}${url}`;
+};
+
+const coverImage = computed(() => {
+  const cover = images.value.find((i) => i.is_cover === 1) || images.value[0];
+  return cover ? getFullImageUrl(cover.image_url) : null;
+});
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return "-";
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
+const getBookingStatusColor = (status) => {
+  const s = String(status).toLowerCase();
+  if (s === "confirmed")
+    return "bg-emerald-50 text-emerald-700 border-emerald-200";
+  if (s === "pending") return "bg-amber-50 text-amber-700 border-amber-200";
+  if (s === "cancelled") return "bg-rose-50 text-rose-700 border-rose-200";
+  return "bg-slate-50 text-slate-600 border-slate-200";
+};
+
+// ── Tab change ────────────────────────────────────────────────────────────────
+const switchTab = (tab) => {
+  activeTab.value = tab;
+  if (tab === "bookings" && bookings.value.length === 0) {
+    fetchBookings();
+  }
+};
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+onMounted(async () => {
+  await Promise.all([fetchRoom(), fetchImages()]);
+});
+</script>
+
+<template>
+  <div
+    class="min-h-screen bg-(--color-page) text-(--color-text) antialiased pb-24 ml-64 p-6 pt-10"
+  >
+    <!-- Loading -->
+    <div v-if="loading" class="flex items-center justify-center min-h-[60vh]">
+      <div class="flex flex-col items-center gap-3">
+        <div
+          class="w-8 h-8 border-4 border-(--color-primary) border-t-transparent rounded-full animate-spin"
+        />
+        <p class="text-sm font-semibold text-(--color-muted)">
+          Loading room details...
+        </p>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div
+      v-else-if="error"
+      class="flex items-center justify-center min-h-[60vh]"
+    >
+      <div class="text-center space-y-3">
+        <p class="text-sm font-bold text-rose-500">{{ error }}</p>
+        <button
+          @click="fetchRoom"
+          class="text-xs font-black text-(--color-primary) uppercase tracking-widest hover:underline"
+        >
+          Retry
+        </button>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <template v-else-if="room">
+      <!-- Back + Header -->
+      <div class="mb-8">
+        <button
+          @click="router.back()"
+          class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-(--color-muted) hover:text-(--color-primary) transition-colors mb-6 group"
+        >
+          <ArrowLeftIcon
+            class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform"
+          />
+          Back to Rooms
+        </button>
+
+        <div
+          class="flex flex-col sm:flex-row sm:items-start justify-between gap-4"
+        >
+          <div>
+            <p
+              class="text-[10px] font-black uppercase tracking-widest text-(--color-muted) mb-1"
+            >
+              Room Detail
+            </p>
+            <h1 class="text-3xl font-black tracking-tight text-(--color-text)">
+              {{ room.room_name }}
+            </h1>
+            <p class="text-sm text-(--color-muted) mt-1">
+              ID: #ROOM-{{ room.id }}
+            </p>
+          </div>
+
+          <!-- Edit button -->
+          <button
+            @click="
+              router.push({ name: 'owner.room-edit', params: { id: room.id } })
+            "
+            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-(--color-primary) hover:bg-(--color-primary-strong) text-white text-xs font-black uppercase tracking-widest transition-colors shadow-md"
+          >
+            <PencilSquareIcon class="w-4 h-4" />
+            Edit Room
+          </button>
+        </div>
+      </div>
+
+      <!-- Hero + Stats -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Cover Image -->
+        <div class="lg:col-span-1">
+          <div
+            class="rounded-[24px] overflow-hidden border border-(--color-border) bg-(--color-surface) aspect-[4/3]"
+          >
+            <img
+              v-if="coverImage"
+              :src="coverImage"
+              :alt="room.room_name"
+              class="w-full h-full object-cover"
+            />
+            <div
+              v-else
+              class="w-full h-full flex items-center justify-center bg-(--color-surface-soft)"
+            >
+              <PhotoIcon class="w-12 h-12 text-(--color-border)" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="lg:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div
+            class="bg-(--color-surface) border border-(--color-border) rounded-[20px] p-5"
+          >
+            <div
+              class="w-8 h-8 rounded-lg bg-(--color-primary-soft) flex items-center justify-center mb-3"
+            >
+              <CurrencyDollarIcon class="w-4 h-4 text-(--color-primary)" />
+            </div>
+            <p
+              class="text-[10px] font-black uppercase tracking-widest text-(--color-muted)"
+            >
+              Price / Night
+            </p>
+            <p class="text-2xl font-black text-(--color-primary) mt-1">
+              ${{ Number(room.price_per_night).toFixed(2) }}
+            </p>
+          </div>
+
+          <div
+            class="bg-(--color-surface) border border-(--color-border) rounded-[20px] p-5"
+          >
+            <div
+              class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center mb-3"
+            >
+              <UsersIcon class="w-4 h-4 text-blue-600" />
+            </div>
+            <p
+              class="text-[10px] font-black uppercase tracking-widest text-(--color-muted)"
+            >
+              Max Guests
+            </p>
+            <p class="text-2xl font-black text-(--color-text) mt-1">
+              {{ room.max_guests }}
+            </p>
+          </div>
+
+          <div
+            class="bg-(--color-surface) border border-(--color-border) rounded-[20px] p-5"
+          >
+            <div
+              class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center mb-3"
+            >
+              <HomeModernIcon class="w-4 h-4 text-emerald-600" />
+            </div>
+            <p
+              class="text-[10px] font-black uppercase tracking-widest text-(--color-muted)"
+            >
+              Total Rooms
+            </p>
+            <p class="text-2xl font-black text-(--color-text) mt-1">
+              {{ room.total_rooms }}
+            </p>
+          </div>
+
+          <div
+            class="bg-(--color-surface) border border-(--color-border) rounded-[20px] p-5 sm:col-span-3"
+          >
+            <p
+              class="text-[10px] font-black uppercase tracking-widest text-(--color-muted) mb-2"
+            >
+              Description
+            </p>
+            <p class="text-sm text-(--color-muted) font-medium leading-relaxed">
+              {{ room.description || "No description provided." }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="border-b border-(--color-border) mb-6">
+        <div class="flex items-center gap-1">
+          <button
+            v-for="tab in [
+              { id: 'calendar', label: 'Availability', icon: CalendarDaysIcon },
+              { id: 'bookings', label: 'Bookings', icon: UsersIcon },
+              { id: 'images', label: 'Images', icon: PhotoIcon },
+            ]"
+            :key="tab.id"
+            @click="switchTab(tab.id)"
+            class="flex items-center gap-2 px-4 py-3 text-xs font-black uppercase tracking-widest border-b-2 transition-all"
+            :class="
+              activeTab === tab.id
+                ? 'border-(--color-primary) text-(--color-primary)'
+                : 'border-transparent text-(--color-muted) hover:text-(--color-text)'
+            "
+          >
+            <component :is="tab.icon" class="w-4 h-4" />
+            {{ tab.label }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Tab: Availability Calendar -->
+      <div v-if="activeTab === 'calendar'">
+        <div
+          class="bg-(--color-surface) border border-(--color-border) rounded-[24px] p-6"
+        >
+          <h2
+            class="text-xs font-black uppercase tracking-widest text-(--color-muted) mb-4"
+          >
+            Room Availability Calendar
+          </h2>
+          <AvailabilityCalendar :room-id="room.id" mode="owner" />
+        </div>
+      </div>
+
+      <!-- Tab: Bookings -->
+      <div v-else-if="activeTab === 'bookings'">
+        <!-- Loading -->
+        <div v-if="bookingsLoading" class="text-center py-12">
+          <div
+            class="w-6 h-6 border-2 border-(--color-primary) border-t-transparent rounded-full animate-spin mx-auto mb-3"
+          />
+          <p class="text-sm text-(--color-muted) font-medium">
+            Loading bookings...
+          </p>
+        </div>
+
+        <!-- Empty -->
+        <div
+          v-else-if="bookings.length === 0"
+          class="text-center py-16 border border-dashed border-(--color-border) rounded-[24px]"
+        >
+          <CalendarDaysIcon
+            class="w-10 h-10 text-(--color-border) mx-auto mb-3"
+          />
+          <p class="text-sm font-bold text-(--color-text)">No bookings yet</p>
+          <p class="text-xs text-(--color-muted) mt-1">
+            Bookings for this room will appear here.
+          </p>
+        </div>
+
+        <!-- Bookings List -->
+        <div v-else class="space-y-4">
+          <div
+            v-for="booking in bookings"
+            :key="booking.id"
+            class="bg-(--color-surface) border border-(--color-border) rounded-[20px] p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+          >
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <p class="text-sm font-black text-(--color-text)">
+                  {{ booking.customer_name || "Guest" }}
+                </p>
+                <span
+                  class="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border"
+                  :class="getBookingStatusColor(booking.reservation_status)"
+                >
+                  {{ booking.reservation_status }}
+                </span>
+              </div>
+              <p class="text-xs text-(--color-muted) font-medium">
+                {{ booking.customer_email }}
+              </p>
+              <div
+                class="flex items-center gap-3 text-xs text-(--color-muted) pt-1"
+              >
+                <span
+                  >Check-in:
+                  <strong class="text-(--color-text)">{{
+                    formatDate(booking.check_in_date)
+                  }}</strong></span
+                >
+                <span>→</span>
+                <span
+                  >Check-out:
+                  <strong class="text-(--color-text)">{{
+                    formatDate(booking.check_out_date)
+                  }}</strong></span
+                >
+                <span>·</span>
+                <span
+                  >{{ booking.total_nights }} night{{
+                    booking.total_nights > 1 ? "s" : ""
+                  }}</span
+                >
+              </div>
+            </div>
+
+            <div class="text-right">
+              <p
+                class="text-[9px] font-black uppercase tracking-widest text-(--color-muted)"
+              >
+                Total
+              </p>
+              <p class="text-xl font-black text-(--color-primary)">
+                ${{ booking.total_amount }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Images -->
+      <div v-else-if="activeTab === 'images'">
+        <div class="space-y-6">
+          <!-- Upload button -->
+          <div class="flex items-center justify-between">
+            <p
+              class="text-xs font-black uppercase tracking-widest text-(--color-muted)"
+            >
+              {{ images.length }} image{{ images.length !== 1 ? "s" : "" }}
+            </p>
+            <label
+              class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-(--color-primary) hover:bg-(--color-primary-strong) text-white text-xs font-black uppercase tracking-widest transition-colors cursor-pointer shadow-md"
+            >
+              <PhotoIcon class="w-4 h-4" />
+              {{ uploadingImages ? "Uploading..." : "Upload Images" }}
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                class="hidden"
+                :disabled="uploadingImages"
+                @change="handleImageUpload"
+              />
+            </label>
+          </div>
+
+          <!-- Empty -->
+          <div
+            v-if="images.length === 0"
+            class="text-center py-16 border border-dashed border-(--color-border) rounded-[24px]"
+          >
+            <PhotoIcon class="w-10 h-10 text-(--color-border) mx-auto mb-3" />
+            <p class="text-sm font-bold text-(--color-text)">No images yet</p>
+            <p class="text-xs text-(--color-muted) mt-1">
+              Upload images to showcase this room.
+            </p>
+          </div>
+
+          <!-- Images Grid -->
+          <div
+            v-else
+            class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"
+          >
+            <div
+              v-for="image in images"
+              :key="image.id"
+              class="relative group rounded-[16px] overflow-hidden border border-(--color-border) aspect-square bg-(--color-surface-soft)"
+            >
+              <img
+                :src="getFullImageUrl(image.image_url)"
+                :alt="`Room image ${image.id}`"
+                class="w-full h-full object-cover"
+              />
+
+              <!-- Cover badge -->
+              <div
+                v-if="image.is_cover === 1"
+                class="absolute top-2 left-2 bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"
+              >
+                Cover
+              </div>
+
+              <!-- Actions overlay -->
+              <div
+                class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2"
+              >
+                <!-- Set as cover -->
+                <button
+                  v-if="image.is_cover !== 1"
+                  @click="handleSetCover(image.id)"
+                  class="p-2 rounded-lg bg-white/20 hover:bg-white/30 text-white transition"
+                  title="Set as cover"
+                >
+                  <CheckCircleIcon class="w-4 h-4" />
+                </button>
+
+                <!-- Delete -->
+                <button
+                  @click="handleDeleteImage(image.id)"
+                  :disabled="deletingImageId === image.id"
+                  class="p-2 rounded-lg bg-rose-500/80 hover:bg-rose-600 text-white transition disabled:opacity-50"
+                  title="Delete image"
+                >
+                  <TrashIcon class="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+</template>

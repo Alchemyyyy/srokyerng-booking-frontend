@@ -8,6 +8,7 @@ import member2 from "@/assets/images/about/team/member_2.png";
 import member3 from "@/assets/images/about/team/member_3.png";
 import member4 from "@/assets/images/about/team/member_4.png";
 import member5 from "@/assets/images/about/team/member_5.png";
+import member6 from "@/assets/images/about/team/member_6.png";
 import AppButton from "@/shared/components/AppButton.vue";
 import {
   ArrowRightIcon,
@@ -132,7 +133,7 @@ const team = computed(() => [
   {
     name: t("about.team.members.an-menghour.name"),
     role: t("about.team.members.an-menghour.role"),
-    image: null,
+    image: member6,
   },
 ]);
 </script>

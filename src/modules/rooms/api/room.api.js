@@ -3,9 +3,9 @@ import http from "@/app/api/http";
 export const roomApi = {
   getMyRooms(propertyId) {
     if (propertyId && propertyId !== "all") {
-      return http.get(`/properties/${propertyId}/rooms`);
+      return http.get(`/properties/${propertyId}/rooms/my`); // ✅ correct endpoint
     }
-    return http.get(`/properties/rooms/my`);
+    return http.get(`/properties/rooms/my`); // fallback
   },
 
   createRoom(propertyId, roomData) {

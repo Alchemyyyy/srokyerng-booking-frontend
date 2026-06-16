@@ -5,39 +5,17 @@ import { useI18n } from "vue-i18n";
 const { t } = useI18n({ useScope: "global" });
 
 const props = defineProps({
-  modelValue: {
-    type: Object,
-    required: true,
-  },
-  activeFilterCount: {
-    type: Number,
-    default: 0,
-  },
-  cityOptions: {
-    type: Array,
-    required: true,
-  },
-  typeOptions: {
-    type: Array,
-    required: true,
-  },
-  minimumRatings: {
-    type: Array,
-    required: true,
-  },
-  whyBrowseItems: {
-    type: Array,
-    required: true,
-  },
-  propertyCountByCity: {
-    type: Function,
-    required: true,
-  },
+  modelValue: { type: Object, required: true },
+  activeFilterCount: { type: Number, default: 0 },
+  cityOptions: { type: Array, required: true },
+  typeOptions: { type: Array, required: true },
+  minimumRatings: { type: Array, required: true },
+  whyBrowseItems: { type: Array, required: true },
+  propertyCountByCity: { type: Function, required: true },
 });
 
 const emit = defineEmits(["update:modelValue", "reset"]);
 
-// Update a single filter field
 const updateFilter = (key, value) => {
   emit("update:modelValue", { ...props.modelValue, [key]: value });
 };
@@ -46,35 +24,37 @@ const formatPrice = (value) => `$${value}`;
 </script>
 
 <template>
-  <div class="properties-panel rounded-[30px] border p-6 backdrop-blur-xl">
+  <div
+    class="properties-panel rounded-[28px] border border-(--color-border)/60 p-6 bg-(--color-surface)"
+  >
     <!-- Header -->
     <div class="flex items-center justify-between gap-4">
       <div>
         <p
-          class="text-xs font-semibold uppercase tracking-[0.22em] text-(--color-primary)"
+          class="text-[10px] font-black uppercase tracking-[0.24em] text-(--color-primary)"
         >
           {{ t("propertiesPage.filters.title") }}
         </p>
-        <h2 class="mt-2 text-2xl font-black text-(--color-text)">
+        <h2 class="mt-1.5 text-xl font-black text-(--color-text)">
           {{ t("propertiesPage.filters.refineTrip") }}
         </h2>
       </div>
       <span
-        class="rounded-full bg-(--color-primary-soft) px-3 py-1 text-sm font-semibold text-(--color-primary)"
+        class="flex items-center justify-center w-8 h-8 rounded-full bg-(--color-primary-soft) text-xs font-bold text-(--color-primary)"
       >
         {{ activeFilterCount }}
       </span>
     </div>
 
     <!-- Price Range -->
-    <div class="mt-6">
+    <div class="mt-8">
       <label
-        class="text-xs font-semibold uppercase tracking-[0.22em] text-(--color-muted)"
+        class="text-[10px] font-black uppercase tracking-[0.24em] text-(--color-muted)"
       >
         {{ t("propertiesPage.filters.maxPricePerNight") }}
       </label>
       <div
-        class="mt-3 flex items-center justify-between text-sm font-semibold text-(--color-text)"
+        class="mt-4 flex items-center justify-between text-sm font-bold text-(--color-text)"
       >
         <span>{{ formatPrice(0) }}</span>
         <span>{{ formatPrice(modelValue.maxPrice) }}</span>
@@ -87,27 +67,26 @@ const formatPrice = (value) => `$${value}`;
         max="220"
         step="5"
         class="property-range mt-3 w-full"
-        style="accent-color: var(--color-primary)"
       />
     </div>
 
     <!-- City Filter -->
     <div class="mt-8">
       <p
-        class="text-xs font-semibold uppercase tracking-[0.22em] text-(--color-muted)"
+        class="text-[10px] font-black uppercase tracking-[0.24em] text-(--color-muted) mb-4"
       >
         {{ t("home.search.city") }}
       </p>
-      <div class="mt-3 space-y-2">
+      <div class="space-y-2">
         <button
           v-for="city in cityOptions.slice(1)"
           :key="city.value"
           type="button"
-          class="flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition"
+          class="flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left text-sm font-semibold transition-all duration-200"
           :class="
             modelValue.city === city.value
-              ? 'border-(--color-primary)/30 bg-(--color-primary-soft) text-(--color-primary)'
-              : 'border-(--color-border) bg-(--color-surface) text-(--color-text) hover:border-(--color-primary)/20 hover:bg-(--color-surface-soft)'
+              ? 'border-(--color-primary)/50 bg-(--color-primary-soft)/30 text-(--color-primary)'
+              : 'border-(--color-border)/60 bg-(--color-surface-soft) text-(--color-text) hover:border-(--color-primary)/30'
           "
           @click="
             updateFilter(
@@ -117,130 +96,118 @@ const formatPrice = (value) => `$${value}`;
           "
         >
           <span>{{ city.label }}</span>
-          <span class="text-xs text-(--color-muted)">
+          <span class="text-[10px] font-medium opacity-60">
             {{ propertyCountByCity(city.value) }}
           </span>
         </button>
       </div>
     </div>
 
-    <!-- Type Filter -->
-    <div class="mt-8">
-      <p
-        class="text-xs font-semibold uppercase tracking-[0.22em] text-(--color-muted)"
-      >
-        {{ t("home.search.type") }}
-      </p>
-      <div class="mt-3 flex flex-wrap gap-2">
-        <button
-          v-for="type in typeOptions.slice(1)"
-          :key="type.value"
-          type="button"
-          class="rounded-full border px-3.5 py-2 text-sm font-semibold transition"
-          :class="
-            modelValue.type === type.value
-              ? 'border-(--color-primary)/30 bg-(--color-primary-soft) text-(--color-primary)'
-              : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:bg-(--color-surface-soft) hover:text-(--color-text)'
-          "
-          @click="
-            updateFilter(
-              'type',
-              modelValue.type === type.value ? 'all' : type.value,
-            )
-          "
+    <!-- Type & Rating Filters (Grid Layout) -->
+    <div class="mt-8 grid grid-cols-1 gap-8">
+      <!-- Type Filter -->
+      <div>
+        <p
+          class="text-[10px] font-black uppercase tracking-[0.24em] text-(--color-muted) mb-4"
         >
-          {{ type.label }}
-        </button>
+          {{ t("home.search.type") }}
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <button
+            v-for="type in typeOptions.slice(1)"
+            :key="type.value"
+            type="button"
+            class="rounded-full border px-4 py-1.5 text-xs font-semibold transition-all duration-200"
+            :class="
+              modelValue.type === type.value
+                ? 'border-(--color-primary)/50 bg-(--color-primary-soft)/30 text-(--color-primary)'
+                : 'border-(--color-border)/60 bg-(--color-surface-soft) text-(--color-muted) hover:border-(--color-primary)/30 hover:text-(--color-text)'
+            "
+            @click="
+              updateFilter(
+                'type',
+                modelValue.type === type.value ? 'all' : type.value,
+              )
+            "
+          >
+            {{ type.label }}
+          </button>
+        </div>
       </div>
-    </div>
 
-    <!-- Rating Filter -->
-    <div class="mt-8">
-      <p
-        class="text-xs font-semibold uppercase tracking-[0.22em] text-(--color-muted)"
-      >
-        {{ t("propertiesPage.filters.minimumRating") }}
-      </p>
-      <div class="mt-3 flex flex-wrap gap-2">
-        <button
-          v-for="rating in minimumRatings"
-          :key="rating"
-          type="button"
-          class="rounded-full border px-3.5 py-2 text-sm font-semibold transition"
-          :class="
-            modelValue.minRating === rating
-              ? 'border-(--color-primary)/30 bg-(--color-primary-soft) text-(--color-primary)'
-              : 'border-(--color-border) bg-(--color-surface) text-(--color-muted) hover:bg-(--color-surface-soft) hover:text-(--color-text)'
-          "
-          @click="updateFilter('minRating', rating)"
+      <!-- Rating Filter -->
+      <div>
+        <p
+          class="text-[10px] font-black uppercase tracking-[0.24em] text-(--color-muted) mb-4"
         >
-          {{ rating === 0 ? t("propertiesPage.filters.all") : `${rating}+` }}
-        </button>
+          {{ t("propertiesPage.filters.minimumRating") }}
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <button
+            v-for="rating in minimumRatings"
+            :key="rating"
+            type="button"
+            class="rounded-full border px-4 py-1.5 text-xs font-semibold transition-all duration-200"
+            :class="
+              modelValue.minRating === rating
+                ? 'border-(--color-primary)/50 bg-(--color-primary-soft)/30 text-(--color-primary)'
+                : 'border-(--color-border)/60 bg-(--color-surface-soft) text-(--color-muted) hover:border-(--color-primary)/30 hover:text-(--color-text)'
+            "
+            @click="updateFilter('minRating', rating)"
+          >
+            {{ rating === 0 ? t("propertiesPage.filters.all") : `${rating}+` }}
+          </button>
+        </div>
       </div>
     </div>
 
     <!-- Why Browse -->
     <div
-      class="mt-8 rounded-[24px] bg-[linear-gradient(145deg,#082b58,#0f67b3)] p-5 text-white shadow-[0_18px_40px_rgba(7,42,103,0.22)]"
+      class="mt-8 rounded-2xl bg-gradient-to-br from-blue-900 to-blue-700 p-5 text-white shadow-xl"
     >
       <p
-        class="text-xs font-semibold uppercase tracking-[0.22em] text-white/62"
+        class="text-[10px] font-black uppercase tracking-[0.24em] text-blue-200"
       >
         {{ t("propertiesPage.whyBrowse.title") }}
       </p>
-      <ul class="mt-4 space-y-3 text-sm leading-6 text-white/82">
-        <li v-for="item in whyBrowseItems" :key="item">{{ item }}</li>
+      <ul class="mt-4 space-y-2.5 text-xs leading-relaxed text-blue-50">
+        <li
+          v-for="item in whyBrowseItems"
+          :key="item"
+          class="flex items-start gap-2"
+        >
+          <span class="opacity-50">•</span> {{ item }}
+        </li>
       </ul>
     </div>
 
     <!-- Reset Button -->
-    <AppButton variant="secondary" class="mt-6 w-full" @click="$emit('reset')">
+    <AppButton
+      variant="secondary"
+      class="mt-8 w-full py-3 text-sm font-bold"
+      @click="$emit('reset')"
+    >
       {{ t("propertiesPage.actions.resetFilters") }}
     </AppButton>
   </div>
 </template>
 
 <style scoped>
-.properties-panel {
-  background: var(--color-surface);
-  border-color: var(--color-border);
-  box-shadow: var(--shadow-panel);
-}
-
 .property-range {
-  height: 8px;
+  -webkit-appearance: none;
+  height: 6px;
+  background: var(--color-surface-soft);
+  border-radius: 999px;
   cursor: pointer;
 }
 
-.property-range::-webkit-slider-runnable-track {
-  height: 8px;
-  border-radius: 999px;
-  background: var(--color-primary-soft);
-}
-
 .property-range::-webkit-slider-thumb {
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  margin-top: -5px;
-  border: 3px solid var(--color-surface);
-  border-radius: 999px;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
   background: var(--color-primary);
-  box-shadow: var(--shadow-card);
-}
-
-.property-range::-moz-range-track {
-  height: 8px;
-  border-radius: 999px;
-  background: var(--color-primary-soft);
-}
-
-.property-range::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  border: 3px solid var(--color-surface);
-  border-radius: 999px;
-  background: var(--color-primary);
-  box-shadow: var(--shadow-card);
+  border: 4px solid var(--color-surface);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 </style>

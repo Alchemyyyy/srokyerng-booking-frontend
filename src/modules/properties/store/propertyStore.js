@@ -22,7 +22,7 @@ const normalizeImages = (item) => {
 };
 
 const normalizeProperty = (item, index, fallbackImage) => {
-  // ✅ Build full image URLs from images array
+  // Build full image URLs from images array
   const allImages = Array.isArray(item.images)
     ? item.images
         .map((img) => {
@@ -36,7 +36,7 @@ const normalizeProperty = (item, index, fallbackImage) => {
         .filter(Boolean)
     : [];
 
-  // Get cover image
+  // Get cover image — prefer is_cover flag, fallback to first image
   const coverFromImages =
     item.images?.find((i) => i.is_cover === 1)?.image_url ||
     item.images?.[0]?.image_url;
@@ -54,7 +54,7 @@ const normalizeProperty = (item, index, fallbackImage) => {
       : `${BASE_URL}${rawCover}`
     : fallbackImage;
 
-  // ✅ If less than 3 images, fill with coverImage
+  // Always provide 3 image slots (fill with cover if fewer than 3)
   const imagesArray =
     allImages.length > 0
       ? [
@@ -97,7 +97,7 @@ const normalizeProperty = (item, index, fallbackImage) => {
       item.address ||
       "Approved property",
     raw: item,
-    images: imagesArray, // ✅ now an array of 3 images
+    images: imagesArray,
   };
 };
 
@@ -108,19 +108,37 @@ export const usePropertyStore = defineStore("properties", () => {
   const property = ref(null);
   const myProperties = ref([]);
 
+  // ── Image state (used by Edit modal) ────────────────────────────────
+  const propertyImages = ref([]); // raw image objects from API: { id, image_url, is_cover, sort_order }
+  const imagesLoading = ref(false);
+  const imagesError = ref("");
+
   const fallbackImage =
     "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80";
 
   const approvedProperties = computed(() => properties.value);
+
+  // Derive current cover id from propertyImages
+  const coverId = computed(() => {
+    const cover = propertyImages.value.find(
+      (i) => i.is_cover === 1 || i.is_cover === true,
+    );
+    return cover?.id ?? propertyImages.value[0]?.id ?? null;
+  });
 
   // ── Fetch approved (public) ──────────────────────────────────────────
   const fetchApprovedProperties = async (params) => {
     loading.value = true;
     error.value = "";
     try {
-      const response = await propertyApi.getAllApprovedProperties(params);
+      // ✅ Remove default/empty values before sending to API
+      const cleanParams = {};
+      if (params?.search) cleanParams.search = params.search;
+      if (params?.city && params.city !== "all") cleanParams.city = params.city;
+      if (params?.type && params.type !== "all") cleanParams.type = params.type;
+
+      const response = await propertyApi.getAllApprovedProperties(cleanParams);
       const items = Array.isArray(response) ? response : response?.data || [];
-      console.log("First property raw:", JSON.stringify(items[0])); // 👈 add this
       properties.value = items.map((item, index) =>
         normalizeProperty(item, index, fallbackImage),
       );
@@ -165,9 +183,50 @@ export const usePropertyStore = defineStore("properties", () => {
     try {
       const response = await propertyApi.getMyProperties(params);
       const items = Array.isArray(response) ? response : response?.data || [];
+
+      // First pass: normalise without images (shows fallback instantly)
       myProperties.value = items.map((item, index) =>
         normalizeProperty(item, index, fallbackImage),
       );
+
+      // Second pass: fetch real images for each property in parallel
+      // (backend returns images:[] in list endpoint, separate call needed)
+      await Promise.allSettled(
+        items.map(async (item, index) => {
+          try {
+            const imgRes = await propertyApi.getAllPropertyImages(item.id);
+            const imgs = Array.isArray(imgRes) ? imgRes : (imgRes?.data ?? []);
+            if (!imgs.length) return;
+
+            const fullUrls = imgs
+              .map((img) => {
+                const url = img?.image_url || "";
+                return url.startsWith("http") ? url : `${BASE_URL}${url}`;
+              })
+              .filter(Boolean);
+
+            const coverImg = imgs.find((i) => i.is_cover === 1) || imgs[0];
+            const coverUrl = coverImg?.image_url
+              ? coverImg.image_url.startsWith("http")
+                ? coverImg.image_url
+                : `${BASE_URL}${coverImg.image_url}`
+              : fullUrls[0] || fallbackImage;
+
+            myProperties.value[index] = {
+              ...myProperties.value[index],
+              image: coverUrl,
+              images: [
+                fullUrls[0] || coverUrl,
+                fullUrls[1] || coverUrl,
+                fullUrls[2] || coverUrl,
+              ],
+            };
+          } catch {
+            // silently keep fallback for this property
+          }
+        }),
+      );
+
       return myProperties.value;
     } catch (requestError) {
       error.value = requestError?.message || "Failed to load my properties.";
@@ -231,23 +290,117 @@ export const usePropertyStore = defineStore("properties", () => {
     }
   };
 
+  // ── Owner: fetch property images ─────────────────────────────────────
+  const fetchPropertyImages = async (propertyId) => {
+    imagesLoading.value = true;
+    imagesError.value = "";
+    propertyImages.value = [];
+    try {
+      const res = await propertyApi.getAllPropertyImages(propertyId);
+      // Normalise: API may return array directly or wrapped in .data
+      const imgs = Array.isArray(res) ? res : (res?.data ?? []);
+      propertyImages.value = imgs;
+      return imgs;
+    } catch (err) {
+      imagesError.value = err?.message || "Failed to load images.";
+      propertyImages.value = [];
+    } finally {
+      imagesLoading.value = false;
+    }
+  };
+
+  // ── Owner: upload images ─────────────────────────────────────────────
+  // POST /properties/:id/images  (form-data key: "images")
+  const uploadPropertyImages = async (propertyId, files) => {
+    imagesLoading.value = true;
+    imagesError.value = "";
+    try {
+      const formData = new FormData();
+      files.forEach((f) => formData.append("images", f));
+      await propertyApi.uploadPropertyImages(propertyId, formData);
+      // Reload images so the grid updates
+      await fetchPropertyImages(propertyId);
+      // Refresh the property card so cover image is up to date
+      await fetchMyProperties();
+    } catch (err) {
+      imagesError.value = err?.message || "Failed to upload images.";
+      throw err;
+    } finally {
+      imagesLoading.value = false;
+    }
+  };
+
+  // ── Owner: delete one image ──────────────────────────────────────────
+  // DELETE /properties/:propertyId/images/:imageId
+  const deletePropertyImage = async (propertyId, imageId) => {
+    try {
+      await propertyApi.deletePropertyImage(propertyId, imageId);
+      // Remove from local state immediately (optimistic)
+      propertyImages.value = propertyImages.value.filter(
+        (i) => i.id !== imageId,
+      );
+      // Refresh property list so card reflects new cover
+      await fetchMyProperties();
+    } catch (err) {
+      imagesError.value = err?.message || "Failed to delete image.";
+      throw err;
+    }
+  };
+
+  // ── Owner: set cover image ───────────────────────────────────────────
+  // PATCH /properties/:propertyId/images/:imageId/cover
+  const setCoverImage = async (propertyId, imageId) => {
+    try {
+      await propertyApi.setCoverImage(propertyId, imageId);
+      // Update is_cover flag locally (optimistic)
+      propertyImages.value = propertyImages.value.map((i) => ({
+        ...i,
+        is_cover: i.id === imageId ? 1 : 0,
+      }));
+      // Refresh property list so card shows new cover
+      await fetchMyProperties();
+    } catch (err) {
+      imagesError.value = err?.message || "Failed to set cover image.";
+      throw err;
+    }
+  };
+
   const clearProperty = () => {
     property.value = null;
   };
 
+  const clearImages = () => {
+    propertyImages.value = [];
+    imagesError.value = "";
+  };
+
   return {
+    // State
     loading,
     error,
     properties,
     property,
     myProperties,
+    propertyImages,
+    imagesLoading,
+    imagesError,
+
+    // Getters
     approvedProperties,
+    coverId,
+
+    // Actions
     fetchApprovedProperties,
     fetchPropertyById,
     fetchMyProperties,
     registerProperty,
     updateProperty,
     deleteProperty,
+    fetchPropertyImages,
+    uploadPropertyImages,
+    deletePropertyImage,
+    setCoverImage,
     clearProperty,
+    clearImages,
   };
 });

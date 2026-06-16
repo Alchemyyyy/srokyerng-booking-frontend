@@ -1,4 +1,6 @@
 <script setup>
+import { computed } from "vue";
+
 const props = defineProps({
   status: {
     type: String,
@@ -65,10 +67,6 @@ const config = computed(() => {
     }
   );
 });
-</script>
-
-<script>
-import { computed } from "vue";
 </script>
 
 <template>

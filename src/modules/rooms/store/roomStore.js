@@ -109,13 +109,15 @@ export const useRoomStore = defineStore("rooms", () => {
       const propertyStore = usePropertyStore();
       await propertyStore.fetchMyProperties();
 
-      rawProperties.value = propertyStore.myProperties.map((p) => ({
-        id: p.id,
-        name: p.name,
-        city: p.city,
-        status: p.status,
-        cover_image: p.image,
-      }));
+      rawProperties.value = propertyStore.myProperties
+        .filter((p) => p.status !== undefined) // only real properties
+        .map((p) => ({
+          id: p.id,
+          name: p.name,
+          city: p.city,
+          status: p.status,
+          cover_image: p.image,
+        }));
 
       const allRooms = [];
       for (const property of rawProperties.value) {
@@ -126,7 +128,6 @@ export const useRoomStore = defineStore("rooms", () => {
             : Array.isArray(roomsRes)
               ? roomsRes
               : [];
-
           const normalized = propertyRooms.map((r) => ({
             ...r,
             property_id: r.property_id || property.id,
@@ -139,17 +140,20 @@ export const useRoomStore = defineStore("rooms", () => {
             image: r.cover_image || "",
             inventory: r.total_rooms || 0,
           }));
-
           allRooms.push(...normalized);
-        } catch {
-          // skip if property has no rooms
+        } catch (err) {
+          // ✅ Only skip 404s silently, log other errors
+          if (err?.response?.status !== 404) {
+            console.error(
+              `Failed to load rooms for property ${property.id}:`,
+              err,
+            );
+          }
         }
       }
 
       rooms.value = allRooms;
       selectedPropertyId.value = "all";
-
-      // Auto fetch images for all rooms after loading
       if (allRooms.length > 0) {
         fetchAllRoomImages(allRooms);
       }

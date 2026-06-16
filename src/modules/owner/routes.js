@@ -5,6 +5,7 @@ import OwnerPropertyDetailView from "@/modules/properties/pages/OwnerPropertyDet
 import OwnerReservationsView from "@/modules/reservations/pages/OwnerReservationsView.vue";
 import ManageRoomsView from "@/modules/rooms/pages/ManageRoomsView.vue";
 import AmenityManagementView from "@/modules/amenities/pages/AmenityManagementView.vue";
+import OwnerRoomDetailView from "../rooms/pages/OwnerRoomDetailView.vue";
 
 export const ownerRoutes = [
   {
@@ -26,6 +27,11 @@ export const ownerRoutes = [
     path: "rooms",
     name: "rooms",
     component: ManageRoomsView,
+  },
+  {
+    path: "rooms/:id",
+    name: "room-detail",
+    component: OwnerRoomDetailView,
   },
   {
     path: "reservations",

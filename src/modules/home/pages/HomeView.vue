@@ -9,7 +9,7 @@ import PopularDestinations from "../components/PopularDestinations.vue";
 import BookingSteps from "../components/BookingSteps.vue";
 import TestimonialsSection from "../components/TestimonialsSection.vue";
 
-const { t, locale } = useI18n({ useScope: "global" });
+const { t } = useI18n({ useScope: "global" });
 </script>
 
 <template>
@@ -19,7 +19,7 @@ const { t, locale } = useI18n({ useScope: "global" });
     <FeaturedProperties />
     <PopularDestinations />
     <BookingSteps />
-    <TestimonialsSection />
+    <!-- <TestimonialsSection /> -->
     <WhyChooseUs />
     <CtaSection />
   </div>

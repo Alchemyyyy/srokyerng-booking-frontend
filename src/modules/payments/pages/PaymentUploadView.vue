@@ -11,6 +11,7 @@ import AppButton from "@/shared/components/AppButton.vue";
 import ReceiptUploadForm from "@/modules/payments/components/ReceiptUploadForm.vue";
 import PaymentMethodCard from "@/modules/payments/components/PaymentMethodCard.vue";
 import { usePaymentStore } from "@/modules/payments/store/paymentStore";
+const uploadType = ref("receipt");
 
 const route = useRoute();
 const router = useRouter();
@@ -34,18 +35,22 @@ const formattedAmount = computed(() => {
 });
 
 async function handleSubmit(file) {
-  const ok = await paymentStore.submitPaymentProof(paymentId.value, file);
+  const ok = await paymentStore.submitPaymentProof(
+    paymentId.value,
+    file,
+    uploadType.value,
+  );
   if (ok) {
     uploadSuccess.value = true;
-    setTimeout(() =>
-      router.push({
-        name: "customer.payment-detail",
-        params: { paymentId: paymentId.value },
-      }),
+    setTimeout(
+      () =>
+        router.push({
+          name: "customer.booking-history",
+        }),
+      2000,
     );
   }
 }
-
 onMounted(async () => {
   await paymentStore.fetchPaymentById(paymentId.value);
   if (payment.value?.property_id) {
