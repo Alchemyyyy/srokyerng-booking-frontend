@@ -46,13 +46,13 @@
       </div>
 
       <div class="relative z-10 mt-10 lg:mt-0 lg:ml-8 lg:flex-shrink-0">
-        <a
-          href="#"
+        <RouterLink
+          :to="{ name: 'public.registerOwner' }"
           class="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-blue-900 transition hover:bg-gray-100 shadow-lg"
         >
           {{ t("home.cta.listButton") }}
           <span aria-hidden="true">&rarr;</span>
-        </a>
+        </RouterLink>
       </div>
     </div>
   </section>

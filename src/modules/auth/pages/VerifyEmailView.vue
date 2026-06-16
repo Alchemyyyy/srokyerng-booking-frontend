@@ -4,6 +4,7 @@ import { useI18n } from "vue-i18n";
 import { useRoute, RouterLink } from "vue-router";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import AuthShell from "@/modules/auth/components/AuthShell.vue";
+import AppButton from "@/shared/components/AppButton.vue";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -46,15 +47,15 @@ onMounted(verifyEmail);
     </div>
 
     <div class="auth-actions">
-      <button
+      <AppButton
         v-if="status === 'error' && token"
-        class="secondary-button"
+        variant="secondary"
         type="button"
-        :disabled="authStore.loading"
+        :loading="authStore.loading"
         @click="verifyEmail"
       >
         {{ t("common.retry") }}
-      </button>
+      </AppButton>
       <RouterLink class="primary-button auth-button-link" :to="{ name: 'public.login' }">
         {{ t("auth.backToLogin") }}
       </RouterLink>

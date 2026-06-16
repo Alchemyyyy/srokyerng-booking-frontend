@@ -2,13 +2,25 @@ export const authRoutes = [
   {
     path: "login",
     name: "login",
+    redirect: { name: "public.loginCustomer" },
+    meta: { publicOnly: true },
+  },
+  {
+    path: "login/customer",
+    name: "loginCustomer",
+    component: () => import("@/modules/auth/pages/LoginView.vue"),
+    meta: { publicOnly: true },
+  },
+  {
+    path: "login/owner",
+    name: "loginOwner",
     component: () => import("@/modules/auth/pages/LoginView.vue"),
     meta: { publicOnly: true },
   },
   {
     path: "register",
     name: "register",
-    component: () => import("@/modules/auth/pages/RegisterView.vue"),
+    redirect: { name: "public.registerCustomer" },
     meta: { publicOnly: true },
   },
   {

@@ -9,6 +9,14 @@ export const authApi = {
     return http.post("/auth/login", payload, { skipAuthRefresh: true });
   },
 
+  googleLogin(payload) {
+    return http.post("/auth/google", payload, { skipAuthRefresh: true });
+  },
+
+  facebookLogin(payload) {
+    return http.post("/auth/facebook", payload, { skipAuthRefresh: true });
+  },
+
   refreshToken() {
     return http.post("/auth/refresh-token", {}, { skipAuthRefresh: true });
   },

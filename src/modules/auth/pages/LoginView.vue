@@ -1,10 +1,13 @@
 <script setup>
-import { reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter, RouterLink } from "vue-router";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import AuthShell from "@/modules/auth/components/AuthShell.vue";
+import AuthSocialLogin from "@/modules/auth/components/AuthSocialLogin.vue";
+import AppButton from "@/shared/components/AppButton.vue";
 import { ROLES } from "@/shared/constants/roles";
+import { getPostLoginRoute } from "@/modules/auth/utils/authRedirect";
 import { isValidEmail } from "@/shared/utils/validators";
 
 const { t } = useI18n();
@@ -22,19 +25,83 @@ const formErrors = reactive({
 const errorMessage = ref("");
 const showPassword = ref(false);
 
-const getPostLoginRoute = (user) => {
-  if (route.query.redirect) {
-    return route.query.redirect;
+const selectedLoginRole = computed(() => {
+  if (route.name === "public.loginOwner") {
+    return ROLES.OWNER;
   }
 
-  const routeByRole = {
-    [ROLES.ADMIN]: { name: "admin.dashboard" },
-    [ROLES.OWNER]: { name: "owner.dashboard" },
-    [ROLES.CUSTOMER]: { name: "public.home" },
-  };
+  return ROLES.CUSTOMER;
+});
 
-  return routeByRole[user?.role] || { name: "public.properties" };
-};
+const pageTitle = computed(() => {
+  if (selectedLoginRole.value === ROLES.CUSTOMER) {
+    return t("auth.customerLoginTitle");
+  }
+
+  if (selectedLoginRole.value === ROLES.OWNER) {
+    return t("auth.ownerLoginTitle");
+  }
+
+  return t("auth.loginGatewayTitle");
+});
+
+const pageSubtitle = computed(() => {
+  if (selectedLoginRole.value === ROLES.CUSTOMER) {
+    return t("auth.customerLoginSubtitle");
+  }
+
+  if (selectedLoginRole.value === ROLES.OWNER) {
+    return t("auth.ownerLoginSubtitle");
+  }
+
+  return t("auth.loginGatewaySubtitle");
+});
+
+const registerRoute = computed(() => {
+  if (selectedLoginRole.value === ROLES.OWNER) {
+    return { name: "public.registerOwner" };
+  }
+
+  return { name: "public.registerCustomer" };
+});
+
+const brandContent = computed(() => {
+  if (selectedLoginRole.value === ROLES.OWNER) {
+    return {
+      eyebrow: "auth.ownerBrandEyebrow",
+      title: "auth.ownerBrandTitle",
+      subtitle: "auth.ownerBrandSubtitle",
+      proofs: [
+        { icon: "bi-building-check", label: "auth.ownerBrandProofListings" },
+        { icon: "bi-calendar-range", label: "auth.ownerBrandProofReservations" },
+        { icon: "bi-chat-dots", label: "auth.ownerBrandProofGuests" },
+      ],
+    };
+  }
+
+  return {
+    eyebrow: "auth.customerBrandEyebrow",
+    title: "auth.customerBrandTitle",
+    subtitle: "auth.customerBrandSubtitle",
+    proofs: [
+      { icon: "bi-calendar-check", label: "auth.customerBrandProofVerified" },
+      { icon: "bi-suitcase2", label: "auth.customerBrandProofBookings" },
+      { icon: "bi-shield-lock", label: "auth.customerBrandProofSecure" },
+    ],
+  };
+});
+
+const roleMismatchMessage = computed(() => {
+  if (selectedLoginRole.value === ROLES.CUSTOMER) {
+    return t("auth.customerLoginRoleMismatch");
+  }
+
+  if (selectedLoginRole.value === ROLES.OWNER) {
+    return t("auth.ownerLoginRoleMismatch");
+  }
+
+  return t("auth.invalidCredentials");
+});
 
 const validateForm = () => {
   formErrors.email = "";
@@ -62,7 +129,14 @@ const submit = async () => {
 
   try {
     const user = await authStore.login(form);
-    await router.push(getPostLoginRoute(user));
+
+    if (selectedLoginRole.value && user?.role !== selectedLoginRole.value) {
+      await authStore.logout();
+      errorMessage.value = roleMismatchMessage.value;
+      return;
+    }
+
+    await router.push(getPostLoginRoute(user, route.query.redirect));
   } catch (error) {
     errorMessage.value = error.message || t("auth.invalidCredentials");
   }
@@ -70,21 +144,35 @@ const submit = async () => {
 </script>
 
 <template>
-  <AuthShell :title="t('auth.welcomeBack')" :subtitle="t('auth.loginSubtitle')">
+  <AuthShell :title="pageTitle" :subtitle="pageSubtitle" :brand="brandContent">
     <form class="auth-form" novalidate @submit.prevent="submit">
       <label>
-        {{ t("common.email") }}
-        <input v-model.trim="form.email" type="email" autocomplete="email" />
+        <span class="auth-field-label">
+          {{ t("common.email") }} <span class="auth-required-mark" aria-hidden="true">*</span>
+        </span>
+        <span class="auth-input-shell">
+          <i class="bi bi-envelope" aria-hidden="true"></i>
+          <input
+            v-model.trim="form.email"
+            type="email"
+            autocomplete="email"
+            :placeholder="t('auth.emailPlaceholder')"
+          />
+        </span>
         <span v-if="formErrors.email" class="form-field-error">{{ formErrors.email }}</span>
       </label>
 
       <label>
-        {{ t("common.password") }}
-        <span class="password-field">
+        <span class="auth-field-label">
+          {{ t("common.password") }} <span class="auth-required-mark" aria-hidden="true">*</span>
+        </span>
+        <span class="password-field auth-input-shell">
+          <i class="bi bi-lock" aria-hidden="true"></i>
           <input
             v-model="form.password"
             :type="showPassword ? 'text' : 'password'"
             autocomplete="current-password"
+            :placeholder="t('auth.passwordPlaceholder')"
           />
           <button
             type="button"
@@ -103,14 +191,21 @@ const submit = async () => {
 
       <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
 
-      <button class="primary-button" type="submit" :disabled="authStore.loading">
+      <AppButton
+        class="auth-submit-button"
+        type="submit"
+        size="lg"
+        :loading="authStore.loading"
+      >
         {{ authStore.loading ? t("auth.signingIn") : t("auth.signIn") }}
-      </button>
+      </AppButton>
+
+      <AuthSocialLogin :role="selectedLoginRole" />
     </form>
 
     <p class="auth-switch">
       {{ t("auth.newHere") }}
-      <RouterLink :to="{ name: 'public.register' }">
+      <RouterLink :to="registerRoute">
         {{ t("common.createAccount") }}
       </RouterLink>
     </p>

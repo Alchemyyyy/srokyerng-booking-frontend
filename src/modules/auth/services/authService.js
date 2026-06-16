@@ -9,6 +9,14 @@ export const authService = {
     return authApi.login(payload);
   },
 
+  googleLogin(payload) {
+    return authApi.googleLogin(payload);
+  },
+
+  facebookLogin(payload) {
+    return authApi.facebookLogin(payload);
+  },
+
   refreshToken() {
     return authApi.refreshToken();
   },

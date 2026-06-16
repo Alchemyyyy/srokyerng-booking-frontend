@@ -20,7 +20,7 @@ const currentFilterStatus = ref('');
 const searchKeyword = ref('');
 
 const filteredProperties = computed(() => {
-    const list = properties.value || [];
+    let list = properties.value || [];
 
     if (searchKeyword.value.trim() !== '') {
         const query = searchKeyword.value.toLowerCase().trim();

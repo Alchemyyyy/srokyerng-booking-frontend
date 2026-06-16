@@ -4,6 +4,7 @@ import { useI18n } from "vue-i18n";
 import { useRoute, RouterLink } from "vue-router";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import AuthShell from "@/modules/auth/components/AuthShell.vue";
+import AppButton from "@/shared/components/AppButton.vue";
 import { hasMinPasswordLength } from "@/shared/utils/validators";
 
 const { t } = useI18n();
@@ -67,13 +68,17 @@ const submit = async () => {
   <AuthShell :title="t('auth.resetPasswordTitle')" :subtitle="t('auth.resetPasswordSubtitle')">
     <form v-if="!successMessage" class="auth-form" novalidate @submit.prevent="submit">
       <label>
-        {{ t("auth.newPassword") }}
-        <span class="password-field">
+        <span class="auth-field-label">
+          {{ t("auth.newPassword") }} <span class="auth-required-mark" aria-hidden="true">*</span>
+        </span>
+        <span class="password-field auth-input-shell">
+          <i class="bi bi-lock" aria-hidden="true"></i>
           <input
             v-model="form.password"
             :type="showPassword ? 'text' : 'password'"
             autocomplete="new-password"
             minlength="8"
+            :placeholder="t('auth.newPasswordPlaceholder')"
           />
           <button
             type="button"
@@ -94,13 +99,17 @@ const submit = async () => {
       </label>
 
       <label>
-        {{ t("auth.confirmPassword") }}
-        <span class="password-field">
+        <span class="auth-field-label">
+          {{ t("auth.confirmPassword") }} <span class="auth-required-mark" aria-hidden="true">*</span>
+        </span>
+        <span class="password-field auth-input-shell">
+          <i class="bi bi-lock-fill" aria-hidden="true"></i>
           <input
             v-model="form.confirmPassword"
             :type="showConfirmPassword ? 'text' : 'password'"
             autocomplete="new-password"
             minlength="8"
+            :placeholder="t('auth.confirmPasswordPlaceholder')"
           />
           <button
             type="button"
@@ -117,9 +126,14 @@ const submit = async () => {
 
       <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
 
-      <button class="primary-button" type="submit" :disabled="authStore.loading">
+      <AppButton
+        class="auth-submit-button"
+        type="submit"
+        size="lg"
+        :loading="authStore.loading"
+      >
         {{ authStore.loading ? t("auth.resettingPassword") : t("auth.resetPassword") }}
-      </button>
+      </AppButton>
     </form>
 
     <div v-else class="auth-result auth-result--success">

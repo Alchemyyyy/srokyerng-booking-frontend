@@ -204,8 +204,21 @@ watch(
         </template>
 
         <template v-else>
-          <!-- Login - also has same conflict, fix it -->
-          <RouterLink :to="{ name: 'public.login' }">
+          <RouterLink :to="{ name: 'public.registerOwner' }">
+            <AppButton
+              variant="ghost"
+              size="sm"
+              :class="
+                !isNavbarSolid
+                  ? '!border-white/20 !text-white hover:!bg-white/10 !rounded-full'
+                  : '!rounded-full'
+              "
+            >
+              {{ t("nav.listProperty") }}
+            </AppButton>
+          </RouterLink>
+
+          <RouterLink :to="{ name: 'public.loginCustomer' }">
             <AppButton
               variant="ghost"
               size="sm"
@@ -219,8 +232,7 @@ watch(
             </AppButton>
           </RouterLink>
 
-          <!-- Register - remove text-white from static class -->
-          <RouterLink :to="{ name: 'public.register' }">
+          <RouterLink :to="{ name: 'public.registerCustomer' }">
             <AppButton
               variant="primary"
               size="sm"
@@ -335,22 +347,32 @@ watch(
           </button>
         </div>
 
-        <div v-else class="grid gap-3 sm:grid-cols-2">
+        <div v-else class="space-y-3">
           <RouterLink
-            :to="{ name: 'public.login' }"
-            class="rounded-2xl border border-(--color-border) px-4 py-3 text-center text-sm font-semibold text-(--color-muted) transition hover:border-(--color-primary) hover:text-(--color-primary)"
+            :to="{ name: 'public.registerOwner' }"
+            class="block rounded-2xl border border-(--color-primary) px-4 py-3 text-center text-sm font-semibold text-(--color-primary) transition hover:bg-(--color-primary-soft)"
             @click="closeMobileMenu"
           >
-            Login
+            {{ t("nav.listProperty") }}
           </RouterLink>
 
-          <RouterLink
-            :to="{ name: 'public.register' }"
-            class="rounded-2xl bg-(--color-primary) px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-(--color-primary-strong)"
-            @click="closeMobileMenu"
-          >
-            Register
-          </RouterLink>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <RouterLink
+              :to="{ name: 'public.loginCustomer' }"
+              class="rounded-2xl border border-(--color-border) px-4 py-3 text-center text-sm font-semibold text-(--color-muted) transition hover:border-(--color-primary) hover:text-(--color-primary)"
+              @click="closeMobileMenu"
+            >
+              {{ t("nav.login") }}
+            </RouterLink>
+
+            <RouterLink
+              :to="{ name: 'public.registerCustomer' }"
+              class="rounded-2xl bg-(--color-primary) px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-(--color-primary-strong)"
+              @click="closeMobileMenu"
+            >
+              {{ t("nav.register") }}
+            </RouterLink>
+          </div>
         </div>
       </div>
     </div>

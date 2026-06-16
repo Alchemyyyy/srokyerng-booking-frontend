@@ -64,6 +64,26 @@ export const useAuthStore = defineStore("auth", () => {
     }, "Login failed");
   };
 
+  const googleLogin = async (payload) => {
+    return runWithLoading(async () => {
+      const response = await authService.googleLogin(payload);
+      setSession(response.data);
+      await refreshNotifications();
+      initialized.value = true;
+      return response.data.user;
+    }, "Google login failed");
+  };
+
+  const facebookLogin = async (payload) => {
+    return runWithLoading(async () => {
+      const response = await authService.facebookLogin(payload);
+      setSession(response.data);
+      await refreshNotifications();
+      initialized.value = true;
+      return response.data.user;
+    }, "Facebook login failed");
+  };
+
   const register = async (payload) => {
     return runWithLoading(async () => authService.register(payload), "Registration failed");
   };
@@ -162,6 +182,8 @@ export const useAuthStore = defineStore("auth", () => {
     setSession,
     clearSession,
     login,
+    googleLogin,
+    facebookLogin,
     register,
     forgotPassword,
     resetPassword,

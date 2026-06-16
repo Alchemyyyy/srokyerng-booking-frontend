@@ -4,6 +4,7 @@ import { useI18n } from "vue-i18n";
 import { RouterLink } from "vue-router";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import AuthShell from "@/modules/auth/components/AuthShell.vue";
+import AppButton from "@/shared/components/AppButton.vue";
 import { isValidEmail } from "@/shared/utils/validators";
 
 const { t } = useI18n();
@@ -50,16 +51,31 @@ const submit = async () => {
   <AuthShell :title="t('auth.forgotPasswordTitle')" :subtitle="t('auth.forgotPasswordSubtitle')">
     <form v-if="!successMessage" class="auth-form" novalidate @submit.prevent="submit">
       <label>
-        {{ t("common.email") }}
-        <input v-model.trim="form.email" type="email" autocomplete="email" />
+        <span class="auth-field-label">
+          {{ t("common.email") }} <span class="auth-required-mark" aria-hidden="true">*</span>
+        </span>
+        <span class="auth-input-shell">
+          <i class="bi bi-envelope" aria-hidden="true"></i>
+          <input
+            v-model.trim="form.email"
+            type="email"
+            autocomplete="email"
+            :placeholder="t('auth.emailPlaceholder')"
+          />
+        </span>
         <span v-if="formErrors.email" class="form-field-error">{{ formErrors.email }}</span>
       </label>
 
       <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
 
-      <button class="primary-button" type="submit" :disabled="authStore.loading">
+      <AppButton
+        class="auth-submit-button"
+        type="submit"
+        size="lg"
+        :loading="authStore.loading"
+      >
         {{ authStore.loading ? t("auth.sendingResetLink") : t("auth.sendResetLink") }}
-      </button>
+      </AppButton>
     </form>
 
     <div v-else class="auth-result auth-result--success">

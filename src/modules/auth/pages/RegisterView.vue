@@ -4,6 +4,8 @@ import { useI18n } from "vue-i18n";
 import { RouterLink, useRoute } from "vue-router";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import AuthShell from "@/modules/auth/components/AuthShell.vue";
+import AuthSocialLogin from "@/modules/auth/components/AuthSocialLogin.vue";
+import AppButton from "@/shared/components/AppButton.vue";
 import { ROLES } from "@/shared/constants/roles";
 import { hasMinPasswordLength, isValidEmail } from "@/shared/utils/validators";
 
@@ -15,29 +17,66 @@ const form = reactive({
   email: "",
   phone: "",
   password: "",
+  confirmPassword: "",
   role: "customer",
 });
 const formErrors = reactive({
   full_name: "",
   email: "",
+  phone: "",
   password: "",
+  confirmPassword: "",
 });
 const errorMessage = ref("");
 const successMessage = ref("");
+const registeredEmail = ref("");
 const showPassword = ref(false);
+const showConfirmPassword = ref(false);
 const passwordMeetsLength = computed(() => hasMinPasswordLength(form.password));
-const selectedRole = computed(() => {
-  if (route.name === "public.registerCustomer") {
-    return ROLES.CUSTOMER;
-  }
 
+const selectedRole = computed(() => {
   if (route.name === "public.registerOwner") {
     return ROLES.OWNER;
   }
 
-  return "";
+  return ROLES.CUSTOMER;
 });
-const roleLabel = computed(() => (selectedRole.value === ROLES.OWNER ? t("auth.owner") : t("auth.customer")));
+const loginRoute = computed(() => {
+  if (selectedRole.value === ROLES.OWNER) {
+    return { name: "public.loginOwner" };
+  }
+
+  if (selectedRole.value === ROLES.CUSTOMER) {
+    return { name: "public.loginCustomer" };
+  }
+
+  return { name: "public.loginCustomer" };
+});
+const brandContent = computed(() => {
+  if (selectedRole.value === ROLES.OWNER) {
+    return {
+      eyebrow: "auth.ownerBrandEyebrow",
+      title: "auth.ownerBrandTitle",
+      subtitle: "auth.ownerBrandSubtitle",
+      proofs: [
+        { icon: "bi-building-check", label: "auth.ownerBrandProofListings" },
+        { icon: "bi-calendar-range", label: "auth.ownerBrandProofReservations" },
+        { icon: "bi-chat-dots", label: "auth.ownerBrandProofGuests" },
+      ],
+    };
+  }
+
+  return {
+    eyebrow: "auth.customerBrandEyebrow",
+    title: "auth.customerBrandTitle",
+    subtitle: "auth.customerBrandSubtitle",
+    proofs: [
+      { icon: "bi-calendar-check", label: "auth.customerBrandProofVerified" },
+      { icon: "bi-suitcase2", label: "auth.customerBrandProofBookings" },
+      { icon: "bi-shield-lock", label: "auth.customerBrandProofSecure" },
+    ],
+  };
+});
 const pageTitle = computed(() => {
   if (selectedRole.value === ROLES.CUSTOMER) {
     return t("auth.customerRegisterTitle");
@@ -47,7 +86,7 @@ const pageTitle = computed(() => {
     return t("auth.ownerRegisterTitle");
   }
 
-  return t("auth.createAccountTitle");
+  return t("auth.customerRegisterTitle");
 });
 const pageSubtitle = computed(() => {
   if (selectedRole.value === ROLES.CUSTOMER) {
@@ -58,7 +97,7 @@ const pageSubtitle = computed(() => {
     return t("auth.ownerRegisterSubtitle");
   }
 
-  return t("auth.chooseAccountTypeSubtitle");
+  return t("auth.customerRegisterSubtitle");
 });
 
 watch(
@@ -76,7 +115,9 @@ watch(
 const validateForm = () => {
   formErrors.full_name = "";
   formErrors.email = "";
+  formErrors.phone = "";
   formErrors.password = "";
+  formErrors.confirmPassword = "";
 
   if (!form.full_name) {
     formErrors.full_name = t("auth.fullNameRequired");
@@ -88,25 +129,51 @@ const validateForm = () => {
     formErrors.email = t("auth.emailInvalid");
   }
 
+  if (!form.phone) {
+    formErrors.phone = t("auth.phoneRequired");
+  } else if (!/^[0-9+()\-\s]{7,20}$/.test(form.phone)) {
+    formErrors.phone = t("auth.phoneInvalid");
+  }
+
   if (!form.password) {
     formErrors.password = t("auth.passwordRequired");
   } else if (!passwordMeetsLength.value) {
     formErrors.password = t("auth.passwordMinLength");
   }
 
-  return !formErrors.full_name && !formErrors.email && !formErrors.password;
+  if (!form.confirmPassword) {
+    formErrors.confirmPassword = t("auth.confirmPasswordRequired");
+  } else if (form.password !== form.confirmPassword) {
+    formErrors.confirmPassword = t("auth.passwordsDoNotMatch");
+  }
+
+  return (
+    !formErrors.full_name &&
+    !formErrors.email &&
+    !formErrors.phone &&
+    !formErrors.password &&
+    !formErrors.confirmPassword
+  );
 };
 
 const submit = async () => {
   errorMessage.value = "";
   successMessage.value = "";
+  registeredEmail.value = "";
 
   if (!validateForm()) {
     return;
   }
 
   try {
-    await authStore.register(form);
+    await authStore.register({
+      full_name: form.full_name,
+      email: form.email,
+      phone: form.phone,
+      password: form.password,
+      role: form.role,
+    });
+    registeredEmail.value = form.email;
     successMessage.value = t("auth.registrationSuccess");
   } catch (error) {
     errorMessage.value = error.message || t("auth.registrationFailed");
@@ -115,56 +182,68 @@ const submit = async () => {
 </script>
 
 <template>
-  <AuthShell :title="pageTitle" :subtitle="pageSubtitle">
-    <div v-if="!selectedRole" class="auth-role-grid">
-      <RouterLink class="auth-role-card" :to="{ name: 'public.registerCustomer' }">
-        <i class="bi bi-suitcase2" aria-hidden="true"></i>
-        <span>
-          <strong>{{ t("auth.customerEntryTitle") }}</strong>
-          <small>{{ t("auth.customerEntrySubtitle") }}</small>
-        </span>
-      </RouterLink>
-
-      <RouterLink class="auth-role-card" :to="{ name: 'public.registerOwner' }">
-        <i class="bi bi-house-door" aria-hidden="true"></i>
-        <span>
-          <strong>{{ t("auth.ownerEntryTitle") }}</strong>
-          <small>{{ t("auth.ownerEntrySubtitle") }}</small>
-        </span>
-      </RouterLink>
-    </div>
-
-    <form v-else-if="!successMessage" class="auth-form" novalidate @submit.prevent="submit">
-      <div class="auth-role-pill">
-        <span>{{ t("auth.accountType") }}: {{ roleLabel }}</span>
-        <RouterLink :to="{ name: 'public.register' }">{{ t("auth.changeAccountType") }}</RouterLink>
-      </div>
-
+  <AuthShell :title="pageTitle" :subtitle="pageSubtitle" :brand="brandContent">
+    <form v-if="!successMessage" class="auth-form" novalidate @submit.prevent="submit">
       <label>
-        {{ t("auth.fullName") }}
-        <input v-model.trim="form.full_name" type="text" autocomplete="name" />
+        <span class="auth-field-label">
+          {{ t("auth.fullName") }} <span class="auth-required-mark" aria-hidden="true">*</span>
+        </span>
+        <span class="auth-input-shell">
+          <i class="bi bi-person" aria-hidden="true"></i>
+          <input
+            v-model.trim="form.full_name"
+            type="text"
+            autocomplete="name"
+            :placeholder="t('auth.fullNamePlaceholder')"
+          />
+        </span>
         <span v-if="formErrors.full_name" class="form-field-error">{{ formErrors.full_name }}</span>
       </label>
 
       <label>
-        {{ t("common.email") }}
-        <input v-model.trim="form.email" type="email" autocomplete="email" />
+        <span class="auth-field-label">
+          {{ t("common.email") }} <span class="auth-required-mark" aria-hidden="true">*</span>
+        </span>
+        <span class="auth-input-shell">
+          <i class="bi bi-envelope" aria-hidden="true"></i>
+          <input
+            v-model.trim="form.email"
+            type="email"
+            autocomplete="email"
+            :placeholder="t('auth.emailPlaceholder')"
+          />
+        </span>
         <span v-if="formErrors.email" class="form-field-error">{{ formErrors.email }}</span>
       </label>
 
       <label>
-        {{ t("common.phone") }}
-        <input v-model.trim="form.phone" type="tel" autocomplete="tel" />
+        <span class="auth-field-label">
+          {{ t("common.phone") }} <span class="auth-required-mark" aria-hidden="true">*</span>
+        </span>
+        <span class="auth-input-shell">
+          <i class="bi bi-telephone" aria-hidden="true"></i>
+          <input
+            v-model.trim="form.phone"
+            type="tel"
+            autocomplete="tel"
+            :placeholder="t('auth.phonePlaceholder')"
+          />
+        </span>
+        <span v-if="formErrors.phone" class="form-field-error">{{ formErrors.phone }}</span>
       </label>
 
       <label>
-        {{ t("common.password") }}
-        <span class="password-field">
+        <span class="auth-field-label">
+          {{ t("common.password") }} <span class="auth-required-mark" aria-hidden="true">*</span>
+        </span>
+        <span class="password-field auth-input-shell">
+          <i class="bi bi-lock" aria-hidden="true"></i>
           <input
             v-model="form.password"
             :type="showPassword ? 'text' : 'password'"
             autocomplete="new-password"
             minlength="8"
+            :placeholder="t('auth.passwordPlaceholder')"
           />
           <button
             type="button"
@@ -175,6 +254,32 @@ const submit = async () => {
           </button>
         </span>
         <span v-if="formErrors.password" class="form-field-error">{{ formErrors.password }}</span>
+      </label>
+
+      <label>
+        <span class="auth-field-label">
+          {{ t("auth.confirmPassword") }} <span class="auth-required-mark" aria-hidden="true">*</span>
+        </span>
+        <span class="password-field auth-input-shell">
+          <i class="bi bi-lock-fill" aria-hidden="true"></i>
+          <input
+            v-model="form.confirmPassword"
+            :type="showConfirmPassword ? 'text' : 'password'"
+            autocomplete="new-password"
+            minlength="8"
+            :placeholder="t('auth.confirmPasswordPlaceholder')"
+          />
+          <button
+            type="button"
+            :aria-label="showConfirmPassword ? t('auth.hidePassword') : t('auth.showPassword')"
+            @click="showConfirmPassword = !showConfirmPassword"
+          >
+            <i :class="showConfirmPassword ? 'bi bi-eye-slash' : 'bi bi-eye'" aria-hidden="true"></i>
+          </button>
+        </span>
+        <span v-if="formErrors.confirmPassword" class="form-field-error">
+          {{ formErrors.confirmPassword }}
+        </span>
         <span
           class="password-requirement"
           :class="{ 'password-requirement--met': passwordMeetsLength }"
@@ -186,22 +291,38 @@ const submit = async () => {
 
       <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
 
-      <button class="primary-button" type="submit" :disabled="authStore.loading">
+      <AppButton
+        class="auth-submit-button"
+        type="submit"
+        size="lg"
+        :loading="authStore.loading"
+      >
         {{ authStore.loading ? t("auth.creating") : t("common.createAccount") }}
-      </button>
+      </AppButton>
+
+      <AuthSocialLogin :role="selectedRole" />
     </form>
 
     <div v-else class="auth-result auth-result--success">
-      <i class="bi bi-envelope-check" aria-hidden="true"></i>
-      <p>{{ successMessage }}</p>
-      <RouterLink class="primary-button auth-button-link" :to="{ name: 'public.login' }">
-        {{ t("auth.signIn") }}
+      <span class="auth-result-icon">
+        <i class="bi bi-envelope-check" aria-hidden="true"></i>
+      </span>
+      <div class="auth-result-copy">
+        <h2>{{ t("auth.registrationVerifyTitle") }}</h2>
+        <p>{{ successMessage }}</p>
+      </div>
+      <div class="auth-email-pill">
+        <span>{{ t("auth.verificationSentTo") }}</span>
+        <strong>{{ registeredEmail }}</strong>
+      </div>
+      <RouterLink class="primary-button auth-button-link" :to="loginRoute">
+        {{ t("auth.backToLogin") }}
       </RouterLink>
     </div>
 
     <p class="auth-switch">
       {{ t("auth.alreadyHaveAccount") }}
-      <RouterLink :to="{ name: 'public.login' }">{{ t("auth.signIn") }}</RouterLink>
+      <RouterLink :to="loginRoute">{{ t("auth.signIn") }}</RouterLink>
     </p>
   </AuthShell>
 </template>
