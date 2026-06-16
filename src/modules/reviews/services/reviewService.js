@@ -1,6 +1,9 @@
 import reviewApi from '../api/review.api.js'
 
-const unwrapData = (response, fallback = null) => response?.data ?? fallback;
+// Backend wraps responses as { success, message, data }.
+// Axios wraps that again as response.data.
+// So the actual payload is response.data.data.
+const unwrapData = (response, fallback = null) => response?.data?.data ?? fallback;
 
 const reviewService = {
   async getReviews(propertyId = 1) {
@@ -15,17 +18,17 @@ const reviewService = {
 
   async createReview(reservationId, reviewData) {
     const response = await reviewApi.createReview(reservationId, reviewData);
-    return unwrapData(response, response);
+    return unwrapData(response, response?.data);
   },
 
   async updateReview(reviewId, reviewData) {
     const response = await reviewApi.updateReview(reviewId, reviewData);
-    return unwrapData(response, response);
+    return unwrapData(response, response?.data);
   },
 
   async deleteReview(reviewId) {
     const response = await reviewApi.deleteReview(reviewId);
-    return unwrapData(response, response);
+    return unwrapData(response, response?.data);
   },
 
   async getReviewStats() {

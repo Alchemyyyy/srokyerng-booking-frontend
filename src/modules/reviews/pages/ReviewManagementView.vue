@@ -109,7 +109,7 @@
               </div>
               <div class="rm-card-rating">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                <span>{{ review.rating?.toFixed(1) }}</span>
+                <span>{{ Number(review.rating || 0).toFixed(1) }}</span>
               </div>
             </div>
 
@@ -265,16 +265,20 @@
 </template>
 
 <script setup>
+console.log('[PROBE] ReviewManagementView script executing')
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import RatingStars from '../components/RatingStars.vue'
 import reviewService from '../services/reviewService.js'
+import http from '@/app/api/http'
+import { useToastStore } from '@/shared/store/toastStore'
 import PublicNavbar from '@/shared/components/PublicNavbar.vue'
 import PublicFooter from '@/shared/components/PublicFooter.vue'
 
 const router = useRouter()
 const { t, locale } = useI18n()
+const toast = useToastStore()
 
 // ── State ──
 const reviews = ref([])
@@ -293,31 +297,77 @@ const saving = ref(false)
 const deletingReview = ref(null)
 const deleting = ref(false)
 
-// Fake completed stays for sidebar (replace with real API later)
+// Completed stays that don't have a review yet (for sidebar + "Write a Review" CTA)
 const completedStays = ref([])
+// Whether the customer has any reservations at all (used to decide where "Write a Review" sends them)
+const hasAnyReservations = ref(false)
 
 // ── Fetch ──
 const fetchMyReviews = async () => {
+  console.log('[PROBE] fetchMyReviews() called')
   loading.value = true
   error.value = null
   try {
+    console.log('[PROBE] about to call reviewService.getMyReviews()')
     const data = await reviewService.getMyReviews()
+    console.log('[reviews] getMyReviews() returned:', data)
     reviews.value = Array.isArray(data) ? data : []
+    console.log('[reviews] reviews.value set to:', reviews.value)
   } catch (e) {
+    console.error('[reviews] fetchMyReviews failed:', e)
+    console.error('[reviews] error.response:', e?.response)
+    console.error('[reviews] error.message:', e?.message)
     error.value = e?.message || t('reviewManagement.state.errorFallback')
   } finally {
     loading.value = false
+    console.log('[PROBE] fetchMyReviews() finished, loading =', loading.value)
   }
 }
 
-onMounted(fetchMyReviews)
+const fetchCompletedStays = async () => {
+  try {
+    const res = await http.get('/reservations/my')
+    console.log('[stays] raw response:', res)
+
+    const list = res?.data?.data || res?.data || []
+    console.log('[stays] parsed list:', list)
+    console.log('[stays] statuses:', list.map((r) => r.reservation_status))
+
+    hasAnyReservations.value = list.length > 0
+
+    const reviewedReservationIds = new Set(
+      reviews.value.map((r) => r.reservation_id)
+    )
+    console.log('[stays] reviewedReservationIds:', reviewedReservationIds)
+
+    completedStays.value = list.filter(
+      (r) =>
+        r.reservation_status === 'completed' &&
+        !reviewedReservationIds.has(r.id)
+    )
+
+    console.log('[stays] hasAnyReservations:', hasAnyReservations.value)
+    console.log('[stays] completedStays:', completedStays.value)
+  } catch (err) {
+    console.error('[stays] fetch failed:', err?.response || err)
+    completedStays.value = []
+    hasAnyReservations.value = false
+  }
+}
+
+onMounted(async () => {
+  console.log('[PROBE] onMounted fired')
+  await fetchMyReviews()
+  await fetchCompletedStays()
+  console.log('[PROBE] onMounted finished')
+})
 
 // ── Computed ──
 const totalReviews = computed(() => reviews.value.length)
 
 const avgRating = computed(() => {
   if (!reviews.value.length) return '—'
-  const avg = reviews.value.reduce((s, r) => s + (r.rating || 0), 0) / reviews.value.length
+  const avg = reviews.value.reduce((s, r) => s + (Number(r.rating) || 0), 0) / reviews.value.length
   return avg.toFixed(1)
 })
 
@@ -372,7 +422,15 @@ const ratingLabel = (r) => {
 }
 
 const goToWriteReview = () => {
-  router.push('/customer/reservations/8/review')
+  if (completedStays.value.length > 0) {
+    router.push(`/customer/reservations/${completedStays.value[0].id}/review`)
+  } else if (hasAnyReservations.value) {
+    toast.info(t('reviewManagement.state.noCompletedStays'))
+    router.push('/customer/booking-history')
+  } else {
+    toast.info(t('reviewManagement.state.noReservations'))
+    router.push('/properties')
+  }
 }
 
 // ── Edit ──
@@ -397,8 +455,9 @@ const saveEdit = async () => {
       reviews.value[idx] = { ...reviews.value[idx], ...editForm.value }
     }
     closeEdit()
+    toast.success(t('reviewManagement.editModal.saveSuccess'))
   } catch (e) {
-    alert(e?.message || t('reviewManagement.editModal.saveFailed'))
+    toast.danger(e?.response?.data?.message || e?.message || t('reviewManagement.editModal.saveFailed'))
   } finally {
     saving.value = false
   }
@@ -419,13 +478,15 @@ const doDelete = async () => {
     await reviewService.deleteReview(deletingReview.value.id)
     reviews.value = reviews.value.filter(r => r.id !== deletingReview.value.id)
     cancelDelete()
+    toast.success(t('reviewManagement.deleteModal.deleteSuccess'))
   } catch (e) {
-    alert(e?.message || t('reviewManagement.deleteModal.deleteFailed'))
+    toast.danger(e?.response?.data?.message || e?.message || t('reviewManagement.deleteModal.deleteFailed'))
   } finally {
     deleting.value = false
   }
 }
 </script>
+
 
 <style scoped>
 

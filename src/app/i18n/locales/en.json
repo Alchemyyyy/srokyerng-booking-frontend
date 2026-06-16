@@ -925,6 +925,11 @@
     "connectivity": "Connectivity",
     "guestReviews": "Guest Reviews",
     "viewAllReviews": "View all 245 reviews",
+    "writeReview": "Write a review",
+    "basedOnReviews": "Based on {count} reviews",
+    "stars": "stars",
+    "stayedIn": "Stayed in {room}",
+    "noReviewsYet": "No reviews yet for this property.",
     "serviceFee": "Service Fee",
     "total": "Total",
     "checkIn": "Check-In",
@@ -1035,7 +1040,8 @@
       "titleMinLength": "Title must be at least 5 characters.",
       "contentRequired": "Please write your review.",
       "contentMinLength": "Review must be at least 20 characters.",
-      "ratingRequired": "Please select a rating."
+      "ratingRequired": "Please select a rating.",
+      "alreadyReviewed": "You've already reviewed this stay. Redirecting to your reviews…"
     }
   },
 
@@ -1179,7 +1185,9 @@
       "tryAgain": "Try again",
       "emptyTitle": "No reviews yet",
       "emptySub": "Share your experience from a completed stay.",
-      "writeFirst": "Write your first review"
+      "writeFirst": "Write your first review",
+      "noCompletedStays": "You don't have any completed stays ready for review yet. Check your booking history for updates.",
+      "noReservations": "You don't have any bookings yet. Browse properties to plan your first stay."
     },
     "card": {
       "room": "Room",
@@ -1204,6 +1212,7 @@
       "commentPlaceholder": "Share your experience...",
       "saving": "Saving…",
       "saveChanges": "Save Changes",
+      "saveSuccess": "Review updated successfully",
       "saveFailed": "Failed to update review"
     },
     "deleteModal": {
@@ -1211,6 +1220,7 @@
       "body": "This will permanently delete your review. This action cannot be undone.",
       "deleting": "Deleting…",
       "confirm": "Delete Review",
+      "deleteSuccess": "Review deleted successfully",
       "deleteFailed": "Failed to delete review"
     }
   }

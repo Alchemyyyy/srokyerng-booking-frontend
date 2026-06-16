@@ -281,12 +281,14 @@ import { useI18n } from 'vue-i18n'
 import RatingStars from '../components/RatingStars.vue'
 import reviewService from '../services/reviewService.js'
 import http from '@/app/api/http'
+import { useToastStore } from '@/shared/store/toastStore'
 import PublicNavbar from '@/shared/components/PublicNavbar.vue'
 import PublicFooter from '@/shared/components/PublicFooter.vue'
 
 const router = useRouter()
 const route = useRoute()
 const { t } = useI18n()
+const toast = useToastStore()
 
 const reservationId = computed(() => route.params.reservationId || '')
 
@@ -296,35 +298,43 @@ const accessDenied = ref(false)
 const accessError = ref('')
 
 // ── Verify reservation ownership & status before showing the form ──
-onMounted(async () => {
+// onMounted(async () => {
+//   if (!reservationId.value) {
+//     router.replace({ path: '/customer/reviews' })
+//     return
+//   }
+//   try {
+//     const res = await http.get(`/reservations/${reservationId.value}`)
+//     const reservation = res?.data
+
+//     if (!reservation) {
+//       accessDenied.value = true
+//       accessError.value = 'Reservation not found.'
+//       return
+//     }
+//     if (reservation.reservation_status !== 'completed') {
+//       accessDenied.value = true
+//       accessError.value = 'You can only review completed stays.'
+//       return
+//     }
+//   } catch (err) {
+//     // 403 = not your reservation, 404 = doesn't exist
+//     accessDenied.value = true
+//     accessError.value =
+//       err?.response?.status === 403
+//         ? 'You do not have access to this reservation.'
+//         : 'Reservation not found.'
+//   } finally {
+//     pageReady.value = true
+//   }
+// })
+
+onMounted(() => {
   if (!reservationId.value) {
     router.replace({ path: '/customer/reviews' })
     return
   }
-  try {
-    const res = await http.get(`/reservations/${reservationId.value}`)
-    const reservation = res?.data
-
-    if (!reservation) {
-      accessDenied.value = true
-      accessError.value = 'Reservation not found.'
-      return
-    }
-    if (reservation.reservation_status !== 'completed') {
-      accessDenied.value = true
-      accessError.value = 'You can only review completed stays.'
-      return
-    }
-  } catch (err) {
-    // 403 = not your reservation, 404 = doesn't exist
-    accessDenied.value = true
-    accessError.value =
-      err?.response?.status === 403
-        ? 'You do not have access to this reservation.'
-        : 'Reservation not found.'
-  } finally {
-    pageReady.value = true
-  }
+  pageReady.value = true
 })
 
 // ── Form state ──
@@ -420,6 +430,8 @@ const submitReview = async () => {
       errors.value.comment = msg || t('reviewCreate.errors.contentRequired')
     } else if (status === 409 || (msg && msg.toLowerCase().includes('already'))) {
       errors.value.comment = 'You have already reviewed this reservation.'
+      toast.info(t('reviewCreate.errors.alreadyReviewed'))
+      setTimeout(() => router.push({ path: '/customer/reviews' }), 1800)
     } else {
       errors.value.comment = msg || t('reviewCreate.errors.contentRequired')
     }
