@@ -19,7 +19,7 @@ export const adminRoutes = [
     meta: { requiresAuth: true, roles: [ROLES.ADMIN] },
   },
   {
-    path: "property-approvals/:id",
+    path: "property-approvals/:id/",
     name: "admin.properties.review",
     component: PropertyReviewDetail,
     meta: { requiresAuth: true, roles: [ROLES.ADMIN] },

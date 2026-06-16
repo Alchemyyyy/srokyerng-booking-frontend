@@ -283,17 +283,27 @@ const handleRowClick = (event, itemId) => {
     font-weight: 600;
     border-radius: var(--radius-sm);
     cursor: pointer;
-    border: none;
     transition: all 0.2s ease;
 }
 
 .btn-approve-sm {
     background-color: var(--color-success);
+    border: 1px solid var(--color-success);
     color: white;
 }
 
+[data-theme="dark"] {
+    .btn-approve-sm {
+        background-color: #2da154;
+        border: 1px solid var(--color-success);
+        color: var(--color-text);
+    }
+}
+
 .btn-approve-sm:hover {
-    background-color: #059669;
+    background-color: var(--color-success-soft);
+    border: 1px solid var(--color-success);
+    color: var(--color-success);
 }
 
 .btn-reject-sm {
@@ -328,15 +338,15 @@ button:disabled {
 }
 
 .btn-edit-sm {
-    background-color: var(--color-surface-soft);
-    border: 1px solid var(--color-border);
-    color: var(--color-text);
+    /* background-color: var(--color-surface-soft); */
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
 }
 
 .btn-edit-sm:hover {
     background-color: var(--color-primary-soft);
     border-color: var(--color-primary);
-    color: var(--color-primary);
+    /* color: var(--color-primary); */
 }
 
 .dropdown-popover {

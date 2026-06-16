@@ -38,7 +38,7 @@ const props = defineProps({
 
 const emit = defineEmits(['change-history'])
 
-const visibleDatasetIds = ref(['properties', 'rooms'])
+const visibleDatasetIds = ref(['properties', 'users'])
 const chartRenderKey = ref(0)
 const chartReady = ref(false)
 
@@ -164,7 +164,7 @@ const lineChartOptions = ref({
       <div>
         <h3 class="panel-title">Platform Growth Overview</h3>
         <p class="panel-subtitle">
-          Historical tracking of system properties, rooms, and registered users
+          Historical tracking of system properties, and registered users
         </p>
       </div>
 

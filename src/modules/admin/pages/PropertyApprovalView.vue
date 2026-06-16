@@ -1,11 +1,13 @@
 <script setup>
 import { onMounted, ref, computed } from 'vue';
-import { useRouter } from 'vue-router'
-import { usePropertyApproval } from '../composables/usePropertyApproval';
+import { useRouter } from 'vue-router';
+// ⚡ ផ្លាស់ប្តូរមកប្រើ Store ថ្មីជំនួស Composable ចាស់
+import { useApprovalStore } from '../store/approval.store';
 import DashboardHero from '../components/DashboardHero.vue';
 import ApprovalFilter from '../components/ApprovalFilter.vue';
 import ApprovalTable from '../components/ApprovalTable.vue';
 import AppModal from '@/shared/components/AppModal.vue';
+import AppLoading from '@/shared/components/LoadingSpinner.vue';
 import ApprovalSearch from '../components/ApprovalSearch.vue';
 import { ExclamationTriangleIcon, InboxIcon, CheckCircleIcon, XCircleIcon, QuestionMarkCircleIcon } from '@heroicons/vue/24/outline';
 import { useSidebar } from '@/shared/composables/useSidebar';
@@ -13,16 +15,19 @@ import { useToastStore } from '@/shared/store/toastStore';
 
 const router = useRouter();
 const toastStore = useToastStore();
-const { properties, loading, processing, error, fetchProperties, handleApprove, handleReject, handleSetPending } = usePropertyApproval();
 const { isSidebarOpen } = useSidebar();
 
-const currentFilterStatus = ref('');
+// ⚡ ហៅប្រើប្រាស់ Pinia Store 
+const approvalStore = useApprovalStore();
+
+const currentFilterStatus = ref(1); // បង្ហាញ Pending (status_id: 1) មុនគេពេលដំបូង
 const searchKeyword = ref('');
 
+// 💡 ធ្វើការ Filter ចេញពី State របស់ Store រួម
 const filteredProperties = computed(() => {
-    let list = properties.value || [];
+    let list = approvalStore.properties || [];
 
-    if (searchKeyword.value.trim() !== '') {
+    if (searchKeyword.value && searchKeyword.value.trim() !== '') {
         const query = searchKeyword.value.toLowerCase().trim();
         list = list.filter(item => {
             return (
@@ -35,8 +40,10 @@ const filteredProperties = computed(() => {
         });
     }
 
-    if (currentFilterStatus.value !== '') {
-        list = list.filter(item => item.status_id === currentFilterStatus.value);
+    if (currentFilterStatus.value !== undefined && currentFilterStatus.value !== null && currentFilterStatus.value !== '') {
+        list = list.filter(item => {
+            return Number(item.status_id) === Number(currentFilterStatus.value);
+        });
     }
 
     return list;
@@ -47,7 +54,7 @@ const emptyStateContent = computed(() => {
         return { title: 'No Matching Results', desc: `We couldn't find any records matching "${searchKeyword.value}". Try checking your spelling.` };
     }
 
-    switch (currentFilterStatus.value) {
+    switch (Number(currentFilterStatus.value)) {
         case 1:
             return { title: 'No Pending Requests', desc: 'Excellent! There are no outstanding property listings awaiting moderation.' };
         case 2:
@@ -71,20 +78,15 @@ const pendingModalOpen = ref(false);
 const currentPendingId = ref(null);
 
 onMounted(async () => {
-    await loadAllData();
+    await approvalStore.fetchProperties();
 });
-
-const loadAllData = async () => {
-    await fetchProperties();
-};
 
 const handleFilterUpdate = (newStatus) => {
     currentFilterStatus.value = newStatus;
 };
 
-
 const goToDetail = (id) => {
-    router.push({ name: 'admin.properties.review', params: { id: id } });
+    router.push(`/admin/property-approvals/${id}`);
 };
 
 const handleDropdownStatusSelection = ({ id, status }) => {
@@ -110,41 +112,15 @@ const openApproveModal = (id) => {
 const submitApprove = async () => {
     if (!currentApproveId.value) return;
 
-    const idToApprove = currentApproveId.value;
-
-    // ១. បាញ់បង្ហាញ Toast មុនពេល ឬអំឡុងពេលបិទ Modal ដើម្បីកុំឱ្យបាត់បង់ Context
-    // toastStore.show({
-    //     title: 'Processing Approval',
-    //     message: 'Updating property listing status...',
-    //     variant: 'info',
-    //     timeout: 2000
-    // });
-
-    const success = await handleApprove(idToApprove);
-
+    const success = await approvalStore.handleApprove(currentApproveId.value);
     if (success) {
         approveModalOpen.value = false;
         currentApproveId.value = null;
-
-        // ២. 🌟 កែប្រែទិន្នន័យលើ Client-side ភ្លាមៗ (Realtime Update)   
-        if (properties.value) {
-            properties.value = properties.value.map(p => {
-                const itemId = p.id || p.property_id;
-                if (itemId === idToApprove) {
-                    return { ...p, status_id: 2, status_name: 'Approved' };
-                }
-                return p;
-            });
-        }
-
-        // ៣. លោត Toast ដំណឹងជោគជ័យ
         toastStore.success('The property listing has been approved successfully.', {
             title: 'Approval Successful',
             timeout: 4000
         });
-
-        // ៤. ទាញយកទិន្នន័យពិតពី Server មកផ្ទៀងផ្ទាត់ឡើងវិញតាមក្រោយ (Background Sync)
-        await loadAllData();
+        await approvalStore.fetchProperties(); // Refresh ទិន្នន័យថ្មីពី Server ចូល Store
     } else {
         toastStore.danger('An error occurred while approving the property.', {
             title: 'Approval Failed',
@@ -167,38 +143,15 @@ const submitReject = async () => {
     }
     rejectReasonError.value = false;
 
-    const idToReject = currentRejectId.value;
-
-    // toastStore.show({
-    //     title: 'Processing Rejection',
-    //     message: 'Submitting rejection feedback...',
-    //     variant: 'info',
-    //     timeout: 2000
-    // });
-
-    const success = await handleReject(idToReject, rejectReason.value);
-
+    const success = await approvalStore.handleReject(currentRejectId.value, rejectReason.value);
     if (success) {
         rejectModalOpen.value = false;
         currentRejectId.value = null;
-
-        // 🌟 កែប្រែទិន្នន័យលើ Client-side ភ្លាមៗ (Realtime Update)
-        if (properties.value) {
-            properties.value = properties.value.map(p => {
-                const itemId = p.id || p.property_id;
-                if (itemId === idToReject) {
-                    return { ...p, status_id: 3, status_name: 'Rejected' };
-                }
-                return p;
-            });
-        }
-
         toastStore.success('The submission listing request has been rejected.', {
             title: 'Property Rejected',
             timeout: 4000
         });
-
-        await loadAllData();
+        await approvalStore.fetchProperties(); // Refresh ទិន្នន័យថ្មីពី Server ចូល Store
     } else {
         toastStore.danger('An error occurred while rejecting the property.', {
             title: 'Rejection Failed',
@@ -209,31 +162,16 @@ const submitReject = async () => {
 
 const submitSetPending = async () => {
     if (!currentPendingId.value) return;
-    const idToPending = currentPendingId.value;
 
-    // សម្គាល់៖ ប្រសិនបើ handleApprove/handleReject របស់អ្នកមិនគាំទ្រលេខ status_id = 1 ទេ 
-    // អ្នកអាចហៅប្រើប្រាស់ approvalService.updatePropertyStatus(idToPending, 1) ផ្ទាល់តែម្តង
-    const success = await handleSetPending(idToPending);
-
+    const success = await approvalStore.handleSetPending(currentPendingId.value);
     if (success) {
         pendingModalOpen.value = false;
         currentPendingId.value = null;
-
-        if (properties.value) {
-            properties.value = properties.value.map(p => {
-                const itemId = p.id || p.property_id;
-                if (itemId === idToPending) {
-                    return { ...p, status_id: 1, status_name: 'Pending' };
-                }
-                return p;
-            });
-        }
-
         toastStore.success('Property status has been reset to Pending successfully.', {
             title: 'Status Updated',
             timeout: 4000
         });
-        await loadAllData();
+        await approvalStore.fetchProperties(); // Refresh ទិន្នន័យថ្មីពី Server ចូល Store
     } else {
         toastStore.danger('Failed to reset property status. Please try again.', {
             title: 'Update Error',
@@ -249,35 +187,31 @@ const submitSetPending = async () => {
             <div>
                 <DashboardHero />
             </div>
-            <!-- <div v-if="properties.length > 0" class="counter-badge">
-                {{ properties.length }} Requests Pending
-            </div> -->
-        </div>
-        <!-- filter -->
-        <div class="table-actions-bar">
-            <ApprovalSearch v-model="searchKeyword" />
-            <ApprovalFilter :model-value="currentFilterStatus" :all-properties="properties"
-                @update:model-value="handleFilterUpdate" />
         </div>
 
-        <div v-if="error" class="state-card error-card">
+        <div class="table-actions-bar">
+            <ApprovalFilter :model-value="currentFilterStatus" :all-properties="approvalStore.properties"
+                @update:model-value="handleFilterUpdate" />
+            <ApprovalSearch v-model="searchKeyword" />
+        </div>
+
+        <div v-if="approvalStore.error" class="state-card error-card">
             <ExclamationTriangleIcon class="state-icon text-danger" />
             <div class="state-content">
                 <h3 class="state-title">Data Fetching Interrupted</h3>
-                <p class="state-desc">{{ error }}</p>
-                <button @click="fetchProperties" class="btn-retry">Try Reconnecting</button>
+                <p class="state-desc">{{ approvalStore.error }}</p>
+                <button @click="approvalStore.fetchProperties" class="btn-retry">Try Reconnecting</button>
             </div>
         </div>
 
-        <div v-else-if="loading" class="state-card loading-card">
-            <div class="spinner"></div>
-            <p class="loading-text">Synchronizing property database...</p>
+        <div v-else-if="approvalStore.loading" class="state-card loading-card py-24">
+            <AppLoading label="Synchronizing property database..." />
         </div>
 
         <template v-else>
-            <ApprovalTable v-if="filteredProperties.length > 0" :items="filteredProperties" :is-processing="processing"
-                @approve="openApproveModal" @reject="openRejectModal" @row-click="goToDetail"
-                @change-status-click="handleDropdownStatusSelection" />
+            <ApprovalTable v-if="filteredProperties.length > 0" :items="filteredProperties"
+                :is-processing="approvalStore.processing" @approve="openApproveModal" @reject="openRejectModal"
+                @row-click="goToDetail" @change-status-click="handleDropdownStatusSelection" />
 
             <div v-else class="state-card empty-card">
                 <InboxIcon class="state-icon text-muted" />
@@ -298,8 +232,10 @@ const submitSetPending = async () => {
                 </div>
                 <div class="modal-footer-actions justify-center mt-4">
                     <button @click="approveModalOpen = false" class="btn-cancel">Cancel</button>
-                    <button @click="submitApprove" :disabled="processing" class="btn-confirm-approve">
-                        {{ processing ? 'Publishing...' : 'Yes, Approve' }}
+                    <button @click="submitApprove" :disabled="approvalStore.processing"
+                        class="btn-confirm-approve min-w-120px flex items-center justify-center">
+                        <AppLoading v-if="approvalStore.processing" label="Publishing..." class="text-white" />
+                        <span v-else>Yes, Approve</span>
                     </button>
                 </div>
             </div>
@@ -324,8 +260,10 @@ const submitSetPending = async () => {
 
                 <div class="modal-footer-actions mt-4">
                     <button @click="rejectModalOpen = false" class="btn-cancel">Cancel</button>
-                    <button @click="submitReject" :disabled="processing" class="btn-confirm-reject">
-                        {{ processing ? 'Rejecting...' : 'Confirm Rejection' }}
+                    <button @click="submitReject" :disabled="approvalStore.processing"
+                        class="btn-confirm-reject min-w-150px flex items-center justify-center">
+                        <AppLoading v-if="approvalStore.processing" label="Rejecting..." class="text-white" />
+                        <span v-else>Confirm Rejection</span>
                     </button>
                 </div>
             </div>
@@ -333,8 +271,8 @@ const submitSetPending = async () => {
 
         <AppModal :open="pendingModalOpen" @close="pendingModalOpen = false">
             <div class="modal-surface-content text-center">
-                <div class="icon-wrapper" style="background-color: #fef3c7;">
-                    <QuestionMarkCircleIcon class="modal-status-icon" style="color: #d97706;" />
+                <div class="icon-wrapper" style="background-color: var(--color-warning-soft);">
+                    <QuestionMarkCircleIcon class="modal-status-icon" style="color: var(--color-warning);" />
                 </div>
                 <div>
                     <h3 class="modal-title">Reset to Pending Queue?</h3>
@@ -343,9 +281,11 @@ const submitSetPending = async () => {
                 </div>
                 <div class="modal-footer-actions justify-center mt-4">
                     <button @click="pendingModalOpen = false" class="btn-cancel">Cancel</button>
-                    <button @click="submitSetPending" :disabled="processing" class="btn-confirm-approve"
-                        style="background-color: #d97706;">
-                        {{ processing ? 'Processing...' : 'Yes, Set to Pending' }}
+                    <button @click="submitSetPending" :disabled="approvalStore.processing"
+                        class="btn-confirm-approve min-w-160px flex items-center justify-center"
+                        style="background-color: var(--color-warning);">
+                        <AppLoading v-if="approvalStore.processing" label="Processing..." class="text-white" />
+                        <span v-else>Yes, Set to Pending</span>
                     </button>
                 </div>
             </div>
@@ -354,7 +294,7 @@ const submitSetPending = async () => {
 </template>
 
 <style scoped>
-/* --- Layout & Structure Styles --- */
+/* រក្សាទុក CSS ចាស់ទាំងអស់ដដែល... */
 .approval-container {
     padding: 0 var(--space-lg);
     display: flex;
@@ -370,28 +310,6 @@ const submitSetPending = async () => {
     padding-bottom: var(--space-md);
 }
 
-.page-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--color-text);
-}
-
-.page-subtitle {
-    font-size: 0.875rem;
-    color: var(--color-muted);
-    margin-top: var(--space-xs);
-}
-
-.counter-badge {
-    background-color: var(--color-success-soft);
-    color: var(--color-success);
-    padding: var(--space-xs) var(--space-md);
-    border-radius: var(--radius-sm);
-    font-size: 0.875rem;
-    font-weight: 600;
-}
-
-/* --- States Cards --- */
 .state-card {
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
@@ -412,11 +330,11 @@ const submitSetPending = async () => {
 }
 
 .text-danger {
-    color: #ef4444;
+    color: var(--color-danger);
 }
 
 .text-success {
-    color: #10b981;
+    color: var(--color-success);
 }
 
 .text-muted {
@@ -448,23 +366,6 @@ const submitSetPending = async () => {
     cursor: pointer;
 }
 
-.spinner {
-    width: 2.5rem;
-    height: 2.5rem;
-    border: 4px solid var(--color-primary-soft);
-    border-top-color: var(--color-primary);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: var(--space-sm);
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* --- AppModal Content UI Styles --- */
 .modal-surface-content {
     display: flex;
     flex-direction: column;
@@ -515,7 +416,7 @@ const submitSetPending = async () => {
 }
 
 .confirmation-success {
-    background-color: #ecfdf5;
+    background-color: var(--color-success-soft);
 }
 
 .modal-status-icon {
@@ -564,17 +465,16 @@ const submitSetPending = async () => {
 }
 
 .input-error {
-    border-color: #ef4444;
+    border-color: var(--color-danger);
 }
 
 .validation-msg {
     font-size: 0.75rem;
-    color: #ef4444;
+    color: var(--color-danger);
     font-weight: 500;
     text-align: left;
 }
 
-/* --- Buttons in Modals --- */
 .modal-footer-actions {
     display: flex;
     gap: var(--space-sm);
@@ -595,8 +495,8 @@ const submitSetPending = async () => {
 }
 
 .btn-confirm-approve {
-    background-color: #10b981;
-    color: white;
+    background-color: var(--color-success);
+    color: var(--color-text-inverse);
     border: none;
     border-radius: var(--radius-sm);
     padding: var(--space-sm) var(--space-lg);
@@ -605,12 +505,12 @@ const submitSetPending = async () => {
 }
 
 .btn-confirm-approve:hover {
-    background-color: #059669;
+    opacity: 0.9;
 }
 
 .btn-confirm-reject {
-    background-color: #ef4444;
-    color: white;
+    background-color: var(--color-danger);
+    color: var(--color-text-inverse);
     border: none;
     border-radius: var(--radius-sm);
     padding: var(--space-sm) var(--space-lg);
@@ -619,7 +519,7 @@ const submitSetPending = async () => {
 }
 
 .btn-confirm-reject:hover {
-    background-color: #dc2626;
+    opacity: 0.9;
 }
 
 button:disabled {
@@ -634,6 +534,7 @@ button:disabled {
     gap: 1rem;
     width: 100%;
 }
+
 @media (max-width: 768px) {
     .table-actions-bar {
         flex-direction: column;
