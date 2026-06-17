@@ -10,16 +10,14 @@
         <!-- LEFT -->
         <div class="header-left">
           <div class="breadcrumb">
-            <span class="bc-link" @click="$router.push('/owner')"
-              >← Dashboard</span
-            >
+            <span class="bc-link" @click="$router.push('/owner')">
+              {{ $t('amenityManagement.breadcrumb.dashboard') }}
+            </span>
             <span class="separator">›</span>
-            <span>Amenities</span>
+            <span>{{ $t('amenityManagement.breadcrumb.amenities') }}</span>
           </div>
-          <h1 class="page-title">Amenities</h1>
-          <p class="page-subtitle">
-            Browse all available amenities and manage them for your properties
-          </p>
+          <h1 class="page-title">{{ $t('amenityManagement.title') }}</h1>
+          <p class="page-subtitle">{{ $t('amenityManagement.subtitle') }}</p>
         </div>
 
         <!-- RIGHT -->
@@ -29,14 +27,14 @@
             :class="{ active: viewMode === 'catalogue' }"
             @click="viewMode = 'catalogue'"
           >
-            Catalogue
+            {{ $t('amenityManagement.tabs.catalogue') }}
           </button>
           <button
             class="header-btn"
             :class="{ active: viewMode === 'myprops' }"
             @click="viewMode = 'myprops'"
           >
-            My Properties
+            {{ $t('amenityManagement.tabs.myProperties') }}
           </button>
         </div>
       </div>
@@ -49,7 +47,7 @@
 
       <!-- CATALOGUE -->
       <template v-if="viewMode === 'catalogue'">
-        <div v-if="loading">Loading amenities...</div>
+        <div v-if="loading">{{ $t('amenityManagement.catalogue.loading') }}</div>
         <template v-else>
           <AmenitySelector :amenities="amenities" v-model="selectedAmenities" />
         </template>
@@ -59,39 +57,32 @@
       <template v-else>
         <div class="myprops-topbar">
           <p class="myprops-subtitle">
-            Select a property to view and edit its amenities.
+            {{ $t('amenityManagement.myProperties.subtitle') }}
           </p>
           <button class="btn-all-props">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="3" width="7" height="7" rx="1" />
               <rect x="14" y="3" width="7" height="7" rx="1" />
               <rect x="3" y="14" width="7" height="7" rx="1" />
               <rect x="14" y="14" width="7" height="7" rx="1" />
             </svg>
-            All Properties
+            {{ $t('amenityManagement.myProperties.allProperties') }}
           </button>
         </div>
 
         <div v-if="loadingProperties" class="loading-text">
-          Loading properties...
+          {{ $t('amenityManagement.myProperties.loading') }}
         </div>
 
         <div v-else-if="myProperties.length === 0" class="empty-state">
           <div class="empty-icon">🏠</div>
-          <h3>No properties yet</h3>
-          <p>Add your first property</p>
+          <h3>{{ $t('amenityManagement.myProperties.empty.title') }}</h3>
+          <p>{{ $t('amenityManagement.myProperties.empty.description') }}</p>
           <button
             class="btn-primary"
             @click="$router.push('/owner/properties/create')"
           >
-            Add Property
+            {{ $t('amenityManagement.myProperties.empty.button') }}
           </button>
         </div>
 
@@ -104,10 +95,7 @@
             <!-- TOP ROW -->
             <div class="property-top">
               <!-- Image with upload overlay -->
-              <div
-                class="property-img-wrap"
-                @click="triggerImageUpload(property.id)"
-              >
+              <div class="property-img-wrap" @click="triggerImageUpload(property.id)">
                 <img
                   v-if="property.image"
                   :src="property.image"
@@ -124,25 +112,14 @@
                   {{ getPropertyInitials(property.name) }}
                 </div>
                 <div class="img-upload-overlay">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="white"
-                    stroke-width="2.2"
-                  >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                     <polyline points="17 8 12 3 7 8" />
                     <line x1="12" y1="3" x2="12" y2="15" />
                   </svg>
                 </div>
                 <input
-                  :ref="
-                    (el) => {
-                      if (el) imageInputRefs[property.id] = el;
-                    }
-                  "
+                  :ref="(el) => { if (el) imageInputRefs[property.id] = el; }"
                   type="file"
                   accept="image/*"
                   class="hidden-input"
@@ -152,47 +129,26 @@
 
               <div class="property-info">
                 <h3 class="prop-name">{{ property.name }}</h3>
-                <p class="prop-meta">
-                  {{ property.type }} · {{ property.location }}
-                </p>
+                <p class="prop-meta">{{ property.type }} · {{ property.location }}</p>
                 <p class="prop-count">
                   <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#22c55e"
-                    stroke-width="2.5"
-                    style="
-                      display: inline;
-                      vertical-align: -2px;
-                      margin-right: 4px;
-                    "
+                    width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="#22c55e" stroke-width="2.5"
+                    style="display: inline; vertical-align: -2px; margin-right: 4px;"
                   >
                     <circle cx="12" cy="12" r="10" />
                     <path d="m9 12 2 2 4-4" />
                   </svg>
-                  {{ property.amenities.length }} amenities assigned
+                  {{ $t('amenityManagement.myProperties.amenitiesAssigned', { count: property.amenities.length }) }}
                 </p>
               </div>
 
               <button class="btn-edit" @click="openEditModal(property)">
-                <svg
-                  width="15"
-                  height="15"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.2"
-                >
-                  <path
-                    d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
-                  />
-                  <path
-                    d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
-                  />
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                 </svg>
-                Edit Amenities
+                {{ $t('amenityManagement.myProperties.editButton') }}
               </button>
             </div>
 
@@ -204,25 +160,15 @@
                 class="chip"
                 :style="chipStyle(amenity.amenity_name)"
               >
-                <span
-                  class="chip-svg"
-                  v-html="getChipSvg(amenity.amenity_name)"
-                ></span>
+                <span class="chip-svg" v-html="getChipSvg(amenity.amenity_name)"></span>
                 {{ amenity.amenity_name }}
               </span>
 
               <button class="chip chip-add" @click="openEditModal(property)">
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <path d="M12 5v14M5 12h14" />
                 </svg>
-                Add More
+                {{ $t('amenityManagement.myProperties.addMore') }}
               </button>
             </div>
           </div>
@@ -233,13 +179,15 @@
     <!-- SAVE BAR -->
     <transition name="slide-up">
       <div v-if="isDirty && viewMode === 'catalogue'" class="save-bar">
-        <div>{{ selectedAmenities.length }} amenities selected</div>
+        <div>{{ $t('amenityManagement.saveBar.selected', { count: selectedAmenities.length }) }}</div>
         <div class="save-actions">
-          <button class="btn-secondary" @click="discardChanges">Discard</button>
+          <button class="btn-secondary" @click="discardChanges">
+            {{ $t('amenityManagement.saveBar.discard') }}
+          </button>
           <button class="btn-primary" :disabled="saving" @click="saveAmenities">
-            <span v-if="saving">Saving...</span>
-            <span v-else-if="saveSuccess">✓ Saved</span>
-            <span v-else>Save Changes</span>
+            <span v-if="saving">{{ $t('amenityManagement.saveBar.saving') }}</span>
+            <span v-else-if="saveSuccess">{{ $t('amenityManagement.saveBar.saved') }}</span>
+            <span v-else>{{ $t('amenityManagement.saveBar.saveChanges') }}</span>
           </button>
         </div>
       </div>
@@ -255,29 +203,22 @@
         <div class="modal">
           <div class="modal-header">
             <div>
-              <h2>Edit Amenities</h2>
+              <h2>{{ $t('amenityManagement.modal.title') }}</h2>
               <p>{{ editModal.property?.name }}</p>
             </div>
             <button class="close-btn" @click="closeEditModal">✕</button>
           </div>
           <div class="modal-body">
-            <AmenitySelector
-              :amenities="amenities"
-              v-model="editModal.selected"
-            />
+            <AmenitySelector :amenities="amenities" v-model="editModal.selected" />
           </div>
           <div class="modal-footer">
             <button class="btn-secondary" @click="closeEditModal">
-              Cancel
+              {{ $t('amenityManagement.modal.cancel') }}
             </button>
-            <button
-              class="btn-primary"
-              :disabled="editModal.saving"
-              @click="saveModalAmenities"
-            >
-              <span v-if="editModal.saving">Saving...</span>
-              <span v-else-if="editModal.saveSuccess">✓ Saved</span>
-              <span v-else>Save Changes</span>
+            <button class="btn-primary" :disabled="editModal.saving" @click="saveModalAmenities">
+              <span v-if="editModal.saving">{{ $t('amenityManagement.modal.saving') }}</span>
+              <span v-else-if="editModal.saveSuccess">{{ $t('amenityManagement.modal.saved') }}</span>
+              <span v-else>{{ $t('amenityManagement.modal.saveChanges') }}</span>
             </button>
           </div>
         </div>
@@ -289,6 +230,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import axios from "axios";
 import AmenitySelector from "../components/AmenitySelector.vue";
 import { useSidebar } from "@/shared/composables/useSidebar";
@@ -299,6 +241,9 @@ import {
   updatePropertyAmenities,
 } from "../services/amenityService";
 import { getOwnerProperties } from "../../properties/services/propertyService";
+
+const { t } = useI18n();
+const BASE_URL = "https://api-srokyerng.devspace.linkpc.net";
 
 const route = useRoute();
 const router = useRouter();
@@ -315,6 +260,11 @@ const viewMode = ref("catalogue");
 const myProperties = ref([]);
 const loadingProperties = ref(false);
 const { isSidebarOpen } = useSidebar();
+
+const isMobile = ref(window.innerWidth < 768);
+window.addEventListener("resize", () => {
+  isMobile.value = window.innerWidth < 768;
+});
 
 const editModal = ref({
   open: false,
@@ -334,18 +284,17 @@ const isDirty = computed(() => {
 
 // ─── Property helpers ───────────────────────────────────
 const propertyColors = [
-  { bg: "#dbeafe", text: "#1d4ed8" }, // blue
-  { bg: "#dcfce7", text: "#15803d" }, // green
-  { bg: "#ffedd5", text: "#c2410c" }, // orange
-  { bg: "#f3e8ff", text: "#7e22ce" }, // purple
-  { bg: "#fee2e2", text: "#b91c1c" }, // red
-  { bg: "#cffafe", text: "#0e7490" }, // cyan
-  { bg: "#fef9c3", text: "#a16207" }, // yellow
-  { bg: "#ede9fe", text: "#6d28d9" }, // violet
+  { bg: "#dbeafe", text: "#1d4ed8" },
+  { bg: "#dcfce7", text: "#15803d" },
+  { bg: "#ffedd5", text: "#c2410c" },
+  { bg: "#f3e8ff", text: "#7e22ce" },
+  { bg: "#fee2e2", text: "#b91c1c" },
+  { bg: "#cffafe", text: "#0e7490" },
+  { bg: "#fef9c3", text: "#a16207" },
+  { bg: "#ede9fe", text: "#6d28d9" },
 ];
 
 const getPropertyColorScheme = (id = "") => {
-  // hash the id (always stable, never changes on refresh)
   let hash = 0;
   const str = String(id);
   for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + hash * 31;
@@ -370,15 +319,13 @@ const onImageSelected = async (event, property) => {
   const file = event.target.files?.[0];
   if (!file) return;
 
-  // Preview immediately so user sees the change
   const localUrl = URL.createObjectURL(file);
   property.image = localUrl;
 
-  // Upload to backend
   try {
     const formData = new FormData();
     formData.append("image", file);
-    formData.append("_method", "PATCH"); // needed for Laravel
+    formData.append("_method", "PATCH");
 
     const response = await axios.post(
       `/api/properties/${property.id}`,
@@ -386,202 +333,80 @@ const onImageSelected = async (event, property) => {
       { headers: { "Content-Type": "multipart/form-data" } },
     );
 
-    // Replace preview with real URL from server
     const savedUrl = response.data?.image || response.data?.data?.image;
     if (savedUrl) property.image = savedUrl;
   } catch (err) {
     console.error("Image upload failed:", err);
     error.value = "Failed to upload image. Please try again.";
-    property.image = null; // revert preview on failure
+    property.image = null;
   }
 
-  // Reset input so same file can be re-selected
   event.target.value = "";
 };
 
 // ─── Chip colors & SVGs per amenity ─────────────────────
 const chipMeta = {
-  // Connectivity
   "Wi-Fi": {
-    color: "#3b82f6",
-    bg: "#eff6ff",
-    border: "#bfdbfe",
-    svg: `
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
-        <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
-        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
-        <circle cx="12" cy="20" r="1" fill="currentColor"/>
-      </svg>
-    `,
+    color: "#3b82f6", bg: "#eff6ff", border: "#bfdbfe",
+    svg: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor"/></svg>`,
   },
-
   "Fiber Internet": {
-    color: "#3b82f6",
-    bg: "#eff6ff",
-    border: "#bfdbfe",
-    svg: `
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="2" fill="currentColor"/>
-        <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/>
-        <path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/>
-      </svg>
-    `,
+    color: "#3b82f6", bg: "#eff6ff", border: "#bfdbfe",
+    svg: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/></svg>`,
   },
-
-  // Recreation
   "Swimming Pool": {
-    color: "#16a34a",
-    bg: "#f0fdf4",
-    border: "#bbf7d0",
-    svg: `
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M2 12c.6.5 1.2 1 2.5 1C7 13 7 11 9.5 11s2.5 2 5 2 2.5-2 5-2 2.5 2 2.5 2"/>
-      </svg>
-    `,
+    color: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0",
+    svg: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12c.6.5 1.2 1 2.5 1C7 13 7 11 9.5 11s2.5 2 5 2 2.5-2 5-2 2.5 2 2.5 2"/></svg>`,
   },
-
   Gym: {
-    color: "#16a34a",
-    bg: "#f0fdf4",
-    border: "#bbf7d0",
-    svg: `
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M6.5 6.5h11m-11 11h11M3 9.5v5m18-5v5"/>
-      </svg>
-    `,
+    color: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0",
+    svg: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.5 6.5h11m-11 11h11M3 9.5v5m18-5v5"/></svg>`,
   },
-
-  // Dining
   Restaurant: {
-    color: "#ea580c",
-    bg: "#fff7ed",
-    border: "#fed7aa",
-    svg: `
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
-        <path d="M7 2v20"/>
-      </svg>
-    `,
+    color: "#ea580c", bg: "#fff7ed", border: "#fed7aa",
+    svg: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/></svg>`,
   },
-
   Breakfast: {
-    color: "#ea580c",
-    bg: "#fff7ed",
-    border: "#fed7aa",
-    svg: `
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M17 8h1a4 4 0 1 1 0 8h-1"/>
-        <path d="M3 8h14v9"/>
-      </svg>
-    `,
+    color: "#ea580c", bg: "#fff7ed", border: "#fed7aa",
+    svg: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9"/></svg>`,
   },
-
-  // Transport
   Parking: {
-    color: "#9333ea",
-    bg: "#fdf4ff",
-    border: "#e9d5ff",
-    svg: `
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="3" width="18" height="18" rx="2"/>
-        <path d="M9 17V7h4"/>
-      </svg>
-    `,
+    color: "#9333ea", bg: "#fdf4ff", border: "#e9d5ff",
+    svg: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 17V7h4"/></svg>`,
   },
-
   "Airport Shuttle": {
-    color: "#9333ea",
-    bg: "#fdf4ff",
-    border: "#e9d5ff",
-    svg: `
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="2" y="7" width="20" height="11" rx="2"/>
-        <circle cx="7" cy="18" r="1" fill="currentColor"/>
-        <circle cx="17" cy="18" r="1" fill="currentColor"/>
-      </svg>
-    `,
+    color: "#9333ea", bg: "#fdf4ff", border: "#e9d5ff",
+    svg: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="11" rx="2"/><circle cx="7" cy="18" r="1" fill="currentColor"/><circle cx="17" cy="18" r="1" fill="currentColor"/></svg>`,
   },
-
-  // Services
   Laundry: {
-    color: "#db2777",
-    bg: "#fdf2f8",
-    border: "#fbcfe8",
-    svg: `
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="2" y="2" width="20" height="20" rx="2"/>
-        <circle cx="12" cy="13" r="4"/>
-      </svg>
-    `,
+    color: "#db2777", bg: "#fdf2f8", border: "#fbcfe8",
+    svg: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><circle cx="12" cy="13" r="4"/></svg>`,
   },
-
   "24h Front Desk": {
-    color: "#db2777",
-    bg: "#fdf2f8",
-    border: "#fbcfe8",
-    svg: `
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10"/>
-        <path d="M12 6v6l4 2"/>
-      </svg>
-    `,
+    color: "#db2777", bg: "#fdf2f8", border: "#fbcfe8",
+    svg: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`,
   },
-
-  // Other
   "Pet Friendly": {
-    color: "#db2777",
-    bg: "#fdf2f8",
-    border: "#fbcfe8",
-    svg: `
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="9" cy="10" r="1"/>
-      <circle cx="15" cy="10" r="1"/>
-      <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
-    </svg>
-  `,
+    color: "#db2777", bg: "#fdf2f8", border: "#fbcfe8",
+    svg: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/></svg>`,
   },
-
   "Air Conditioning": {
-    color: "#64748b",
-    bg: "#f8fafc",
-    border: "#e2e8f0",
-    svg: `
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M12 2v20"/>
-      <path d="M4.93 6.93l14.14 14.14"/>
-      <path d="M2 12h20"/>
-      <path d="M4.93 17.07 19.07 2.93"/>
-    </svg>
-  `,
+    color: "#0ea5e9", bg: "#f0f9ff", border: "#bae6fd",
+    svg: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M4.93 6.93l14.14 14.14"/><path d="M2 12h20"/><path d="M4.93 17.07 19.07 2.93"/></svg>`,
   },
 };
 
 const defaultChip = {
-  color: "#64748b",
-  bg: "#f8fafc",
-  border: "#e2e8f0",
-  svg: `
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="12" cy="12" r="10"/>
-      <path d="M12 8v4l3 3"/>
-    </svg>
-  `,
+  color: "#64748b", bg: "#f8fafc", border: "#e2e8f0",
+  svg: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>`,
 };
 
 const chipStyle = (name) => {
   const m = chipMeta[name] || defaultChip;
-
-  return {
-    color: m.color,
-    background: m.bg,
-    borderColor: m.border,
-  };
+  return { color: m.color, background: m.bg, borderColor: m.border };
 };
 
-const getChipSvg = (name) => {
-  return (chipMeta[name] || defaultChip).svg;
-};
+const getChipSvg = (name) => (chipMeta[name] || defaultChip).svg;
 
 // ─── Modal ───────────────────────────────────────────────
 const openEditModal = (property) => {
@@ -596,32 +421,25 @@ const openEditModal = (property) => {
   };
   document.body.style.overflow = "hidden";
 };
+
 const closeEditModal = () => {
   editModal.value.open = false;
   document.body.style.overflow = "";
 };
 
-// ─── Save modal (Edit Amenities button in My Properties) ─
+// ─── Save modal amenities ────────────────────────────────
 const saveModalAmenities = async () => {
   editModal.value.saving = true;
   error.value = null;
   try {
-    // PUT /amenities/properties/:id/amenities  { amenity_ids: [...] }
     await updatePropertyAmenities(
       editModal.value.property.id,
       editModal.value.selected,
     );
 
-    // Re-fetch the property's amenities so chips row updates live
-    const updatedAmenities = await getPropertyAmenities(
-      editModal.value.property.id,
-    );
-    const property = myProperties.value.find(
-      (p) => p.id === editModal.value.property.id,
-    );
-    if (property) {
-      property.amenities = updatedAmenities;
-    }
+    const updatedAmenities = await getPropertyAmenities(editModal.value.property.id);
+    const property = myProperties.value.find((p) => p.id === editModal.value.property.id);
+    if (property) property.amenities = updatedAmenities;
 
     editModal.value.saveSuccess = true;
     setTimeout(() => closeEditModal(), 1000);
@@ -639,7 +457,6 @@ const fetchAmenities = async () => {
   loading.value = true;
   error.value = null;
   try {
-    // GET /amenities — returns full list for the selector
     amenities.value = await getAllAmenities();
   } catch (err) {
     error.value = err?.response?.data?.message || "Failed to load amenities.";
@@ -648,7 +465,7 @@ const fetchAmenities = async () => {
   }
 };
 
-// ─── Catalogue save (not used on this page, kept for reuse)
+// ─── Catalogue save ──────────────────────────────────────
 const saveAmenities = async () => {
   if (!propertyId.value) return;
   saving.value = true;
@@ -656,9 +473,7 @@ const saveAmenities = async () => {
     await updatePropertyAmenities(propertyId.value, selectedAmenities.value);
     originalSelected.value = [...selectedAmenities.value];
     saveSuccess.value = true;
-    setTimeout(() => {
-      saveSuccess.value = false;
-    }, 2000);
+    setTimeout(() => { saveSuccess.value = false; }, 2000);
   } catch (err) {
     error.value = err?.response?.data?.message || "Failed to save amenities.";
   } finally {
@@ -670,26 +485,46 @@ const discardChanges = () => {
   selectedAmenities.value = [...originalSelected.value];
 };
 
-// ─── Fetch owner properties + their amenities ────────────
+// ─── Fetch owner properties + images + amenities ─────────
 const fetchMyProperties = async () => {
   loadingProperties.value = true;
   error.value = null;
   try {
-    // getOwnerProperties() calls your real backend (e.g. GET /api/properties/owner)
     const response = await getOwnerProperties();
-
-    // Support both response.data (axios) and plain array
     const properties = response?.data?.data || response?.data || response || [];
 
-    // For each property, also fetch its current amenities
     myProperties.value = await Promise.all(
       properties.map(async (property) => {
         try {
-          const amenities = await getPropertyAmenities(property.id);
-          return { ...property, amenities };
+          const [amenities, imagesRes] = await Promise.all([
+            getPropertyAmenities(property.id),
+            axios.get(
+              `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/properties/${property.id}/images`
+            ).catch(() => null),
+          ]);
+
+          const images = imagesRes?.data?.data || imagesRes?.data || [];
+          const cover = images.find((img) => img.is_cover == 1) || images[0];
+          const rawUrl = cover?.image_url || cover?.url || cover?.path || null;
+          const image = rawUrl ? `${BASE_URL}${rawUrl}` : null;
+
+          return {
+            ...property,
+            amenities,
+            image,
+            name: property.property_name || property.name || t('amenityManagement.myProperties.empty.title'),
+            type: property.category_name || property.type || '',
+            location: property.city || property.province || property.location || '',
+          };
         } catch {
-          // If property has no amenities yet, start with empty
-          return { ...property, amenities: [] };
+          return {
+            ...property,
+            amenities: [],
+            image: null,
+            name: property.property_name || property.name || '',
+            type: property.category_name || property.type || '',
+            location: property.city || property.province || property.location || '',
+          };
         }
       }),
     );
@@ -707,11 +542,7 @@ onMounted(() => {
 });
 
 watch(viewMode, (value) => {
-  if (value === "myprops") {
-    // Always re-fetch when switching to My Properties tab
-    // so newly added amenities from the catalogue show up
-    fetchMyProperties();
-  }
+  if (value === "myprops") fetchMyProperties();
 });
 
 watch(
@@ -723,21 +554,6 @@ watch(
 </script>
 
 <style scoped>
-/* =========================================================
-   PAGE
-========================================================= */
-
-/* .amenity-page {
-  width: calc(100% + 80px);
-  margin-left: -40px;
-  margin-right: -40px;
-  min-height: 100vh;
-  background: var(--color-page);
-  color: var(--color-text);
-  transition:
-    background 0.25s ease,
-    color 0.25s ease;
-} */
 .amenity-page {
   padding: 0 var(--space-lg);
   display: flex;
@@ -754,164 +570,105 @@ watch(
 }
 
 @media (max-width: 768px) {
-  .page-header {
-    padding: 24px 16px;
-  }
-  .page-body {
-    padding: 20px 16px 90px;
-  }
-  .page-title {
-    font-size: 28px;
-    margin-top: 8px;
-  }
-  .header-btn {
-    margin-top: 8px;
-    min-width: 100px;
-  }
-  .header-inner {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .header-actions {
-    width: 100%;
-  }
-}
-
-/* =========================================================
-   HEADER
-========================================================= */
-
-.page-header {
-  width: 100%;
-  background: linear-gradient(135deg, #021b3a, #0a4d8c, #38bdf8);
-  padding: 34px 40px;
-  box-sizing: border-box;
+  .page-header { padding: 24px 16px; }
+  .page-body { padding: 24px 20px 80px; }
 }
 
 .header-inner {
-  width: 100%;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
   gap: 24px;
 }
 
-.header-left {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
+.header-left { display: flex; flex-direction: column; gap: 6px; }
 
 .breadcrumb {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 14px;
-  font-weight: 500;
+  gap: 6px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.65);
 }
 
 .bc-link {
   cursor: pointer;
-  transition: 0.2s ease;
+  transition: color 0.2s;
 }
-.bc-link:hover {
-  color: white;
-}
-.separator {
-  opacity: 0.7;
-}
+.bc-link:hover { color: white; }
+.separator { opacity: 0.5; }
 
 .page-title {
-  margin-top: 18px;
-  color: white;
   font-size: 42px;
-  font-weight: 700;
-  line-height: 1.1;
+  font-weight: 800;
+  color: white;
+  letter-spacing: -1px;
+  margin: 0;
 }
 
 .page-subtitle {
-  margin-top: 6px;
-  margin-bottom: 0;
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 16px;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0;
 }
 
 .header-actions {
   display: flex;
-  align-items: center;
-  gap: 14px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
 .header-btn {
-  min-width: 150px;
-  height: 50px;
-  padding: 0 22px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(12px);
-  color: white;
-  margin-top: 60px;
-  font-size: 15px;
+  padding: 10px 20px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
 }
 
 .header-btn:hover {
-  background: rgba(255, 255, 255, 0.18);
-  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
 }
+
 .header-btn.active {
   background: white;
-  color: var(--color-primary-strong);
+  color: #0a4d8c;
   border-color: white;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
 }
-
-/* =========================================================
-   BODY
-========================================================= */
 
 .page-body {
-  width: 100%;
-  padding: 34px 40px 90px;
-  box-sizing: border-box;
+  padding: 32px 40px 80px;
 }
-
-/* =========================================================
-   MYPROPS TOP BAR
-========================================================= */
 
 .myprops-topbar {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   margin-bottom: 24px;
 }
 
 .myprops-subtitle {
-  margin: 0;
   font-size: 14px;
   color: var(--color-muted);
+  margin: 0;
 }
 
 .btn-all-props {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 9px 18px;
+  gap: 8px;
+  padding: 10px 18px;
   border: 1.5px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--color-surface);
   color: var(--color-text);
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -922,9 +679,12 @@ watch(
   color: var(--color-primary);
 }
 
-/* =========================================================
-   PROPERTY LIST
-========================================================= */
+.loading-text {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--color-muted);
+  font-size: 15px;
+}
 
 .property-list {
   display: flex;
@@ -934,45 +694,49 @@ watch(
 
 .property-card {
   background: var(--color-surface);
-  border: 1.5px solid var(--color-border);
+  border: 1px solid var(--color-border);
   border-radius: 20px;
   overflow: hidden;
-  transition: all 0.25s ease;
+  transition: box-shadow 0.2s ease;
 }
 
 .property-card:hover {
-  border-color: #bae6fd;
-  box-shadow: 0 8px 32px rgba(14, 165, 233, 0.1);
+  box-shadow: var(--shadow-panel);
 }
-
-/* =========================================================
-   PROPERTY TOP ROW
-========================================================= */
 
 .property-top {
   display: flex;
   align-items: center;
   gap: 18px;
-  padding: 22px 24px 18px;
-}
-
-.property-image,
-.property-placeholder {
-  width: 72px;
-  height: 72px;
-  border-radius: 16px;
-  object-fit: cover;
-  flex-shrink: 0;
+  padding: 20px 24px 16px;
 }
 
 .property-img-wrap {
   position: relative;
-  width: 72px;
-  height: 72px;
+  width: 70px;
+  height: 70px;
+  border-radius: 14px;
+  overflow: hidden;
   flex-shrink: 0;
   cursor: pointer;
-  border-radius: 16px;
-  overflow: hidden;
+}
+
+.property-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 14px;
+}
+
+.property-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  border-radius: 14px;
 }
 
 .img-upload-overlay {
@@ -984,7 +748,7 @@ watch(
   justify-content: center;
   opacity: 0;
   transition: opacity 0.2s ease;
-  border-radius: 16px;
+  border-radius: 14px;
 }
 
 .property-img-wrap:hover .img-upload-overlay {
@@ -995,23 +759,19 @@ watch(
   display: none;
 }
 
-.property-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  font-weight: 700;
-}
-
 .property-info {
   flex: 1;
+  min-width: 0;
 }
 
 .prop-name {
-  margin: 0;
   font-size: 17px;
   font-weight: 700;
   color: var(--color-text);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .prop-meta {
@@ -1047,10 +807,6 @@ watch(
   opacity: 0.9;
   transform: translateY(-1px);
 }
-
-/* =========================================================
-   CHIPS ROW
-========================================================= */
 
 .chips-row {
   display: flex;
@@ -1095,10 +851,6 @@ watch(
   color: var(--color-primary, #1268b4);
 }
 
-/* =========================================================
-   BUTTONS
-========================================================= */
-
 .btn-primary {
   border: none;
   background: var(--color-primary);
@@ -1131,10 +883,6 @@ watch(
   background: var(--color-surface-soft);
 }
 
-/* =========================================================
-   ERROR
-========================================================= */
-
 .error-banner {
   background: var(--color-danger-soft);
   color: var(--color-danger);
@@ -1143,10 +891,6 @@ watch(
   margin-bottom: 24px;
   border: 1px solid rgba(180, 35, 24, 0.12);
 }
-
-/* =========================================================
-   SAVE BAR
-========================================================= */
 
 .save-bar {
   position: fixed;
@@ -1164,14 +908,7 @@ watch(
   z-index: 100;
 }
 
-.save-actions {
-  display: flex;
-  gap: 10px;
-}
-
-/* =========================================================
-   MODAL
-========================================================= */
+.save-actions { display: flex; gap: 10px; }
 
 .modal-overlay {
   position: fixed;
@@ -1236,80 +973,36 @@ watch(
   transition: 0.2s ease;
 }
 
-.close-btn:hover {
-  transform: rotate(90deg);
-}
-
-/* =========================================================
-   EMPTY STATE
-========================================================= */
+.close-btn:hover { transform: rotate(90deg); }
 
 .empty-state {
   text-align: center;
   padding: 90px 20px;
 }
+
 .empty-icon {
   font-size: 54px;
   margin-bottom: 14px;
 }
 
-/* =========================================================
-   TRANSITIONS
-========================================================= */
+.fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.25s ease;
-}
-.slide-up-enter-from,
-.slide-up-leave-to {
+.slide-up-enter-active, .slide-up-leave-active { transition: all 0.25s ease; }
+.slide-up-enter-from, .slide-up-leave-to {
   opacity: 0;
   transform: translateX(-50%) translateY(20px);
 }
 
-/* =========================================================
-   RESPONSIVE
-========================================================= */
-
 @media (max-width: 768px) {
-  .page-header {
-    padding: 26px 20px;
-  }
-  .page-body {
-    padding: 24px 20px 80px;
-  }
-  .header-inner {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .header-actions {
-    width: 100%;
-  }
-  .header-btn {
-    flex: 1;
-  }
-  .page-title {
-    font-size: 34px;
-  }
-  .property-top {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .save-bar {
-    width: calc(100% - 40px);
-    justify-content: space-between;
-  }
-  .chips-row {
-    padding: 0 16px 16px;
-  }
+  .page-header { padding: 26px 20px; }
+  .page-body { padding: 24px 20px 80px; }
+  .header-inner { flex-direction: column; align-items: flex-start; }
+  .header-actions { width: 100%; }
+  .header-btn { flex: 1; }
+  .page-title { font-size: 34px; }
+  .property-top { flex-direction: column; align-items: flex-start; }
+  .save-bar { width: calc(100% - 40px); justify-content: space-between; }
+  .chips-row { padding: 0 16px 16px; }
 }
 </style>

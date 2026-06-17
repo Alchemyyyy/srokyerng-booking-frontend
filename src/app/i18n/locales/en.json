@@ -1217,6 +1217,13 @@
       "avgRating": "Avg Rating",
       "readyToReview": "Ready to Review"
     },
+      "ratingLabel": {
+      "poor": "Poor",
+      "fair": "Fair",
+      "good": "Good",
+      "veryGood": "Very Good",
+      "excellent": "Excellent"
+      },
     "filter": {
       "searchPlaceholder": "Search reviews...",
       "sortRecent": "Most Recent",
@@ -1270,6 +1277,54 @@
       "confirm": "Delete Review",
       "deleteSuccess": "Review deleted successfully",
       "deleteFailed": "Failed to delete review"
+    }
+  },
+  "amenityManagement": {
+    "breadcrumb": {
+      "dashboard": "← Dashboard",
+      "amenities": "Amenities"
+    },
+    "title": "Amenities",
+    "subtitle": "Browse all available amenities and manage them for your properties",
+    "tabs": {
+      "catalogue": "Catalogue",
+      "myProperties": "My Properties"
+    },
+    "catalogue": {
+      "loading": "Loading amenities..."
+    },
+    "myProperties": {
+      "subtitle": "Select a property to view and edit its amenities.",
+      "allProperties": "All Properties",
+      "loading": "Loading properties...",
+      "empty": {
+        "title": "No properties yet",
+        "description": "Add your first property",
+        "button": "Add Property"
+      },
+      "amenitiesAssigned": "{count} amenities assigned",
+      "editButton": "Edit Amenities",
+      "addMore": "Add More"
+    },
+    "saveBar": {
+      "selected": "{count} amenities selected",
+      "discard": "Discard",
+      "saving": "Saving...",
+      "saved": "✓ Saved",
+      "saveChanges": "Save Changes"
+    },
+    "modal": {
+      "title": "Edit Amenities",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "saved": "✓ Saved",
+      "saveChanges": "Save Changes"
+    },
+    "selector": {
+      "searchPlaceholder": "Search amenities...",
+      "all": "All",
+      "noResults": "No amenities found",
+      "selected": "{count} selected"
     }
   }
 }

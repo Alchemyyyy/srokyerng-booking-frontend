@@ -3,7 +3,15 @@ import reviewApi from '../api/review.api.js'
 // Backend wraps responses as { success, message, data }.
 // Axios wraps that again as response.data.
 // So the actual payload is response.data.data.
-const unwrapData = (response, fallback = null) => response?.data?.data ?? fallback;
+// http.js interceptor returns response.data directly (the axios response body).
+// Backend shape: { success, message, data }.
+// So the payload is response.data (top-level data field).
+const unwrapData = (response, fallback = null) => {
+  // Handle both wrapped and unwrapped responses
+  if (response?.data !== undefined) return response.data ?? fallback;
+  if (response?.success !== undefined) return response.data ?? fallback;
+  return fallback;
+};
 
 const reviewService = {
   async getReviews(propertyId = 1) {
@@ -11,10 +19,15 @@ const reviewService = {
     return unwrapData(response, []);
   },
 
-  async getMyReviews() {
-    const response = await reviewApi.getMyReviews();
-    return unwrapData(response, []);
-  },
+async getMyReviews() {
+  console.log("SERVICE START")
+
+  const response = await reviewApi.getMyReviews()
+
+  console.log("SERVICE RESPONSE", response)
+
+  return unwrapData(response, [])
+},
 
   async createReview(reservationId, reviewData) {
     const response = await reviewApi.createReview(reservationId, reviewData);
