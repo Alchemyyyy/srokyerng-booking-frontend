@@ -18,6 +18,15 @@
   },
   "auth": {
     "accountType": "Account type",
+    "adminBrandEyebrow": "Admin access",
+    "adminBrandProofApprovals": "Review property approvals",
+    "adminBrandProofOperations": "Monitor platform operations",
+    "adminBrandProofUsers": "Manage users and reports",
+    "adminBrandSubtitle": "Access internal tools for approvals, users, reporting, and platform oversight.",
+    "adminBrandTitle": "Secure operations workspace",
+    "adminLoginRoleMismatch": "This login is for admin accounts only.",
+    "adminLoginSubtitle": "Sign in to manage approvals, users, reports, and platform operations.",
+    "adminLoginTitle": "Admin sign in",
     "alreadyHaveAccount": "Already have an account?",
     "backToHome": "Back to Home",
     "backToLogin": "Back to login",
@@ -39,7 +48,7 @@
     "customerEntryTitle": "I want to book stays",
     "customerLoginEntry": "Customer login",
     "customerLoginCardSubtitle": "Search stays, manage bookings, and continue your trips.",
-    "customerLoginRoleMismatch": "This login is for customer accounts. Please use owner login for owner accounts.",
+    "customerLoginRoleMismatch": "This login is for customer accounts. Please use partner login for property partner accounts.",
     "customerLoginSubtitle": "Sign in to search stays, manage bookings, and continue your trips.",
     "customerLoginTitle": "Sign in to book your stay",
     "customerRegisterSubtitle": "Create a customer account to book stays and manage reservations.",
@@ -76,22 +85,22 @@
     "newPassword": "New password",
     "newPasswordPlaceholder": "New password",
     "owner": "Property owner",
-    "ownerBrandEyebrow": "Owner workspace",
+    "ownerBrandEyebrow": "Partner workspace",
     "ownerBrandProofGuests": "Respond to guest messages",
     "ownerBrandProofListings": "Manage rooms and availability",
     "ownerBrandProofReservations": "Track reservations",
-    "ownerBrandSubtitle": "List properties, manage room availability, and follow bookings from your owner dashboard.",
+    "ownerBrandSubtitle": "List properties, manage room availability, and follow bookings from your partner dashboard.",
     "ownerBrandTitle": "Run your property with confidence",
     "ownerEntrySubtitle": "List properties, manage rooms, and follow reservations from your dashboard.",
     "ownerEntryTitle": "I manage properties",
-    "ownerLoginEntry": "Owner login",
+    "ownerLoginEntry": "Partner login",
     "ownerLoginCardSubtitle": "Manage properties, rooms, reservations, and guest messages.",
-    "ownerLoginRoleMismatch": "This login is for property owner accounts. Please use customer login for customer accounts.",
+    "ownerLoginRoleMismatch": "This login is for property partner accounts. Please use customer login for customer accounts.",
     "ownerLoginSubtitle": "Sign in to manage properties, rooms, reservations, and guest messages.",
     "ownerLoginTitle": "Sign in to manage properties",
     "ownerTools": "Customer and owner ready",
-    "ownerRegisterSubtitle": "Create an owner account to manage properties, rooms, and bookings.",
-    "ownerRegisterTitle": "Register as property owner",
+    "ownerRegisterSubtitle": "Create a partner account to manage properties, rooms, and bookings.",
+    "ownerRegisterTitle": "Register as property partner",
     "google": "Google",
     "orContinueWith": "or continue with",
     "passwordsDoNotMatch": "Passwords do not match",
@@ -155,6 +164,66 @@
     "login": "Login",
     "listProperty": "List your property",
     "register": "Register"
+  },
+  "ownerLanding": {
+    "eyebrow": "For property partners",
+    "title": "List your property and manage bookings in one workspace",
+    "subtitle": "Create a partner account to publish accommodations, manage room availability, and follow guest reservations from your dashboard.",
+    "primaryCta": "Become a partner",
+    "secondaryCta": "Partner sign in",
+    "previewEyebrow": "Partner tools",
+    "previewTitle": "Everything your property needs before the next booking",
+    "stats": {
+      "cities": "Cambodian cities",
+      "access": "Dashboard access",
+      "setupFee": "Setup fee"
+    },
+    "benefits": {
+      "listings": {
+        "title": "Manage listings",
+        "description": "Keep property details, room types, photos, prices, and availability ready for guests."
+      },
+      "reservations": {
+        "title": "Track reservations",
+        "description": "Follow booking status, guest details, and upcoming stays from one partner dashboard."
+      },
+      "guests": {
+        "title": "Stay connected",
+        "description": "Use account tools built for guest communication and property operations."
+      }
+    },
+    "stepsEyebrow": "How it works",
+    "stepsTitle": "Start receiving guests in three steps",
+    "stepsSubtitle": "The partner flow is separate from customer booking so your property tools stay clear and focused.",
+    "steps": {
+      "create": "Create or sign in with a partner account.",
+      "verify": "Verify your email and complete your partner profile.",
+      "publish": "Add your property details and submit it for approval."
+    },
+    "reviewNote": "New property listings may be reviewed before they appear publicly, helping keep accommodation information accurate and trusted.",
+    "faqEyebrow": "Questions",
+    "faqTitle": "Before you become a partner",
+    "faqSubtitle": "A few common details for partners who want to list accommodation on SrokYerng Booking.",
+    "faq": {
+      "free": {
+        "question": "Is listing my property free?",
+        "answer": "You can start the partner flow without a setup fee. Any future payment or commission rules should be shown before partners publish or accept bookings."
+      },
+      "approval": {
+        "question": "Will my property be public immediately?",
+        "answer": "New property submissions may require admin approval before they appear publicly. This helps keep listing information accurate and trustworthy."
+      },
+      "customerAccount": {
+        "question": "What if I already have a customer account?",
+        "answer": "You can use the list-property entry from your account menu. The current flow opens the partner account path; a future upgrade flow can connect partner access to the same account."
+      },
+      "manage": {
+        "question": "What can partners manage?",
+        "answer": "Partners can manage property details, room information, availability, reservations, and guest communication as those modules become available."
+      }
+    },
+    "finalTitle": "Ready to list your accommodation?",
+    "finalSubtitle": "Start with a partner account, then add your first property when your module is ready."
   },
   "footer": {
     "tagline": "Discover authentic Cambodian stays. From boutique guesthouses to riverside retreats — book local, experience more.",

@@ -206,7 +206,7 @@ watch(
         </template>
 
         <template v-else>
-          <RouterLink :to="{ name: 'public.registerOwner' }">
+          <RouterLink :to="{ name: 'public.listProperty' }">
             <AppButton
               variant="ghost"
               size="sm"
@@ -355,7 +355,7 @@ watch(
 
         <div v-else class="space-y-3">
           <RouterLink
-            :to="{ name: 'public.registerOwner' }"
+            :to="{ name: 'public.listProperty' }"
             class="block rounded-2xl border border-(--color-primary) px-4 py-3 text-center text-sm font-semibold text-(--color-primary) transition hover:bg-(--color-primary-soft)"
             @click="closeMobileMenu"
           >

@@ -18,9 +18,9 @@ const features = computed(() => [
 
 const handleCtaClick = () => {
   router.push(
-    authStore.isAuthenticated
+    authStore.user?.role === "owner"
       ? { name: "owner.dashboard" }
-      : { name: "public.register" },
+      : { name: "public.listProperty" },
   );
 };
 </script>
@@ -61,13 +61,14 @@ const handleCtaClick = () => {
       </div>
 
       <div class="relative z-10 mt-10 lg:mt-0 lg:ml-8 lg:flex-shrink-0">
-        <RouterLink
-          :to="{ name: 'public.registerOwner' }"
+        <button
+          type="button"
           class="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-blue-900 transition hover:bg-gray-100 shadow-lg"
+          @click="handleCtaClick"
         >
           {{ t("home.cta.listButton") }}
           <span aria-hidden="true">&rarr;</span>
-        </RouterLink>
+        </button>
       </div>
     </div>
   </section>
