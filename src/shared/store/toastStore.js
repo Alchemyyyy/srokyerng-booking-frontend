@@ -2,6 +2,7 @@ import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 
 let toastId = 0;
+const DEFAULT_TOAST_TIMEOUT = 3500;
 
 export const useToastStore = defineStore("toasts", () => {
   const toasts = ref([]);
@@ -15,7 +16,7 @@ export const useToastStore = defineStore("toasts", () => {
     message,
     title = "",
     variant = "info",
-    timeout = 6000,
+    timeout = DEFAULT_TOAST_TIMEOUT,
   }) => {
     const id = ++toastId;
 

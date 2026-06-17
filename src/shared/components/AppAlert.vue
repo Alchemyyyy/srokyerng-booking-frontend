@@ -29,19 +29,23 @@ defineEmits(["close"]);
 const variantConfig = {
   success: {
     icon: CheckCircleIcon,
-    class: "border-(--color-success) bg-(--color-success-soft) text-(--color-success)",
+    rootClass: "border-(--color-success)/35 bg-(--color-surface) text-(--color-text)",
+    iconClass: "text-(--color-success)",
   },
   danger: {
     icon: XCircleIcon,
-    class: "border-(--color-danger) bg-(--color-danger-soft) text-(--color-danger)",
+    rootClass: "border-(--color-danger)/35 bg-(--color-surface) text-(--color-text)",
+    iconClass: "text-(--color-danger)",
   },
   warning: {
     icon: ExclamationTriangleIcon,
-    class: "border-(--color-warning) bg-(--color-warning-soft) text-(--color-warning)",
+    rootClass: "border-(--color-warning)/40 bg-(--color-surface) text-(--color-text)",
+    iconClass: "text-(--color-warning)",
   },
   info: {
     icon: InformationCircleIcon,
-    class: "border-(--color-info) bg-(--color-info-soft) text-(--color-info)",
+    rootClass: "border-(--color-border) bg-(--color-surface) text-(--color-text)",
+    iconClass: "text-(--color-primary)",
   },
 };
 
@@ -51,21 +55,30 @@ const AlertIcon = computed(() => activeConfig.value.icon);
 
 <template>
   <div
-    class="flex items-start gap-3 rounded-lg border px-4 py-3 text-sm font-medium"
-    :class="activeConfig.class"
+    class="relative flex items-start gap-3 rounded-lg border p-4 text-sm shadow-sm"
+    :class="activeConfig.rootClass"
     role="status"
   >
-    <component :is="AlertIcon" class="mt-0.5 h-5 w-5 shrink-0" />
-    <div class="min-w-0">
-      <p v-if="title" class="font-bold">{{ title }}</p>
-      <div :class="title ? 'mt-1' : ''">
+    <component
+      :is="AlertIcon"
+      class="mt-0.5 h-5 w-5 shrink-0"
+      :class="activeConfig.iconClass"
+    />
+    <div class="min-w-0 flex-1">
+      <p v-if="title" class="text-sm font-semibold leading-none tracking-normal text-(--color-text)">
+        {{ title }}
+      </p>
+      <div
+        class="text-sm leading-6 text-(--color-muted)"
+        :class="title ? 'mt-2' : ''"
+      >
         <slot />
       </div>
     </div>
     <button
       v-if="dismissible"
       type="button"
-      class="-mr-1 ml-auto rounded-sm p-1 transition hover:bg-black/5"
+      class="-mr-1 -mt-1 rounded-sm p-1 text-(--color-muted) opacity-80 transition hover:bg-(--color-surface-soft) hover:text-(--color-text) hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-(--color-primary)/30"
       aria-label="Dismiss alert"
       @click="$emit('close')"
     >
