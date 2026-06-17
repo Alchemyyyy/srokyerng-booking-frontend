@@ -102,6 +102,40 @@ export const useRoomStore = defineStore("rooms", () => {
     selectedPropertyId.value = propertyId;
   };
 
+  /**
+   * A "not found" response can show up in different shapes depending on
+   * whether the http client's interceptor unwraps it or not. Cover all of them:
+   *  1. Real axios-style error: err.response.status === 404
+   *  2. Axios-style error body:  err.response.data.message
+   *  3. Already-unwrapped body (this project's http interceptor rejects with
+   *     the raw JSON payload directly): err.message / err.success / err itself
+   */
+  const isNotFoundError = (err) => {
+    if (err?.response?.status === 404) return true;
+
+    const candidates = [
+      err?.response?.data?.message,
+      err?.data?.message,
+      err?.message,
+      typeof err === "string" ? err : null,
+    ];
+
+    // Also handle the case where err itself IS the body: { success, message }
+    if (
+      err &&
+      typeof err === "object" &&
+      "success" in err &&
+      err.success === false
+    ) {
+      candidates.push(err.message);
+    }
+
+    return candidates.some(
+      (msg) =>
+        typeof msg === "string" && msg.toLowerCase().includes("not found"),
+    );
+  };
+
   const fetchRoomsData = async () => {
     loading.value = true;
     error.value = null;
@@ -119,37 +153,60 @@ export const useRoomStore = defineStore("rooms", () => {
           cover_image: p.image,
         }));
 
+      // Fetch rooms for every property IN PARALLEL instead of one at a time.
+      // Promise.allSettled means one slow/failing property never blocks the rest.
+      const results = await Promise.allSettled(
+        rawProperties.value.map((property) =>
+          roomService.getMyRooms(property.id).then((roomsRes) => ({
+            property,
+            roomsRes,
+          })),
+        ),
+      );
+
       const allRooms = [];
-      for (const property of rawProperties.value) {
-        try {
-          const roomsRes = await roomService.getMyRooms(property.id);
-          const propertyRooms = Array.isArray(roomsRes?.data)
-            ? roomsRes.data
-            : Array.isArray(roomsRes)
-              ? roomsRes
-              : [];
-          const normalized = propertyRooms.map((r) => ({
-            ...r,
-            property_id: r.property_id || property.id,
-            propertyName: property.name,
-            type: r.room_name || r.type_name || "Room",
-            basePrice: r.price_per_night || 0,
-            guests: r.max_guests || 0,
-            size: r.size || "-",
-            description: r.description || "-",
-            image: r.cover_image || "",
-            inventory: r.total_rooms || 0,
-          }));
-          allRooms.push(...normalized);
-        } catch (err) {
-          // ✅ Only skip 404s silently, log other errors
-          if (err?.response?.status !== 404) {
+      for (const result of results) {
+        if (result.status === "rejected") {
+          // Skip expected "not found" cases silently; log anything else.
+          if (!isNotFoundError(result.reason)) {
             console.error(
-              `Failed to load rooms for property ${property.id}:`,
-              err,
+              "Failed to load rooms for a property:",
+              result.reason,
             );
           }
+          continue;
         }
+
+        const { property, roomsRes } = result.value;
+
+        // Some 404s resolve instead of reject if the http interceptor
+        // treats success:false as a normal response — guard for that too.
+        if (roomsRes && roomsRes.success === false) {
+          if (!isNotFoundError(roomsRes)) {
+            console.error("Failed to load rooms for a property:", roomsRes);
+          }
+          continue;
+        }
+
+        const propertyRooms = Array.isArray(roomsRes?.data)
+          ? roomsRes.data
+          : Array.isArray(roomsRes)
+            ? roomsRes
+            : [];
+
+        const normalized = propertyRooms.map((r) => ({
+          ...r,
+          property_id: r.property_id || property.id,
+          propertyName: property.name,
+          type: r.room_name || r.type_name || "Room",
+          basePrice: r.price_per_night || 0,
+          guests: r.max_guests || 0,
+          size: r.size || "-",
+          description: r.description || "-",
+          image: r.cover_image || "",
+          inventory: r.total_rooms || 0,
+        }));
+        allRooms.push(...normalized);
       }
 
       rooms.value = allRooms;

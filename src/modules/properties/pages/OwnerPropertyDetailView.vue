@@ -12,13 +12,18 @@ const loading = ref(true);
 const error = ref("");
 const property = ref(null);
 
-const BASE_URL = "https://api-srokyerng.devspace.linkpc.net";
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://api-srokyerng.devspace.linkpc.net";
 const images = ref([]);
 
 const getImageUrl = (url) => {
   if (!url) return null;
   return url.startsWith("http") ? url : `${BASE_URL}${url}`;
 };
+
+const fallbackImage =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800'%3E%3Crect width='1200' height='800' fill='%23f0f2f5'/%3E%3Crect x='300' y='160' width='600' height='440' rx='32' ry='32' fill='none' stroke='%23c8cdd6' stroke-width='18'/%3E%3Ccircle cx='460' cy='310' r='60' fill='%23c8cdd6'/%3E%3Cpolygon points='300,600 560,340 720,500 840,380 900,600' fill='%23c8cdd6'/%3E%3C/svg%3E";
 
 const fetchImages = async () => {
   try {
@@ -152,9 +157,18 @@ onMounted(async () => {
           <!-- No images yet -->
           <div
             v-else-if="!loading"
-            class="rounded-2xl border border-dashed border-(--color-border) bg-(--color-surface) p-6 text-center text-(--color-muted) text-sm"
+            class="rounded-2xl border border-dashed border-(--color-border) bg-(--color-surface) p-6 text-center space-y-3"
           >
-            No images uploaded yet.
+            <div
+              class="aspect-[4/3] max-w-xs mx-auto rounded-xl overflow-hidden bg-(--color-surface-soft)"
+            >
+              <img
+                :src="fallbackImage"
+                alt="No property images uploaded"
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <p class="text-(--color-muted) text-sm">No images uploaded yet.</p>
           </div>
 
           <!-- 2. Property Information -->

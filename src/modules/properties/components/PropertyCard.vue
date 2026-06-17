@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from "vue";
 import AppButton from "@/shared/components/AppButton.vue";
-
+import placeholer from "@/assets/images/properties/placeholder.png";
 import {
   BuildingOffice2Icon,
   PencilSquareIcon,
@@ -9,6 +9,7 @@ import {
   TrashIcon,
   MapPinIcon,
 } from "@heroicons/vue/24/outline";
+
 const emit = defineEmits(["edit", "delete"]);
 
 const props = defineProps({
@@ -35,9 +36,10 @@ const statusBadgeClass = computed(() => {
       class="relative aspect-[4/3] w-full bg-(--color-surface-soft) overflow-hidden"
     >
       <img
-        :src="property.image"
+        :src="property.image || placeholer"
         :alt="property.name"
         class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.01]"
+        @error="onImageError"
       />
       <span
         class="absolute top-3 left-3 text-[9px] tracking-wider font-bold px-2 py-0.5 rounded-md uppercase"

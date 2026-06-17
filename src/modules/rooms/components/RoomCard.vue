@@ -6,7 +6,7 @@ import {
   TrashIcon,
   UserGroupIcon,
 } from "@heroicons/vue/24/outline";
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoomStore } from "../store/roomStore";
 import { useRouter } from "vue-router";
 
@@ -39,14 +39,24 @@ const displayImage = computed(() => {
   return (
     coverImage.value ||
     props.room.image ||
-    "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=600&q=80"
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800'%3E%3Crect width='1200' height='800' fill='%23f0f2f5'/%3E%3Crect x='300' y='160' width='600' height='440' rx='32' ry='32' fill='none' stroke='%23c8cdd6' stroke-width='18'/%3E%3Ccircle cx='460' cy='310' r='60' fill='%23c8cdd6'/%3E%3Cpolygon points='300,600 560,340 720,500 840,380 900,600' fill='%23c8cdd6'/%3E%3C/svg%3E"
   );
 });
 
-onMounted(() => {
-  // Ensure images are fetched for this room
+// Track whether the image fetch for this room is still in flight,
+// so the spinner only shows during loading — not forever when there
+// simply are no images to find.
+const imagesLoading = ref(true);
+
+onMounted(async () => {
   if (props.room?.id) {
-    roomStore.fetchRoomImages(props.room.id);
+    try {
+      await roomStore.fetchRoomImages(props.room.id);
+    } finally {
+      imagesLoading.value = false;
+    }
+  } else {
+    imagesLoading.value = false;
   }
 });
 </script>
@@ -86,7 +96,7 @@ onMounted(() => {
 
       <!-- Loading indicator -->
       <div
-        v-if="!coverImage && !room.image"
+        v-if="imagesLoading"
         class="absolute inset-0 flex items-center justify-center bg-black/30"
       >
         <div
