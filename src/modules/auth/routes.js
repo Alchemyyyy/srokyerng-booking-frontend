@@ -18,6 +18,12 @@ export const authRoutes = [
     meta: { publicOnly: true },
   },
   {
+    path: "login/admin",
+    name: "loginAdmin",
+    component: () => import("@/modules/auth/pages/LoginView.vue"),
+    meta: { publicOnly: true },
+  },
+  {
     path: "register",
     name: "register",
     redirect: { name: "public.registerCustomer" },

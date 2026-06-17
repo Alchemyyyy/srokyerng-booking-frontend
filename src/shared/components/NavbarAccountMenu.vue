@@ -48,6 +48,7 @@ const roleLabel = computed(() => {
 const dashboardRoute = computed(() => getDashboardRouteByRole(authStore.user?.role));
 const notificationRoute = computed(() => getNotificationRouteByRole(authStore.user?.role));
 const profileRoute = computed(() => getProfileRouteByRole(authStore.user?.role));
+const showListPropertyLink = computed(() => authStore.user?.role === "customer");
 
 const toggleMenu = () => {
   menuOpen.value = !menuOpen.value;
@@ -163,6 +164,15 @@ watch(
           @click="closeMenu"
         >
           Notifications
+        </RouterLink>
+
+        <RouterLink
+          v-if="showListPropertyLink"
+          :to="{ name: 'public.listProperty' }"
+          class="block rounded-xl px-3 py-2 text-[15px] font-medium text-(--color-primary) transition hover:bg-(--color-primary-soft)"
+          @click="closeMenu"
+        >
+          {{ t("nav.listProperty") }}
         </RouterLink>
 
         <button

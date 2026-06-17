@@ -30,8 +30,14 @@ const selectedLoginRole = computed(() => {
     return ROLES.OWNER;
   }
 
+  if (route.name === "public.loginAdmin") {
+    return ROLES.ADMIN;
+  }
+
   return ROLES.CUSTOMER;
 });
+
+const isAdminLogin = computed(() => selectedLoginRole.value === ROLES.ADMIN);
 
 const pageTitle = computed(() => {
   if (selectedLoginRole.value === ROLES.CUSTOMER) {
@@ -40,6 +46,10 @@ const pageTitle = computed(() => {
 
   if (selectedLoginRole.value === ROLES.OWNER) {
     return t("auth.ownerLoginTitle");
+  }
+
+  if (selectedLoginRole.value === ROLES.ADMIN) {
+    return t("auth.adminLoginTitle");
   }
 
   return t("auth.loginGatewayTitle");
@@ -54,6 +64,10 @@ const pageSubtitle = computed(() => {
     return t("auth.ownerLoginSubtitle");
   }
 
+  if (selectedLoginRole.value === ROLES.ADMIN) {
+    return t("auth.adminLoginSubtitle");
+  }
+
   return t("auth.loginGatewaySubtitle");
 });
 
@@ -66,6 +80,19 @@ const registerRoute = computed(() => {
 });
 
 const brandContent = computed(() => {
+  if (selectedLoginRole.value === ROLES.ADMIN) {
+    return {
+      eyebrow: "auth.adminBrandEyebrow",
+      title: "auth.adminBrandTitle",
+      subtitle: "auth.adminBrandSubtitle",
+      proofs: [
+        { icon: "bi-shield-check", label: "auth.adminBrandProofApprovals" },
+        { icon: "bi-speedometer2", label: "auth.adminBrandProofOperations" },
+        { icon: "bi-people", label: "auth.adminBrandProofUsers" },
+      ],
+    };
+  }
+
   if (selectedLoginRole.value === ROLES.OWNER) {
     return {
       eyebrow: "auth.ownerBrandEyebrow",
@@ -98,6 +125,10 @@ const roleMismatchMessage = computed(() => {
 
   if (selectedLoginRole.value === ROLES.OWNER) {
     return t("auth.ownerLoginRoleMismatch");
+  }
+
+  if (selectedLoginRole.value === ROLES.ADMIN) {
+    return t("auth.adminLoginRoleMismatch");
   }
 
   return t("auth.invalidCredentials");
@@ -200,10 +231,10 @@ const submit = async () => {
         {{ authStore.loading ? t("auth.signingIn") : t("auth.signIn") }}
       </AppButton>
 
-      <AuthSocialLogin :role="selectedLoginRole" />
+      <AuthSocialLogin v-if="!isAdminLogin" :role="selectedLoginRole" />
     </form>
 
-    <p class="auth-switch">
+    <p v-if="!isAdminLogin" class="auth-switch">
       {{ t("auth.newHere") }}
       <RouterLink :to="registerRoute">
         {{ t("common.createAccount") }}
