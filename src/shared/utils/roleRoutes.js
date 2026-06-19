@@ -38,3 +38,12 @@ export const getProfileRouteByRole = (role) => {
       return null;
   }
 };
+
+export const getSettingsRouteByRole = (role) => {
+  switch (role) {
+    case ROLES.CUSTOMER:
+      return { name: "customer.settings" };
+    default:
+      return null;
+  }
+};

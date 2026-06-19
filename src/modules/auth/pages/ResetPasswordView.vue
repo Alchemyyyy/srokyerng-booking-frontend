@@ -24,6 +24,29 @@ const showPassword = ref(false);
 const showConfirmPassword = ref(false);
 const token = computed(() => String(route.query.token || ""));
 const passwordMeetsLength = computed(() => hasMinPasswordLength(form.password));
+const confirmPasswordMatches = computed(() => form.confirmPassword && form.password === form.confirmPassword);
+
+const passwordStrength = computed(() => {
+  if (!form.password) return '';
+  let score = 0;
+  if (form.password.length > 5) score++;
+  if (form.password.length >= 8) score++;
+  if (/[A-Z]/.test(form.password)) score++;
+  if (/[0-9]/.test(form.password)) score++;
+  if (/[^A-Za-z0-9]/.test(form.password)) score++;
+
+  if (score < 3) return 'weak';
+  if (score < 5) return 'fair';
+  return 'strong';
+});
+
+const isShaking = ref(false);
+const triggerShake = () => {
+  isShaking.value = true;
+  setTimeout(() => {
+    isShaking.value = false;
+  }, 400);
+};
 
 const submit = async () => {
   errorMessage.value = "";
@@ -33,6 +56,7 @@ const submit = async () => {
 
   if (!token.value) {
     errorMessage.value = t("auth.resetTokenMissing");
+    triggerShake();
     return;
   }
 
@@ -49,6 +73,7 @@ const submit = async () => {
   }
 
   if (formErrors.password || formErrors.confirmPassword) {
+    triggerShake();
     return;
   }
 
@@ -60,17 +85,18 @@ const submit = async () => {
     successMessage.value = t("auth.resetPasswordSuccess");
   } catch (error) {
     errorMessage.value = error.message || t("auth.resetPasswordFailed");
+    triggerShake();
   }
 };
 </script>
 
 <template>
-  <AuthShell :title="t('auth.resetPasswordTitle')" :subtitle="t('auth.resetPasswordSubtitle')">
-    <form v-if="!successMessage" class="auth-form" novalidate @submit.prevent="submit">
-      <label>
-        <span class="auth-field-label">
+  <AuthShell :title="t('auth.resetPasswordTitle')" :subtitle="t('auth.resetPasswordSubtitle')" mode="reset-password">
+    <form v-if="!successMessage" class="auth-form" :class="{ 'auth-shake-animation': isShaking }" novalidate @submit.prevent="submit">
+      <div class="auth-floating-group">
+        <label for="reset-password" class="auth-standard-label">
           {{ t("auth.newPassword") }} <span class="auth-required-mark" aria-hidden="true">*</span>
-        </span>
+        </label>
         <span class="password-field auth-input-shell">
           <i class="bi bi-lock" aria-hidden="true"></i>
           <input
@@ -78,6 +104,7 @@ const submit = async () => {
             :type="showPassword ? 'text' : 'password'"
             autocomplete="new-password"
             minlength="8"
+            id="reset-password"
             :placeholder="t('auth.newPasswordPlaceholder')"
           />
           <button
@@ -88,6 +115,26 @@ const submit = async () => {
             <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'" aria-hidden="true"></i>
           </button>
         </span>
+        
+        <div v-if="form.password" class="auth-strength-meter" :class="'auth-strength--' + passwordStrength" aria-hidden="true">
+          <div class="auth-strength-segment"></div>
+          <div class="auth-strength-segment"></div>
+          <div class="auth-strength-segment"></div>
+        </div>
+
+        <div v-if="form.password" class="auth-password-feedback">
+          <span class="auth-strength-text">
+            {{ t('auth.passwordStrength') }}: 
+            <strong :class="'strength-text--' + passwordStrength">
+              {{ t('auth.passwordStrength' + passwordStrength.charAt(0).toUpperCase() + passwordStrength.slice(1)) }}
+            </strong>
+          </span>
+        </div>
+
+        <div class="auth-password-hint">
+          {{ t("auth.passwordHint") }}
+        </div>
+
         <span v-if="formErrors.password" class="form-field-error">{{ formErrors.password }}</span>
         <span
           class="password-requirement"
@@ -96,12 +143,12 @@ const submit = async () => {
           <i :class="passwordMeetsLength ? 'bi bi-check-circle' : 'bi bi-circle'" aria-hidden="true"></i>
           {{ t("auth.passwordRequirementLength") }}
         </span>
-      </label>
+      </div>
 
-      <label>
-        <span class="auth-field-label">
+      <div class="auth-floating-group">
+        <label for="reset-confirm" class="auth-standard-label">
           {{ t("auth.confirmPassword") }} <span class="auth-required-mark" aria-hidden="true">*</span>
-        </span>
+        </label>
         <span class="password-field auth-input-shell">
           <i class="bi bi-lock-fill" aria-hidden="true"></i>
           <input
@@ -109,6 +156,7 @@ const submit = async () => {
             :type="showConfirmPassword ? 'text' : 'password'"
             autocomplete="new-password"
             minlength="8"
+            id="reset-confirm"
             :placeholder="t('auth.confirmPasswordPlaceholder')"
           />
           <button
@@ -122,7 +170,7 @@ const submit = async () => {
         <span v-if="formErrors.confirmPassword" class="form-field-error">
           {{ formErrors.confirmPassword }}
         </span>
-      </label>
+      </div>
 
       <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
 

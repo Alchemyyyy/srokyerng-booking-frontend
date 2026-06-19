@@ -34,19 +34,13 @@ const {
     <div class="auth-social-grid" aria-label="Social login options">
       <div ref="googleButtonRef" class="auth-google-button"></div>
       <button
-        class="auth-social-button"
+        class="auth-facebook-icon-button"
         type="button"
         :disabled="!isFacebookLoginSupported || Boolean(loadingProvider)"
         :title="!isFacebookLoginSupported ? t('auth.facebookLoginRequiresHttps') : ''"
         @click="handleFacebookLogin"
       >
-        <span
-          v-if="loadingProvider === 'facebook'"
-          class="auth-social-spinner"
-          aria-hidden="true"
-        ></span>
-        <i v-else class="bi bi-facebook" aria-hidden="true"></i>
-        <span>{{ t("auth.continueWithFacebook") }}</span>
+        <i class="bi bi-facebook" aria-hidden="true"></i>
       </button>
     </div>
 

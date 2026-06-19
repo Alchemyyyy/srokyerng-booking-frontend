@@ -14,7 +14,8 @@
     "refresh": "Refresh",
     "retry": "Retry",
     "save": "Save",
-    "submit": "Submit"
+    "submit": "Submit",
+    "continue": "Continue"
   },
   "auth": {
     "accountType": "Account type",
@@ -108,6 +109,11 @@
     "passwordMinLength": "Password must be at least 8 characters",
     "passwordRequirementLength": "At least 8 characters",
     "passwordRequired": "Password is required",
+    "passwordHint": "Must be at least 8 characters with a mix of letters, numbers, and symbols.",
+    "passwordStrength": "Password strength",
+    "passwordStrengthWeak": "Weak",
+    "passwordStrengthFair": "Fair",
+    "passwordStrengthStrong": "Strong",
     "phoneInvalid": "Phone format is invalid",
     "phonePlaceholder": "+855 12 345 678",
     "phoneRequired": "Phone is required",
@@ -135,6 +141,7 @@
     "verifyEmailFailed": "Email verification failed",
     "verifyEmailSubtitle": "We are checking the verification link from your email.",
     "verifyEmailSuccess": "Email verified successfully. You can now sign in.",
+    "emailVerified": "Email Verified",
     "verifyEmailTitle": "Verify email",
     "verifyingEmail": "Verifying email...",
     "welcomeBack": "Welcome back"
@@ -240,8 +247,8 @@
   },
   "profile": {
     "account": "Account",
-    "title": "Profile settings",
-    "subtitle": "Manage your personal details, profile image, and account password.",
+    "title": "My account",
+    "subtitle": "Manage your personal details, security, and booking account preferences.",
     "loading": "Loading profile...",
     "verified": "Verified",
     "notVerified": "Not verified",
@@ -250,6 +257,11 @@
       "owner": "Owner",
       "customer": "Customer",
       "member": "Member"
+    },
+    "emailVerification": {
+      "title": "Verify your email address",
+      "description": "Please verify your email so you can receive booking updates and use protected account actions.",
+      "resend": "Resend email"
     },
     "summary": {
       "uploading": "Uploading...",
@@ -329,13 +341,15 @@
     "toast": {
       "profileUpdated": "Profile updated",
       "passwordChanged": "Password changed",
-      "imageUpdated": "Profile image updated"
+      "imageUpdated": "Profile image updated",
+      "verificationSent": "Verification email sent"
     },
     "errors": {
       "loadProfile": "Could not load profile",
       "updateProfile": "Could not update profile",
       "changePassword": "Could not change password",
-      "uploadImage": "Could not upload profile image"
+      "uploadImage": "Could not upload profile image",
+      "resendVerification": "Could not send verification email"
     },
     "sessionErrors": {
       "load": "Could not load sessions",

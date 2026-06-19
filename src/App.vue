@@ -12,6 +12,10 @@ const showAppLoader = computed(() => authStore.restoringSession);
   <div v-if="showAppLoader" class="app-loading-screen">
     <LoadingSpinner />
   </div>
-  <RouterView v-else />
+  <RouterView v-else v-slot="{ Component, route }">
+    <transition :name="route.meta.transition || 'page-fade'" mode="out-in">
+      <component :is="Component" :key="route.path" />
+    </transition>
+  </RouterView>
   <ToastContainer />
 </template>

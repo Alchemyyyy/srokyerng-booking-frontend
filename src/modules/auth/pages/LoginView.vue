@@ -134,6 +134,14 @@ const roleMismatchMessage = computed(() => {
   return t("auth.invalidCredentials");
 });
 
+const isShaking = ref(false);
+const triggerShake = () => {
+  isShaking.value = true;
+  setTimeout(() => {
+    isShaking.value = false;
+  }, 400);
+};
+
 const validateForm = () => {
   formErrors.email = "";
   formErrors.password = "";
@@ -155,6 +163,7 @@ const submit = async () => {
   errorMessage.value = "";
 
   if (!validateForm()) {
+    triggerShake();
     return;
   }
 
@@ -164,47 +173,59 @@ const submit = async () => {
     if (selectedLoginRole.value && user?.role !== selectedLoginRole.value) {
       await authStore.logout();
       errorMessage.value = roleMismatchMessage.value;
+      triggerShake();
       return;
     }
 
     await router.push(getPostLoginRoute(user, route.query.redirect));
   } catch (error) {
     errorMessage.value = error.message || t("auth.invalidCredentials");
+    triggerShake();
   }
 };
 </script>
 
 <template>
-  <AuthShell :title="pageTitle" :subtitle="pageSubtitle" :brand="brandContent">
-    <form class="auth-form" novalidate @submit.prevent="submit">
-      <label>
-        <span class="auth-field-label">
-          {{ t("common.email") }} <span class="auth-required-mark" aria-hidden="true">*</span>
-        </span>
-        <span class="auth-input-shell">
-          <i class="bi bi-envelope" aria-hidden="true"></i>
+  <AuthShell 
+    :title="pageTitle" 
+    :subtitle="pageSubtitle" 
+    :brand="brandContent"
+    :role="selectedLoginRole"
+    mode="login"
+  >
+    <form class="auth-form" :class="{ 'auth-shake-animation': isShaking }" novalidate @submit.prevent="submit">
+      <div class="auth-floating-group">
+        <label for="login-email" class="auth-standard-label">
+                {{ t("common.email") }} <span class="auth-required-mark" aria-hidden="true">*</span>
+              </label>
+              <span class="auth-input-shell">
+                <i class="bi bi-envelope" aria-hidden="true"></i>
           <input
             v-model.trim="form.email"
             type="email"
             autocomplete="email"
             :placeholder="t('auth.emailPlaceholder')"
+            id="login-email"
           />
+          
         </span>
         <span v-if="formErrors.email" class="form-field-error">{{ formErrors.email }}</span>
-      </label>
+      </div>
 
-      <label>
-        <span class="auth-field-label">
-          {{ t("common.password") }} <span class="auth-required-mark" aria-hidden="true">*</span>
-        </span>
-        <span class="password-field auth-input-shell">
-          <i class="bi bi-lock" aria-hidden="true"></i>
+      <div class="auth-floating-group">
+        <label for="login-password" class="auth-standard-label">
+                {{ t("common.password") }} <span class="auth-required-mark" aria-hidden="true">*</span>
+              </label>
+              <span class="password-field auth-input-shell">
+                <i class="bi bi-lock" aria-hidden="true"></i>
           <input
             v-model="form.password"
             :type="showPassword ? 'text' : 'password'"
             autocomplete="current-password"
             :placeholder="t('auth.passwordPlaceholder')"
+            id="login-password"
           />
+          
           <button
             type="button"
             :aria-label="showPassword ? t('auth.hidePassword') : t('auth.showPassword')"
@@ -214,7 +235,7 @@ const submit = async () => {
           </button>
         </span>
         <span v-if="formErrors.password" class="form-field-error">{{ formErrors.password }}</span>
-      </label>
+      </div>
 
       <RouterLink class="auth-small-link" :to="{ name: 'public.forgotPassword' }">
         {{ t("auth.forgotPassword") }}

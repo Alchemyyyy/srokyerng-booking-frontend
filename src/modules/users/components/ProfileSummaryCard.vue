@@ -55,6 +55,10 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  compact: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 defineEmits(["select-image", "save-image", "cancel-image", "edit-image"]);
@@ -65,7 +69,7 @@ const canPreviewAvatar = computed(() => Boolean(resolvedAvatarSrc.value));
 
 <template>
   <section class="rounded-lg border border-(--color-border) bg-(--color-surface) p-6 shadow-(--shadow-card)">
-    <div class="flex flex-col items-center text-center">
+    <div :class="compact ? 'flex flex-col gap-5 sm:flex-row sm:items-center sm:text-left' : 'flex flex-col items-center text-center'">
       <div class="relative">
         <button
           type="button"
@@ -96,31 +100,37 @@ const canPreviewAvatar = computed(() => Boolean(resolvedAvatarSrc.value));
         </label>
       </div>
 
-      <h2 class="mt-4 text-xl font-bold">{{ userLabel }}</h2>
-      <p class="mt-1 text-sm text-(--color-muted)">{{ email }}</p>
-      <div class="mt-3 flex flex-wrap justify-center gap-2">
-        <span
-          class="rounded-full bg-(--color-primary-soft) px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-(--color-primary)"
-        >
-          {{ roleLabel }}
-        </span>
-        <span
-          class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold"
-          :class="emailVerificationToneClass"
-        >
-          <CheckCircleIcon v-if="emailVerified" class="h-4 w-4" />
-          <XCircleIcon v-else class="h-4 w-4" />
-          {{ emailVerificationLabel }}
-        </span>
-      </div>
+      <div :class="compact ? 'min-w-0 flex-1' : ''">
+        <h2 :class="compact ? 'text-xl font-bold' : 'mt-4 text-xl font-bold'">
+          {{ compact ? t("profile.summary.uploadImage") : userLabel }}
+        </h2>
+        <p class="mt-1 text-sm leading-6 text-(--color-muted)">
+          {{ compact ? t("profile.summary.previewSelected") : email }}
+        </p>
+        <div v-if="!compact" class="mt-3 flex flex-wrap justify-center gap-2">
+          <span
+            class="rounded-full bg-(--color-primary-soft) px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-(--color-primary)"
+          >
+            {{ roleLabel }}
+          </span>
+          <span
+            class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold"
+            :class="emailVerificationToneClass"
+          >
+            <CheckCircleIcon v-if="emailVerified" class="h-4 w-4" />
+            <XCircleIcon v-else class="h-4 w-4" />
+            {{ emailVerificationLabel }}
+          </span>
+        </div>
 
-      <p class="mt-4 text-xs text-(--color-muted)">
-        {{ uploadingImage ? t("profile.summary.uploading") : t("profile.summary.uploadImage") }}
-      </p>
+        <p :class="compact ? 'mt-2 text-xs text-(--color-muted)' : 'mt-4 text-xs text-(--color-muted)'">
+          {{ uploadingImage ? t("profile.summary.uploading") : t("profile.summary.uploadImage") }}
+        </p>
+      </div>
 
       <div
         v-if="hasSelectedImage"
-        class="mt-4 w-full rounded-lg border border-(--color-border) bg-(--color-surface-soft) p-3 text-left"
+        :class="compact ? 'w-full rounded-lg border border-(--color-border) bg-(--color-surface-soft) p-3 text-left sm:max-w-xs' : 'mt-4 w-full rounded-lg border border-(--color-border) bg-(--color-surface-soft) p-3 text-left'"
       >
         <p class="truncate text-sm font-semibold text-(--color-text)">
           {{ selectedImageName }}

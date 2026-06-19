@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { RouterLink } from "vue-router";
 import { useAuthStore } from "@/modules/auth/store/authStore";
@@ -18,6 +18,16 @@ const formErrors = reactive({
 const errorMessage = ref("");
 const successMessage = ref("");
 
+const isEmailValid = computed(() => form.email && isValidEmail(form.email));
+
+const isShaking = ref(false);
+const triggerShake = () => {
+  isShaking.value = true;
+  setTimeout(() => {
+    isShaking.value = false;
+  }, 400);
+};
+
 const validateForm = () => {
   formErrors.email = "";
 
@@ -35,6 +45,7 @@ const submit = async () => {
   successMessage.value = "";
 
   if (!validateForm()) {
+    triggerShake();
     return;
   }
 
@@ -43,28 +54,31 @@ const submit = async () => {
     successMessage.value = t("auth.forgotPasswordSuccess");
   } catch (error) {
     errorMessage.value = error.message || t("auth.forgotPasswordFailed");
+    triggerShake();
   }
 };
 </script>
 
 <template>
-  <AuthShell :title="t('auth.forgotPasswordTitle')" :subtitle="t('auth.forgotPasswordSubtitle')">
-    <form v-if="!successMessage" class="auth-form" novalidate @submit.prevent="submit">
-      <label>
-        <span class="auth-field-label">
+  <AuthShell :title="t('auth.forgotPasswordTitle')" :subtitle="t('auth.forgotPasswordSubtitle')" mode="forgot-password">
+    <form v-if="!successMessage" class="auth-form" :class="{ 'auth-shake-animation': isShaking }" novalidate @submit.prevent="submit">
+      <div class="auth-floating-group">
+        <label for="forgot-email" class="auth-standard-label">
           {{ t("common.email") }} <span class="auth-required-mark" aria-hidden="true">*</span>
-        </span>
+        </label>
         <span class="auth-input-shell">
           <i class="bi bi-envelope" aria-hidden="true"></i>
           <input
             v-model.trim="form.email"
             type="email"
             autocomplete="email"
+            id="forgot-email"
             :placeholder="t('auth.emailPlaceholder')"
           />
+          <i class="bi bi-check auth-validation-icon" :class="{'auth-validation-icon--visible': isEmailValid}" aria-hidden="true"></i>
         </span>
         <span v-if="formErrors.email" class="form-field-error">{{ formErrors.email }}</span>
-      </label>
+      </div>
 
       <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
 

@@ -1,8 +1,15 @@
 <script setup>
 import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
-import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
+import {
+  ArrowLeftIcon,
+  CalendarDaysIcon,
+  Cog6ToothIcon,
+  HeartIcon,
+  ShieldCheckIcon,
+  UserCircleIcon,
+} from "@heroicons/vue/24/outline";
 import { useI18n } from "vue-i18n";
-import { onBeforeRouteLeave, useRouter } from "vue-router";
+import { onBeforeRouteLeave, RouterLink, useRouter } from "vue-router";
 import { Cropper } from "vue-advanced-cropper";
 import "vue-advanced-cropper/dist/style.css";
 import AppAlert from "@/shared/components/AppAlert.vue";
@@ -14,6 +21,7 @@ import ProfileCompletionCard from "@/modules/users/components/ProfileCompletionC
 import ProfileDetailsForm from "@/modules/users/components/ProfileDetailsForm.vue";
 import PasswordChangeForm from "@/modules/users/components/PasswordChangeForm.vue";
 import SessionManagementCard from "@/modules/users/components/SessionManagementCard.vue";
+import UserAvatar from "@/shared/components/UserAvatar.vue";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { userService } from "@/modules/users/services/user.service";
 import { useProfileImageUpload } from "@/modules/users/composables/useProfileImageUpload";
@@ -29,6 +37,7 @@ const { t } = useI18n({ useScope: "global" });
 const loading = ref(false);
 const savingProfile = ref(false);
 const savingPassword = ref(false);
+const resendingVerification = ref(false);
 const uploadingImage = ref(false);
 const error = ref("");
 const success = ref("");
@@ -38,6 +47,7 @@ const savedProfileSnapshot = ref(null);
 const leaveConfirmationOpen = ref(false);
 const pendingLeaveResolver = ref(null);
 const allowNextNavigation = ref(false);
+const activeAccountTab = ref("personal");
 
 const {
   selectedImageFile,
@@ -84,6 +94,7 @@ const {
 
 const user = ref(null);
 
+const isCustomerAccount = computed(() => (user.value?.role || authStore.user?.role) === "customer");
 const userLabel = computed(() => user.value?.full_name || user.value?.email || "User");
 
 const roleLabel = computed(() => {
@@ -99,6 +110,7 @@ const emailVerificationToneClass = computed(() =>
     ? "bg-(--color-success-soft) text-(--color-success)"
     : "bg-(--color-warning-soft) text-(--color-warning)",
 );
+const isEmailVerified = computed(() => Boolean(user.value?.email_verified_at));
 const avatarPreviewUrl = computed(
   () => selectedImagePreviewUrl.value || user.value?.profile_image_url,
 );
@@ -112,6 +124,33 @@ const profileCompletionPercent = computed(() => {
   const completed = profileCompletionItems.value.filter((item) => item.complete).length;
   return Math.round((completed / profileCompletionItems.value.length) * 100);
 });
+const accountCenterNav = [
+  {
+    label: "Profiles and personal details",
+    icon: UserCircleIcon,
+    tab: "personal",
+  },
+  {
+    label: "Password and security",
+    icon: ShieldCheckIcon,
+    tab: "security",
+  },
+  {
+    label: "Bookings",
+    icon: CalendarDaysIcon,
+    to: { name: "customer.reservations" },
+  },
+  {
+    label: "Saved stays",
+    icon: HeartIcon,
+    to: { name: "customer.wishlist" },
+  },
+  {
+    label: "Preferences",
+    icon: Cog6ToothIcon,
+    to: { name: "customer.settings" },
+  },
+];
 const currentProfileSnapshot = computed(() => ({
   full_name: profileForm.full_name.trim(),
   phone: profileForm.phone.trim(),
@@ -236,6 +275,19 @@ const changePassword = async () => {
   }
 };
 
+const resendVerificationEmail = async () => {
+  resendingVerification.value = true;
+
+  try {
+    await authStore.resendVerificationEmail();
+    toastStore.success(t("profile.toast.verificationSent"));
+  } catch (requestError) {
+    toastStore.danger(requestError.message || t("profile.errors.resendVerification"));
+  } finally {
+    resendingVerification.value = false;
+  }
+};
+
 const uploadProfileImage = async () => {
   if (!selectedImageFile.value) {
     return;
@@ -316,7 +368,7 @@ onUnmounted(() => {
 <template>
   <main class="min-h-screen bg-(--color-page) px-4 py-10 text-(--color-text) sm:px-6 lg:px-8">
     <section class="mx-auto max-w-6xl">
-      <header class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <header v-if="!isCustomerAccount" class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <AppButton
             type="button"
@@ -367,6 +419,189 @@ onUnmounted(() => {
         <LoadingSpinner :label="t('profile.loading')" />
       </div>
 
+      <div v-else-if="isCustomerAccount" class="grid gap-8 lg:grid-cols-[310px_1fr]">
+        <aside class="lg:sticky lg:top-28 lg:self-start">
+          <div class="rounded-[var(--radius-panel)] border border-(--color-border) bg-(--color-surface) p-5">
+            <AppButton
+              type="button"
+              variant="secondary"
+              size="sm"
+              class="mb-6 !rounded-full"
+              @click="goBack"
+            >
+              <ArrowLeftIcon class="h-4 w-4" />
+              {{ t("common.back") }}
+            </AppButton>
+
+            <p class="text-sm font-bold uppercase tracking-[0.18em] text-(--color-primary)">
+              SrokYerng
+            </p>
+            <h1 class="mt-2 text-3xl font-bold tracking-tight">
+              Account Center
+            </h1>
+            <p class="mt-3 text-sm leading-6 text-(--color-muted)">
+              Manage your booking profile, security, reservations, and preferences.
+            </p>
+
+            <nav class="mt-7 space-y-2" aria-label="Account center navigation">
+              <template
+                v-for="item in accountCenterNav"
+                :key="item.label"
+              >
+                <button
+                  v-if="item.tab"
+                  type="button"
+                  class="flex w-full items-center gap-3 rounded-[var(--radius-lg)] px-3 py-3 text-left text-sm font-bold transition hover:bg-(--color-surface-soft)"
+                  :class="activeAccountTab === item.tab ? 'bg-(--color-primary-soft) text-(--color-primary)' : 'text-(--color-text)'"
+                  @click="activeAccountTab = item.tab"
+                >
+                  <span
+                    class="flex h-10 w-10 items-center justify-center rounded-full transition"
+                    :class="activeAccountTab === item.tab ? 'bg-(--color-primary) text-white' : 'bg-(--color-primary-soft) text-(--color-primary)'"
+                  >
+                    <component :is="item.icon" class="h-5 w-5" />
+                  </span>
+                  <span>{{ item.label }}</span>
+                </button>
+
+                <RouterLink
+                  v-else
+                  :to="item.to"
+                  class="flex items-center gap-3 rounded-[var(--radius-lg)] px-3 py-3 text-sm font-bold text-(--color-text) transition hover:bg-(--color-surface-soft)"
+                >
+                  <span class="flex h-10 w-10 items-center justify-center rounded-full bg-(--color-primary-soft) text-(--color-primary)">
+                    <component :is="item.icon" class="h-5 w-5" />
+                  </span>
+                  <span>{{ item.label }}</span>
+                </RouterLink>
+              </template>
+            </nav>
+          </div>
+        </aside>
+
+        <div class="space-y-8">
+          <section
+            v-if="!isEmailVerified"
+            class="rounded-[var(--radius-panel)] border border-(--color-warning) bg-(--color-warning-soft) p-5 text-(--color-warning)"
+          >
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div class="flex items-start gap-3">
+                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-(--color-surface) text-(--color-warning)">
+                  <ShieldCheckIcon class="h-5 w-5" />
+                </span>
+                <div>
+                  <h2 class="font-bold text-(--color-text)">
+                    {{ t("profile.emailVerification.title") }}
+                  </h2>
+                  <p class="mt-1 text-sm leading-6 text-(--color-muted)">
+                    {{ t("profile.emailVerification.description") }}
+                  </p>
+                </div>
+              </div>
+
+              <AppButton
+                type="button"
+                variant="secondary"
+                size="sm"
+                class="shrink-0 !rounded-sm whitespace-nowrap"
+                :loading="resendingVerification"
+                :disabled="resendingVerification"
+                @click="resendVerificationEmail"
+              >
+                {{ t("profile.emailVerification.resend") }}
+              </AppButton>
+            </div>
+          </section>
+
+          <section v-if="activeAccountTab === 'personal'" id="personal-details" class="scroll-mt-28">
+            <div class="mb-5">
+              <h2 class="text-3xl font-bold tracking-tight">Profiles and personal details</h2>
+              <p class="mt-2 max-w-3xl text-base leading-7 text-(--color-muted)">
+                Review and update the profile details used for booking communication and account recovery.
+              </p>
+            </div>
+
+            <div class="space-y-6">
+              <section class="overflow-hidden rounded-[var(--radius-panel)] border border-(--color-border) bg-(--color-surface)">
+                <div class="border-b border-(--color-border) px-5 py-4">
+                  <h3 class="text-xl font-bold">Profile</h3>
+                </div>
+
+                <div class="flex flex-col gap-6 p-5 lg:flex-row lg:items-center lg:justify-between">
+                  <div class="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-center">
+                    <ProfileSummaryCard
+                      :user-label="userLabel"
+                      :email="user?.email"
+                      :role-label="roleLabel"
+                      :avatar-src="avatarPreviewUrl"
+                      :email-verified="Boolean(user?.email_verified_at)"
+                      :email-verification-label="emailVerificationLabel"
+                      :email-verification-tone-class="emailVerificationToneClass"
+                      :uploading-image="uploadingImage"
+                      :has-selected-image="hasSelectedImage"
+                      :selected-image-name="selectedImageFile?.name"
+                      compact
+                      class="border-0 !bg-transparent !p-0 !shadow-none"
+                      @select-image="selectProfileImage"
+                      @edit-image="openCropModal"
+                      @save-image="uploadProfileImage"
+                      @cancel-image="cancelProfileImageSelection"
+                    />
+
+                    <div class="min-w-0">
+                      <p class="truncate text-lg font-bold text-(--color-text)">{{ userLabel }}</p>
+                      <p class="truncate text-sm text-(--color-muted)">{{ user?.email }}</p>
+                      <div class="mt-2 flex flex-wrap gap-2">
+                        <span class="rounded-full bg-(--color-primary-soft) px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-(--color-primary)">
+                          {{ roleLabel }}
+                        </span>
+                        <span
+                          class="rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.14em]"
+                          :class="emailVerificationToneClass"
+                        >
+                          {{ emailVerificationLabel }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="min-w-[120px] rounded-[var(--radius-lg)] bg-(--color-primary-soft) px-4 py-3 text-center text-(--color-primary)">
+                    <p class="text-2xl font-bold">{{ profileCompletionPercent }}%</p>
+                    <p class="text-xs font-bold uppercase tracking-[0.12em]">Complete</p>
+                  </div>
+                </div>
+              </section>
+
+              <ProfileDetailsForm
+                :form="profileForm"
+                :errors="profileErrors"
+                :saving="savingProfile"
+                :has-changes="hasProfileChanges"
+                @submit="saveProfile"
+              />
+            </div>
+          </section>
+
+          <section v-else-if="activeAccountTab === 'security'" id="security" class="scroll-mt-28 space-y-5">
+            <div>
+              <h2 class="text-3xl font-bold tracking-tight">Password and security</h2>
+              <p class="mt-2 max-w-3xl text-base leading-7 text-(--color-muted)">
+                Manage password changes and signed-in sessions for your booking account.
+              </p>
+            </div>
+
+            <PasswordChangeForm
+              :form="passwordForm"
+              :errors="passwordErrors"
+              :saving="savingPassword"
+              @submit="changePassword"
+            />
+
+            <SessionManagementCard />
+          </section>
+        </div>
+      </div>
+
       <div v-else class="grid gap-6 lg:grid-cols-[340px_1fr]">
         <aside class="space-y-6 lg:sticky lg:top-28 lg:self-start">
           <ProfileSummaryCard
@@ -401,14 +636,16 @@ onUnmounted(() => {
             @submit="saveProfile"
           />
 
-          <PasswordChangeForm
-            :form="passwordForm"
-            :errors="passwordErrors"
-            :saving="savingPassword"
-            @submit="changePassword"
-          />
+          <div id="security" class="scroll-mt-28 space-y-6">
+            <PasswordChangeForm
+              :form="passwordForm"
+              :errors="passwordErrors"
+              :saving="savingPassword"
+              @submit="changePassword"
+            />
 
-          <SessionManagementCard />
+            <SessionManagementCard />
+          </div>
         </div>
       </div>
     </section>

@@ -92,7 +92,7 @@ const isDarkTheme = () => {
 };
 
 const getGoogleButtonTheme = () => {
-  return isDarkTheme() ? "filled_black" : "outline";
+  return "filled_blue";
 };
 
 export const useSocialAuth = (roleRef) => {
@@ -108,7 +108,13 @@ export const useSocialAuth = (roleRef) => {
   const googleErrorMessage = ref("");
   const facebookErrorMessage = ref("");
   const loadingProvider = ref("");
-  const isFacebookLoginSupported = computed(() => window.location.protocol === "https:");
+  const isFacebookLoginSupported = computed(() => {
+    return (
+      window.location.protocol === "https:" ||
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1"
+    );
+  });
   let themeObserver = null;
   let systemThemeQuery = null;
 
@@ -203,25 +209,27 @@ export const useSocialAuth = (roleRef) => {
       });
 
       window.FB.login(
-        async (response) => {
-          if (!response.authResponse?.accessToken) {
-            facebookErrorMessage.value = t("auth.facebookLoginCancelled");
-            loadingProvider.value = "";
-            return;
-          }
+        (response) => {
+          (async () => {
+            if (!response.authResponse?.accessToken) {
+              facebookErrorMessage.value = t("auth.facebookLoginCancelled");
+              loadingProvider.value = "";
+              return;
+            }
 
-          try {
-            const user = await authStore.facebookLogin({
-              access_token: response.authResponse.accessToken,
-              role: roleRef.value,
-            });
+            try {
+              const user = await authStore.facebookLogin({
+                access_token: response.authResponse.accessToken,
+                role: roleRef.value,
+              });
 
-            await completeSocialAuth(user);
-          } catch (error) {
-            errorMessage.value = error.message || t("auth.facebookLoginFailed");
-          } finally {
-            loadingProvider.value = "";
-          }
+              await completeSocialAuth(user);
+            } catch (error) {
+              errorMessage.value = error.message || t("auth.facebookLoginFailed");
+            } finally {
+              loadingProvider.value = "";
+            }
+          })();
         },
         { scope: "email,public_profile", return_scopes: true }
       );
@@ -256,10 +264,8 @@ export const useSocialAuth = (roleRef) => {
       window.google.accounts.id.renderButton(googleButtonRef.value, {
         theme: getGoogleButtonTheme(),
         size: "large",
-        type: "standard",
-        text: "continue_with",
-        shape: "pill",
-        width: Math.max(240, Math.min(320, googleButtonRef.value.offsetWidth || 240)),
+        type: "icon",
+        shape: "circle",
       });
     } catch {
       googleErrorMessage.value = t("auth.googleLoginUnavailable");
