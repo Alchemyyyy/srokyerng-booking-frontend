@@ -71,7 +71,11 @@ const normalizeProperty = (item, index) => {
     city: String(
       typeof item.city === "string"
         ? item.city
-        : item.city?.name || item.city_name || item.address || "",
+        : item.city?.city_name ||
+            item.city?.name ||
+            item.city_name ||
+            item.address ||
+            "",
     )
       .trim()
       .toLowerCase()
@@ -79,10 +83,19 @@ const normalizeProperty = (item, index) => {
     location:
       typeof item.city === "string"
         ? item.city
-        : item.city?.name || item.city_name || item.address || "",
-    status: item.status_name || item.status || "pending",
+        : item.city?.city_name ||
+          item.city?.name ||
+          item.city_name ||
+          item.address ||
+          "",
+    status:
+      item.status?.status_name || item.status_name || item.status || "pending",
     type: String(
-      item.type || item.property_type || item.category_name || "hotel",
+      item.type ||
+        item.property_type ||
+        item.category?.category_name ||
+        item.category_name ||
+        "hotel",
     )
       .trim()
       .toLowerCase(),
@@ -98,6 +111,7 @@ const normalizeProperty = (item, index) => {
     rooms: item.rooms ?? item.room_count ?? 0,
     bookings: item.bookings ?? item.booking_count ?? 0,
     revenue: item.revenue ?? 0,
+    floors: item.number_of_floors ?? item.floors ?? null,
     image: coverImage,
     description:
       item.description ||
@@ -107,6 +121,33 @@ const normalizeProperty = (item, index) => {
     raw: item,
     images: imagesArray,
   };
+};
+
+// Groups reservations by property_id and computes booking count + revenue.
+// - "cancelled" reservations are excluded from the bookings count entirely.
+// - Revenue only counts "confirmed" and "completed" reservations
+//   (pending bookings haven't been paid/confirmed yet).
+const buildReservationStats = (reservations) => {
+  const stats = {};
+
+  for (const r of reservations) {
+    const propertyId = r.property_id;
+    if (propertyId == null) continue;
+
+    if (!stats[propertyId]) {
+      stats[propertyId] = { bookings: 0, revenue: 0 };
+    }
+
+    if (r.reservation_status === "cancelled") continue;
+
+    stats[propertyId].bookings += 1;
+
+    if (["confirmed", "completed"].includes(r.reservation_status)) {
+      stats[propertyId].revenue += parseFloat(r.total_amount) || 0;
+    }
+  }
+
+  return stats;
 };
 
 export const usePropertyStore = defineStore("properties", () => {
@@ -194,6 +235,20 @@ export const usePropertyStore = defineStore("properties", () => {
         normalizeProperty(item, index),
       );
 
+      // Fetch all owner reservations ONCE (not per-property) and build
+      // a property_id -> { bookings, revenue } lookup
+      let reservationStats = {};
+      try {
+        const resvRes = await propertyApi.getOwnerReservations();
+        const reservations = Array.isArray(resvRes)
+          ? resvRes
+          : (resvRes?.data ?? []);
+        reservationStats = buildReservationStats(reservations);
+      } catch {
+        // If this call fails, bookings/revenue just stay at 0 — don't
+        // block the rest of the property list from loading.
+      }
+
       // Second pass: fetch real images AND room counts for each property in parallel
       await Promise.allSettled(
         items.map(async (item, index) => {
@@ -246,6 +301,16 @@ export const usePropertyStore = defineStore("properties", () => {
               myProperties.value[index] = {
                 ...myProperties.value[index],
                 rooms: Array.isArray(roomData) ? roomData.length : 0,
+              };
+            }
+
+            // ── Bookings & Revenue ────────────────────────────────────
+            const stat = reservationStats[item.id];
+            if (stat) {
+              myProperties.value[index] = {
+                ...myProperties.value[index],
+                bookings: stat.bookings,
+                revenue: stat.revenue,
               };
             }
           } catch {

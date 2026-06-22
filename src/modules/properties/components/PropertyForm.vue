@@ -16,6 +16,13 @@ const props = defineProps({
     type: String,
     default: "Save",
   },
+  // [{ id, province_id, name }] from GET /properties/cities.
+  // This component doesn't fetch its own data — pass the list down
+  // from the parent (same pattern as the rest of its props).
+  cities: {
+    type: Array,
+    default: () => [],
+  },
 });
 
 const emit = defineEmits(["submit", "cancel"]);
@@ -45,6 +52,7 @@ const form = ref({
   description: props.initialData.description || "",
   contact_phone: props.initialData.contact_phone || "",
   contact_email: props.initialData.contact_email || "",
+  number_of_floors: props.initialData.number_of_floors || 1,
 });
 
 const errors = ref({});
@@ -79,18 +87,21 @@ const handleSubmit = () => {
     lng: 104.9282,
   };
 
+  const matchedCity = props.cities.find((c) => c.name === form.value.location);
+
   emit("submit", {
     property_name: form.value.name,
     category_id: categoryMap[form.value.type] || 1,
     description: form.value.description,
     address: form.value.address,
-    city: form.value.location,
-    province: form.value.location,
-    country: "Cambodia",
+    city_id: matchedCity?.id ?? null,
+    province_id: matchedCity?.province_id ?? null,
+    country_id: 1, // Cambodia — only country in use per API docs
     latitude: coords.lat,
     longitude: coords.lng,
     contact_phone: form.value.contact_phone,
     contact_email: form.value.contact_email,
+    number_of_floors: Number(form.value.number_of_floors) || 1,
   });
 };
 </script>
@@ -129,14 +140,31 @@ const handleSubmit = () => {
           v-model="form.location"
           class="w-full rounded-sm border border-(--color-border) bg-(--color-input) px-3.5 py-3 text-(--color-text) outline-none focus:border-(--color-primary)"
         >
-          <option>Phnom Penh</option>
-          <option>Siem Reap</option>
-          <option>Kampot</option>
-          <option>Sihanoukville</option>
-          <option>Battambang</option>
-          <option>Koh Rong</option>
+          <template v-if="cities.length">
+            <option v-for="c in cities" :key="c.id" :value="c.name">
+              {{ c.name }}
+            </option>
+          </template>
+          <template v-else>
+            <option>Phnom Penh</option>
+            <option>Siem Reap</option>
+            <option>Kampot</option>
+            <option>Sihanoukville</option>
+            <option>Battambang</option>
+            <option>Koh Rong</option>
+          </template>
         </select>
       </label>
+    </div>
+
+    <div>
+      <AppInput
+        v-model.number="form.number_of_floors"
+        type="number"
+        min="1"
+        label="Number of Floors *"
+        placeholder="e.g. 5"
+      />
     </div>
 
     <div>
