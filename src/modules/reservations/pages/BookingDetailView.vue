@@ -1,373 +1,533 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { reservationApi } from "../api/reservation.api";
-import { useAuthStore } from "@/modules/auth/store/authStore";
-import BookingStatusBadge from "../components/BookingStatusBadge.vue";
+import { ref, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { cancellationApi } from '../api/cancellation.api'
+import {
+  isCancellable,
+  blockedReason,
+  deriveCancellationPolicy,
+  cancelReservation,
+} from '../services/cancellationService'
+import CancellationPolicyBox     from '../components/CancellationPolicyBox.vue'
+import CancelReservationModal    from '../components/CancelReservationModal.vue'
+import RefundStatusBadge         from '../components/RefundStatusBadge.vue'
+import ReservationStatusTimeline from '../components/ReservationStatusTimeline.vue'
 
-const route = useRoute();
-const router = useRouter();
-const authStore = useAuthStore();
 
-const loading = ref(true);
-const error = ref("");
-const booking = ref(null);
+const route  = useRoute()
+const router = useRouter()
 
-const formatDate = (dateStr) => {
-  if (!dateStr) return "-";
-  return new Date(dateStr).toISOString().split("T")[0];
-};
+// ── State ────────────────────────────────────────────────────────────────────
+const reservation  = ref(null)
+const loading      = ref(true)
+const error        = ref('')
+const showModal    = ref(false)
+const cancelling   = ref(false)
+const cancelError  = ref('')
 
-const nights = computed(() => {
-  if (!booking.value) return 0;
-  const checkIn = new Date(booking.value.check_in_date);
-  const checkOut = new Date(booking.value.check_out_date);
-  return Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
-});
+// ── Fetch ─────────────────────────────────────────────────────────────────────
+async function fetchReservation() {
+  loading.value = true
+  error.value   = ''
+  try {
+    const res = await cancellationApi.getReservationById(route.params.id)
+    reservation.value = res?.data?.data ?? res?.data ?? res
+  } catch (e) {
+    error.value = e?.response?.data?.message ?? 'Failed to load reservation details.'
+  } finally {
+    loading.value = false
+  }
+}
 
-const totalAmount = computed(() => Number(booking.value?.total_amount || 0));
-
-const pricePerNight = computed(() =>
-  Number(booking.value?.price_per_night || 0),
-);
-
-const basePrice = computed(() => pricePerNight.value * nights.value);
-
+// ── Derived ───────────────────────────────────────────────────────────────────
 const status = computed(() =>
-  String(booking.value?.reservation_status || "pending").toLowerCase(),
-);
+  String(reservation.value?.reservation_status ?? '').toLowerCase()
+)
 
 const canCancel = computed(() =>
-  ["pending", "confirmed"].includes(status.value),
-);
+  reservation.value
+    ? isCancellable(reservation.value.reservation_status, reservation.value.check_in_date)
+    : false
+)
 
-const qrUrl = computed(
-  () =>
-    `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=RES-${booking.value?.id}_${booking.value?.customer_name}`,
-);
+const whyBlocked = computed(() =>
+  blockedReason(
+    reservation.value?.reservation_status ?? '',
+    reservation.value?.check_in_date ?? ''
+  )
+)
 
-const fetchBooking = async () => {
-  loading.value = true;
-  error.value = "";
+const policy = computed(() => {
+  if (!reservation.value?.check_in_date) return null
+  return deriveCancellationPolicy(
+    reservation.value.check_in_date,
+    Number(reservation.value.total_amount) || 0
+  )
+})
+
+const statusTone = computed(() => {
+  if (status.value === 'completed') return 'success'
+  if (status.value === 'cancelled') return 'danger'
+  if (['confirmed', 'upcoming'].includes(status.value)) return 'info'
+  return 'warning'
+})
+
+const isCancelledOrCompleted = computed(() =>
+  ['cancelled', 'completed'].includes(status.value)
+)
+
+const timelineSteps = computed(() => {
+  const r = reservation.value
+  if (!r) return []
+
+  const fmt  = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''
+  const done = (cond) => cond ? 'done' : 'pending'
+
+  const steps = [
+    { label: 'Booking Created',   date: fmt(r.created_at),      state: 'done' },
+    { label: 'Payment Submitted', date: '',                      state: done(['submitted','paid','verified'].includes(String(r.payment_status).toLowerCase())) },
+    { label: 'Payment Verified',  date: fmt(r.verified_at),     state: done(['paid','verified'].includes(String(r.payment_status).toLowerCase())) },
+    { label: 'Check-in',          date: fmt(r.check_in_date),   state: done(status.value === 'completed') },
+    { label: 'Completed',         date: fmt(r.check_out_date),  state: done(status.value === 'completed') },
+  ]
+
+  if (status.value === 'cancelled') {
+    steps.push({ label: 'Cancelled', date: fmt(r.updated_at), state: 'danger' })
+  }
+
+  return steps
+})
+
+// ── Cancel ────────────────────────────────────────────────────────────────────
+async function handleCancel(reason) {
+  cancelling.value  = true
+  cancelError.value = ''
   try {
-    await authStore.refreshSession();
-    const res = await reservationApi.getReservationById(route.params.id);
-    console.log("Raw detail response:", JSON.stringify(res)); // ← add this
-    const data = Array.isArray(res) ? res[0] : res?.data || res;
-    booking.value = data;
-  } catch (err) {
-    error.value = "Failed to load reservation details.";
-    console.error(err);
+    await cancelReservation(route.params.id, reason)
+    showModal.value = false
+    await fetchReservation()
+  } catch (e) {
+    cancelError.value = e?.response?.data?.message ?? 'Failed to cancel. Please try again.'
   } finally {
-    loading.value = false;
+    cancelling.value = false
   }
-};
+}
 
-const handleCancel = async () => {
-  if (!confirm("Are you sure you want to cancel this reservation?")) return;
-  try {
-    await authStore.refreshSession();
-    await reservationApi.cancelReservation(route.params.id);
-    await fetchBooking();
-  } catch (err) {
-    console.error("Cancel failed:", err);
-  }
-};
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function fmt(d) {
+  if (!d) return '—'
+  return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
 
-onMounted(fetchBooking);
+onMounted(fetchReservation)
 </script>
 
 <template>
-  <div
-    class="min-h-screen bg-[#f8fafc] text-[#0f2942] antialiased pb-24 font-sans"
-  >
-    <!-- Header -->
-    <header
-      class="border-b border-slate-200/60 bg-white/70 backdrop-blur-xl sticky top-0 z-40"
-    >
-      <div
-        class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between text-xs font-semibold"
-      >
-        <div class="flex items-center gap-2.5 text-slate-400">
-          <button
-            @click="router.push({ name: 'customer.booking-history' })"
-            class="hover:text-[#1062b3] transition duration-300"
-          >
-            History
-          </button>
-          <span class="text-slate-300 text-[10px] font-light">/</span>
-          <span class="text-[#0f2942] font-bold tracking-tight">
-            RES-{{ route.params.id }}
-          </span>
-        </div>
-        <button
-          v-if="canCancel"
-          @click="handleCancel"
-          class="bg-rose-50 hover:bg-rose-100 border border-rose-100 text-rose-700 font-bold px-3 py-1.5 rounded-xl shadow-sm transition text-xs"
-        >
-          Cancel Reservation
-        </button>
-      </div>
-    </header>
+  
+  <div class="bv">
+
+    <!-- Back -->
+    <button class="bv__back" @click="router.back()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      Back to Reservations
+    </button>
 
     <!-- Loading -->
-    <div
-      v-if="loading"
-      class="text-center py-24 text-slate-400 text-sm font-semibold"
-    >
-      Loading reservation...
+    <div v-if="loading" class="bv__center">
+      <div class="bv__spinner"></div>
+      <p class="bv__center-text">Loading reservation…</p>
     </div>
 
     <!-- Error -->
-    <div
-      v-else-if="error"
-      class="text-center py-24 text-rose-500 text-sm font-semibold"
-    >
-      {{ error }}
+    <div v-else-if="error" class="bv__error-card">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 8v4M12 16h.01"/>
+      </svg>
+      <p>{{ error }}</p>
+      <button class="bv__retry" @click="fetchReservation">Retry</button>
+    </div>
+
+    <!-- Empty -->
+    <div v-else-if="!reservation" class="bv__center">
+      <p class="bv__center-text">Reservation not found.</p>
     </div>
 
     <!-- Content -->
-    <div v-else-if="booking" class="max-w-7xl mx-auto px-6 mt-8">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-        <!-- LEFT -->
-        <div class="lg:col-span-7 space-y-8">
-          <!-- Status + Title -->
-          <div class="space-y-3">
-            <div class="flex flex-wrap items-center gap-3">
-              <BookingStatusBadge :status="status" size="md" />
-              <span class="text-xs text-slate-400 font-bold">
-                Booked on {{ formatDate(booking.created_at) }}
-              </span>
-            </div>
-            <h1
-              class="text-3xl md:text-4xl font-black tracking-tight text-[#0f2942]"
-            >
-              Your Stay at {{ booking.property_name }}
-            </h1>
-          </div>
-
-          <!-- Check-in / Check-out -->
-          <div
-            class="grid grid-cols-2 gap-4 bg-white border border-slate-200/60 p-5 rounded-[24px] shadow-xl shadow-slate-100/50"
-          >
-            <div class="space-y-1">
-              <span
-                class="text-[9px] font-black uppercase text-slate-400 tracking-widest block"
-              >
-                📅 Scheduled Arrival
-              </span>
-              <p class="text-sm font-black text-[#0f2942]">
-                {{ formatDate(booking.check_in_date) }}
-              </p>
-              <p class="text-[11px] text-slate-400 font-medium">
-                Standard Check-In from 2:00 PM
-              </p>
-            </div>
-            <div class="space-y-1 border-l border-slate-100 pl-5">
-              <span
-                class="text-[9px] font-black uppercase text-slate-400 tracking-widest block"
-              >
-                📅 Scheduled Departure
-              </span>
-              <p class="text-sm font-black text-[#0f2942]">
-                {{ formatDate(booking.check_out_date) }}
-              </p>
-              <p class="text-[11px] text-slate-400 font-medium">
-                Standard Check-Out by 11:00 AM
-              </p>
-            </div>
-          </div>
-
-          <!-- Room Info -->
-          <div
-            class="bg-white border border-slate-200/60 rounded-[28px] overflow-hidden shadow-xl shadow-slate-100/50 flex flex-col sm:flex-row"
-          >
-            <div
-              class="w-full sm:w-44 h-44 sm:h-auto bg-slate-100 relative overflow-hidden flex-shrink-0"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=500&q=80"
-                class="w-full h-full object-cover"
-              />
-            </div>
-            <div class="p-6 flex flex-col justify-between space-y-4">
-              <div class="space-y-1">
-                <span
-                  class="text-[9px] font-black uppercase text-[#1062b3] bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-md tracking-wider"
-                >
-                  Assigned Space
-                </span>
-                <h3 class="text-base font-black text-[#0f2942] pt-1">
-                  {{ booking.room_name }}
-                </h3>
-                <p class="text-xs text-slate-400 font-semibold">
-                  {{ nights }} Nights Total Stay
-                </p>
-              </div>
-              <div
-                class="flex items-center gap-4 text-[11px] text-slate-500 font-bold border-t border-slate-50 pt-3"
-              >
-                <span>👥 {{ booking.total_guests }} Guests</span>
-                <span class="w-1 h-1 bg-slate-300 rounded-full"></span>
-                <span>📍 {{ booking.property_name }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Financial Summary -->
-          <div class="space-y-3.5">
-            <h2
-              class="text-xs font-black text-[#0f2942] uppercase tracking-widest border-l-2 border-[#1062b3] pl-3"
-            >
-              Itemized Financial Summary
-            </h2>
-            <div
-              class="bg-white border border-slate-200/60 rounded-3xl p-5 md:p-6 shadow-xl shadow-slate-100/50 space-y-3.5 text-xs font-semibold text-slate-500"
-            >
-              <div class="flex justify-between items-center">
-                <span
-                  >Room Base Rate (${{ pricePerNight }} ×
-                  {{ nights }} nights)</span
-                >
-                <span class="text-[#0f2942] font-black">${{ basePrice }}</span>
-              </div>
-              <div
-                class="flex justify-between items-center pt-3 border-t border-slate-100 text-slate-700 font-black text-sm"
-              >
-                <span class="text-[#0f2942] uppercase tracking-wider"
-                  >Total</span
-                >
-                <span class="text-2xl text-[#1062b3] font-black"
-                  >${{ totalAmount }}</span
-                >
-              </div>
-
-              <!-- Special Request -->
-              <div
-                v-if="booking.special_request"
-                class="pt-2 border-t border-slate-100"
-              >
-                <p
-                  class="text-[9px] font-black uppercase text-slate-400 tracking-widest mb-1"
-                >
-                  Special Request
-                </p>
-                <p class="text-xs text-slate-600">
-                  {{ booking.special_request }}
-                </p>
-              </div>
-            </div>
-          </div>
+    <template v-else>
+          
+      <!-- Header -->
+      <div class="bv__header">
+        <div class="bv__header-left">
+          <p class="bv__eyebrow">Reservation · #RES-{{ reservation.id }}</p>
+          <h1 class="bv__title">{{ reservation.property_name || 'Your Stay' }}</h1>
+          <p class="bv__sub">{{ reservation.room_name }} <template v-if="reservation.location">· {{ reservation.location }}</template></p>
         </div>
+        <span class="bv__status-badge" :class="`bv__status-badge--${statusTone}`">
+          {{ reservation.reservation_status }}
+        </span>
+      </div>
 
-        <!-- RIGHT: Boarding Pass -->
-        <div class="lg:col-span-5 lg:sticky lg:top-24">
-          <div
-            class="bg-gradient-to-b from-[#0f2942] to-[#1a3857] text-white rounded-[32px] shadow-2xl shadow-slate-900/20 overflow-hidden relative border border-slate-800"
-          >
-            <div class="p-6 md:p-8 space-y-6 relative z-10">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p
-                    class="text-[9px] font-black uppercase text-slate-300 tracking-widest"
-                  >
-                    Digital Boarding Voucher
-                  </p>
-                  <p class="text-lg font-black tracking-tight mt-0.5">
-                    {{ booking.property_name }}
-                  </p>
-                </div>
-                <BookingStatusBadge :status="status" size="sm" />
-              </div>
-
-              <div
-                class="grid grid-cols-2 gap-y-4 gap-x-2 pt-2 border-t border-white/10 text-xs font-bold"
-              >
-                <div>
-                  <span
-                    class="block text-[9px] text-slate-400 uppercase tracking-widest font-black"
-                    >Guest Name</span
-                  >
-                  <span class="text-sm font-black tracking-wide">{{
-                    booking.customer_name
-                  }}</span>
-                </div>
-                <div>
-                  <span
-                    class="block text-[9px] text-slate-400 uppercase tracking-widest font-black"
-                    >Confirmation Ref</span
-                  >
-                  <span
-                    class="text-sm font-black tracking-wide text-[#1062b3] bg-white px-2 py-0.5 rounded-lg inline-block shadow-sm"
-                  >
-                    #{{ booking.id }}
-                  </span>
-                </div>
-                <div>
-                  <span
-                    class="block text-[9px] text-slate-400 uppercase tracking-widest font-black"
-                    >Room</span
-                  >
-                  <span
-                    class="text-sm font-black tracking-wide text-slate-200"
-                    >{{ booking.room_name }}</span
-                  >
-                </div>
-                <div>
-                  <span
-                    class="block text-[9px] text-slate-400 uppercase tracking-widest font-black"
-                    >Guests</span
-                  >
-                  <span class="text-sm font-black tracking-wide text-slate-200"
-                    >{{ booking.total_guests }} Guests</span
-                  >
-                </div>
-              </div>
-            </div>
-
-            <!-- Ticket divider -->
-            <div
-              class="relative h-4 flex items-center justify-between px-0 overflow-hidden select-none pointer-events-none"
-            >
-              <div
-                class="w-4 h-8 bg-[#f8fafc] rounded-full transform translate-x-[-8px]"
-              ></div>
-              <div
-                class="w-full border-b-2 border-dashed border-white/10 px-4"
-              ></div>
-              <div
-                class="w-4 h-8 bg-[#f8fafc] rounded-full transform translate-x-[8px]"
-              ></div>
-            </div>
-
-            <!-- QR Code -->
-            <div
-              class="p-6 md:p-8 bg-white text-slate-800 text-center space-y-4 flex flex-col items-center justify-center"
-            >
-              <p
-                class="text-[10px] font-black text-slate-400 uppercase tracking-widest"
-              >
-                Present QR Code at Reception
-              </p>
-              <div
-                class="w-36 h-36 bg-slate-50 border border-slate-200 p-2.5 rounded-2xl shadow-inner"
-              >
-                <img
-                  :src="qrUrl"
-                  alt="QR Code"
-                  class="w-full h-full object-contain"
-                />
-              </div>
-              <button
-                @click="router.push({ name: 'customer.booking-history' })"
-                class="w-full bg-[#0f2942] hover:bg-[#1a3857] text-white font-black text-xs py-3.5 rounded-xl shadow-lg transition-all uppercase tracking-widest cursor-pointer"
-              >
-                Back to History
-              </button>
-            </div>
+      <!-- Dates -->
+      <div class="bv__card">
+        <div class="bv__dates-grid">
+          <div class="bv__info-item">
+            <p class="bv__info-label">Check-in</p>
+            <p class="bv__info-value">{{ fmt(reservation.check_in_date) }}</p>
+          </div>
+          <div class="bv__dates-arrow">→</div>
+          <div class="bv__info-item">
+            <p class="bv__info-label">Check-out</p>
+            <p class="bv__info-value">{{ fmt(reservation.check_out_date) }}</p>
+          </div>
+          <div class="bv__info-item">
+            <p class="bv__info-label">Nights</p>
+            <p class="bv__info-value">{{ reservation.total_nights ?? '—' }}</p>
+          </div>
+          <div class="bv__info-item">
+            <p class="bv__info-label">Guests</p>
+            <p class="bv__info-value">{{ reservation.total_guests ?? '—' }}</p>
           </div>
         </div>
       </div>
-    </div>
+
+      <!-- Payment & Refund status -->
+      <div class="bv__card bv__card--row">
+        <div class="bv__info-item">
+          <p class="bv__info-label">Total Amount</p>
+          <p class="bv__info-value bv__info-value--amount">${{ reservation.total_amount }}</p>
+        </div>
+        <div class="bv__info-item">
+          <p class="bv__info-label">Payment Status</p>
+          <span class="bv__payment-badge" :class="`bv__payment-badge--${String(reservation.payment_status ?? 'pending').toLowerCase()}`">
+            {{ reservation.payment_status ?? 'pending' }}
+          </span>
+        </div>
+        <div v-if="isCancelledOrCompleted" class="bv__info-item">
+          <p class="bv__info-label">Refund Status</p>
+          <RefundStatusBadge :status="reservation.refund_status ?? 'not_requested'" />
+        </div>
+      </div>
+
+      <!-- Cancellation reason (if already cancelled) -->
+      <div v-if="reservation.cancellation_reason" class="bv__card bv__card--danger">
+        <p class="bv__info-label">Cancellation Reason</p>
+        <p class="bv__cancelled-reason">{{ reservation.cancellation_reason }}</p>
+      </div>
+
+      <!-- Status timeline -->
+      <div class="bv__card">
+        <ReservationStatusTimeline :steps="timelineSteps" />
+      </div>
+
+      <!-- Cancellation policy (only if still cancellable) -->
+      <CancellationPolicyBox
+        v-if="policy && canCancel"
+        :tone="policy.tone"
+        :description="policy.description"
+        :deadline="policy.deadline ?? ''"
+        :refund-breakdown="policy.refundBreakdown ?? []"
+      />
+
+      <!-- Blocked message -->
+      <div
+        v-else-if="!canCancel && !isCancelledOrCompleted"
+        class="bv__blocked"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M18 6 6 18M6 6l12 12"/>
+        </svg>
+        <span>{{ whyBlocked }}</span>
+      </div>
+
+      <!-- Cancel button -->
+      <div v-if="canCancel" class="bv__actions">
+        <button class="bv__cancel-btn" @click="showModal = true">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M18 6 6 18M6 6l12 12"/>
+          </svg>
+          Cancel Reservation
+        </button>
+      </div>
+
+    </template>
+
+    <!-- Cancel Modal -->
+    <CancelReservationModal
+      :open="showModal"
+      :eligible="canCancel"
+      :blocked-reason="whyBlocked"
+      :policy="policy"
+      :refund-amount="policy?.refundAmount ?? null"
+      :loading="cancelling"
+      :error="cancelError"
+      @close="showModal = false; cancelError = ''"
+      @confirm="handleCancel"
+    />
+
   </div>
 </template>
+
+<style scoped>
+.bv {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 6rem 1.25rem 5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Back button */
+.bv__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0;
+  margin-bottom: 0.5rem;
+  transition: color 0.15s;
+}
+.bv__back:hover { color: var(--color-primary); }
+
+/* Loading / empty */
+.bv__center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 4rem 0;
+}
+.bv__center-text { color: var(--color-muted); font-size: 0.9rem; margin: 0; }
+
+.bv__spinner {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Error card */
+.bv__error-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2.5rem;
+  border: 1px solid rgba(220,53,69,0.2);
+  border-radius: 20px;
+  background: rgba(220,53,69,0.04);
+  text-align: center;
+  color: #dc3545;
+  font-size: 0.9rem;
+}
+.bv__retry {
+  background: none;
+  border: 1px solid rgba(220,53,69,0.3);
+  color: #dc3545;
+  padding: 0.5rem 1.25rem;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+/* Header */
+.bv__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.bv__eyebrow {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-muted);
+}
+
+.bv__title {
+  margin: 0.2rem 0 0;
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+
+.bv__sub {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  color: var(--color-muted);
+}
+
+.bv__status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  border: 1px solid transparent;
+  flex-shrink: 0;
+  margin-top: 0.4rem;
+}
+.bv__status-badge--success { background: rgba(29,158,117,0.1);  color: #1d9e75; border-color: rgba(29,158,117,0.25); }
+.bv__status-badge--danger  { background: rgba(220,53,69,0.1);   color: #dc3545; border-color: rgba(220,53,69,0.25); }
+.bv__status-badge--info    { background: rgba(55,138,221,0.1);  color: var(--color-primary); border-color: rgba(55,138,221,0.25); }
+.bv__status-badge--warning { background: rgba(239,159,39,0.12); color: #c97c0a; border-color: rgba(239,159,39,0.3); }
+
+/* Cards */
+.bv__card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  padding: 1.25rem;
+}
+
+.bv__card--row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  align-items: center;
+}
+
+.bv__card--danger {
+  background: rgba(220,53,69,0.04);
+  border-color: rgba(220,53,69,0.2);
+}
+
+.bv__dates-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto auto;
+  gap: 1rem;
+  align-items: center;
+}
+
+.bv__dates-arrow {
+  font-size: 1.1rem;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.bv__info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.bv__info-label {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-muted);
+}
+
+.bv__info-value {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.bv__info-value--amount {
+  font-size: 1.2rem;
+  color: var(--color-primary);
+}
+
+.bv__payment-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-soft, #f3f4f6);
+  color: var(--color-muted);
+}
+.bv__payment-badge--paid, .bv__payment-badge--verified {
+  background: rgba(29,158,117,0.1); color: #1d9e75; border-color: rgba(29,158,117,0.25);
+}
+.bv__payment-badge--submitted {
+  background: rgba(55,138,221,0.1); color: var(--color-primary); border-color: rgba(55,138,221,0.25);
+}
+.bv__payment-badge--failed, .bv__payment-badge--rejected {
+  background: rgba(220,53,69,0.1); color: #dc3545; border-color: rgba(220,53,69,0.25);
+}
+
+.bv__cancelled-reason {
+  margin: 0.4rem 0 0;
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+
+/* Blocked banner */
+.bv__blocked {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1rem;
+  background: rgba(220,53,69,0.05);
+  border: 1px solid rgba(220,53,69,0.2);
+  border-radius: 14px;
+  font-size: 0.875rem;
+  color: #dc3545;
+}
+
+/* Actions */
+.bv__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.bv__cancel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.4rem;
+  background: transparent;
+  border: 1.5px solid rgba(220,53,69,0.4);
+  color: #dc3545;
+  border-radius: 14px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.bv__cancel-btn:hover {
+  background: rgba(220,53,69,0.07);
+  border-color: #dc3545;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .bv { padding: 5rem 1rem 4rem; }
+  .bv__title { font-size: 1.4rem; }
+  .bv__header { flex-direction: column; }
+  .bv__dates-grid { grid-template-columns: 1fr 1fr; }
+  .bv__dates-arrow { display: none; }
+  .bv__card--row { flex-direction: column; align-items: flex-start; }
+}
+</style>

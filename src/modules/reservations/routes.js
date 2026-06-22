@@ -6,6 +6,7 @@ import BookingCreateView from "./pages/BookingCreateView.vue";
 import PaymentDetailView from "@/modules/payments/pages/PaymentDetailView.vue";
 import PaymentUploadView from "@/modules/payments/pages/PaymentUploadView.vue";
 
+
 export const reservationRoutes = [
   {
     path: "reservations",
@@ -51,4 +52,13 @@ export const reservationRoutes = [
     component: PaymentUploadView,
     meta: { requiresAuth: true, navbarSolid: true, roles: [ROLES.CUSTOMER] },
   },
+  // routes.js — add this to the existing array
+  {
+    path: '/customer/reservations/:id',
+    name: 'customer.booking-detail',  // ← must match exactly
+    component: () => import('./pages/BookingDetailView.vue'),
+    meta: { requiresAuth: true, role: 'customer' },
+  }
 ];
+
+

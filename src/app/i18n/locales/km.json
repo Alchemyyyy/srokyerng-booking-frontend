@@ -1335,6 +1335,13 @@
       "avgRating": "ពិន្ទុមធ្យម",
       "readyToReview": "រង់ចាំសរសេរមតិ"
     },
+      "ratingLabel": {
+      "poor": "ខ្សោយ",
+      "fair": "ល្មមល្អ",
+      "good": "ល្អ",
+      "veryGood": "ល្អណាស់",
+      "excellent": "ល្អឥតខ្ចោះ"
+      },
     "filter": {
       "searchPlaceholder": "ស្វែងរកមតិ...",
       "sortRecent": "ថ្មីបំផុត",
@@ -1388,6 +1395,54 @@
       "confirm": "លុបមតិ",
       "deleteSuccess": "បានលុបមតិដោយជោគជ័យ",
       "deleteFailed": "មិនអាចលុបមតិបានទេ"
+    }
+  },
+  "amenityManagement": {
+    "breadcrumb": {
+      "dashboard": "← ផ្ទាំងគ្រប់គ្រង",
+      "amenities": "សម្ភារៈ"
+    },
+    "title": "សម្ភារៈ",
+    "subtitle": "មើលសម្ភារៈទាំងអស់ដែលមាន និងគ្រប់គ្រងវាសម្រាប់អចលនទ្រព្យរបស់អ្នក",
+    "tabs": {
+      "catalogue": "កាតាឡុក",
+      "myProperties": "អចលនទ្រព្យរបស់ខ្ញុំ"
+    },
+    "catalogue": {
+      "loading": "កំពុងផ្ទុកសម្ភារៈ..."
+    },
+    "myProperties": {
+      "subtitle": "ជ្រើសរើសអចលនទ្រព្យដើម្បីមើល និងកែប្រែសម្ភារៈ។",
+      "allProperties": "អចលនទ្រព្យទាំងអស់",
+      "loading": "កំពុងផ្ទុកអចលនទ្រព្យ...",
+      "empty": {
+        "title": "មិនទាន់មានអចលនទ្រព្យ",
+        "description": "បន្ថែមអចលនទ្រព្យដំបូងរបស់អ្នក",
+        "button": "បន្ថែមអចលនទ្រព្យ"
+      },
+      "amenitiesAssigned": "បានកំណត់ {count} សម្ភារៈ",
+      "editButton": "កែប្រែសម្ភារៈ",
+      "addMore": "បន្ថែមទៀត"
+    },
+    "saveBar": {
+      "selected": "បានជ្រើសរើស {count} សម្ភារៈ",
+      "discard": "បោះបង់",
+      "saving": "កំពុងរក្សាទុក...",
+      "saved": "✓ រក្សាទុករួច",
+      "saveChanges": "រក្សាទុកការផ្លាស់ប្តូរ"
+    },
+    "modal": {
+      "title": "កែប្រែសម្ភារៈ",
+      "cancel": "បោះបង់",
+      "saving": "កំពុងរក្សាទុក...",
+      "saved": "✓ រក្សាទុករួច",
+      "saveChanges": "រក្សាទុកការផ្លាស់ប្តូរ"
+    },
+    "selector": {
+      "searchPlaceholder": "ស្វែងរកសម្ភារៈ...",
+      "all": "ទាំងអស់",
+      "noResults": "រកមិនឃើញសម្ភារៈ",
+      "selected": "បានជ្រើសរើស {count}"
     }
   }
 }

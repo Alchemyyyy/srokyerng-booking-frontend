@@ -4,14 +4,7 @@
     <div class="top-bar">
       <div class="search-bar">
         <span class="search-icon">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.35-4.35" />
           </svg>
@@ -19,23 +12,11 @@
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Search amenities..."
+          :placeholder="$t('amenityManagement.selector.searchPlaceholder')"
           class="search-input"
         />
-        <button
-          v-if="searchQuery"
-          class="clear-btn"
-          type="button"
-          @click="searchQuery = ''"
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-          >
+        <button v-if="searchQuery" class="clear-btn" type="button" @click="searchQuery = ''">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M18 6 6 18M6 6l12 12" />
           </svg>
         </button>
@@ -50,7 +31,7 @@
           @click="activeCategory = null"
         >
           <span class="tab-icon">✦</span>
-          All
+          {{ $t('amenityManagement.selector.all') }}
           <span class="tab-count">{{ enrichedAmenities.length }}</span>
         </button>
         <button
@@ -73,18 +54,12 @@
 
     <!-- Groups -->
     <div v-if="groupedAmenities.length" class="groups-wrapper">
-      <div
-        v-for="group in groupedAmenities"
-        :key="group.category"
-        class="category-group"
-      >
+      <div v-for="group in groupedAmenities" :key="group.category" class="category-group">
         <!-- Header -->
         <div class="category-header">
           <span class="category-icon">{{ group.icon }}</span>
           <span class="category-title">{{ group.category }}</span>
-          <span class="category-count" :style="countStyle(group.category)">{{
-            group.items.length
-          }}</span>
+          <span class="category-count" :style="countStyle(group.category)">{{ group.items.length }}</span>
         </div>
 
         <!-- Grid -->
@@ -105,14 +80,7 @@
               <div class="amenity-desc">{{ amenity.description }}</div>
             </div>
             <div class="check-badge" v-if="isSelected(amenity.id)">
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="white"
-                stroke-width="3"
-              >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
                 <path d="M20 6 9 17l-5-5" />
               </svg>
             </div>
@@ -124,16 +92,16 @@
     <!-- Empty -->
     <div v-else class="empty-state">
       <div class="empty-icon">🔍</div>
-      <p>No amenities found</p>
+      <p>{{ $t('amenityManagement.selector.noResults') }}</p>
     </div>
 
     <!-- Footer -->
     <div class="selection-footer" v-if="selectedAmenities.length">
-      <span class="selected-count"
-        >{{ selectedAmenities.length }} selected</span
-      >
+      <span class="selected-count">
+        {{ $t('amenityManagement.selector.selected', { count: selectedAmenities.length }) }}
+      </span>
       <button type="button" class="clear-all-btn" @click="clearAll">
-        Clear all
+        {{ $t('amenityManagement.saveBar.discard') }}
       </button>
     </div>
   </div>
@@ -141,16 +109,13 @@
 
 <script setup>
 import { computed, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const props = defineProps({
-  amenities: {
-    type: Array,
-    default: () => [],
-  },
-  modelValue: {
-    type: Array,
-    default: () => [],
-  },
+  amenities: { type: Array, default: () => [] },
+  modelValue: { type: Array, default: () => [] },
 });
 
 const emit = defineEmits(["update:modelValue"]);
@@ -179,7 +144,6 @@ watch(
   { deep: true },
 );
 
-// SVG icons mapped by amenity name
 const amenityMeta = {
   "Wi-Fi": {
     category: "Connectivity",
@@ -274,7 +238,7 @@ const amenityMeta = {
   "Air Conditioning": {
     category: "Services",
     description: "Climate-controlled rooms",
-    svg: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M2 12h20"/><path d="M4.9 4.9l14.2 14.2"/><path d="M19.1 4.9L4.9 19.1"/></svg>`
+    svg: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M2 12h20"/><path d="M4.9 4.9l14.2 14.2"/><path d="M19.1 4.9L4.9 19.1"/></svg>`,
   },
 };
 
@@ -288,33 +252,23 @@ const categoryIcons = {
   Other: "✨",
 };
 
-// bg, border, icon stroke color per category
 const categoryColors = {
   Connectivity: { bg: "#eff6ff", border: "#bfdbfe", color: "#3b82f6" },
   Recreation: { bg: "#f0fdf4", border: "#bbf7d0", color: "#16a34a" },
   Dining: { bg: "#fff7ed", border: "#fed7aa", color: "#ea580c" },
   Transport: { bg: "#fdf4ff", border: "#e9d5ff", color: "#9333ea" },
-  Services: {bg: "#fdf2f8", border: "#fbcfe8", color: "#db2777"},
-  // "Views & Nature": { bg: "#f0fdfa", border: "#99f6e4", color: "#0d9488" },
+  Services: { bg: "#fdf2f8", border: "#fbcfe8", color: "#db2777" },
   Other: { bg: "#f8fafc", border: "#e2e8f0", color: "#64748b" },
 };
 
 const iconStyle = (category) => {
   const c = categoryColors[category] || categoryColors.Other;
-  return {
-    background: c.bg,
-    borderColor: c.border,
-    color: c.color,
-  };
+  return { background: c.bg, borderColor: c.border, color: c.color };
 };
 
 const countStyle = (category) => {
   const c = categoryColors[category] || categoryColors.Other;
-  return {
-    background: c.bg,
-    color: c.color,
-    border: `1px solid ${c.border}`,
-  };
+  return { background: c.bg, color: c.color, border: `1px solid ${c.border}` };
 };
 
 const enrichedAmenities = computed(() => {
@@ -328,7 +282,6 @@ const enrichedAmenities = computed(() => {
   });
 });
 
-// All groups (unfiltered, for tabs)
 const allGroups = computed(() => {
   const groups = {};
   enrichedAmenities.value.forEach((amenity) => {
@@ -351,14 +304,9 @@ const filteredAmenities = computed(() => {
       const name = a.amenity_name?.toLowerCase() || "";
       const desc = a.description?.toLowerCase() || "";
       const cat = a.category?.toLowerCase() || "";
-
-      // every word in the query must match at least one field
-      return query
-        .split(" ")
-        .every(
-          (word) =>
-            name.includes(word) || desc.includes(word) || cat.includes(word),
-        );
+      return query.split(" ").every(
+        (word) => name.includes(word) || desc.includes(word) || cat.includes(word),
+      );
     });
   }
 
@@ -403,15 +351,7 @@ const clearAll = () => {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-/* =====================================================
-   TOP BAR
-===================================================== */
-
-.top-bar {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+.top-bar { display: flex; flex-direction: column; gap: 16px; }
 
 .search-bar {
   width: 300px;
@@ -431,142 +371,91 @@ const clearAll = () => {
 
 .search-input {
   width: 100%;
-  height: 44px;
-  padding: 0 40px;
-  border-radius: 12px;
+  padding: 10px 14px 10px 42px;
   border: 1.5px solid #e5e7eb;
-  background: #fff;
-  color: #111827;
+  border-radius: 12px;
   font-size: 14px;
   outline: none;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s;
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #111);
 }
 
-.search-input::placeholder {
-  color: #9ca3af;
-}
-
-.search-input:focus {
-  border-color: #0ea5e9;
-  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.12);
-}
+.search-input:focus { border-color: #0ea5e9; }
 
 .clear-btn {
   position: absolute;
   right: 12px;
+  background: none;
   border: none;
-  background: transparent;
-  color: #9ca3af;
   cursor: pointer;
+  color: #9ca3af;
   display: flex;
   align-items: center;
   padding: 0;
 }
 
-/* =====================================================
-   FILTER TABS
-===================================================== */
+.clear-btn:hover { color: #374151; }
 
 .filter-tabs {
   display: flex;
-  gap: 8px;
   flex-wrap: wrap;
+  gap: 8px;
 }
 
 .filter-tab {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
-  border-radius: 12px;
+  padding: 8px 14px;
   border: 1.5px solid #e5e7eb;
-  background: #fff;
+  border-radius: 12px;
+  background: var(--color-surface, #fff);
   color: #374151;
   font-size: 13.5px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all 0.2s ease;
   white-space: nowrap;
 }
 
 .filter-tab:hover {
-  border-color:var(--color-primary-strong);
-  color: var(--color-primary-strong);
   background: #f0f9ff;
+  border-color: #0ea5e9;
+  color: #0ea5e9;
 }
 
 .filter-tab.active {
-  background: var(--color-primary-strong);
-  border-color: var(--color-primary-strong) ;
-  color: #fff;
+  background: #0ea5e9;
+  border-color: #0ea5e9;
+  color: white;
 }
 
-.filter-tab.active .tab-count {
-  background: rgba(255, 255, 255, 0.25);
-  color: #fff;
-}
-
-.tab-icon {
-  font-size: 14px;
-}
+.tab-icon { font-size: 14px; }
 
 .tab-count {
-  background: #f1f5f9;
-  color: #64748b;
+  background: rgba(0, 0, 0, 0.08);
   border-radius: 999px;
-  padding: 1px 8px;
+  padding: 1px 7px;
   font-size: 12px;
-  font-weight: 600;
-  min-width: 20px;
-  text-align: center;
+  font-weight: 700;
 }
 
-/* =====================================================
-   AMENITY COUNT
-===================================================== */
+.filter-tab.active .tab-count { background: rgba(255, 255, 255, 0.25); }
 
 .amenity-count {
   font-size: 13px;
   color: #6b7280;
-  font-weight: 500;
   margin: 0;
 }
 
-/* =====================================================
-   GROUPS
-===================================================== */
+.groups-wrapper { display: flex; flex-direction: column; gap: 32px; }
 
-.groups-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
+.category-group { display: flex; flex-direction: column; gap: 16px; }
 
-.category-group {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* =====================================================
-   CATEGORY HEADER
-===================================================== */
-
-.category-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.category-icon {
-  font-size: 18px;
-}
-
-.category-title {
-  font-size: 17px;
-  font-weight: 700;
-  color: #111827;
-}
+.category-header { display: flex; align-items: center; gap: 10px; }
+.category-icon { font-size: 18px; }
+.category-title { font-size: 17px; font-weight: 700; color: #111827; }
 
 .category-count {
   min-width: 22px;
@@ -580,19 +469,11 @@ const clearAll = () => {
   font-weight: 700;
 }
 
-/* =====================================================
-   GRID
-===================================================== */
-
 .amenity-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 14px;
 }
-
-/* =====================================================
-   CARD
-===================================================== */
 
 .amenity-card {
   position: relative;
@@ -621,10 +502,6 @@ const clearAll = () => {
   background: #f0f9ff;
 }
 
-/* =====================================================
-   ICON WRAP
-===================================================== */
-
 .amenity-icon-wrap {
   width: 44px;
   height: 44px;
@@ -643,43 +520,13 @@ const clearAll = () => {
   filter: brightness(0.95) saturate(1.1);
 }
 
-.amenity-card.selected .amenity-icon-wrap {
-  filter: brightness(0.9) saturate(1.2);
-}
+.amenity-card.selected .amenity-icon-wrap { filter: brightness(0.9) saturate(1.2); }
 
-.amenity-svg {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
+.amenity-svg { display: flex; align-items: center; justify-content: center; line-height: 1; }
 
-/* =====================================================
-   AMENITY INFO
-===================================================== */
-
-.amenity-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.amenity-name {
-  font-size: 15px;
-  font-weight: 700;
-  color: #111827;
-  line-height: 1.3;
-}
-
-.amenity-desc {
-  font-size: 12.5px;
-  color: #6b7280;
-  line-height: 1.4;
-}
-
-/* =====================================================
-   CHECK BADGE
-===================================================== */
+.amenity-info { display: flex; flex-direction: column; gap: 4px; }
+.amenity-name { font-size: 15px; font-weight: 700; color: #111827; line-height: 1.3; }
+.amenity-desc { font-size: 12.5px; color: #6b7280; line-height: 1.4; }
 
 .check-badge {
   position: absolute;
@@ -694,10 +541,6 @@ const clearAll = () => {
   justify-content: center;
 }
 
-/* =====================================================
-   FOOTER
-===================================================== */
-
 .selection-footer {
   position: sticky;
   bottom: 20px;
@@ -711,11 +554,7 @@ const clearAll = () => {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
-.selected-count {
-  font-size: 14px;
-  font-weight: 700;
-  color: #111827;
-}
+.selected-count { font-size: 14px; font-weight: 700; color: #111827; }
 
 .clear-all-btn {
   border: none;
@@ -727,24 +566,8 @@ const clearAll = () => {
   padding: 0;
 }
 
-/* =====================================================
-   EMPTY
-===================================================== */
-
-.empty-state {
-  padding: 80px 20px;
-  text-align: center;
-  color: #9ca3af;
-}
-
-.empty-icon {
-  font-size: 36px;
-  margin-bottom: 10px;
-}
-
-/* =====================================================
-   DARK MODE
-===================================================== */
+.empty-state { padding: 80px 20px; text-align: center; color: #9ca3af; }
+.empty-icon { font-size: 36px; margin-bottom: 10px; }
 
 [data-theme="dark"] .search-input {
   background: var(--color-surface);
@@ -768,34 +591,17 @@ const clearAll = () => {
   border-color: rgba(255, 255, 255, 0.1);
 }
 
-[data-theme="dark"] .amenity-name {
-  color: var(--color-text);
-}
-[data-theme="dark"] .category-title {
-  color: var(--color-text);
-}
+[data-theme="dark"] .amenity-name { color: var(--color-text); }
+[data-theme="dark"] .category-title { color: var(--color-text); }
 [data-theme="dark"] .selection-footer {
   background: var(--color-surface);
   border-color: var(--color-border);
 }
 
-/* =====================================================
-   MOBILE
-===================================================== */
-
 @media (max-width: 768px) {
-  .search-bar {
-    width: 100%;
-  }
-  .amenity-grid {
-    grid-template-columns: 1fr;
-  }
-  .filter-tabs {
-    gap: 6px;
-  }
-  .filter-tab {
-    padding: 7px 12px;
-    font-size: 13px;
-  }
+  .search-bar { width: 100%; }
+  .amenity-grid { grid-template-columns: 1fr; }
+  .filter-tabs { gap: 6px; }
+  .filter-tab { padding: 7px 12px; font-size: 13px; }
 }
 </style>
