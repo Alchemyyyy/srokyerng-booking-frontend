@@ -1,25 +1,49 @@
-import axios from 'axios';
-
-const BASE_URL = 'http://localhost:8000/api';
+import http from '@/app/api/http';
 
 export const ownerPaymentApi = {
+    //payment accounts
     createOrUpdateAccount(formData) {
-        const token = localStorage.getItem('token'); // ឬ auth_token ទៅតាមអ្វីដែលបងរក្សាទុក
-
-        return axios.post(`${BASE_URL}/owner/payment-accounts`, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-                'Authorization': `Bearer ${token}` // បញ្ជូន Token ទៅកាន់ Backend ដើម្បឆ្លងកាត់ Auth Middleware
-            }
-        });
+        return http.post('/owner/payment-accounts', formData);
     },
-    
+
     getAccountDetails() {
-        const token = localStorage.getItem('token');
-        return axios.get(`${BASE_URL}/owner/payment-accounts`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
+        return http.get('/owner/payment-accounts');
+    },
+
+    updateAccount(id, formData) {
+        return http.patch(`/owner/payment-accounts/${id}`, formData);
+    },
+
+    activateAccount(id) {
+        return http.patch(`/owner/payment-accounts/${id}/activate`);
+    },
+
+    deactivateAccount(id) {
+            return http.patch(`/owner/payment-accounts/${id}/deactivate`);
+    },
+
+    // customer payments endpoints for owner
+    listOwnerPayments() {
+        return http.get(`/owner/payments`);
+    },
+
+    getPaymentDetails(id) {
+        return http.get(`/owner/payments/${id}`);
+    },
+
+    listPendingPayments() {
+        return http.get('/owner/payments/pending-verification');
+    },
+
+    getProofDetail(id) {
+        return http.get(`/payments/${id}/proof`);
+    },
+
+    verifyPayment(id) {
+        return http.patch(`/owner/payments/${id}/verify`);
+    },
+
+    rejectPayment(id, data) {
+        return http.patch(`/owner/payments/${id}/reject`, data);
     }
 };

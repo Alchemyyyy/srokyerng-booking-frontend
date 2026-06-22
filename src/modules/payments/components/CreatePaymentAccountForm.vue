@@ -1,57 +1,98 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useOwnerPaymentStore } from '../store/ownerPayment.store';
 import { useToastStore } from '@/shared/store/toastStore';
+import AppModal from '@/shared/components/AppModal.vue';
 
-const emit = defineEmits(['saved']);
+const props = defineProps({
+    isOpen: { type: Boolean, default: false },
+    editData: { type: Object, default: null }
+});
+const emit = defineEmits(['close', 'saved']);
+
 const paymentStore = useOwnerPaymentStore();
 const toastStore = useToastStore();
 
-// Form Fields
-const paymentMethodId = ref(''); // 🎯 បន្ថែមសម្រាប់ចាប់យក ID វិធីសាស្ត្រទូទាត់ប្រាក់
+const paymentMethodId = ref('');
 const accountName = ref('');
 const accountNumber = ref('');
 const qrFile = ref(null);
 const qrPreviewUrl = ref(null);
 
-// 💡 បញ្ជីវិធីសាស្ត្រទូទាត់ប្រាក់ (បងអាចកែសម្រួល ID ឱ្យត្រូវតាម Database Backend របស់បង)
 const paymentMethods = [
-    { id: 1, name: 'ABA' },
-    { id: 2, name: 'ACLEDA' },
-    { id: 3, name: 'Wing' }
-];  
+    { id: 1, name: 'ABA Bank' },
+    { id: 2, name: 'Acleda Bank' },
+    { id: 3, name: 'Wing Bank' },
+];
 
+const resetForm = () => {
+    paymentMethodId.value = '';
+    accountName.value = '';
+    accountNumber.value = '';
+    qrFile.value = null;
+    qrPreviewUrl.value = null;
+};
+
+watch(() => props.editData, (newData) => {
+    if (newData) {
+        paymentMethodId.value = newData.payment_method_id;
+        accountName.value = newData.account_name;
+        accountNumber.value = newData.account_number;
+        qrPreviewUrl.value = newData.qr_image_url; // បង្ហាញរូបភាពចាស់ពី Backend មុន
+        qrFile.value = null; // សម្អាត File ថ្មីសិន
+    } else {
+        resetForm();
+    }
+}, { immediate: true });
+
+// ចាប់យក File រូបភាពនៅពេលអ្នកប្រើប្រាស់ជ្រើសរើស (ទាំង Create និង Edit)
 const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
         qrFile.value = file;
-        qrPreviewUrl.value = URL.createObjectURL(file);
+        qrPreviewUrl.value = URL.createObjectURL(file); // បង្ហាញរូបភាពថ្មីជំនួសរូបចាស់ភ្លាមៗ
     }
 };
 
+const closeModal = () => {
+    resetForm();
+    emit('close');
+};
+
 const submitForm = async () => {
-    // 🎯 ឆែកលក្ខខណ្ឌត្រូវតែជ្រើសរើស Payment Method ដែរ
-    if (!paymentMethodId.value || !accountName.value || !accountNumber.value || !qrFile.value) {
-        toastStore.danger('Please fill in all fields, select a payment method, and upload your QR code.', { title: 'Required Fields' });
+    if (!paymentMethodId.value || !accountName.value || !accountNumber.value) {
+        toastStore.danger('Please fill in all required fields.', { title: 'Required Fields' });
         return;
     }
 
+    let result;
+
+    // 🎯 បង្កើត FormData ព្រោះក្នុងលក្ខខណ្ឌនេះ ទាំង Create និង Edit គឺសុទ្ធតែអាចមានរូបភាព QR
     const formData = new FormData();
-    formData.append('payment_method_id', paymentMethodId.value); // 🔄 ញាត់ចូល FormData តាម Postman
     formData.append('account_name', accountName.value);
     formData.append('account_number', accountNumber.value);
-    formData.append('qr_image', qrFile.value);
 
-    const result = await paymentStore.savePaymentAccount(formData);
+    // បើមានការរើសរូបភាព QR ថ្មី (ទោះ Create ឬ Edit) គឺបោះចូល FormData ទាំងអស់
+    if (qrFile.value) {
+        formData.append('qr_image', qrFile.value);
+    }
+
+    if (props.editData) {
+        // 🎯 ករណី EDIT (PATCH): បោះទៅកាន់ Store រួមជាមួយ ID គណនី
+        result = await paymentStore.updatePaymentAccount(props.editData.id, formData);
+    } else {
+        // ករណី CREATE (POST): ត្រូវទាមទាររូបភាព QR ដាច់ខាត
+        if (!qrFile.value) {
+            toastStore.danger('Please upload a QR Code image.', { title: 'Required QR' });
+            return;
+        }
+        formData.append('payment_method_id', paymentMethodId.value);
+        result = await paymentStore.savePaymentAccount(formData);
+    }
 
     if (result.success) {
         toastStore.success(result.message, { title: 'Success' });
-        // លាងសម្អាត Form ក្រោយជោគជ័យ
-        paymentMethodId.value = '';
-        accountName.value = '';
-        accountNumber.value = '';
-        qrFile.value = null;
-        qrPreviewUrl.value = null;
+        closeModal();
         emit('saved');
     } else {
         toastStore.danger(result.error, { title: 'Error' });
@@ -60,20 +101,20 @@ const submitForm = async () => {
 </script>
 
 <template>
-    <div class="bg-(--color-surface) border border-(--color-border) p-6 rounded-2xl max-w-lg shadow-sm">
-        <h3 class="text-lg font-bold text-(--color-text) mb-4">Setup Payment Receiving Account</h3>
-
-        <form @submit.prevent="submitForm" class="space-y-4">
+    <AppModal :open="isOpen" :title="editData ? 'Update Payment Account' : 'Add Payment Account'" panelClass="max-w-md"
+        @close="closeModal">
+        <form id="paymentAccountForm" @submit.prevent="submitForm" class="space-y-4 pt-2">
 
             <div>
-                <label class="block text-sm font-medium text-(--color-text) mb-1">Select Payment Method</label>
-                <select v-model="paymentMethodId"
-                    class="w-full border border-(--color-border) bg-(--color-input) text-(--color-text) p-2.5 rounded-xl outline-none focus:border-(--color-primary) cursor-pointer">
+                <label class="block text-sm font-medium text-(--color-text) mb-1">Select Bank</label>
+                <select v-model="paymentMethodId" :disabled="!!editData"
+                    class="w-full border border-(--color-border) bg-(--color-input) text-(--color-text) p-2.5 rounded-xl outline-none focus:border-(--color-primary) disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer">
                     <option value="" disabled selected>-- Choose Bank --</option>
                     <option v-for="method in paymentMethods" :key="method.id" :value="method.id">
                         {{ method.name }}
                     </option>
                 </select>
+                <p v-if="editData" class="text-[11px] text-(--color-muted) mt-1">Bank provider cannot be changed.</p>
             </div>
 
             <div>
@@ -89,32 +130,41 @@ const submitForm = async () => {
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-(--color-text) mb-1">Upload Bank QR Code</label>
+                <label class="block text-sm font-medium text-(--color-text) mb-1">Bank QR Code</label>
+
                 <div
-                    class="border-2 border-dashed border-(--color-border) rounded-xl p-4 text-center cursor-pointer hover:border-(--color-primary) transition relative">
+                    class="border-2 border-dashed border-(--color-border) rounded-xl p-4 text-center cursor-pointer hover:border-(--color-primary) transition relative bg-(--color-input)/5">
                     <input type="file" accept="image/*" @change="handleFileChange"
                         class="absolute inset-0 opacity-0 cursor-pointer" />
 
                     <div v-if="!qrPreviewUrl" class="text-(--color-muted) py-4">
-                        <p class="text-sm font-medium">Click to upload or drag QR Image here</p>
-                        <p class="text-xs mt-1">Supports PNG, JPG (Max 2MB)</p>
+                        <div class="flex flex-col items-center gap-2">
+                            <span class="text-3xl">📸</span>
+                            <span class="text-sm font-semibold text-(--color-text)">Click to upload images</span>
+                            <span class="text-xs text-(--color-muted)">PNG, JPG up to 10MB (multiple allowed)</span>
+                        </div>
                     </div>
 
                     <div v-else class="flex flex-col items-center gap-2">
                         <img :src="qrPreviewUrl" alt="QR Preview"
-                            class="w-40 h-40 object-contain border rounded-lg bg-white p-1" />
-                        <span class="text-xs text-(--color-primary) font-medium">Change QR Code</span>
+                            class="w-32 h-32 object-contain border rounded-xl bg-white p-1 shadow-inner" />
+                        <span
+                            class="text-xs text-(--color-primary) font-bold bg-(--color-primary)/10 px-2.5 py-1 rounded-lg">
+                            {{ qrFile ? 'New QR Selected ✓' : 'Click to Change QR Image' }}
+                        </span>
                     </div>
                 </div>
             </div>
 
-            <div class="pt-2 flex justify-end gap-3">
-                <button type="submit" :disabled="paymentStore.loading"
-                    class="px-5 py-2.5 bg-(--color-primary) text-white font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 cursor-pointer">
-                    <span v-if="paymentStore.loading">Saving...</span>
-                    <span v-else>Save Account</span>
-                </button>
-            </div>
         </form>
-    </div>
+
+        <template #footer>
+            <button type="button" @click="closeModal"
+                class="px-4 py-2 border border-(--color-border) text-(--color-text) rounded-xl hover:bg-(--color-surface-soft) cursor-pointer">Cancel</button>
+            <button type="submit" form="paymentAccountForm" :disabled="paymentStore.loading"
+                class="px-4 py-2 bg-(--color-primary) text-white font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 cursor-pointer">
+                <span>{{ paymentStore.loading ? 'Saving...' : (editData ? 'Update Now' : 'Save') }}</span>
+            </button>
+        </template>
+    </AppModal>
 </template>
