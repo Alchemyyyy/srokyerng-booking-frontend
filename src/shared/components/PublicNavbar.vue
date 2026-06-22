@@ -105,21 +105,6 @@ watch(
             ស្រុកយើង
           </span>
         </RouterLink>
-
-        <!-- Sleek Integrated Contacts Pill Badge -->
-        <div
-          class="hidden 2xl:flex shrink-0 items-center gap-2.5 px-3 py-1 rounded-sm border border-(--color-border)/20 bg-(--color-surface-soft)/40 text-xs text-(--color-muted) transition-all duration-300"
-        >
-          <span class="flex items-center gap-1.5">
-            <i class="bi bi-geo-alt-fill text-(--color-primary)" aria-hidden="true"></i>
-            <span>Phnom Penh</span>
-          </span>
-          <span class="h-2 w-2 rounded-full bg-(--color-border)/50"></span>
-          <span class="flex items-center gap-1.5">
-            <i class="bi bi-telephone-fill text-(--color-primary)" aria-hidden="true"></i>
-            <span>+855 12 345 678</span>
-          </span>
-        </div>
       </div>
 
       <!-- Middle Navigation Links (Combined Search + Nav capsule dock) -->
