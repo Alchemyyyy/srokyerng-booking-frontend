@@ -229,6 +229,16 @@ const canCancel = computed(() => {
             <span class="hidden sm:inline">Receipt</span>
           </button>
 
+          <!-- View Detail Page -->
+          <button
+            @click="emit('view', booking.id)"
+            class="bg-(--color-surface-soft) border border-(--color-border) hover:border-(--color-primary)/40 hover:text-(--color-primary) text-(--color-text) font-bold text-xs px-3 py-2 rounded-xl transition duration-200 cursor-pointer flex items-center gap-1"
+            title="View Reservation Details"
+          >
+            <ArrowRightIcon class="w-4 h-4" />
+            <span class="hidden sm:inline">Details</span>
+          </button>
+
           <!-- Transaction Execution Trigger (Pay / Re-upload) -->
           <button
             v-if="showPayButton"
