@@ -3,6 +3,7 @@ import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { propertyApi } from "../api/property.api";
+import AvailabilityCalendar from "@/modules/calendar/components/AvailabilityCalendar.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -122,7 +123,7 @@ onMounted(async () => {
 
       <!-- Main Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- ✅ ONE left column only -->
+        <!-- Left column -->
         <div class="lg:col-span-2 space-y-6">
           <!-- 1. Images TOP -->
           <div
@@ -171,7 +172,19 @@ onMounted(async () => {
             <p class="text-(--color-muted) text-sm">No images uploaded yet.</p>
           </div>
 
-          <!-- 2. Property Information -->
+          <!-- 2. Availability Calendar -->
+          <div
+            class="rounded-2xl border border-(--color-border) bg-(--color-surface) p-6 shadow-sm space-y-4"
+          >
+            <h2
+              class="text-sm font-bold uppercase tracking-wider text-(--color-muted) border-b border-(--color-border) pb-2"
+            >
+              Availability Calendar
+            </h2>
+            <AvailabilityCalendar :property-id="property.id" mode="owner" />
+          </div>
+
+          <!-- 3. Property Information -->
           <div
             class="rounded-2xl border border-(--color-border) bg-(--color-surface) p-6 shadow-sm space-y-4"
           >
@@ -235,7 +248,7 @@ onMounted(async () => {
             </div>
           </div>
 
-          <!-- 3. Contact Information -->
+          <!-- 4. Contact Information -->
           <div
             class="rounded-2xl border border-(--color-border) bg-(--color-surface) p-6 shadow-sm space-y-4"
           >
@@ -266,7 +279,7 @@ onMounted(async () => {
             </div>
           </div>
 
-          <!-- 4. Location Coordinates -->
+          <!-- 5. Location Coordinates -->
           <div
             class="rounded-2xl border border-(--color-border) bg-(--color-surface) p-6 shadow-sm space-y-4"
           >
@@ -293,7 +306,7 @@ onMounted(async () => {
             </div>
           </div>
         </div>
-        <!-- ✅ END of left column -->
+        <!-- END of left column -->
 
         <!-- Right Column -->
         <div class="space-y-6">
@@ -385,7 +398,7 @@ onMounted(async () => {
             </div>
           </div>
         </div>
-        <!-- ✅ END of right column -->
+        <!-- END of right column -->
       </div>
     </div>
   </main>

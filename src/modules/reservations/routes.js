@@ -40,15 +40,15 @@ export const reservationRoutes = [
   },
   // ─── Payment routes ───────────────────────────────────────────────
   {
-    path: "payments/:paymentId", // ✅ removed leading slash
+    path: "payments/:paymentId",
     name: "payment-detail",
     component: PaymentDetailView,
     meta: { requiresAuth: true, roles: [ROLES.CUSTOMER] },
   },
   {
-    path: "payments/:paymentId/upload", // ✅ removed leading slash
+    path: "payments/:paymentId/upload",
     name: "payment-upload",
     component: PaymentUploadView,
-    meta: { requiresAuth: true, navbarSolid: true, roles: [ROLES.CUSTOMER] }, // ✅ added auth
+    meta: { requiresAuth: true, navbarSolid: true, roles: [ROLES.CUSTOMER] },
   },
 ];

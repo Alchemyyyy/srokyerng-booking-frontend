@@ -6,6 +6,7 @@ import OwnerReservationsView from "@/modules/reservations/pages/OwnerReservation
 import ManageRoomsView from "@/modules/rooms/pages/ManageRoomsView.vue";
 import AmenityManagementView from "@/modules/amenities/pages/AmenityManagementView.vue";
 import OwnerRoomDetailView from "../rooms/pages/OwnerRoomDetailView.vue";
+import BookingCalendarView from "../calendar/pages/BookingCalendarView.vue";
 
 export const ownerRoutes = [
   {
@@ -32,6 +33,11 @@ export const ownerRoutes = [
     path: "rooms/:id",
     name: "room-detail",
     component: OwnerRoomDetailView,
+  },
+  {
+    path: "booking-calendar",
+    name: "bookingCalendar",
+    component: BookingCalendarView,
   },
   {
     path: "reservations",

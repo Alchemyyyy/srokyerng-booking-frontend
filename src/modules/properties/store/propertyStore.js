@@ -187,38 +187,60 @@ export const usePropertyStore = defineStore("properties", () => {
         normalizeProperty(item, index),
       );
 
-      // Second pass: fetch real images for each property in parallel
-      // (backend returns images:[] in list endpoint, separate call needed)
+      // Second pass: fetch real images AND room counts for each property in parallel
       await Promise.allSettled(
         items.map(async (item, index) => {
           try {
-            const imgRes = await propertyApi.getAllPropertyImages(item.id);
-            const imgs = Array.isArray(imgRes) ? imgRes : (imgRes?.data ?? []);
-            if (!imgs.length) return;
+            // Fetch images and room count in parallel for each property
+            const [imgRes, roomsRes] = await Promise.allSettled([
+              propertyApi.getAllPropertyImages(item.id),
+              propertyApi.getPropertyRooms(item.id),
+            ]);
 
-            const fullUrls = imgs
-              .map((img) => {
-                const url = img?.image_url || "";
-                return url.startsWith("http") ? url : `${BASE_URL}${url}`;
-              })
-              .filter(Boolean);
+            // ── Images ──────────────────────────────────────────────
+            if (imgRes.status === "fulfilled") {
+              const imgs = Array.isArray(imgRes.value)
+                ? imgRes.value
+                : (imgRes.value?.data ?? []);
 
-            const coverImg = imgs.find((i) => i.is_cover === 1) || imgs[0];
-            const coverUrl = coverImg?.image_url
-              ? coverImg.image_url.startsWith("http")
-                ? coverImg.image_url
-                : `${BASE_URL}${coverImg.image_url}`
-              : fullUrls[0] || null;
+              if (imgs.length) {
+                const fullUrls = imgs
+                  .map((img) => {
+                    const url = img?.image_url || "";
+                    return url.startsWith("http") ? url : `${BASE_URL}${url}`;
+                  })
+                  .filter(Boolean);
 
-            myProperties.value[index] = {
-              ...myProperties.value[index],
-              image: coverUrl,
-              images: [
-                fullUrls[0] || coverUrl,
-                fullUrls[1] || coverUrl,
-                fullUrls[2] || coverUrl,
-              ],
-            };
+                const coverImg = imgs.find((i) => i.is_cover === 1) || imgs[0];
+                const coverUrl = coverImg?.image_url
+                  ? coverImg.image_url.startsWith("http")
+                    ? coverImg.image_url
+                    : `${BASE_URL}${coverImg.image_url}`
+                  : fullUrls[0] || null;
+
+                myProperties.value[index] = {
+                  ...myProperties.value[index],
+                  image: coverUrl,
+                  images: [
+                    fullUrls[0] || coverUrl,
+                    fullUrls[1] || coverUrl,
+                    fullUrls[2] || coverUrl,
+                  ],
+                };
+              }
+            }
+
+            // ── Room count ──────────────────────────────────────────
+            if (roomsRes.status === "fulfilled") {
+              const roomData = Array.isArray(roomsRes.value)
+                ? roomsRes.value
+                : (roomsRes.value?.data ?? []);
+
+              myProperties.value[index] = {
+                ...myProperties.value[index],
+                rooms: Array.isArray(roomData) ? roomData.length : 0,
+              };
+            }
           } catch {
             // silently keep existing state for this property
           }

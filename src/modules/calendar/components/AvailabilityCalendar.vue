@@ -16,8 +16,17 @@ const loading = ref(false);
 const error = ref(null);
 const availableDates = ref([]);
 const unavailableDates = ref([]);
-const currentMonth = ref(new Date());
+const today = new Date();
+const visibleYear = ref(today.getFullYear());
+const visibleMonth = ref(today.getMonth());
 const selectedRange = ref({ start: null, end: null });
+
+const handlePagesUpdate = (pages) => {
+  const page = Array.isArray(pages) ? pages[0] : pages;
+  if (!page) return;
+  visibleYear.value = page.year;
+  visibleMonth.value = page.month - 1;
+};
 
 // Not yet implemented on backend — show friendly message instead of crashing
 const endpointNotReady = ref(false);
@@ -32,20 +41,12 @@ const endDate = computed(() => {
   d.setMonth(d.getMonth() + 3);
   return d.toISOString().split("T")[0];
 });
-
 const apiUrl = computed(() => {
-  if (props.mode === "owner") {
-    if (props.roomId)
-      return `/owner/rooms/${props.roomId}/availability-calendar`;
-    if (props.propertyId)
-      return `/owner/properties/${props.propertyId}/availability-calendar`;
-  }
   if (props.roomId) return `/rooms/${props.roomId}/availability-calendar`;
   if (props.propertyId)
     return `/properties/${props.propertyId}/availability-calendar`;
   return null;
 });
-
 const fetchCalendar = async () => {
   if (!apiUrl.value) return;
 
@@ -59,12 +60,41 @@ const fetchCalendar = async () => {
     });
 
     const data = res?.data?.data ?? res?.data ?? res;
-    availableDates.value = data?.available_dates ?? [];
-    unavailableDates.value = data?.unavailable_dates ?? [];
+
+    if (Array.isArray(data)) {
+      const unavailable = [];
+      data.forEach((reservation) => {
+        const checkIn = reservation.check_in_date ?? reservation.checkIn;
+        const checkOut = reservation.check_out_date ?? reservation.checkOut;
+        if (!checkIn || !checkOut) return;
+
+        const cursor = new Date(checkIn);
+        const end = new Date(checkOut);
+        while (cursor < end) {
+          unavailable.push(cursor.toISOString().split("T")[0]);
+          cursor.setDate(cursor.getDate() + 1);
+        }
+      });
+
+      unavailableDates.value = [...new Set(unavailable)];
+
+      const allDates = [];
+      const cursor = new Date(startDate.value);
+      const rangeEnd = new Date(endDate.value);
+      while (cursor <= rangeEnd) {
+        allDates.push(cursor.toISOString().split("T")[0]);
+        cursor.setDate(cursor.getDate() + 1);
+      }
+      availableDates.value = allDates.filter(
+        (d) => !unavailableDates.value.includes(d),
+      );
+    } else {
+      availableDates.value = data?.available_dates ?? [];
+      unavailableDates.value = data?.unavailable_dates ?? [];
+    }
   } catch (err) {
     const status = err?.response?.status;
-    // ✅ Treat any error as endpoint not ready
-    if (status === 404 || status === 500 || status === 403 || !status) {
+    if (status === 404 || status === 500) {
       endpointNotReady.value = true;
     } else {
       error.value =
@@ -76,24 +106,89 @@ const fetchCalendar = async () => {
   }
 };
 
+// ── Stats for the current visible month ────────────────────────────────────
+
+const visibleMonthDates = computed(() => {
+  const year = visibleYear.value;
+  const month = visibleMonth.value;
+  const lastDay = new Date(year, month + 1, 0).getDate();
+
+  const dates = [];
+  for (let day = 1; day <= lastDay; day += 1) {
+    const d = new Date(year, month, day);
+    dates.push(d.toISOString().split("T")[0]);
+  }
+  return dates;
+});
+
+const monthStats = computed(() => {
+  const visible = visibleMonthDates.value;
+  const bookedCount = visible.filter((d) =>
+    unavailableDates.value.includes(d),
+  ).length;
+  const availableCount = visible.filter((d) =>
+    availableDates.value.includes(d),
+  ).length;
+  const total = bookedCount + availableCount;
+  const occupancy = total > 0 ? Math.round((bookedCount / total) * 100) : 0;
+
+  return {
+    available: availableCount,
+    booked: bookedCount,
+    occupancy,
+  };
+});
+
+// ── Group consecutive unavailable dates into stay ranges ───────────────────
+
+const upcomingStays = computed(() => {
+  const sorted = [...unavailableDates.value].sort();
+  const ranges = [];
+  let rangeStart = null;
+  let prev = null;
+
+  sorted.forEach((dateStr) => {
+    const date = new Date(dateStr);
+    if (rangeStart === null) {
+      rangeStart = date;
+    } else if (prev && (date - prev) / 86400000 > 1) {
+      ranges.push({ start: rangeStart, end: prev });
+      rangeStart = date;
+    }
+    prev = date;
+  });
+
+  if (rangeStart && prev) {
+    ranges.push({ start: rangeStart, end: prev });
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return ranges
+    .filter((range) => range.end >= today)
+    .slice(0, 5)
+    .map((range) => {
+      const nights = Math.round((range.end - range.start) / 86400000) + 1;
+      return {
+        label: `${formatShortDate(range.start)} – ${formatShortDate(range.end)}`,
+        nights,
+      };
+    });
+});
+
+const formatShortDate = (date) =>
+  date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
 const calendarAttributes = computed(() => {
   const attrs = [];
 
   if (unavailableDates.value.length) {
     attrs.push({
       key: "unavailable",
-      highlight: { color: "red", fillMode: "light" },
+      highlight: { color: "red", fillMode: "solid" },
       dates: unavailableDates.value.map((d) => new Date(d)),
-      popover: { label: "Unavailable" },
-    });
-  }
-
-  if (availableDates.value.length) {
-    attrs.push({
-      key: "available",
-      highlight: { color: "green", fillMode: "light" },
-      dates: availableDates.value.map((d) => new Date(d)),
-      popover: { label: "Available" },
+      popover: { label: "Booked" },
     });
   }
 
@@ -104,6 +199,12 @@ const calendarAttributes = computed(() => {
       dates: { start: selectedRange.value.start, end: selectedRange.value.end },
     });
   }
+
+  attrs.push({
+    key: "today",
+    dot: { color: "blue" },
+    dates: new Date(),
+  });
 
   return attrs;
 });
@@ -152,13 +253,12 @@ const handleDayClick = (day) => {
   }
 };
 
-watch(currentMonth, fetchCalendar);
+watch([visibleYear, visibleMonth], fetchCalendar);
 onMounted(fetchCalendar);
 </script>
 
 <template>
   <div class="availability-calendar">
-    <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-8">
       <div
         class="w-6 h-6 border-2 border-(--color-primary) border-t-transparent rounded-full animate-spin"
@@ -168,7 +268,6 @@ onMounted(fetchCalendar);
       >
     </div>
 
-    <!-- Backend endpoint not ready yet -->
     <div
       v-else-if="endpointNotReady"
       class="rounded-xl bg-amber-500/5 border border-amber-500/20 px-4 py-6 text-center mb-4"
@@ -182,7 +281,6 @@ onMounted(fetchCalendar);
       </p>
     </div>
 
-    <!-- Other error -->
     <div
       v-else-if="error"
       class="rounded-xl bg-rose-500/5 border border-rose-500/20 px-4 py-3 text-sm font-medium text-rose-600 mb-4"
@@ -190,65 +288,127 @@ onMounted(fetchCalendar);
       {{ error }}
     </div>
 
-    <!-- Calendar — show even if no data -->
-    <div v-if="!loading && !endpointNotReady" class="calendar-wrapper">
-      <Calendar
-        v-model="currentMonth"
-        :attributes="calendarAttributes"
-        :disabled-dates="disabledDates"
-        :min-date="new Date()"
-        :columns="1"
-        :rows="1"
-        expanded
-        borderless
-        @dayclick="handleDayClick"
-      />
-
-      <!-- Selected range feedback -->
-      <div
-        v-if="selectedRange.start"
-        class="mt-4 rounded-xl border border-(--color-border) bg-(--color-surface-soft) px-4 py-3 text-sm"
-      >
-        <p class="font-bold text-(--color-text) mb-1">Selected Dates</p>
-        <div class="flex items-center gap-3 text-(--color-muted)">
-          <span>
-            Check-in:
-            <strong class="text-(--color-text)">
-              {{ selectedRange.start?.toISOString().split("T")[0] ?? "—" }}
-            </strong>
-          </span>
-          <span class="text-(--color-border)">→</span>
-          <span>
-            Check-out:
-            <strong class="text-(--color-text)">
-              {{
-                selectedRange.end?.toISOString().split("T")[0] ??
-                "Select end date"
-              }}
-            </strong>
-          </span>
+    <div v-if="!loading && !endpointNotReady">
+      <!-- Stat strip -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
+        <div class="rounded-xl bg-(--color-surface-soft) px-4 py-3">
+          <p class="text-xs font-semibold text-(--color-muted) mb-1">
+            Available nights
+          </p>
+          <p class="text-2xl font-bold text-(--color-text)">
+            {{ monthStats.available }}
+          </p>
+        </div>
+        <div class="rounded-xl bg-(--color-surface-soft) px-4 py-3">
+          <p class="text-xs font-semibold text-(--color-muted) mb-1">
+            Booked nights
+          </p>
+          <p class="text-2xl font-bold text-(--color-text)">
+            {{ monthStats.booked }}
+          </p>
+        </div>
+        <div
+          class="rounded-xl bg-(--color-surface-soft) px-4 py-3 col-span-2 sm:col-span-1"
+        >
+          <p class="text-xs font-semibold text-(--color-muted) mb-1">
+            Occupancy
+          </p>
+          <p class="text-2xl font-bold text-(--color-text)">
+            {{ monthStats.occupancy }}%
+          </p>
         </div>
       </div>
 
-      <!-- Legend -->
-      <div
-        class="mt-4 flex flex-wrap items-center gap-4 text-xs font-semibold text-(--color-muted)"
-      >
-        <div class="flex items-center gap-1.5">
-          <span
-            class="w-3 h-3 rounded-full bg-green-500/30 border border-green-500/50"
+      <div class="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4 items-start">
+        <!-- Calendar -->
+        <div
+          class="calendar-wrapper rounded-xl border border-(--color-border) p-4"
+        >
+          <Calendar
+            :initial-page="{ month: visibleMonth + 1, year: visibleYear }"
+            :attributes="calendarAttributes"
+            :disabled-dates="disabledDates"
+            :min-date="new Date()"
+            :columns="1"
+            :rows="1"
+            expanded
+            borderless
+            @dayclick="handleDayClick"
+            @update:pages="handlePagesUpdate"
           />
-          Available
+
+          <div
+            v-if="selectedRange.start"
+            class="mt-4 rounded-xl border border-(--color-border) bg-(--color-surface-soft) px-4 py-3 text-sm"
+          >
+            <p class="font-bold text-(--color-text) mb-1">Selected Dates</p>
+            <div class="flex items-center gap-3 text-(--color-muted)">
+              <span>
+                Check-in:
+                <strong class="text-(--color-text)">
+                  {{ selectedRange.start?.toISOString().split("T")[0] ?? "—" }}
+                </strong>
+              </span>
+              <span class="text-(--color-border)">→</span>
+              <span>
+                Check-out:
+                <strong class="text-(--color-text)">
+                  {{
+                    selectedRange.end?.toISOString().split("T")[0] ??
+                    "Select end date"
+                  }}
+                </strong>
+              </span>
+            </div>
+          </div>
+
+          <div
+            class="mt-4 flex flex-wrap items-center gap-4 text-xs font-semibold text-(--color-muted)"
+          >
+            <div class="flex items-center gap-1.5">
+              <span
+                class="w-2.5 h-2.5 rounded-full border border-(--color-border-secondary)"
+              />
+              Available
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-rose-500" />
+              Booked
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-blue-500" />
+              Selected
+            </div>
+          </div>
         </div>
-        <div class="flex items-center gap-1.5">
-          <span
-            class="w-3 h-3 rounded-full bg-red-500/30 border border-red-500/50"
-          />
-          Unavailable
-        </div>
-        <div class="flex items-center gap-1.5">
-          <span class="w-3 h-3 rounded-full bg-blue-500/80" />
-          Selected
+
+        <!-- Upcoming stays panel -->
+        <div class="rounded-xl border border-(--color-border) p-4">
+          <p
+            class="text-xs font-bold uppercase tracking-wide text-(--color-muted) mb-3"
+          >
+            Upcoming stays
+          </p>
+          <div
+            v-if="upcomingStays.length === 0"
+            class="text-sm text-(--color-muted)"
+          >
+            No bookings coming up this period.
+          </div>
+          <div v-else class="flex flex-col gap-3">
+            <div
+              v-for="(stay, index) in upcomingStays"
+              :key="index"
+              class="border-l-2 border-rose-500 pl-3"
+            >
+              <p class="text-sm font-semibold text-(--color-text)">
+                {{ stay.label }}
+              </p>
+              <p class="text-xs text-(--color-muted)">
+                {{ stay.nights }} night{{ stay.nights > 1 ? "s" : "" }} booked
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

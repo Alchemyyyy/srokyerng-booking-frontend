@@ -14,6 +14,8 @@ import {
 } from "@heroicons/vue/24/outline";
 
 import PropertyGallery from "../components/PropertyGallery.vue";
+// import AvailabilityCalendar from "@/modules/components/AvailabilityCalendar.vue";\
+import AvailabilityCalendar from "@/modules/calendar/components/AvailabilityCalendar.vue";
 import { usePropertyStore } from "../store/propertyStore";
 import { propertyApi } from "../api/property.api";
 import http from "@/app/api/http";
@@ -107,6 +109,13 @@ watch(
 const handleSave = () => {};
 const handleShare = () => {};
 
+// ── Availability Calendar ──
+// When customer picks a range on the calendar, auto-fill the booking card inputs
+const handleRangeSelected = ({ start, end }) => {
+  checkInDate.value = start;
+  checkOutDate.value = end;
+};
+
 const goToBooking = () => {
   router.push({
     name: "customer.room-book", // ✅ fix this
@@ -128,8 +137,8 @@ const reviewSummary = computed(() => {
   const list = guestReviews.value;
   const total = list.length;
   const average = total
-    ? (list.reduce((sum, r) => sum + (r.rating || 0), 0) / total)
-    : (property.value?.rating || 0);
+    ? list.reduce((sum, r) => sum + (r.rating || 0), 0) / total
+    : property.value?.rating || 0;
 
   const breakdown = [5, 4, 3, 2, 1].map((stars) => {
     const count = list.filter((r) => Math.round(r.rating) === stars).length;
@@ -310,19 +319,42 @@ const writeReviewLink = { path: "/customer/reviews" };
               </div>
             </div>
 
+            <!-- Availability Calendar -->
+            <div
+              class="rounded-2xl border border-(--color-border) bg-(--color-surface) p-6 shadow-sm"
+            >
+              <h2 class="mb-1 text-md font-bold text-(--color-text)">
+                Availability
+              </h2>
+              <p class="mb-4 text-xs text-(--color-muted)">
+                Select your check-in and check-out dates below. Unavailable
+                dates are highlighted in red.
+              </p>
+              <AvailabilityCalendar
+                :property-id="property.id"
+                mode="customer"
+                @range-selected="handleRangeSelected"
+              />
+            </div>
+
             <!-- Guest Reviews -->
             <div
               class="rounded-2xl border border-(--color-border) bg-(--color-surface) p-6 shadow-sm"
             >
               <div class="flex items-center justify-between flex-wrap gap-3">
-                <h2 class="flex items-center gap-2 text-md font-bold text-(--color-text)">
+                <h2
+                  class="flex items-center gap-2 text-md font-bold text-(--color-text)"
+                >
                   {{ t("propertyDetail.guestReviews") }}
                   <span class="flex items-center gap-1 text-amber-500">
                     <StarIcon class="h-4 w-4 fill-current" />
-                    <span class="text-sm font-bold">{{ reviewSummary.average }}</span>
+                    <span class="text-sm font-bold">{{
+                      reviewSummary.average
+                    }}</span>
                   </span>
                   <span class="text-xs font-normal text-(--color-muted)">
-                    ({{ reviewSummary.total }} {{ t("propertyDetail.reviews") }})
+                    ({{ reviewSummary.total }}
+                    {{ t("propertyDetail.reviews") }})
                   </span>
                 </h2>
                 <RouterLink
@@ -343,18 +375,28 @@ const writeReviewLink = { path: "/customer/reviews" };
                   </p>
                   <p class="mt-1 text-3xl font-black text-(--color-text)">
                     {{ reviewSummary.average }}
-                    <span class="text-base font-semibold text-(--color-muted)">/ 5</span>
+                    <span class="text-base font-semibold text-(--color-muted)"
+                      >/ 5</span
+                    >
                   </p>
                   <div class="mt-1 flex items-center gap-1 text-amber-500">
                     <StarIcon
                       v-for="n in 5"
                       :key="n"
                       class="h-4 w-4"
-                      :class="n <= Math.round(reviewSummary.average) ? 'fill-current' : 'fill-none'"
+                      :class="
+                        n <= Math.round(reviewSummary.average)
+                          ? 'fill-current'
+                          : 'fill-none'
+                      "
                     />
                   </div>
                   <p class="mt-2 text-xs text-(--color-muted)">
-                    {{ t("propertyDetail.basedOnReviews", { count: reviewSummary.total }) }}
+                    {{
+                      t("propertyDetail.basedOnReviews", {
+                        count: reviewSummary.total,
+                      })
+                    }}
                   </p>
 
                   <div class="mt-4 space-y-2">
@@ -363,14 +405,20 @@ const writeReviewLink = { path: "/customer/reviews" };
                       :key="row.stars"
                       class="flex items-center gap-2 text-xs text-(--color-muted)"
                     >
-                      <span class="w-16 shrink-0 whitespace-nowrap">{{ row.stars }} {{ t("propertyDetail.stars") }}</span>
-                      <div class="h-1.5 flex-1 rounded-full bg-(--color-border)">
+                      <span class="w-16 shrink-0 whitespace-nowrap"
+                        >{{ row.stars }} {{ t("propertyDetail.stars") }}</span
+                      >
+                      <div
+                        class="h-1.5 flex-1 rounded-full bg-(--color-border)"
+                      >
                         <div
                           class="h-1.5 rounded-full bg-amber-400"
                           :style="{ width: row.pct + '%' }"
                         ></div>
                       </div>
-                      <span class="w-8 shrink-0 text-right">{{ row.pct }}%</span>
+                      <span class="w-8 shrink-0 text-right"
+                        >{{ row.pct }}%</span
+                      >
                     </div>
                   </div>
                 </div>
@@ -387,7 +435,9 @@ const writeReviewLink = { path: "/customer/reviews" };
                       {{ reviewerInitials(activeReview.author) }}
                     </div>
                     <div class="min-w-0 flex-1">
-                      <div class="flex flex-wrap items-center justify-between gap-2">
+                      <div
+                        class="flex flex-wrap items-center justify-between gap-2"
+                      >
                         <p class="text-sm font-bold text-(--color-text)">
                           {{ activeReview.author }}
                         </p>
@@ -401,18 +451,34 @@ const writeReviewLink = { path: "/customer/reviews" };
                           v-for="n in 5"
                           :key="n"
                           class="h-4 w-4"
-                          :class="n <= activeReview.rating ? 'fill-current' : 'fill-none'"
+                          :class="
+                            n <= activeReview.rating
+                              ? 'fill-current'
+                              : 'fill-none'
+                          "
                         />
                       </div>
 
-                      <p v-if="activeReview.title" class="mt-2 text-sm font-bold text-(--color-text)">
+                      <p
+                        v-if="activeReview.title"
+                        class="mt-2 text-sm font-bold text-(--color-text)"
+                      >
                         {{ activeReview.title }}
                       </p>
-                      <p class="mt-1 text-xs leading-relaxed text-(--color-muted)">
+                      <p
+                        class="mt-1 text-xs leading-relaxed text-(--color-muted)"
+                      >
                         {{ activeReview.comment }}
                       </p>
-                      <p v-if="activeReview.roomName" class="mt-2 text-[11px] text-(--color-muted)">
-                        {{ t("propertyDetail.stayedIn", { room: activeReview.roomName }) }}
+                      <p
+                        v-if="activeReview.roomName"
+                        class="mt-2 text-[11px] text-(--color-muted)"
+                      >
+                        {{
+                          t("propertyDetail.stayedIn", {
+                            room: activeReview.roomName,
+                          })
+                        }}
                       </p>
                     </div>
                   </div>
@@ -469,7 +535,9 @@ const writeReviewLink = { path: "/customer/reviews" };
                 </div>
                 <div class="flex items-center gap-1 text-amber-500">
                   <StarIcon class="h-4 w-4 fill-current" />
-                  <span class="text-sm font-bold">{{ reviewSummary.average }}</span>
+                  <span class="text-sm font-bold">{{
+                    reviewSummary.average
+                  }}</span>
                 </div>
               </div>
 

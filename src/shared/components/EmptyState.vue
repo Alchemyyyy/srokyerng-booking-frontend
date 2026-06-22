@@ -15,7 +15,9 @@ const props = defineProps({
 });
 
 const displayTitle = computed(() => props.title || t("components.emptyTitle"));
-const displayMessage = computed(() => props.message || t("components.emptyMessage"));
+const displayMessage = computed(
+  () => props.message || t("components.emptyMessage"),
+);
 </script>
 
 <template>
@@ -27,8 +29,12 @@ const displayMessage = computed(() => props.message || t("components.emptyMessag
     >
       <slot name="icon">∅</slot>
     </div>
-    <h2 class="m-0 text-xl font-semibold text-(--color-text)">{{ displayTitle }}</h2>
-    <p class="mx-auto mt-2 max-w-md text-(--color-muted)">{{ displayMessage }}</p>
+    <h2 class="m-0 text-xl font-semibold text-(--color-text)">
+      {{ displayTitle }}
+    </h2>
+    <p class="mx-auto mt-2 max-w-md text-(--color-muted)">
+      {{ displayMessage }}
+    </p>
     <div v-if="$slots.action" class="mt-5">
       <slot name="action"></slot>
     </div>

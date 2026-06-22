@@ -198,7 +198,8 @@ export const useRoomStore = defineStore("rooms", () => {
           ...r,
           property_id: r.property_id || property.id,
           propertyName: property.name,
-          type: r.room_name || r.type_name || "Room",
+          type: r.room_name || "Room",
+          roomTypeName: r.type_name || "",
           basePrice: r.price_per_night || 0,
           guests: r.max_guests || 0,
           size: r.size || "-",
@@ -261,11 +262,51 @@ export const useRoomStore = defineStore("rooms", () => {
   const uploadRoomImages = async (roomId, formData) => {
     try {
       const res = await roomService.uploadRoomImages(roomId, formData);
-      // Refresh images for this room
+      // Clear the cache for this room first — fetchRoomImages returns
+      // cached data immediately if a cache entry exists, so without this
+      // the "refresh" below would just hand back the stale pre-upload list.
+      delete roomImages.value[roomId];
       await fetchRoomImages(roomId);
       return res;
     } catch (err) {
       console.error(err);
+      throw err;
+    }
+  };
+
+  const deleteRoomImage = async (roomId, imageId) => {
+    try {
+      await roomService.deleteRoomImage(roomId, imageId);
+      // Remove from local cache so the UI updates without a refetch
+      if (roomImages.value[roomId]) {
+        roomImages.value[roomId] = roomImages.value[roomId].filter(
+          (img) => img.id !== imageId,
+        );
+      }
+    } catch (err) {
+      console.error(
+        `Failed to delete image ${imageId} for room ${roomId}`,
+        err,
+      );
+      throw err;
+    }
+  };
+
+  const setRoomCoverImage = async (roomId, imageId) => {
+    try {
+      await roomService.setCoverImage(roomId, imageId);
+      // Update local cache: mark this image as cover, unmark others
+      if (roomImages.value[roomId]) {
+        roomImages.value[roomId] = roomImages.value[roomId].map((img) => ({
+          ...img,
+          is_cover: img.id === imageId ? 1 : 0,
+        }));
+      }
+    } catch (err) {
+      console.error(
+        `Failed to set cover image ${imageId} for room ${roomId}`,
+        err,
+      );
       throw err;
     }
   };
@@ -316,5 +357,7 @@ export const useRoomStore = defineStore("rooms", () => {
     getCoverImage,
     getFullImageUrl,
     uploadRoomImages,
+    deleteRoomImage,
+    setRoomCoverImage,
   };
 });

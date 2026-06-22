@@ -5,6 +5,7 @@ import {
   PencilSquareIcon,
   TrashIcon,
   UserGroupIcon,
+  BuildingOffice2Icon,
 } from "@heroicons/vue/24/outline";
 import { computed, onMounted, ref } from "vue";
 import { useRoomStore } from "../store/roomStore";
@@ -60,10 +61,10 @@ onMounted(async () => {
   }
 });
 </script>
-
 <template>
   <div
-    class="rounded-xl border border-(--color-border) bg-(--color-surface) flex flex-col sm:flex-row overflow-hidden shadow-sm hover:shadow-md transition-all duration-200"
+    @click="goToDetail"
+    class="rounded-xl border border-(--color-border) bg-(--color-surface) flex flex-col sm:flex-row overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
   >
     <div
       class="w-full sm:w-[200px] h-48 sm:h-auto overflow-hidden relative flex-shrink-0 bg-(--color-surface-soft)"
@@ -107,35 +108,24 @@ onMounted(async () => {
 
     <div class="flex-1 flex flex-col justify-between">
       <div class="p-5 space-y-3.5">
-        <div class="flex items-start justify-between gap-4">
-          <div>
+        <div>
+          <div class="flex items-center gap-2">
             <h3 class="text-base font-bold tracking-tight text-(--color-text)">
               {{ room.type }}
             </h3>
-            <p class="text-xs text-(--color-muted) mt-0.5">
-              {{ room.propertyName }}
-            </p>
+            <span
+              v-if="room.roomTypeName"
+              class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-(--color-primary-soft) text-(--color-primary)"
+            >
+              {{ room.roomTypeName }}
+            </span>
           </div>
-
-          <span
-            :class="[
-              'px-2.5 py-0.5 rounded-lg text-[11px] font-bold border flex items-center gap-1',
-              status.status === 'Available'
-                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                : '',
-              status.status === 'Occupied'
-                ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                : '',
-              status.status === 'Maintenance'
-                ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                : '',
-            ]"
-          >
-            <span class="w-1.5 h-1.5 bg-current rounded-full"></span>
-            {{ status.status }}
-          </span>
+          <p class="text-xs text-(--color-muted) mt-0.5">
+            {{ room.propertyName }}
+          </p>
         </div>
 
+        <!-- Single info row: guests, size, floor -->
         <div
           class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-medium text-(--color-muted)"
         >
@@ -143,12 +133,22 @@ onMounted(async () => {
             <UserGroupIcon class="h-4 w-4 opacity-70" aria-hidden="true" />
             {{ status.guests }} guests
           </span>
-          <span class="flex items-center gap-1.5">
+          <span
+            v-if="status.size && status.size !== '-'"
+            class="flex items-center gap-1.5"
+          >
             <ArrowsPointingOutIcon
               class="h-4 w-4 opacity-70"
               aria-hidden="true"
             />
             {{ status.size }}
+          </span>
+          <span v-if="room.floor_number" class="flex items-center gap-1.5">
+            <BuildingOffice2Icon
+              class="h-4 w-4 opacity-70"
+              aria-hidden="true"
+            />
+            Floor {{ room.floor_number }}
           </span>
         </div>
 
@@ -175,7 +175,7 @@ onMounted(async () => {
       >
         <button
           type="button"
-          @click="$emit('edit', room)"
+          @click.stop="$emit('edit', room)"
           class="inline-flex items-center justify-center px-3 py-1 rounded-lg border border-(--color-border) bg-(--color-surface) text-(--color-primary) hover:bg-(--color-surface-soft) transition-all gap-1.5 cursor-pointer"
         >
           <PencilSquareIcon class="h-3.5 w-3.5" aria-hidden="true" />
@@ -184,7 +184,7 @@ onMounted(async () => {
 
         <button
           type="button"
-          @click="$emit('delete', room)"
+          @click.stop="$emit('delete', room)"
           class="p-1.5 text-rose-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all cursor-pointer"
           title="Delete room"
         >
