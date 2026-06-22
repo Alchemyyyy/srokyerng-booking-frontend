@@ -7,6 +7,8 @@ import ManageRoomsView from "@/modules/rooms/pages/ManageRoomsView.vue";
 import AmenityManagementView from "@/modules/amenities/pages/AmenityManagementView.vue";
 import OwnerRoomDetailView from "../rooms/pages/OwnerRoomDetailView.vue";
 import BookingCalendarView from "../calendar/pages/BookingCalendarView.vue";
+import OwnerPaymentsView from "./pages/OwnerPaymentsView.vue";
+import OwnerPaymentDetailView from "./pages/OwnerPaymentDetailsPage.vue";
 
 export const ownerRoutes = [
   {
@@ -42,8 +44,23 @@ export const ownerRoutes = [
   {
     path: "reservations",
     name: "reservations",
-    component: OwnerReservationsView,
+    component: OwnerPaymentsView,
   },
+  {
+    path: "reservations/:id",
+    name: "reservation-payment-detail",
+    component: OwnerPaymentDetailView,
+  },
+  // {
+  //   path: "reservations",
+  //   name: "reservations",
+  //   component: OwnerReservationsView,
+  // },
+  // {
+  //   path: "/owner/payments",
+  //   name: "owner-payments",
+  //   component: () => import('./pages/OwnerPaymentsView.vue'),
+  // },
   {
     path: "payment-accounts",
     name: "paymentAccounts",
