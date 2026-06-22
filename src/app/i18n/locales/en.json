@@ -1126,7 +1126,7 @@
       "good": "Good",
       "veryGood": "Very Good",
       "excellent": "Excellent"
-      },
+    },
     "form": {
       "title": "Share Your Experience",
       "subtitle": "Your honest review helps other guests make informed decisions.",
@@ -1255,7 +1255,7 @@
     "noDeposit": "No upfront deposit required today.",
     "hotel": "Angkor Palace Luxury Hotel Resort"
   },
-    "owner": {
+  "owner": {
     "profile": {
       "name": "Owner Name",
       "role": "Property Owner"
@@ -1268,6 +1268,7 @@
       "dashboard": "Dashboard",
       "properties": "Properties",
       "rooms": "Rooms",
+      "bookingCalendar": "Calendar",
       "reservations": "Reservations",
       "paymentAccounts": "Payment Accounts",
       "settings": "Settings"

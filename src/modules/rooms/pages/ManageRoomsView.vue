@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
 import AppButton from "@/shared/components/AppButton.vue";
+import EmptyState from "@/shared/components/EmptyState.vue";
 import { useRoomStore } from "../store/roomStore";
 import RoomCard from "../components/RoomCard.vue";
 import RoomCardSkeleton from "../components/RoomCardSkeleton.vue";
@@ -10,7 +11,11 @@ import RoomFormModal from "../components/RoomFormModal.vue";
 import RoomDeleteModal from "../components/RoomDeleteModal.vue";
 import { useToastStore } from "@/shared/store/toastStore";
 
-import { PlusIcon } from "@heroicons/vue/24/outline";
+import {
+  PlusIcon,
+  MagnifyingGlassIcon,
+  XMarkIcon,
+} from "@heroicons/vue/24/outline";
 
 const toastStore = useToastStore();
 
@@ -38,19 +43,95 @@ const perPage = 4;
 const notice = ref("");
 const addFormErrors = ref({});
 const editFormErrors = ref({});
+const searchQuery = ref("");
+
+// Layer text search on top of the store's property-tab filtering, so both
+// filters compose together instead of one overriding the other.
+const searchedRooms = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase();
+  if (!query) return filteredRooms.value;
+
+  return filteredRooms.value.filter((room) => {
+    const haystack = [
+      room.type,
+      room.roomTypeName,
+      room.propertyName,
+      room.description,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(query);
+  });
+});
+
 const totalPages = computed(() =>
-  Math.max(1, Math.ceil(filteredRooms.value.length / perPage)),
+  Math.max(1, Math.ceil(sortedRooms.value.length / perPage)),
 );
 const paginatedRooms = computed(() => {
   const start = (currentPage.value - 1) * perPage;
-  return filteredRooms.value.slice(start, start + perPage);
+  return sortedRooms.value.slice(start, start + perPage);
 });
+
+const sortBy = ref("default");
+const sortOptions = [
+  { value: "default", label: "Default order" },
+  { value: "price_low", label: "Price: Low to High" },
+  { value: "price_high", label: "Price: High to Low" },
+  { value: "newest", label: "Newest first" },
+  { value: "id_asc", label: "Room ID (ascending)" },
+];
+
+// Sort layers on top of the search results, so all three filters
+// (property tab, search text, sort order) compose together.
+const sortedRooms = computed(() => {
+  const rooms = [...searchedRooms.value];
+
+  switch (sortBy.value) {
+    case "price_low":
+      return rooms.sort((a, b) => (a.basePrice || 0) - (b.basePrice || 0));
+    case "price_high":
+      return rooms.sort((a, b) => (b.basePrice || 0) - (a.basePrice || 0));
+    case "newest":
+      // Higher ID generally means more recently created in this dataset.
+      return rooms.sort((a, b) => (b.id || 0) - (a.id || 0));
+    case "id_asc":
+      return rooms.sort((a, b) => (a.id || 0) - (b.id || 0));
+    default:
+      return rooms;
+  }
+});
+
+const clearSearch = () => {
+  searchQuery.value = "";
+};
+
+const hasActiveFilters = computed(
+  () =>
+    selectedPropertyId.value !== "all" ||
+    searchQuery.value.trim() !== "" ||
+    sortBy.value !== "default",
+);
+
+const resetFilters = () => {
+  setSelectedPropertyId("all");
+  searchQuery.value = "";
+  sortBy.value = "default";
+};
 
 watch(selectedPropertyId, () => {
   currentPage.value = 1;
 });
 
-watch(filteredRooms, () => {
+watch(searchQuery, () => {
+  currentPage.value = 1;
+});
+
+watch(sortBy, () => {
+  currentPage.value = 1;
+});
+
+watch(sortedRooms, () => {
   if (currentPage.value > totalPages.value) {
     currentPage.value = totalPages.value;
   }
@@ -72,8 +153,64 @@ const emptyRoom = () => ({
   description: "",
   basePrice: 0,
   inventory: 1,
+  floorNumber: null,
   imageFile: [],
 });
+
+// Floor number bounds. Bump FLOOR_MIN to -5 (or wherever) if you need to
+// support basement levels like B1, B2.
+const FLOOR_MIN = 0;
+const FLOOR_MAX = 200;
+
+/**
+ * Floor number is optional by default (defaults to 1 on save — see
+ * normalizeFloorNumber). Pass { required: true } when the property is
+ * already known to span multiple floors, so owners can't accidentally
+ * leave a 2nd/3rd-floor room defaulting to 1.
+ */
+const validateFloorNumber = (value, { required = false } = {}) => {
+  const isEmpty = value === null || value === undefined || value === "";
+
+  if (isEmpty) {
+    return required
+      ? "This property already has rooms on different floors — please set the floor for this room."
+      : null;
+  }
+
+  const num = Number(value);
+  if (Number.isNaN(num)) return "Floor number must be a number.";
+  if (!Number.isInteger(num))
+    return "Floor number must be a whole number (no decimals).";
+  if (num < FLOOR_MIN) return `Floor number can't be less than ${FLOOR_MIN}.`;
+  if (num > FLOOR_MAX) return `Floor number seems too high — double check it.`;
+
+  return null;
+};
+
+/**
+ * Looks at rooms already saved for this property. If they span more than
+ * one distinct floor, we know it's a multi-floor building — so floor
+ * number should be required going forward instead of silently defaulted.
+ */
+const isKnownMultiFloorProperty = (propertyId) => {
+  const knownFloors = new Set(
+    roomStore.rooms
+      .filter((r) => r.property_id === propertyId)
+      .map((r) => r.floor_number)
+      .filter((f) => f !== null && f !== undefined && f !== ""),
+  );
+  return knownFloors.size > 1;
+};
+
+// Most properties on this platform (homestays, single-story houses) only
+// have one floor, and there's no total_floors field on the property to
+// check against. So instead of forcing the owner to type something, an
+// empty floor number just defaults to 1. Owners with multi-floor buildings
+// can still override it with the real floor number.
+const normalizeFloorNumber = (value) => {
+  if (value === null || value === undefined || value === "") return 1;
+  return Number(value);
+};
 
 const isAddRoomModalOpen = ref(false);
 const isEditRoomModalOpen = ref(false);
@@ -103,13 +240,19 @@ const openEditRoomModal = (room) => {
     description: room.description || "",
     basePrice: room.price_per_night || room.basePrice,
     inventory: room.total_rooms || room.inventory,
+    floorNumber: room.floor_number ?? null,
     image: room.image || "",
-    exitstingImages: [], // ✅ to hold existing image URLs
+    existingImages: [], // populated below with {id, url, isCover}
   };
   const existingImages = roomStore.roomImages[room.id] || [];
-  editRoomForm.value.existingImages = existingImages.map((img) =>
-    roomStore.getFullImageUrl(img.image_url),
-  );
+  // Keep the image id alongside the URL so removal can actually call the
+  // delete API later (previously this only stored a URL string, which made
+  // it impossible to know which image to delete on the backend).
+  editRoomForm.value.existingImages = existingImages.map((img) => ({
+    id: img.id,
+    url: roomStore.getFullImageUrl(img.image_url),
+    isCover: img.is_cover === 1,
+  }));
 
   editFormErrors.value = {};
   isEditRoomModalOpen.value = true;
@@ -148,6 +291,12 @@ const handleAddRoom = async (formData) => {
   if (!addRoomForm.value.basePrice || addRoomForm.value.basePrice <= 0)
     errors.basePrice = "Price is required.";
 
+  const floorRequired = isKnownMultiFloorProperty(selectedProperty?.id);
+  const floorError = validateFloorNumber(addRoomForm.value.floorNumber, {
+    required: floorRequired,
+  });
+  if (floorError) errors.floorNumber = floorError;
+
   addFormErrors.value = errors;
   if (Object.keys(errors).length > 0 || !selectedProperty) return;
 
@@ -161,6 +310,7 @@ const handleAddRoom = async (formData) => {
       price_per_night: Number(addRoomForm.value.basePrice),
       max_guests: Number(addRoomForm.value.guests) || 2,
       total_rooms: Number(addRoomForm.value.inventory) || 1,
+      floor_number: normalizeFloorNumber(addRoomForm.value.floorNumber),
       imageFiles: addRoomForm.value.imageFiles,
     });
 
@@ -190,6 +340,12 @@ const handleEditRoom = async (formData) => {
   const errors = {};
   if (!formData.propertyId) errors.propertyId = "Please choose a property.";
   if (!formData.type) errors.type = "Room type is required.";
+
+  const floorRequired = isKnownMultiFloorProperty(formData.propertyId);
+  const floorError = validateFloorNumber(formData.floorNumber, {
+    required: floorRequired,
+  });
+  if (floorError) errors.floorNumber = floorError;
   editFormErrors.value = errors;
   if (Object.keys(errors).length > 0 || !editingRoomId.value) return;
 
@@ -201,7 +357,25 @@ const handleEditRoom = async (formData) => {
       price_per_night: Number(formData.basePrice),
       max_guests: Number(formData.guests),
       total_rooms: Number(formData.inventory),
+      floor_number: normalizeFloorNumber(formData.floorNumber),
     });
+
+    // Delete any existing images the owner removed in the modal.
+    // This was previously missing entirely — removing an image in the UI
+    // never reached the backend, so deleted photos silently reappeared
+    // on reload.
+    if (formData.removedImageIds?.length) {
+      for (const imageId of formData.removedImageIds) {
+        try {
+          await roomStore.deleteRoomImage(editingRoomId.value, imageId);
+        } catch (delErr) {
+          console.error(`Failed to delete image ${imageId}:`, delErr);
+          toastStore.danger(
+            "Some images could not be removed. Please try again.",
+          );
+        }
+      }
+    }
 
     // Upload new images if any
     if (formData.imageFiles?.length) {
@@ -211,11 +385,13 @@ const handleEditRoom = async (formData) => {
         await roomStore.uploadRoomImages(editingRoomId.value, fd);
       } catch (imgErr) {
         console.error("Image upload failed:", imgErr);
+        toastStore.danger("Room updated, but new images failed to upload.");
       }
     }
 
     closeEditRoomModal();
-    setNotice("Room updated successfully.");
+    toastStore.success("Room updated successfully.");
+    await fetchRoomsData();
   } catch {
     // error handled in store
   }
@@ -283,6 +459,53 @@ onMounted(fetchRoomsData);
       </button>
     </nav>
 
+    <div class="flex flex-col sm:flex-row gap-3">
+      <div class="relative max-w-sm w-full">
+        <MagnifyingGlassIcon
+          class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-(--color-muted) pointer-events-none"
+          aria-hidden="true"
+        />
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Search by room name, type, or property..."
+          class="w-full rounded-xl border border-(--color-border) bg-(--color-surface) pl-9 pr-9 py-2.5 text-sm text-(--color-text) placeholder:text-(--color-muted) outline-none focus:border-(--color-primary) transition-colors"
+        />
+        <button
+          v-if="searchQuery"
+          type="button"
+          @click="clearSearch"
+          class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-full text-(--color-muted) hover:text-(--color-text) hover:bg-(--color-surface-soft) transition-colors"
+          aria-label="Clear search"
+        >
+          <XMarkIcon class="h-3.5 w-3.5" aria-hidden="true" />
+        </button>
+      </div>
+
+      <select
+        v-model="sortBy"
+        class="rounded-xl border border-(--color-border) bg-(--color-surface) px-3.5 py-2.5 text-sm text-(--color-text) outline-none focus:border-(--color-primary) transition-colors sm:w-56"
+      >
+        <option
+          v-for="option in sortOptions"
+          :key="option.value"
+          :value="option.value"
+        >
+          {{ option.label }}
+        </option>
+      </select>
+
+      <button
+        v-if="hasActiveFilters"
+        type="button"
+        @click="resetFilters"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2.5 text-sm font-medium text-(--color-muted) hover:text-(--color-text) rounded-xl border border-(--color-border) bg-(--color-surface) hover:bg-(--color-surface-soft) transition-colors whitespace-nowrap"
+      >
+        <XMarkIcon class="h-3.5 w-3.5" aria-hidden="true" />
+        Reset filters
+      </button>
+    </div>
+
     <main class="relative min-h-100">
       <div
         v-if="notice"
@@ -309,14 +532,22 @@ onMounted(fetchRoomsData);
         <RoomCardSkeleton v-for="n in perPage" :key="n" />
       </div>
 
-      <div
-        v-else-if="filteredRooms.length === 0"
-        class="text-center py-20 border border-dashed border-(--color-border) rounded-xl"
+      <EmptyState
+        v-else-if="sortedRooms.length === 0"
+        :title="searchQuery ? 'No rooms found' : 'No Rooms Found'"
+        :message="
+          searchQuery
+            ? 'Try a different search term or clear the filter.'
+            : 'No rooms have been added yet. Click Add Room to get started.'
+        "
       >
-        <p class="text-sm text-(--color-muted)">
-          No active room templates mapped to this specific asset filter.
-        </p>
-      </div>
+        <template #action>
+          <AppButton @click="openAddRoomModal">
+            <PlusIcon class="h-4 w-4" />
+            Add Room
+          </AppButton>
+        </template>
+      </EmptyState>
 
       <div v-else class="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <RoomCard
@@ -330,7 +561,7 @@ onMounted(fetchRoomsData);
       </div>
 
       <div
-        v-if="!loading && filteredRooms.length > perPage"
+        v-if="!loading && sortedRooms.length > perPage"
         class="mt-8 flex items-center justify-center gap-2"
       >
         <AppButton

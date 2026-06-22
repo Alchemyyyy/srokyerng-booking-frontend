@@ -14,8 +14,13 @@ import {
   CheckCircleIcon,
 } from "@heroicons/vue/24/outline";
 import http from "@/app/api/http";
+import { reservationApi } from "@/modules/reservations/api/reservation.api";
 import AvailabilityCalendar from "@/modules/calendar/components/AvailabilityCalendar.vue";
+import RoomFormModal from "@/modules/rooms/components/RoomFormModal.vue";
+import { useRoomStore } from "@/modules/rooms/store/roomStore";
 import { useToastStore } from "@/shared/store/toastStore";
+
+const roomStore = useRoomStore();
 
 const route = useRoute();
 const router = useRouter();
@@ -33,6 +38,23 @@ const error = ref(null);
 const activeTab = ref("calendar"); // "calendar" | "bookings" | "images"
 const uploadingImages = ref(false);
 const deletingImageId = ref(null);
+
+// ── Edit modal state ─────────────────────────────────────────────────────────
+const isEditRoomModalOpen = ref(false);
+const editFormErrors = ref({});
+const ownerProperties = ref([]);
+const editRoomForm = ref({
+  propertyId: "",
+  type: "",
+  roomName: "",
+  guests: 2,
+  description: "",
+  basePrice: 0,
+  inventory: 1,
+  floorNumber: null,
+  image: "",
+  existingImages: [],
+});
 
 const roomId = computed(() => route.params.id);
 
@@ -67,8 +89,12 @@ const fetchImages = async () => {
 const fetchBookings = async () => {
   try {
     bookingsLoading.value = true;
-    // ✅ Use existing endpoint instead
-    const res = await http.get(`/owner/reservations`);
+    // Reuses the shared reservation API client instead of calling http
+    // directly, so this endpoint has one source of truth across the app.
+    // TODO: swap to a room-scoped endpoint (e.g. reservationApi.listOwnerReservationsByRoom(roomId))
+    // once the backend exposes one — right now this fetches every owner
+    // reservation and filters client-side, which won't scale forever.
+    const res = await reservationApi.listOwnerReservations();
     const data = res?.data ?? res ?? [];
     const all = Array.isArray(data) ? data : [];
 
@@ -79,6 +105,120 @@ const fetchBookings = async () => {
     bookings.value = [];
   } finally {
     bookingsLoading.value = false;
+  }
+};
+
+// ── Fetch owner's properties (needed for the edit modal's property dropdown) ──
+const fetchOwnerProperties = async () => {
+  try {
+    const res = await http.get("/properties/my");
+    const data = res?.data?.data ?? res?.data ?? res;
+    const list = Array.isArray(data) ? data : [];
+
+    // The raw API returns `property_name`, but RoomFormModal.vue's dropdown
+    // (shared with ManageRoomsView.vue) reads `.name` — normalize here so
+    // the modal doesn't need two different property shapes depending on
+    // which page opened it.
+    ownerProperties.value = list.map((p) => ({
+      ...p,
+      name: p.property_name || p.name,
+    }));
+  } catch (err) {
+    console.error("[OwnerRoomDetail] fetchOwnerProperties:", err);
+  }
+};
+
+// Floor number defaults to 1 when left blank — mirrors ManageRoomsView.vue's
+// behavior so editing a room from either page produces the same result.
+const normalizeFloorNumber = (value) => {
+  if (value === null || value === undefined || value === "") return 1;
+  return Number(value);
+};
+
+// ── Edit modal ────────────────────────────────────────────────────────────────
+const openEditRoomModal = () => {
+  if (!room.value) return;
+
+  editRoomForm.value = {
+    propertyId: room.value.property_id,
+    type: room.value.room_type_id,
+    roomName: room.value.room_name || room.value.type,
+    guests: room.value.max_guests || room.value.guests,
+    description: room.value.description || "",
+    basePrice: room.value.price_per_night || room.value.basePrice,
+    inventory: room.value.total_rooms || room.value.inventory,
+    floorNumber: room.value.floor_number ?? null,
+    image: room.value.image || "",
+    existingImages: images.value.map((img) => ({
+      id: img.id,
+      url: getFullImageUrl(img.image_url),
+      isCover: img.is_cover === 1,
+    })),
+  };
+
+  editFormErrors.value = {};
+  isEditRoomModalOpen.value = true;
+};
+
+const closeEditRoomModal = () => {
+  isEditRoomModalOpen.value = false;
+};
+
+const handleEditRoom = async (formData) => {
+  editFormErrors.value = {};
+
+  const errors = {};
+  if (!formData.propertyId) errors.propertyId = "Please choose a property.";
+  if (!formData.type) errors.type = "Room type is required.";
+  editFormErrors.value = errors;
+  if (Object.keys(errors).length > 0) return;
+
+  try {
+    await roomStore.updateRoom(formData.propertyId, roomId.value, {
+      room_type_id: Number(formData.type),
+      room_name: formData.roomName,
+      description: formData.description,
+      price_per_night: Number(formData.basePrice),
+      max_guests: Number(formData.guests),
+      total_rooms: Number(formData.inventory),
+      floor_number: normalizeFloorNumber(formData.floorNumber),
+    });
+
+    // Delete any existing images the owner removed in the modal.
+    if (formData.removedImageIds?.length) {
+      for (const imageId of formData.removedImageIds) {
+        try {
+          await roomStore.deleteRoomImage(roomId.value, imageId);
+        } catch (delErr) {
+          console.error(`Failed to delete image ${imageId}:`, delErr);
+          toast.danger("Some images could not be removed. Please try again.");
+        }
+      }
+    }
+
+    // Upload new images if any
+    if (formData.imageFiles?.length) {
+      const fd = new FormData();
+      formData.imageFiles.forEach((file) => fd.append("images", file));
+      try {
+        await roomStore.uploadRoomImages(roomId.value, fd);
+      } catch (imgErr) {
+        console.error("Image upload failed:", imgErr);
+        toast.danger("Room updated, but new images failed to upload.");
+      }
+    }
+
+    closeEditRoomModal();
+    toast.success("Room updated successfully.", { title: "Updated" });
+
+    // Refresh this page's own data so the header, stats, and image
+    // gallery immediately reflect the edit instead of waiting for a
+    // manual refresh.
+    await Promise.all([fetchRoom(), fetchImages()]);
+  } catch (err) {
+    toast.danger(err?.response?.data?.message ?? "Failed to update room.", {
+      title: "Update Failed",
+    });
   }
 };
 
@@ -174,7 +314,7 @@ const switchTab = (tab) => {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 onMounted(async () => {
-  await Promise.all([fetchRoom(), fetchImages()]);
+  await Promise.all([fetchRoom(), fetchImages(), fetchOwnerProperties()]);
 });
 </script>
 
@@ -243,9 +383,7 @@ onMounted(async () => {
 
           <!-- Edit button -->
           <button
-            @click="
-              router.push({ name: 'owner.room-edit', params: { id: room.id } })
-            "
+            @click="openEditRoomModal"
             class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-(--color-primary) hover:bg-(--color-primary-strong) text-white text-xs font-black uppercase tracking-widest transition-colors shadow-md"
           >
             <PencilSquareIcon class="w-4 h-4" />
@@ -563,5 +701,16 @@ onMounted(async () => {
         </div>
       </div>
     </template>
+
+    <RoomFormModal
+      :open="isEditRoomModalOpen"
+      title="Edit Room"
+      :model-value="editRoomForm"
+      :properties="ownerProperties"
+      :errors="editFormErrors"
+      submit-label="Save Changes"
+      @close="closeEditRoomModal"
+      @submit="(data) => handleEditRoom(data)"
+    />
   </div>
 </template>

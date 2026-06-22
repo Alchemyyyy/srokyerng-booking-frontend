@@ -21,7 +21,7 @@ const normalizeImages = (item) => {
   return [];
 };
 
-const normalizeProperty = (item, index, fallbackImage) => {
+const normalizeProperty = (item, index) => {
   // Build full image URLs from images array
   const allImages = Array.isArray(item.images)
     ? item.images
@@ -48,13 +48,14 @@ const normalizeProperty = (item, index, fallbackImage) => {
     coverFromImages ||
     allImages[0];
 
+  // null when there's no real image — component decides what to show
   const coverImage = rawCover
     ? rawCover.startsWith("http")
       ? rawCover
       : `${BASE_URL}${rawCover}`
-    : fallbackImage;
+    : null;
 
-  // Always provide 3 image slots (fill with cover if fewer than 3)
+  // Always provide 3 image slots (fill with cover/null if fewer than 3)
   const imagesArray =
     allImages.length > 0
       ? [
@@ -120,9 +121,6 @@ export const usePropertyStore = defineStore("properties", () => {
   const imagesLoading = ref(false);
   const imagesError = ref("");
 
-  const fallbackImage =
-    "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80";
-
   const approvedProperties = computed(() => properties.value);
 
   // Derive current cover id from propertyImages
@@ -147,7 +145,7 @@ export const usePropertyStore = defineStore("properties", () => {
       const response = await propertyApi.getAllApprovedProperties(cleanParams);
       const items = Array.isArray(response) ? response : response?.data || [];
       properties.value = items.map((item, index) =>
-        normalizeProperty(item, index, fallbackImage),
+        normalizeProperty(item, index),
       );
       return properties.value;
     } catch (requestError) {
@@ -172,7 +170,7 @@ export const usePropertyStore = defineStore("properties", () => {
 
       if (!payload) throw new Error("Property not found.");
 
-      property.value = normalizeProperty(payload, 0, fallbackImage);
+      property.value = normalizeProperty(payload, 0);
       return property.value;
     } catch (requestError) {
       error.value = requestError?.message || "Failed to load property details.";
@@ -193,43 +191,65 @@ export const usePropertyStore = defineStore("properties", () => {
 
       // First pass: normalise without images (shows fallback instantly)
       myProperties.value = items.map((item, index) =>
-        normalizeProperty(item, index, fallbackImage),
+        normalizeProperty(item, index),
       );
 
-      // Second pass: fetch real images for each property in parallel
-      // (backend returns images:[] in list endpoint, separate call needed)
+      // Second pass: fetch real images AND room counts for each property in parallel
       await Promise.allSettled(
         items.map(async (item, index) => {
           try {
-            const imgRes = await propertyApi.getAllPropertyImages(item.id);
-            const imgs = Array.isArray(imgRes) ? imgRes : (imgRes?.data ?? []);
-            if (!imgs.length) return;
+            // Fetch images and room count in parallel for each property
+            const [imgRes, roomsRes] = await Promise.allSettled([
+              propertyApi.getAllPropertyImages(item.id),
+              propertyApi.getPropertyRooms(item.id),
+            ]);
 
-            const fullUrls = imgs
-              .map((img) => {
-                const url = img?.image_url || "";
-                return url.startsWith("http") ? url : `${BASE_URL}${url}`;
-              })
-              .filter(Boolean);
+            // ── Images ──────────────────────────────────────────────
+            if (imgRes.status === "fulfilled") {
+              const imgs = Array.isArray(imgRes.value)
+                ? imgRes.value
+                : (imgRes.value?.data ?? []);
 
-            const coverImg = imgs.find((i) => i.is_cover === 1) || imgs[0];
-            const coverUrl = coverImg?.image_url
-              ? coverImg.image_url.startsWith("http")
-                ? coverImg.image_url
-                : `${BASE_URL}${coverImg.image_url}`
-              : fullUrls[0] || fallbackImage;
+              if (imgs.length) {
+                const fullUrls = imgs
+                  .map((img) => {
+                    const url = img?.image_url || "";
+                    return url.startsWith("http") ? url : `${BASE_URL}${url}`;
+                  })
+                  .filter(Boolean);
 
-            myProperties.value[index] = {
-              ...myProperties.value[index],
-              image: coverUrl,
-              images: [
-                fullUrls[0] || coverUrl,
-                fullUrls[1] || coverUrl,
-                fullUrls[2] || coverUrl,
-              ],
-            };
+                const coverImg = imgs.find((i) => i.is_cover === 1) || imgs[0];
+                const coverUrl = coverImg?.image_url
+                  ? coverImg.image_url.startsWith("http")
+                    ? coverImg.image_url
+                    : `${BASE_URL}${coverImg.image_url}`
+                  : fullUrls[0] || null;
+
+                myProperties.value[index] = {
+                  ...myProperties.value[index],
+                  image: coverUrl,
+                  images: [
+                    fullUrls[0] || coverUrl,
+                    fullUrls[1] || coverUrl,
+                    fullUrls[2] || coverUrl,
+                  ],
+                };
+              }
+            }
+
+            // ── Room count ──────────────────────────────────────────
+            if (roomsRes.status === "fulfilled") {
+              const roomData = Array.isArray(roomsRes.value)
+                ? roomsRes.value
+                : (roomsRes.value?.data ?? []);
+
+              myProperties.value[index] = {
+                ...myProperties.value[index],
+                rooms: Array.isArray(roomData) ? roomData.length : 0,
+              };
+            }
           } catch {
-            // silently keep fallback for this property
+            // silently keep existing state for this property
           }
         }),
       );
@@ -253,7 +273,7 @@ export const usePropertyStore = defineStore("properties", () => {
       console.log("Raw register response:", JSON.stringify(response));
       const item = response?.data?.[0] || response?.data || response;
       if (item) {
-        myProperties.value.unshift(normalizeProperty(item, 0, fallbackImage));
+        myProperties.value.unshift(normalizeProperty(item, 0));
       }
       return response;
     } catch (requestError) {

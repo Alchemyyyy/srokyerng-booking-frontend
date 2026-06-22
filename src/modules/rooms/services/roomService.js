@@ -2,12 +2,12 @@ import { roomApi } from "@/modules/rooms/api/room.api";
 
 export const roomService = {
   async getMyRooms(propertyId = null) {
-    const res = await roomApi.getMyRooms(propertyId); // ✅ missing this
+    const res = await roomApi.getMyRooms(propertyId);
     return res.data;
   },
 
   async createRoom(propertyId, roomData) {
-    const res = await roomApi.createRoom(propertyId, roomData); // ✅ missing this
+    const res = await roomApi.createRoom(propertyId, roomData);
     return res.data;
   },
 
@@ -26,13 +26,13 @@ export const roomService = {
     return res.data;
   },
 
-  async setCoverImage(propertyId, roomId, imageId) {
-    const res = await roomApi.setCoverImage(propertyId, roomId, imageId);
+  async setCoverImage(roomId, imageId) {
+    const res = await roomApi.setCoverImage(roomId, imageId);
     return res.data;
   },
 
-  async deleteRoomImage(propertyId, roomId, imageId) {
-    const res = await roomApi.deleteRoomImage(propertyId, roomId, imageId);
+  async deleteRoomImage(roomId, imageId) {
+    const res = await roomApi.deleteRoomImage(roomId, imageId);
     return res.data;
   },
 };

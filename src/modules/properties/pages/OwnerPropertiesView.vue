@@ -4,7 +4,13 @@ import PropertyCard from "../components/PropertyCard.vue";
 import AppModal from "@/shared/components/AppModal.vue";
 import AppButton from "@/shared/components/AppButton.vue";
 import AppInput from "@/shared/components/AppInput.vue";
+import AppAlert from "@/shared/components/AppAlert.vue";
 import EmptyState from "@/shared/components/EmptyState.vue";
+import PropertyCardSkeleton from "../components/PropertyCardSkeleton.vue";
+import { useSidebar } from "@/shared/composables/useSidebar";
+import { usePropertyStore } from "@/modules/properties/store/propertyStore";
+import { useToastStore } from "@/shared/store/toastStore";
+import { propertyApi } from "@/modules/properties/api/property.api";
 import {
   PlusIcon,
   TrashIcon,
@@ -13,37 +19,35 @@ import {
   XMarkIcon,
 } from "@heroicons/vue/24/outline";
 import { StarIcon as StarIconSolid } from "@heroicons/vue/24/solid";
-import PropertyCardSkeleton from "../components/PropertyCardSkeleton.vue";
-import { useSidebar } from "@/shared/composables/useSidebar";
-import { usePropertyStore } from "@/modules/properties/store/propertyStore";
-import { propertyApi } from "@/modules/properties/api/property.api";
-import { useAuthStore } from "@/modules/auth/store/authStore";
 
-const BASE_URL = "https://api-srokyerng.devspace.linkpc.net";
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://api-srokyerng.devspace.linkpc.net";
 
 const propertyStore = usePropertyStore();
-const authStore = useAuthStore();
+const toast = useToastStore();
 const { isSidebarOpen } = useSidebar();
 
 const currentPage = ref(1);
 const perPage = 4;
-const loading = ref(true);
-const properties = ref([]);
 
-const categoryMap = { Hotel: 1, Villa: 2, Apartment: 3, Homestay: 4 };
+// ── Use store directly ────────────────────────────────────────────────────────
+const properties = computed(() => propertyStore.myProperties);
+const loading = computed(() => propertyStore.loading);
 
-// ── Pagination ───────────────────────────────────────────────────────────────
+// ── Pagination ────────────────────────────────────────────────────────────────
 const paginatedProperties = computed(() => {
   const start = (currentPage.value - 1) * perPage;
   return properties.value.slice(start, start + perPage);
 });
-const totalPages = computed(() => Math.ceil(properties.value.length / perPage));
-watch([properties, totalPages], () => {
-  if (currentPage.value > totalPages.value)
-    currentPage.value = Math.max(totalPages.value, 1);
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(properties.value.length / perPage)),
+);
+watch(totalPages, (val) => {
+  if (currentPage.value > val) currentPage.value = val;
 });
 
-// ── Coordinates ──────────────────────────────────────────────────────────────
+// ── City Coordinates ──────────────────────────────────────────────────────────
 const cityCoordinates = {
   "Phnom Penh": { lat: 11.5564, lng: 104.9282 },
   "Siem Reap": { lat: 13.3671, lng: 103.8448 },
@@ -52,8 +56,9 @@ const cityCoordinates = {
   Battambang: { lat: 13.0957, lng: 103.2022 },
   "Koh Rong": { lat: 10.7167, lng: 103.25 },
 };
+const categoryMap = { Hotel: 1, Villa: 2, Apartment: 3, Homestay: 4 };
 
-// ── Add Modal ────────────────────────────────────────────────────────────────
+// ── Add Modal ─────────────────────────────────────────────────────────────────
 const isAddModalOpen = ref(false);
 const addErrors = ref({});
 const currentStep = ref(1);
@@ -62,7 +67,7 @@ const selectedImages = ref([]);
 const imagePreviewUrls = ref([]);
 const uploadingImages = ref(false);
 
-const newProperty = ref({
+const defaultForm = () => ({
   name: "",
   type: "Hotel",
   location: "Phnom Penh",
@@ -72,17 +77,7 @@ const newProperty = ref({
   contact_email: "",
 });
 
-const resetForm = () => {
-  newProperty.value = {
-    name: "",
-    type: "Hotel",
-    location: "Phnom Penh",
-    address: "",
-    description: "",
-    contact_phone: "",
-    contact_email: "",
-  };
-};
+const newProperty = ref(defaultForm());
 
 const closeAddModal = () => {
   isAddModalOpen.value = false;
@@ -91,7 +86,7 @@ const closeAddModal = () => {
   selectedImages.value = [];
   imagePreviewUrls.value = [];
   addErrors.value = {};
-  resetForm();
+  newProperty.value = defaultForm();
 };
 
 const validateAddForm = () => {
@@ -116,6 +111,7 @@ const validateAddForm = () => {
 const handleAddProperty = async () => {
   addErrors.value = validateAddForm();
   if (Object.keys(addErrors.value).length > 0) return;
+
   const coords = cityCoordinates[newProperty.value.location] || {
     lat: 11.5564,
     lng: 104.9282,
@@ -138,8 +134,8 @@ const handleAddProperty = async () => {
       response?.data?.[0]?.id || response?.data?.id || response?.id,
     );
     currentStep.value = 2;
-  } catch (err) {
-    console.error("Failed to add property:", err);
+  } catch {
+    toast.danger("Failed to add property. Please try again.");
   }
 };
 
@@ -154,41 +150,37 @@ const handleImageSelect = (event) => {
 
 const handleUploadImages = async () => {
   if (!selectedImages.value.length) {
-    properties.value = propertyStore.myProperties;
     closeAddModal();
     return;
   }
   uploadingImages.value = true;
   try {
-    await authStore.refreshSession();
     await propertyStore.uploadPropertyImages(
       newPropertyId.value,
       selectedImages.value,
     );
-    // Auto-set first image as cover
     if (propertyStore.propertyImages.length) {
       await propertyStore.setCoverImage(
         newPropertyId.value,
         propertyStore.propertyImages[0].id,
       );
     }
-    properties.value = propertyStore.myProperties;
+    toast.success("Property created successfully!");
     closeAddModal();
-  } catch (err) {
-    console.error("Failed to upload images:", err);
+  } catch {
+    toast.danger("Failed to upload images. You can add them later.");
   } finally {
     uploadingImages.value = false;
   }
 };
 
-// ── Edit Modal ───────────────────────────────────────────────────────────────
+// ── Edit Modal ────────────────────────────────────────────────────────────────
 const isEditModalOpen = ref(false);
 const editingProperty = ref(null);
 const editNewFiles = ref([]);
 const editNewPreviews = ref([]);
 const editImagesUploading = ref(false);
 
-// These come from the store
 const editImages = computed(() => propertyStore.propertyImages);
 const editImagesLoading = computed(() => propertyStore.imagesLoading);
 const editCoverId = computed(() => propertyStore.coverId);
@@ -214,10 +206,9 @@ const openEditModal = async (property) => {
     editNewFiles.value = [];
     editNewPreviews.value = [];
     isEditModalOpen.value = true;
-    // Load images via store
     await propertyStore.fetchPropertyImages(property.id);
-  } catch (err) {
-    console.error("Failed to load property details:", err);
+  } catch {
+    toast.danger("Failed to load property details.");
   }
 };
 
@@ -247,18 +238,25 @@ const removeStagedFile = (index) => {
 };
 
 const deleteEditImage = async (imageId) => {
-  await propertyStore.deletePropertyImage(editingProperty.value.id, imageId);
+  try {
+    await propertyStore.deletePropertyImage(editingProperty.value.id, imageId);
+  } catch {
+    toast.danger("Failed to delete image.");
+  }
 };
 
 const setCover = async (imageId) => {
-  await propertyStore.setCoverImage(editingProperty.value.id, imageId);
+  try {
+    await propertyStore.setCoverImage(editingProperty.value.id, imageId);
+  } catch {
+    toast.danger("Failed to set cover image.");
+  }
 };
 
 const uploadStagedImages = async () => {
   if (!editNewFiles.value.length) return;
   editImagesUploading.value = true;
   try {
-    await authStore.refreshSession();
     await propertyStore.uploadPropertyImages(
       editingProperty.value.id,
       editNewFiles.value,
@@ -266,8 +264,9 @@ const uploadStagedImages = async () => {
     editNewPreviews.value.forEach((u) => URL.revokeObjectURL(u));
     editNewFiles.value = [];
     editNewPreviews.value = [];
-  } catch (err) {
-    console.error("Failed to upload images:", err);
+    toast.success("Images uploaded successfully.");
+  } catch {
+    toast.danger("Failed to upload images.");
   } finally {
     editImagesUploading.value = false;
   }
@@ -276,7 +275,6 @@ const uploadStagedImages = async () => {
 const handleEditProperty = async () => {
   if (!editingProperty.value.name) return;
   try {
-    await authStore.refreshSession();
     await propertyStore.updateProperty(editingProperty.value.id, {
       property_name: editingProperty.value.name,
       category_id: categoryMap[editingProperty.value.type] || 1,
@@ -290,16 +288,15 @@ const handleEditProperty = async () => {
       contact_phone: editingProperty.value.contact_phone || "",
       contact_email: editingProperty.value.contact_email || "",
     });
-    // Upload any staged images before closing
     if (editNewFiles.value.length) await uploadStagedImages();
-    properties.value = propertyStore.myProperties;
+    toast.success("Property updated successfully!");
     closeEditModal();
-  } catch (err) {
-    console.error("Failed to update property:", err);
+  } catch {
+    toast.danger("Failed to update property. Please try again.");
   }
 };
 
-// ── Delete Modal ─────────────────────────────────────────────────────────────
+// ── Delete Modal ──────────────────────────────────────────────────────────────
 const isDeleteModalOpen = ref(false);
 const deletingPropertyId = ref(null);
 
@@ -307,6 +304,7 @@ const openDeleteModal = (id) => {
   deletingPropertyId.value = id;
   isDeleteModalOpen.value = true;
 };
+
 const closeDeleteModal = () => {
   isDeleteModalOpen.value = false;
   deletingPropertyId.value = null;
@@ -315,33 +313,27 @@ const closeDeleteModal = () => {
 const confirmDelete = async () => {
   try {
     await propertyStore.deleteProperty(deletingPropertyId.value);
-    properties.value = propertyStore.myProperties;
+    toast.success("Property deleted successfully.");
     closeDeleteModal();
-  } catch (err) {
-    console.error("Failed to delete property:", err);
+  } catch {
+    toast.danger("Failed to delete property.");
   }
 };
 
-// ── Fetch ────────────────────────────────────────────────────────────────────
-const fetchPropertiesList = async () => {
+// ── Fetch ─────────────────────────────────────────────────────────────────────
+onMounted(async () => {
   try {
     await propertyStore.fetchMyProperties();
-    properties.value = propertyStore.myProperties;
     currentPage.value = 1;
-  } catch (err) {
-    console.error("Failed to load properties:", err);
-    properties.value = [];
-  } finally {
-    loading.value = false;
+  } catch {
+    toast.danger("Failed to load properties.");
   }
-};
-
-onMounted(fetchPropertiesList);
+});
 </script>
 
 <template>
   <main class="mt-25" :class="isSidebarOpen ? 'ml-64' : 'ml-20'">
-    <!-- Page Header -->
+    <!-- Header -->
     <header class="mb-5 flex items-center justify-between">
       <div>
         <h1 class="text-3xl font-semibold text-(--color-text)">
@@ -443,7 +435,7 @@ onMounted(fetchPropertiesList);
       </AppButton>
     </div>
 
-    <!-- ── Add Modal ── -->
+    <!-- Add Modal -->
     <AppModal
       :open="isAddModalOpen"
       :title="currentStep === 1 ? 'Add New Property' : 'Upload Images'"
@@ -462,10 +454,11 @@ onMounted(fetchPropertiesList);
             label="Property Name *"
             placeholder="e.g. Sunset Villa"
           />
-          <span v-if="addErrors.name" class="text-xs text-rose-500">{{
+          <AppAlert v-if="addErrors.name" variant="danger" class="mt-1">{{
             addErrors.name
-          }}</span>
+          }}</AppAlert>
         </div>
+
         <div class="grid grid-cols-2 gap-4">
           <label class="grid gap-2 text-sm font-semibold text-(--color-text)">
             Type *
@@ -494,16 +487,21 @@ onMounted(fetchPropertiesList);
             </select>
           </label>
         </div>
+
         <div>
           <AppInput
             v-model="newProperty.contact_phone"
             label="Contact Phone *"
             placeholder="+855 12 345 678"
           />
-          <span v-if="addErrors.contact_phone" class="text-xs text-rose-500">{{
-            addErrors.contact_phone
-          }}</span>
+          <AppAlert
+            v-if="addErrors.contact_phone"
+            variant="danger"
+            class="mt-1"
+            >{{ addErrors.contact_phone }}</AppAlert
+          >
         </div>
+
         <div>
           <AppInput
             v-model="newProperty.contact_email"
@@ -511,25 +509,31 @@ onMounted(fetchPropertiesList);
             type="email"
             placeholder="contact@example.com"
           />
-          <span v-if="addErrors.contact_email" class="text-xs text-rose-500">{{
-            addErrors.contact_email
-          }}</span>
+          <AppAlert
+            v-if="addErrors.contact_email"
+            variant="danger"
+            class="mt-1"
+            >{{ addErrors.contact_email }}</AppAlert
+          >
         </div>
+
         <div>
           <AppInput
             v-model="newProperty.address"
             label="Address *"
             placeholder="Street address"
           />
-          <span v-if="addErrors.address" class="text-xs text-rose-500">{{
+          <AppAlert v-if="addErrors.address" variant="danger" class="mt-1">{{
             addErrors.address
-          }}</span>
+          }}</AppAlert>
         </div>
+
         <AppInput
           v-model="newProperty.description"
           label="Description"
           placeholder="Brief description for guests..."
         />
+
         <p class="text-xs text-(--color-muted)">
           New properties require admin approval before they're visible to
           guests.
@@ -583,18 +587,18 @@ onMounted(fetchPropertiesList);
         <template v-else>
           <AppButton
             variant="secondary"
-            @click="handleUploadImages"
             :disabled="uploadingImages"
+            @click="handleUploadImages"
             >Skip</AppButton
           >
-          <AppButton @click="handleUploadImages" :disabled="uploadingImages">
+          <AppButton :disabled="uploadingImages" @click="handleUploadImages">
             {{ uploadingImages ? "Uploading..." : "Upload & Finish" }}
           </AppButton>
         </template>
       </template>
     </AppModal>
 
-    <!-- ── Edit Modal ── -->
+    <!-- Edit Modal -->
     <AppModal
       v-if="editingProperty"
       :open="isEditModalOpen"
@@ -606,7 +610,6 @@ onMounted(fetchPropertiesList);
         class="space-y-4"
         @submit.prevent="handleEditProperty"
       >
-        <!-- Property fields -->
         <AppInput
           v-model="editingProperty.name"
           label="Property Name *"
@@ -665,13 +668,12 @@ onMounted(fetchPropertiesList);
           placeholder="Brief description for guests..."
         />
 
-        <!-- ── Image Manager ── -->
+        <!-- Image Manager -->
         <div class="pt-2 border-t border-(--color-border)">
           <p class="text-sm font-semibold text-(--color-text) mb-3">
             Property Images
           </p>
 
-          <!-- Loading state -->
           <div
             v-if="editImagesLoading"
             class="flex items-center justify-center h-24 text-(--color-muted) text-sm gap-2"
@@ -683,7 +685,6 @@ onMounted(fetchPropertiesList);
           </div>
 
           <div v-else class="space-y-3">
-            <!-- Existing images grid -->
             <div v-if="editImages.length" class="grid grid-cols-3 gap-2">
               <div
                 v-for="img in editImages"
@@ -701,20 +702,16 @@ onMounted(fetchPropertiesList);
                   alt="Property image"
                 />
 
-                <!-- Cover badge -->
                 <div
                   v-if="editCoverId === img.id"
                   class="absolute top-1 left-1 bg-(--color-primary) text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-1"
                 >
-                  <StarIconSolid class="w-3 h-3" />
-                  Cover
+                  <StarIconSolid class="w-3 h-3" /> Cover
                 </div>
 
-                <!-- Hover actions -->
                 <div
                   class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2"
                 >
-                  <!-- Set as cover -->
                   <button
                     v-if="editCoverId !== img.id"
                     type="button"
@@ -724,8 +721,6 @@ onMounted(fetchPropertiesList);
                   >
                     <StarIcon class="w-4 h-4 text-white" />
                   </button>
-
-                  <!-- Delete image -->
                   <button
                     type="button"
                     title="Delete image"
@@ -742,7 +737,6 @@ onMounted(fetchPropertiesList);
               No images yet.
             </p>
 
-            <!-- Staged new images (not yet uploaded) -->
             <div v-if="editNewPreviews.length">
               <p
                 class="text-xs font-semibold text-(--color-muted) mb-2 uppercase tracking-wider"
@@ -768,8 +762,6 @@ onMounted(fetchPropertiesList);
                   </button>
                 </div>
               </div>
-
-              <!-- Upload staged button -->
               <AppButton
                 type="button"
                 variant="secondary"
@@ -787,7 +779,6 @@ onMounted(fetchPropertiesList);
               </AppButton>
             </div>
 
-            <!-- Add more images -->
             <label
               class="flex items-center justify-center gap-2 w-full py-3 border-2 border-dashed border-(--color-border) rounded-xl cursor-pointer hover:border-(--color-primary) transition-colors text-sm text-(--color-muted) hover:text-(--color-primary)"
             >
@@ -820,7 +811,7 @@ onMounted(fetchPropertiesList);
       </template>
     </AppModal>
 
-    <!-- ── Delete Modal ── -->
+    <!-- Delete Modal -->
     <AppModal
       :open="isDeleteModalOpen"
       title="Delete Property"
