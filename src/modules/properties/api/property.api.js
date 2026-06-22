@@ -48,4 +48,16 @@ export const propertyApi = {
   getPropertyRooms(propertyId) {
     return http.get(`/properties/${propertyId}/rooms`);
   },
+
+  // All reservations across every property this owner manages —
+  // used to compute bookings count + revenue per property.
+  getOwnerReservations() {
+    return http.get(`/owner/reservations`);
+  },
+
+  // [{ id, province_id, name }] — used to resolve city_id/province_id
+  // from the city name picked in the location dropdown.
+  getCities() {
+    return http.get(`/properties/cities`);
+  },
 };
