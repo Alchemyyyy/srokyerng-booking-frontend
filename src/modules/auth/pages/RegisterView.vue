@@ -333,22 +333,22 @@ const submit = async () => {
 <template>
   <AuthShell :title="pageTitle" :subtitle="pageSubtitle" :brand="brandContent" :role="selectedRole" mode="register">
     
-    <div v-if="currentStep < 4 && selectedRole === ROLES.CUSTOMER" class="auth-progress-bar" aria-hidden="true">
+    <div v-if="currentStep < 4" class="auth-progress-bar" aria-hidden="true">
       <div class="auth-progress-step" :class="{ 'auth-progress-step--active': currentStep >= 1 }"></div>
       <div class="auth-progress-step" :class="{ 'auth-progress-step--active': currentStep >= 2 }"></div>
       <div class="auth-progress-step" :class="{ 'auth-progress-step--active': currentStep >= 3 }"></div>
     </div>
 
-    <form v-if="currentStep < 3" class="auth-form" :class="{ 'auth-shake-animation': isShaking }" novalidate @submit.prevent="(selectedRole === ROLES.CUSTOMER && currentStep === 1) ? goToStep2() : submit()">
+    <form v-if="currentStep < 3" class="auth-form" :class="{ 'auth-shake-animation': isShaking }" novalidate @submit.prevent="currentStep === 1 ? goToStep2() : submit()">
       
-      <div :class="selectedRole === ROLES.CUSTOMER ? 'auth-step-container' : 'auth-single-container'">
+      <div class="auth-step-container">
         
         <!-- STEP 1: BASICS -->
         <div 
           :class="[
-            selectedRole === ROLES.CUSTOMER ? 'auth-step' : 'auth-single-step',
-            selectedRole === ROLES.CUSTOMER && currentStep === 1 ? 'auth-step--active' : '',
-            selectedRole === ROLES.CUSTOMER && currentStep !== 1 ? 'auth-step--hidden-left' : ''
+            'auth-step',
+            currentStep === 1 ? 'auth-step--active' : '',
+            currentStep !== 1 ? 'auth-step--hidden-left' : ''
           ]"
         >
           <div class="auth-floating-group">
@@ -390,7 +390,6 @@ const submit = async () => {
           </div>
 
           <AppButton
-            v-if="selectedRole === ROLES.CUSTOMER"
             class="auth-submit-button"
             type="button"
             size="lg"
@@ -399,18 +398,18 @@ const submit = async () => {
           >
             {{ t("common.continue") }} <i class="bi bi-arrow-right ml-2"></i>
           </AppButton>
-          <AuthSocialLogin v-if="selectedRole === ROLES.CUSTOMER" :role="selectedRole" style="margin-top: 24px;" />
+          <AuthSocialLogin :role="selectedRole" style="margin-top: 24px;" />
         </div>
 
         <!-- STEP 2: SECURITY & CONTACT -->
         <div 
           :class="[
-            selectedRole === ROLES.CUSTOMER ? 'auth-step' : 'auth-single-step',
-            selectedRole === ROLES.CUSTOMER && currentStep === 2 ? 'auth-step--active' : '',
-            selectedRole === ROLES.CUSTOMER && currentStep !== 2 ? 'auth-step--hidden-right' : ''
+            'auth-step',
+            currentStep === 2 ? 'auth-step--active' : '',
+            currentStep !== 2 ? 'auth-step--hidden-right' : ''
           ]"
         >
-          <button v-if="selectedRole === ROLES.CUSTOMER" type="button" @click="goToStep1" class="auth-small-link" style="display: flex; align-items: center; gap: 4px; margin-bottom: 16px; justify-self: start; cursor: pointer; background: transparent; border: none; font-family: inherit;">
+          <button type="button" @click="goToStep1" class="auth-small-link" style="display: flex; align-items: center; gap: 4px; margin-bottom: 16px; justify-self: start; cursor: pointer; background: transparent; border: none; font-family: inherit;">
             <i class="bi bi-arrow-left"></i> {{ t("common.back") }}
           </button>
 
@@ -527,7 +526,6 @@ const submit = async () => {
           </AppButton>
           </div>
       </div>
-      <AuthSocialLogin v-if="selectedRole === ROLES.OWNER" :role="selectedRole" style="margin-top: 24px;" />
     </form>
 
     <!-- STEP 3: EMAIL VERIFICATION -->

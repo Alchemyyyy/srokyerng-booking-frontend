@@ -33,7 +33,7 @@ const displayTitle = computed(() => props.title || t("components.modalTitle"));
       @click.self="$emit('close')"
     >
       <section
-        class="flex flex-col w-full rounded-lg border border-(--color-border) bg-(--color-surface) text-(--color-text) shadow-(--shadow-panel)"
+        class="flex flex-col w-full rounded-md border border-(--color-border) bg-(--color-surface) text-(--color-text) shadow-(--shadow-panel)"
         :class="panelClass || 'max-w-lg'"
         style="max-height: 90vh"
       >

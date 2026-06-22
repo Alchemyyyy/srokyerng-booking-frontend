@@ -31,7 +31,7 @@ defineEmits(["submit"]);
 
 <template>
   <form
-    class="rounded-lg border border-(--color-border) bg-(--color-surface) p-6 shadow-(--shadow-card)"
+    class="rounded-md border border-(--color-border) bg-(--color-surface) p-6 shadow-(--shadow-card)"
     @submit.prevent="$emit('submit')"
   >
     <div class="mb-5 flex items-center gap-3">
@@ -95,7 +95,7 @@ defineEmits(["submit"]);
       </p>
       <AppButton
         type="submit"
-        class="!rounded-lg"
+        class="!rounded-sm"
         :disabled="saving || !hasChanges"
         :loading="saving"
       >
@@ -104,3 +104,38 @@ defineEmits(["submit"]);
     </div>
   </form>
 </template>
+
+<style scoped>
+/* Focus behavior for all nested input, select, and textarea fields */
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--color-accent) !important;
+  box-shadow: 0 0 0 4px var(--color-accent-soft) !important;
+  background-color: var(--color-surface-soft) !important;
+  transform: translateY(-1px);
+}
+
+/* Base transitions and border optimizations */
+input,
+select,
+textarea {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Custom premium styling for the select dropdown */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23f59e0b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 0.85rem center;
+  background-size: 1.25em 1.25em;
+  background-repeat: no-repeat;
+  padding-right: 2.5rem;
+}
+
+/* Dropdown option menu background synchronization */
+select option {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+</style>

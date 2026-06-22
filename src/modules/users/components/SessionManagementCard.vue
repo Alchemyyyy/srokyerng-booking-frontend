@@ -3,7 +3,6 @@ import { computed, onMounted, ref } from "vue";
 import {
   ArrowPathIcon,
   ComputerDesktopIcon,
-  GlobeAltIcon,
   ShieldExclamationIcon,
   TrashIcon,
 } from "@heroicons/vue/24/outline";
@@ -57,6 +56,16 @@ const getPlatformLabel = (userAgent = "") => {
   if (/windows/i.test(userAgent)) return "Windows";
   if (/linux/i.test(userAgent)) return "Linux";
   return t("profile.sessions.unknownDevice");
+};
+
+const getPlatformIconClass = (userAgent = "") => {
+  const agent = userAgent.toLowerCase();
+  if (/iphone|ipad/i.test(agent)) return "bi bi-phone text-lg";
+  if (/android/i.test(agent)) return "bi bi-android2 text-lg";
+  if (/mac os|macintosh/i.test(agent)) return "bi bi-apple text-lg";
+  if (/windows/i.test(agent)) return "bi bi-windows text-lg";
+  if (/linux/i.test(agent)) return "bi bi-terminal text-lg";
+  return "bi bi-laptop text-lg";
 };
 
 const getDeviceLabel = (userAgent) => {
@@ -121,7 +130,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <section class="rounded-lg border border-(--color-border) bg-(--color-surface) p-6 shadow-(--shadow-card)">
+  <section class="rounded-md border border-(--color-border) bg-(--color-surface) p-6 shadow-(--shadow-card)">
     <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div class="flex items-start gap-3">
         <span class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-(--color-primary-soft) text-(--color-primary)">
@@ -144,7 +153,7 @@ onMounted(() => {
         type="button"
         variant="secondary"
         size="sm"
-        class="!rounded-lg"
+        class="!rounded-sm"
         :disabled="loading"
         @click="loadSessions({ notify: true })"
       >
@@ -155,14 +164,14 @@ onMounted(() => {
 
     <div
       v-if="loading"
-      class="rounded-lg border border-(--color-border) bg-(--color-surface-soft) p-6 text-center"
+      class="rounded-md border border-(--color-border) bg-(--color-surface-soft) p-6 text-center"
     >
       <LoadingSpinner :label="t('profile.sessions.loading')" />
     </div>
 
     <div
       v-else-if="!hasSessions"
-      class="rounded-lg border border-(--color-border) bg-(--color-surface-soft) px-4 py-6 text-center text-sm font-medium text-(--color-muted)"
+      class="rounded-md border border-(--color-border) bg-(--color-surface-soft) px-4 py-6 text-center text-sm font-medium text-(--color-muted)"
     >
       {{ t("profile.sessions.empty") }}
     </div>
@@ -171,12 +180,12 @@ onMounted(() => {
       <article
         v-for="session in sessions"
         :key="session.id"
-        class="rounded-lg border border-(--color-border) bg-(--color-surface-soft) p-4 transition hover:border-(--color-primary)"
+        class="rounded-sm border border-(--color-border) bg-(--color-surface-soft) p-4 transition-all duration-300 hover:border-(--color-primary)"
       >
         <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div class="flex min-w-0 flex-1 gap-3">
-            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-(--color-surface) text-(--color-primary)">
-              <GlobeAltIcon class="h-5 w-5" />
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-(--color-surface) text-(--color-primary) transition-colors duration-300">
+              <i :class="getPlatformIconClass(session.user_agent)"></i>
             </span>
             <div class="min-w-0 flex-1">
               <h3 class="truncate text-sm font-bold text-(--color-text)">
@@ -218,7 +227,7 @@ onMounted(() => {
               type="button"
               variant="danger"
               size="sm"
-              class="!rounded-lg"
+              class="!rounded-sm"
               :disabled="Boolean(actionSessionId) || loggingOutAll"
               :loading="actionSessionId === session.id"
               @click="revokeSession(session.id)"
@@ -231,7 +240,7 @@ onMounted(() => {
       </article>
     </div>
 
-    <div class="mt-5 rounded-lg border border-(--color-warning) bg-(--color-warning-soft) p-4">
+    <div class="mt-5 rounded-sm border border-(--color-warning) bg-(--color-warning-soft) p-4">
       <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div class="flex items-start gap-3">
           <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-(--color-surface) text-(--color-warning)">
@@ -249,7 +258,7 @@ onMounted(() => {
         <AppButton
           type="button"
           variant="danger"
-          class="shrink-0 !rounded-lg"
+          class="shrink-0 !rounded-sm"
           :disabled="loggingOutAll"
           :loading="loggingOutAll"
           @click="logoutAllSessions"

@@ -21,7 +21,7 @@ defineProps({
 </script>
 
 <template>
-  <section class="rounded-lg border border-(--color-border) bg-(--color-surface) p-5 shadow-(--shadow-card)">
+  <section class="rounded-md border border-(--color-border) bg-(--color-surface) p-5 shadow-(--shadow-card)">
     <div class="flex items-start justify-between gap-4">
       <div class="flex items-start gap-3">
         <ShieldCheckIcon class="mt-0.5 h-6 w-6 text-(--color-primary)" />
@@ -48,14 +48,14 @@ defineProps({
       <div
         v-for="item in completionItems"
         :key="item.label"
-        class="flex items-center justify-between rounded-lg bg-(--color-surface-soft) px-3 py-2 text-sm"
+        class="flex items-center justify-between rounded-sm bg-(--color-surface-soft) px-3 py-2 text-sm transition-all duration-300 hover:bg-(--color-surface-soft)/80 hover:translate-x-0.5"
       >
         <span class="font-medium text-(--color-muted)">{{ item.label }}</span>
         <CheckCircleIcon
           v-if="item.complete"
-          class="h-5 w-5 text-(--color-success)"
+          class="h-5 w-5 text-(--color-success) transition-transform duration-300 hover:scale-110"
         />
-        <XCircleIcon v-else class="h-5 w-5 text-(--color-muted)" />
+        <XCircleIcon v-else class="h-5 w-5 text-(--color-muted) opacity-60" />
       </div>
     </div>
   </section>

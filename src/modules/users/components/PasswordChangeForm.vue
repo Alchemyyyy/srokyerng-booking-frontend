@@ -26,7 +26,7 @@ defineEmits(["submit"]);
 
 <template>
   <form
-    class="rounded-lg border border-(--color-border) bg-(--color-surface) p-6 shadow-(--shadow-card)"
+    class="rounded-md border border-(--color-border) bg-(--color-surface) p-6 shadow-(--shadow-card)"
     @submit.prevent="$emit('submit')"
   >
     <div class="mb-5 flex items-center gap-3">
@@ -70,7 +70,7 @@ defineEmits(["submit"]);
       <AppButton
         type="submit"
         variant="secondary"
-        class="!rounded-lg"
+        class="!rounded-sm"
         :disabled="saving"
         :loading="saving"
       >

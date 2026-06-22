@@ -15,9 +15,12 @@ onMounted(() => {
 });
 
 const getPropertyCountByCity = (cityName) =>
-  propertyStore.approvedProperties.filter(
-    (p) => p.location?.toLowerCase() === cityName.toLowerCase(),
-  ).length;
+  propertyStore.approvedProperties.filter((p) => {
+    const loc = typeof p.location === "string"
+      ? p.location
+      : p.location?.name || p.location?.city_name || String(p.location || "");
+    return loc.toLowerCase() === cityName.toLowerCase();
+  }).length;
 
 const destinations = computed(() => [
   {

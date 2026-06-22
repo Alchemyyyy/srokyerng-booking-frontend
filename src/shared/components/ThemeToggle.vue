@@ -19,7 +19,7 @@ const updateTheme = (theme) => {
 
 <template>
   <div
-    class="inline-flex rounded-full border border-(--color-border) bg-(--color-surface) p-1 shadow-(--shadow-card)"
+    class="inline-flex rounded-lg border border-(--color-border) bg-(--color-surface) p-1 shadow-(--shadow-card)"
     aria-label="Theme switcher"
   >
     <button
@@ -27,7 +27,7 @@ const updateTheme = (theme) => {
       :key="option.value"
       type="button"
       :class="[
-        'rounded-full px-3 py-1.5 text-sm font-semibold transition',
+        'rounded-md px-3 py-1.5 text-sm font-semibold transition',
         currentTheme === option.value
           ? 'bg-(--color-primary) text-white'
           : 'text-(--color-muted) hover:bg-(--color-surface-soft) hover:text-(--color-text)',

@@ -31,7 +31,7 @@ const canMarkAllAsRead = computed(
 );
 
 const buttonClass = computed(() => [
-  "relative flex h-10 w-10 items-center justify-center rounded-full border transition",
+  "relative flex h-10 w-10 items-center justify-center rounded-sm border transition",
   props.solid
     ? "border-(--color-border) bg-(--color-surface-soft) text-(--color-muted) hover:border-(--color-primary) hover:text-(--color-primary)"
     : "border-white/20 bg-white/10 text-white hover:bg-white/20",
@@ -248,7 +248,7 @@ watch(
         </button>
         <RouterLink
           :to="notificationRoute"
-          class="inline-flex min-h-9 items-center justify-center rounded-full bg-(--color-primary) px-4 text-xs font-bold !text-white transition hover:bg-(--color-primary-strong) hover:!text-white"
+          class="inline-flex min-h-9 items-center justify-center rounded-sm bg-(--color-primary) px-4 text-xs font-bold !text-white transition hover:bg-(--color-primary-strong) hover:!text-white"
           @click="closeDropdown"
         >
           {{ t("notifications.viewAll") }}

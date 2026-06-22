@@ -8,6 +8,7 @@ import {
   ShieldCheckIcon,
   UserCircleIcon,
 } from "@heroicons/vue/24/outline";
+import { CheckCircleIcon as CheckCircleIconSolid } from "@heroicons/vue/24/solid";
 import { useI18n } from "vue-i18n";
 import { onBeforeRouteLeave, RouterLink, useRouter } from "vue-router";
 import { Cropper } from "vue-advanced-cropper";
@@ -124,33 +125,33 @@ const profileCompletionPercent = computed(() => {
   const completed = profileCompletionItems.value.filter((item) => item.complete).length;
   return Math.round((completed / profileCompletionItems.value.length) * 100);
 });
-const accountCenterNav = [
+const accountCenterNav = computed(() => [
   {
-    label: "Profiles and personal details",
+    label: t("profile.navPersonal"),
     icon: UserCircleIcon,
     tab: "personal",
   },
   {
-    label: "Password and security",
+    label: t("profile.navSecurity"),
     icon: ShieldCheckIcon,
     tab: "security",
   },
   {
-    label: "Bookings",
+    label: t("profile.navBookings"),
     icon: CalendarDaysIcon,
     to: { name: "customer.reservations" },
   },
   {
-    label: "Saved stays",
+    label: t("profile.navSavedStays"),
     icon: HeartIcon,
     to: { name: "customer.wishlist" },
   },
   {
-    label: "Preferences",
+    label: t("profile.navPreferences"),
     icon: Cog6ToothIcon,
     to: { name: "customer.settings" },
   },
-];
+]);
 const currentProfileSnapshot = computed(() => ({
   full_name: profileForm.full_name.trim(),
   phone: profileForm.phone.trim(),
@@ -310,14 +311,41 @@ const uploadProfileImage = async () => {
   }
 };
 
-const openCropModal = () => {
-  cropModalOpen.value = true;
+const handleProfileImageSelect = (event) => {
+  selectProfileImage(event);
+  if (hasSelectedImage.value) {
+    cropModalOpen.value = true;
+  }
 };
 
-const applyCrop = async () => {
+const applyCropAndUpload = async () => {
   const result = cropperRef.value?.getResult();
-  await applyProfileImageCrop(result?.canvas);
+  if (!result?.canvas) {
+    return;
+  }
+
+  try {
+    const blob = await new Promise((resolve) =>
+      result.canvas.toBlob(resolve, selectedImageFile.value?.type || "image/jpeg", 0.92)
+    );
+
+    if (blob) {
+      const croppedFile = new File([blob], selectedImageFile.value?.name || "avatar.jpg", {
+        type: blob.type || selectedImageFile.value?.type,
+      });
+
+      selectedImageFile.value = croppedFile;
+      cropModalOpen.value = false;
+      await uploadProfileImage();
+    }
+  } catch (err) {
+    toastStore.danger(t("profile.errors.uploadImage"));
+  }
+};
+
+const closeCropModal = () => {
   cropModalOpen.value = false;
+  cancelProfileImageSelection();
 };
 
 const goBack = async () => {
@@ -374,7 +402,7 @@ onUnmounted(() => {
             type="button"
             variant="primary"
             size="sm"
-            class="mb-4 !rounded-lg"
+            class="mb-4 !rounded-sm"
             @click="goBack"
           >
             <ArrowLeftIcon class="h-4 w-4" />
@@ -421,12 +449,12 @@ onUnmounted(() => {
 
       <div v-else-if="isCustomerAccount" class="grid gap-8 lg:grid-cols-[310px_1fr]">
         <aside class="lg:sticky lg:top-28 lg:self-start">
-          <div class="rounded-[var(--radius-panel)] border border-(--color-border) bg-(--color-surface) p-5">
+          <div class="rounded-md border border-(--color-border)/40 bg-(--color-surface)/95 shadow-sm p-5 backdrop-blur-md">
             <AppButton
               type="button"
               variant="secondary"
               size="sm"
-              class="mb-6 !rounded-full"
+              class="mb-6 !rounded-sm"
               @click="goBack"
             >
               <ArrowLeftIcon class="h-4 w-4" />
@@ -434,13 +462,13 @@ onUnmounted(() => {
             </AppButton>
 
             <p class="text-sm font-bold uppercase tracking-[0.18em] text-(--color-primary)">
-              SrokYerng
+              {{ t("app.name") }}
             </p>
             <h1 class="mt-2 text-3xl font-bold tracking-tight">
-              Account Center
+              {{ t("profile.accountCenter") }}
             </h1>
             <p class="mt-3 text-sm leading-6 text-(--color-muted)">
-              Manage your booking profile, security, reservations, and preferences.
+              {{ t("profile.accountCenterDesc") }}
             </p>
 
             <nav class="mt-7 space-y-2" aria-label="Account center navigation">
@@ -451,15 +479,15 @@ onUnmounted(() => {
                 <button
                   v-if="item.tab"
                   type="button"
-                  class="flex w-full items-center gap-3 rounded-[var(--radius-lg)] px-3 py-3 text-left text-sm font-bold transition hover:bg-(--color-surface-soft)"
-                  :class="activeAccountTab === item.tab ? 'bg-(--color-primary-soft) text-(--color-primary)' : 'text-(--color-text)'"
+                  class="group flex w-full items-center gap-3 rounded-sm py-2 px-3 border-l-2 text-left text-sm font-semibold transition-all duration-200"
+                  :class="[activeAccountTab === item.tab ? 'bg-gradient-to-r from-(--color-primary-soft)/60 to-transparent border-(--color-primary) !text-(--color-primary)' : 'border-transparent text-(--color-text) hover:bg-(--color-surface-soft)']"
                   @click="activeAccountTab = item.tab"
                 >
                   <span
-                    class="flex h-10 w-10 items-center justify-center rounded-full transition"
-                    :class="activeAccountTab === item.tab ? 'bg-(--color-primary) text-white' : 'bg-(--color-primary-soft) text-(--color-primary)'"
+                    class="flex h-9 w-9 items-center justify-center rounded-sm transition-all duration-300 shadow-sm"
+                    :class="[activeAccountTab === item.tab ? 'bg-gradient-to-tr from-(--color-primary) to-(--color-secondary) text-white' : 'bg-gradient-to-tr from-(--color-primary-soft) to-(--color-surface-soft) text-(--color-primary) group-hover:from-(--color-primary) group-hover:to-(--color-secondary) group-hover:text-white']"
                   >
-                    <component :is="item.icon" class="h-5 w-5" />
+                    <component :is="item.icon" class="h-4.5 w-4.5" />
                   </span>
                   <span>{{ item.label }}</span>
                 </button>
@@ -467,10 +495,10 @@ onUnmounted(() => {
                 <RouterLink
                   v-else
                   :to="item.to"
-                  class="flex items-center gap-3 rounded-[var(--radius-lg)] px-3 py-3 text-sm font-bold text-(--color-text) transition hover:bg-(--color-surface-soft)"
+                  class="group flex items-center gap-3 rounded-sm py-2 px-3 border-l-2 border-transparent text-sm font-semibold text-(--color-text) transition-all duration-200 hover:bg-(--color-surface-soft)"
                 >
-                  <span class="flex h-10 w-10 items-center justify-center rounded-full bg-(--color-primary-soft) text-(--color-primary)">
-                    <component :is="item.icon" class="h-5 w-5" />
+                  <span class="flex h-9 w-9 items-center justify-center rounded-sm bg-gradient-to-tr from-(--color-primary-soft) to-(--color-surface-soft) text-(--color-primary) group-hover:from-(--color-primary) group-hover:to-(--color-secondary) group-hover:text-white transition-all duration-300 shadow-sm">
+                    <component :is="item.icon" class="h-4.5 w-4.5" />
                   </span>
                   <span>{{ item.label }}</span>
                 </RouterLink>
@@ -482,11 +510,11 @@ onUnmounted(() => {
         <div class="space-y-8">
           <section
             v-if="!isEmailVerified"
-            class="rounded-[var(--radius-panel)] border border-(--color-warning) bg-(--color-warning-soft) p-5 text-(--color-warning)"
+            class="rounded-md border border-(--color-warning) bg-(--color-warning-soft) p-5 text-(--color-warning)"
           >
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div class="flex items-start gap-3">
-                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-(--color-surface) text-(--color-warning)">
+                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm bg-(--color-surface) text-(--color-warning)">
                   <ShieldCheckIcon class="h-5 w-5" />
                 </span>
                 <div>
@@ -515,16 +543,16 @@ onUnmounted(() => {
 
           <section v-if="activeAccountTab === 'personal'" id="personal-details" class="scroll-mt-28">
             <div class="mb-5">
-              <h2 class="text-3xl font-bold tracking-tight">Profiles and personal details</h2>
+              <h2 class="text-3xl font-bold tracking-tight">{{ t("profile.personalTitle") }}</h2>
               <p class="mt-2 max-w-3xl text-base leading-7 text-(--color-muted)">
-                Review and update the profile details used for booking communication and account recovery.
+                {{ t("profile.personalDesc") }}
               </p>
             </div>
 
             <div class="space-y-6">
-              <section class="overflow-hidden rounded-[var(--radius-panel)] border border-(--color-border) bg-(--color-surface)">
+              <section class="overflow-hidden rounded-md border border-(--color-border) bg-(--color-surface)">
                 <div class="border-b border-(--color-border) px-5 py-4">
-                  <h3 class="text-xl font-bold">Profile</h3>
+                  <h3 class="text-xl font-bold">{{ t("nav.profile") }}</h3>
                 </div>
 
                 <div class="flex flex-col gap-6 p-5 lg:flex-row lg:items-center lg:justify-between">
@@ -542,21 +570,27 @@ onUnmounted(() => {
                       :selected-image-name="selectedImageFile?.name"
                       compact
                       class="border-0 !bg-transparent !p-0 !shadow-none"
-                      @select-image="selectProfileImage"
-                      @edit-image="openCropModal"
-                      @save-image="uploadProfileImage"
-                      @cancel-image="cancelProfileImageSelection"
+                      @select-image="handleProfileImageSelect"
                     />
 
                     <div class="min-w-0">
-                      <p class="truncate text-lg font-bold text-(--color-text)">{{ userLabel }}</p>
+                      <div class="flex items-center gap-1.5">
+                        <p class="truncate text-lg font-bold text-(--color-text)">{{ userLabel }}</p>
+                        <span
+                          v-if="isEmailVerified"
+                          class="inline-flex items-center text-(--color-success)"
+                          :title="t('nav.verifiedProfile')"
+                        >
+                          <CheckCircleIconSolid class="h-5 w-5" />
+                        </span>
+                      </div>
                       <p class="truncate text-sm text-(--color-muted)">{{ user?.email }}</p>
                       <div class="mt-2 flex flex-wrap gap-2">
-                        <span class="rounded-full bg-(--color-primary-soft) px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-(--color-primary)">
+                        <span class="rounded-sm bg-(--color-primary-soft) px-2.5 py-1 text-xs font-bold uppercase tracking-[0.14em] text-(--color-primary)">
                           {{ roleLabel }}
                         </span>
                         <span
-                          class="rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.14em]"
+                          class="rounded-sm px-2.5 py-1 text-xs font-bold uppercase tracking-[0.14em]"
                           :class="emailVerificationToneClass"
                         >
                           {{ emailVerificationLabel }}
@@ -565,9 +599,9 @@ onUnmounted(() => {
                     </div>
                   </div>
 
-                  <div class="min-w-[120px] rounded-[var(--radius-lg)] bg-(--color-primary-soft) px-4 py-3 text-center text-(--color-primary)">
+                  <div class="min-w-[120px] rounded-sm bg-(--color-primary-soft) px-4 py-3 text-center text-(--color-primary)">
                     <p class="text-2xl font-bold">{{ profileCompletionPercent }}%</p>
-                    <p class="text-xs font-bold uppercase tracking-[0.12em]">Complete</p>
+                    <p class="text-xs font-bold uppercase tracking-[0.12em]">{{ t("profile.completion.complete") }}</p>
                   </div>
                 </div>
               </section>
@@ -584,9 +618,9 @@ onUnmounted(() => {
 
           <section v-else-if="activeAccountTab === 'security'" id="security" class="scroll-mt-28 space-y-5">
             <div>
-              <h2 class="text-3xl font-bold tracking-tight">Password and security</h2>
+              <h2 class="text-3xl font-bold tracking-tight">{{ t("profile.securityTitle") }}</h2>
               <p class="mt-2 max-w-3xl text-base leading-7 text-(--color-muted)">
-                Manage password changes and signed-in sessions for your booking account.
+                {{ t("profile.securityDesc") }}
               </p>
             </div>
 
@@ -604,7 +638,7 @@ onUnmounted(() => {
 
       <div v-else class="grid gap-6 lg:grid-cols-[340px_1fr]">
         <aside class="space-y-6 lg:sticky lg:top-28 lg:self-start">
-          <ProfileSummaryCard
+           <ProfileSummaryCard
             :user-label="userLabel"
             :email="user?.email"
             :role-label="roleLabel"
@@ -615,10 +649,7 @@ onUnmounted(() => {
             :uploading-image="uploadingImage"
             :has-selected-image="hasSelectedImage"
             :selected-image-name="selectedImageFile?.name"
-            @select-image="selectProfileImage"
-            @edit-image="openCropModal"
-            @save-image="uploadProfileImage"
-            @cancel-image="cancelProfileImageSelection"
+            @select-image="handleProfileImageSelect"
           />
 
           <ProfileCompletionCard
@@ -663,7 +694,7 @@ onUnmounted(() => {
         <AppButton
           type="button"
           variant="secondary"
-          class="!rounded-lg"
+          class="!rounded-sm"
           @click="resolveLeaveConfirmation(false)"
         >
           {{ t("profile.leave.stay") }}
@@ -671,7 +702,7 @@ onUnmounted(() => {
         <AppButton
           type="button"
           variant="danger"
-          class="!rounded-lg"
+          class="!rounded-sm"
           @click="resolveLeaveConfirmation(true)"
         >
           {{ t("profile.leave.confirm") }}
@@ -683,7 +714,7 @@ onUnmounted(() => {
       :open="cropModalOpen"
       :title="t('profile.summary.cropImage')"
       panel-class="max-w-xl"
-      @close="cropModalOpen = false"
+      @close="closeCropModal"
     >
       <div class="space-y-5">
         <p class="text-sm leading-6 text-(--color-muted)">
@@ -692,7 +723,7 @@ onUnmounted(() => {
 
         <Cropper
           ref="cropperRef"
-          class="h-[360px] rounded-lg bg-black"
+          class="h-[360px] rounded-md bg-black"
           :src="selectedImagePreviewUrl"
           :stencil-props="{ aspectRatio: 1 }"
           image-restriction="stencil"
@@ -704,17 +735,20 @@ onUnmounted(() => {
         <AppButton
           type="button"
           variant="secondary"
-          class="!rounded-lg"
-          @click="cropModalOpen = false"
+          class="!rounded-sm"
+          :disabled="uploadingImage"
+          @click="closeCropModal"
         >
           {{ t("common.cancel") }}
         </AppButton>
         <AppButton
           type="button"
-          class="!rounded-lg"
-          @click="applyCrop"
+          class="!rounded-sm"
+          :loading="uploadingImage"
+          :disabled="uploadingImage"
+          @click="applyCropAndUpload"
         >
-          {{ t("profile.summary.applyCrop") }}
+          {{ t("profile.summary.saveImage") }}
         </AppButton>
       </template>
     </AppModal>

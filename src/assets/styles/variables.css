@@ -19,6 +19,10 @@
   --color-secondary: #3995c6;
   --color-secondary-soft: #84aed0;
 
+  --color-accent: #f59e0b;
+  --color-accent-strong: #d97706;
+  --color-accent-soft: #fef3c7;
+
   --color-success: #15803d;
   --color-success-soft: #dcfce7;
 
@@ -74,6 +78,10 @@
 
   --color-secondary: #1268b4;
   --color-secondary-soft: rgba(132, 174, 208, 0.18);
+
+  --color-accent: #fbbf24;
+  --color-accent-strong: #f59e0b;
+  --color-accent-soft: rgba(251, 191, 36, 0.16);
 
   --color-success: #22c55e;
   --color-success-soft: rgba(34, 197, 94, 0.16);

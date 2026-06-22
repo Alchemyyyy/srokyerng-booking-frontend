@@ -67,11 +67,18 @@ const normalizeProperty = (item, index, fallbackImage) => {
   return {
     id: item.id ?? item.property_id ?? index + 1,
     name: item.property_name || item.name || `Property ${index + 1}`,
-    city: String(item.city || item.address || "")
+    city: String(
+      typeof item.city === "string"
+        ? item.city
+        : item.city?.name || item.city_name || item.address || "",
+    )
       .trim()
       .toLowerCase()
       .replace(/\s+/g, "-"),
-    location: item.city || item.address || "",
+    location:
+      typeof item.city === "string"
+        ? item.city
+        : item.city?.name || item.city_name || item.address || "",
     status: item.status_name || item.status || "pending",
     type: String(
       item.type || item.property_type || item.category_name || "hotel",

@@ -2,6 +2,11 @@
   "app": {
     "name": "SrokYerng Booking"
   },
+  "roles": {
+    "customer": "Traveler",
+    "owner": "Host",
+    "admin": "Admin"
+  },
   "common": {
     "back": "Back",
     "cancel": "Cancel",
@@ -162,17 +167,38 @@
   },
   "nav": {
     "home": "Home",
-    "properties": "Properties",
+    "properties": "Stays",
     "about": "About Us",
     "contact": "Contact",
     "signedInAs": "Signed in as",
     "dashboard": "Dashboard",
     "logout": "Logout",
     "login": "Login",
-    "listProperty": "List your property",
-    "register": "Register"
+    "listProperty": "List your stay",
+    "register": "Register",
+    "searchPlaceholder": "Search stays...",
+    "account": "Account",
+    "manageAccount": "Manage your booking account.",
+    "myAccount": "My account",
+    "profile": "Profile",
+    "myBookings": "My bookings",
+    "savedStays": "Saved stays",
+    "notifications": "Notifications",
+    "settings": "Settings",
+    "becomePartner": "Become a partner",
+    "becomePartnerDesc": "Become a partner and host your accommodation.",
+    "verifiedProfile": "Verified Profile",
+    "helpSupport": "Help & Support"
   },
   "ownerLanding": {
+    "nav": {
+      "whyHost": "Why Host",
+      "howItWorks": "How it works",
+      "faqs": "FAQs",
+      "dashboard": "Go to Dashboard",
+      "switchToHost": "Switch to Host",
+      "partner": "Partner"
+    },
     "eyebrow": "For property partners",
     "title": "List your property and manage bookings in one workspace",
     "subtitle": "Create a partner account to publish accommodations, manage room availability, and follow guest reservations from your dashboard.",
@@ -252,10 +278,21 @@
     "loading": "Loading profile...",
     "verified": "Verified",
     "notVerified": "Not verified",
+    "accountCenter": "Account Center",
+    "accountCenterDesc": "Manage your booking profile, security, reservations, and preferences.",
+    "navPersonal": "Profiles and personal details",
+    "navSecurity": "Password and security",
+    "navBookings": "Bookings",
+    "navSavedStays": "Saved stays",
+    "navPreferences": "Preferences",
+    "personalTitle": "Profiles and personal details",
+    "personalDesc": "Review and update the profile details used for booking communication and account recovery.",
+    "securityTitle": "Password and security",
+    "securityDesc": "Manage password changes and signed-in sessions for your booking account.",
     "roles": {
       "admin": "Admin",
-      "owner": "Owner",
-      "customer": "Customer",
+      "owner": "Host",
+      "customer": "Traveler",
       "member": "Member"
     },
     "emailVerification": {
@@ -276,6 +313,7 @@
     "completion": {
       "title": "Profile completion",
       "description": "Complete your profile so bookings and account updates are easier to manage.",
+      "complete": "Complete",
       "items": {
         "name": "Name",
         "phone": "Phone",
