@@ -8,7 +8,7 @@ import AmenityManagementView from "@/modules/amenities/pages/AmenityManagementVi
 import OwnerRoomDetailView from "../rooms/pages/OwnerRoomDetailView.vue";
 import BookingCalendarView from "../calendar/pages/BookingCalendarView.vue";
 import OwnerPaymentsView from "./pages/OwnerPaymentsView.vue";
-import OwnerPaymentDetailView from "./pages/OwnerPaymentDetailsPage.vue";
+import OwnerPaymentDetailView from "./pages/OwnerPaymentDetailView.vue";
 
 export const ownerRoutes = [
   {
