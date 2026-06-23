@@ -2,6 +2,13 @@
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
+import {
+  CalendarDaysIcon,
+  MagnifyingGlassIcon,
+  MapPinIcon,
+  SparklesIcon,
+  UserGroupIcon,
+} from "@heroicons/vue/24/outline";
 import AppButton from "@/shared/components/AppButton.vue";
 import HeroImg from "@/assets/images/home/hero/hero_banner.png";
 const { t, locale } = useI18n({ useScope: "global" });
@@ -42,92 +49,115 @@ const quickTags = computed(() => [
 </script>
 <template>
   <section
-    class="relative min-h-screen w-full overflow-hidden flex items-center justify-center pt-44 pb-20"
+    class="relative flex min-h-screen w-full items-center overflow-hidden px-4 pb-16 pt-36 sm:px-6 lg:px-8"
   >
     <div class="absolute inset-0 z-0">
       <img
         :src="HeroImg"
         alt="Cambodian Resort"
-        class="h-full w-auto min-w-full object-cover"
+        class="h-full w-full object-cover"
       />
       <div
-        class="absolute inset-0 backdrop-blur-[2px]"
+        class="absolute inset-0"
         style="
           background: linear-gradient(
-            to bottom,
-            rgba(6, 41, 105, 0.85) 0%,
-            rgba(41, 111, 166, 0.8),
-            rgba(41, 111, 166, 0.3),
-            rgba(0, 0, 0, 0.5)
+            110deg,
+            rgba(5, 23, 45, 0.92) 0%,
+            rgba(5, 31, 66, 0.86) 42%,
+            rgba(20, 117, 174, 0.48) 74%,
+            rgba(4, 20, 38, 0.55) 100%
           );
         "
       ></div>
     </div>
 
-    <div class="relative z-10 mx-auto max-w-6xl text-center">
-      <div class="mb-8 flex justify-center animate-fade-in">
+    <div class="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-10 lg:grid-cols-[1fr_420px]">
+      <div class="max-w-3xl text-left">
         <span
-          class="inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-white backdrop-blur-md ring-1 ring-white/30"
+          class="inline-flex items-center gap-2 rounded-full bg-white/12 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-white ring-1 ring-white/20 backdrop-blur-md"
           :class="{ 'font-kantumruy': locale === 'km' }"
         >
-          <span class="h-2 w-2 rounded-full bg-green-400 animate-pulse"></span>
+          <SparklesIcon class="h-4 w-4 text-(--color-primary)" />
           {{ t("home.hero.eyebrow") }}
         </span>
+
+        <h1
+          class="mt-7 max-w-4xl text-5xl font-extrabold text-white drop-shadow-lg sm:text-6xl lg:text-7xl lg:leading-[1.05]"
+          :class="
+            locale === 'km' ? 'font-kantumruy leading-[1.28]' : 'tracking-tight'
+          "
+        >
+          {{ t("home.hero.title") }}
+          <span class="text-(--color-primary)">
+            {{ t("home.hero.titleHighlight") }}
+          </span>
+        </h1>
+
+        <p
+          class="mt-6 max-w-2xl text-lg text-white/85 drop-shadow-md sm:text-xl"
+          :class="
+            locale === 'km'
+              ? 'font-kantumruy leading-relaxed'
+              : 'leading-8 font-medium'
+          "
+        >
+          {{ t("home.hero.subtitle") }}
+        </p>
+
+        <div class="mt-8 flex flex-wrap gap-3">
+          <button
+            v-for="tag in quickTags"
+            :key="tag"
+            type="button"
+            class="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/15 backdrop-blur-md transition hover:bg-white/18"
+            @click="searchForm.city = tag"
+          >
+            <MapPinIcon class="h-4 w-4 text-(--color-primary)" />
+            {{ tag }}
+          </button>
+        </div>
+
+        <div class="mt-10 grid max-w-2xl grid-cols-3 divide-x divide-white/15 rounded-[var(--radius-panel)] border border-white/15 bg-white/10 px-4 py-5 backdrop-blur-md">
+          <div class="px-3 first:pl-0">
+            <p class="text-3xl font-bold text-white">411+</p>
+            <p class="mt-1 text-xs uppercase tracking-widest text-white/65">
+              {{ t("home.search.properties") }}
+            </p>
+          </div>
+          <div class="px-3">
+            <p class="text-3xl font-bold text-white">28k+</p>
+            <p class="mt-1 text-xs uppercase tracking-widest text-white/65">
+              {{ t("home.search.happyGuests") }}
+            </p>
+          </div>
+          <div class="px-3 pr-0">
+            <p class="text-3xl font-bold text-white">25+</p>
+            <p class="mt-1 text-xs uppercase tracking-widest text-white/65">
+              {{ t("home.search.cities") }}
+            </p>
+          </div>
+        </div>
       </div>
 
-      <h1
-        class="mx-auto mb-6 max-w-4xl text-5xl font-extrabold text-white sm:text-6xl lg:text-7xl lg:leading-[1.1] drop-shadow-lg"
-        :class="
-          locale === 'km' ? 'font-kantumruy leading-[1.3]' : 'tracking-tight'
-        "
-      >
-        {{ t("home.hero.title") }}
-        <span class="text-blue-400">
-          {{ t("home.hero.titleHighlight") }}
-        </span>
-      </h1>
+      <div class="hero-search-panel rounded-[var(--radius-panel)] border border-(--color-border) bg-(--color-surface) p-5 shadow-2xl backdrop-blur-xl">
+        <div class="mb-5">
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-(--color-primary)">
+            {{ t("home.search.submit") }}
+          </p>
+          <h2 class="mt-1 text-2xl font-bold text-(--color-text)">
+            {{ t("home.search.city") }} & {{ t("home.search.checkInOut") }}
+          </h2>
+        </div>
 
-      <p
-        class="mx-auto mb-12 max-w-2xl text-lg text-white/90 drop-shadow-md"
-        :class="
-          locale === 'km'
-            ? 'font-kantumruy leading-relaxed'
-            : 'leading-8 font-medium'
-        "
-      >
-        {{ t("home.hero.subtitle") }}
-      </p>
-
-      <div
-        class="mx-auto max-w-5xl rounded-3xl bg-white p-2 shadow-2xl lg:rounded-full"
-      >
-        <div class="grid grid-cols-1 gap-1 sm:grid-cols-2 lg:grid-cols-4">
-          <div
-            class="flex flex-col items-start px-6 py-3 transition-colors hover:bg-gray-50 rounded-full cursor-pointer"
-          >
-            <label
-              class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-blue-600"
-              :class="{ 'font-kantumruy': locale === 'km' }"
-            >
-              <svg
-                class="h-3 w-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2.5"
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                />
-                <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
+        <div class="space-y-3">
+          <label class="block rounded-[var(--radius-lg)] border border-(--color-border) bg-(--color-surface-soft) px-4 py-3 transition focus-within:border-(--color-primary)">
+            <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-(--color-primary)">
+              <MapPinIcon class="h-4 w-4" />
               {{ t("home.search.city") }}
-            </label>
+            </span>
             <select
               v-model="searchForm.city"
-              class="w-full border-none bg-transparent p-0 text-[15px] font-semibold text-gray-800 outline-none focus:ring-0"
+              class="hero-search-field mt-2 w-full border-none bg-transparent p-0 text-base font-semibold text-(--color-text) outline-none focus:ring-0"
               :class="{ 'font-kantumruy': locale === 'km' }"
             >
               <option value="">{{ t("home.search.allCities") }}</option>
@@ -135,98 +165,82 @@ const quickTags = computed(() => [
                 {{ city }}
               </option>
             </select>
+          </label>
+
+          <div class="grid gap-3 sm:grid-cols-2">
+            <label class="block rounded-[var(--radius-lg)] border border-(--color-border) bg-(--color-surface-soft) px-4 py-3 transition focus-within:border-(--color-primary)">
+              <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-(--color-primary)">
+                <CalendarDaysIcon class="h-4 w-4" />
+                Check in
+              </span>
+              <input
+                v-model="searchForm.checkIn"
+                type="date"
+                class="hero-search-field mt-2 w-full border-none bg-transparent p-0 text-sm font-semibold text-(--color-text) outline-none focus:ring-0"
+              />
+            </label>
+
+            <label class="block rounded-[var(--radius-lg)] border border-(--color-border) bg-(--color-surface-soft) px-4 py-3 transition focus-within:border-(--color-primary)">
+              <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-(--color-primary)">
+                <CalendarDaysIcon class="h-4 w-4" />
+                Check out
+              </span>
+              <input
+                v-model="searchForm.checkOut"
+                type="date"
+                class="hero-search-field mt-2 w-full border-none bg-transparent p-0 text-sm font-semibold text-(--color-text) outline-none focus:ring-0"
+              />
+            </label>
           </div>
 
-          <div
-            class="flex flex-col items-start px-6 py-3 transition-colors hover:bg-gray-50 rounded-full cursor-pointer border-l border-gray-100 lg:block hidden"
-          >
-            <label
-              class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-blue-600"
-              :class="{ 'font-kantumruy': locale === 'km' }"
-            >
-              {{ t("home.search.type") }}
-            </label>
-            <select
-              class="w-full border-none bg-transparent p-0 text-[15px] font-semibold text-gray-800 outline-none focus:ring-0"
-              :class="{ 'font-kantumruy': locale === 'km' }"
-            >
-              <option>{{ t("home.categories.hotel") }}</option>
-              <option>{{ t("home.categories.resort") }}</option>
-              <option>{{ t("home.categories.homestay") }}</option>
-            </select>
-          </div>
-
-          <div
-            class="flex flex-col items-start px-6 py-3 transition-colors hover:bg-gray-50 rounded-full cursor-pointer border-l border-gray-100"
-          >
-            <label
-              class="text-[10px] font-bold uppercase tracking-widest text-blue-600"
-              :class="{ 'font-kantumruy': locale === 'km' }"
-            >
-              {{ t("home.search.checkInOut") }}
-            </label>
+          <label class="block rounded-[var(--radius-lg)] border border-(--color-border) bg-(--color-surface-soft) px-4 py-3 transition focus-within:border-(--color-primary)">
+            <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-(--color-primary)">
+              <UserGroupIcon class="h-4 w-4" />
+              Guests
+            </span>
             <input
-              type="date"
-              v-model="searchForm.checkIn"
-              class="w-full border-none bg-transparent p-0 text-sm font-semibold text-gray-800 outline-none focus:ring-0"
+              v-model.number="searchForm.guests"
+              type="number"
+              min="1"
+              class="hero-search-field mt-2 w-full border-none bg-transparent p-0 text-base font-semibold text-(--color-text) outline-none focus:ring-0"
             />
-          </div>
+          </label>
 
-          <div class="flex items-center p-1">
-            <AppButton
-              variant="primary"
-              size="lg"
-              class="!rounded-full w-full h-full"
-              @click="handleSearch"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="3"
-                class="h-5 w-5"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.35-4.35" stroke-linecap="round" />
-              </svg>
-              {{ t("home.search.submit") }}
-            </AppButton>
-          </div>
-        </div>
-      </div>
-
-      <div class="mt-8 flex flex-wrap justify-center gap-3">
-        <button
-          v-for="tag in quickTags"
-          :key="tag"
-          class="rounded-full bg-white/10 px-4 py-1.5 text-xs font-medium text-white backdrop-blur-md transition hover:bg-white/20"
-        >
-          📍 {{ tag }}
-        </button>
-      </div>
-
-      <div
-        class="mt-16 grid grid-cols-3 divide-x divide-white/20 border-t border-white/20 pt-8 max-w-3xl mx-auto"
-      >
-        <div>
-          <p class="text-3xl font-bold text-white">411+</p>
-          <p class="text-xs uppercase tracking-widest text-white/60 mt-1">
-            {{ t("home.search.properties") }}
-          </p>
-        </div>
-        <div>
-          <p class="text-3xl font-bold text-white">28k+</p>
-          <p class="text-xs uppercase tracking-widest text-white/60 mt-1">
-            {{ t("home.search.happyGuests") }}
-          </p>
-        </div>
-        <div>
-          <p class="text-3xl font-bold text-white">25+</p>
-          <p class="text-xs uppercase tracking-widest text-white/60 mt-1">
-            {{ t("home.search.cities") }}
-          </p>
+          <AppButton
+            variant="primary"
+            size="lg"
+            class="mt-2 w-full !rounded-[var(--radius-lg)]"
+            @click="handleSearch"
+          >
+            <MagnifyingGlassIcon class="h-5 w-5" />
+            {{ t("home.search.submit") }}
+          </AppButton>
         </div>
       </div>
     </div>
   </section>
 </template>
+
+<style scoped>
+.hero-search-panel {
+  color-scheme: light;
+}
+
+:global(.dark) .hero-search-panel {
+  color-scheme: dark;
+}
+
+.hero-search-field,
+.hero-search-field option {
+  color: var(--color-text);
+  background-color: var(--color-surface-soft);
+}
+
+.hero-search-field::-webkit-calendar-picker-indicator {
+  opacity: 0.75;
+}
+
+:global(.dark) .hero-search-field::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+</style>
