@@ -183,6 +183,20 @@ const formatShortDate = (date) =>
 const calendarAttributes = computed(() => {
   const attrs = [];
 
+  // Available days — hollow grey dot, matches the legend's "Available" marker.
+  // Pushed first so booked/selected/today (added after) render on top of it.
+  if (availableDates.value.length) {
+    attrs.push({
+      key: "available",
+      dot: {
+        style: { backgroundColor: "transparent" },
+        class: "vc-dot-available",
+      },
+      dates: availableDates.value.map((d) => new Date(d)),
+    });
+  }
+
+  // Booked days — solid red highlight on the day itself.
   if (unavailableDates.value.length) {
     attrs.push({
       key: "unavailable",
@@ -192,17 +206,30 @@ const calendarAttributes = computed(() => {
     });
   }
 
+  // The range the user is actively building.
   if (selectedRange.value.start && selectedRange.value.end) {
     attrs.push({
       key: "selected",
       highlight: { color: "blue", fillMode: "solid" },
       dates: { start: selectedRange.value.start, end: selectedRange.value.end },
     });
+  } else if (selectedRange.value.start) {
+    // Single day picked, waiting for the end of the range — still show it as selected.
+    attrs.push({
+      key: "selected-start",
+      highlight: { color: "blue", fillMode: "solid" },
+      dates: selectedRange.value.start,
+    });
   }
 
+  // "Today" marker — visually distinct from the blue "Selected" highlight so
+  // they're never confused for one another (outline instead of solid fill).
   attrs.push({
     key: "today",
-    dot: { color: "blue" },
+    highlight: {
+      color: "gray",
+      fillMode: "outline",
+    },
     dates: new Date(),
   });
 
@@ -367,7 +394,7 @@ onMounted(fetchCalendar);
           >
             <div class="flex items-center gap-1.5">
               <span
-                class="w-2.5 h-2.5 rounded-full border border-(--color-border-secondary)"
+                class="w-2.5 h-2.5 rounded-full border-2 border-(--color-border-secondary)"
               />
               Available
             </div>
@@ -378,6 +405,10 @@ onMounted(fetchCalendar);
             <div class="flex items-center gap-1.5">
               <span class="w-2.5 h-2.5 rounded-full bg-blue-500" />
               Selected
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full border-2 border-gray-400" />
+              Today
             </div>
           </div>
         </div>
@@ -452,5 +483,16 @@ onMounted(fetchCalendar);
 }
 .calendar-wrapper :deep(.vc-day-content:hover) {
   background: var(--color-surface-soft);
+}
+
+/* Available-day dot: hollow outline circle instead of v-calendar's default
+   solid dot, so it visually matches the legend's "Available" marker and
+   doesn't compete visually with the booked/selected/today indicators. */
+.calendar-wrapper :deep(.vc-dot-available) {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-border-secondary, #9ca3af);
+  background-color: transparent !important;
 }
 </style>

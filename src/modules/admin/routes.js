@@ -1,9 +1,10 @@
-import ComingSoonView from "@/shared/components/ComingSoonView.vue";
 import AdminAnalyticsView from "@/modules/analytics/pages/AdminAnalyticsView.vue";
 import PropertyApprovalView from "@/modules/admin/pages/PropertyApprovalView.vue";
 import PropertyReviewDetail from "@/modules/admin/pages/PropertyReviewDetail.vue";
+import ReservationMonitorView from "@/modules/admin/pages/ReservationMonitorView.vue";
+import PaymentMonitorView from "@/modules/admin/pages/PaymentMonitorView.vue"; // ⚡ NEW
+import UserManagementView from "./pages/UserManagementView.vue";
 import { ROLES } from "@/shared/constants/roles";
-// import ManageRoomsView from "@/modules/rooms/pages/ManageRoomsView.vue";
 
 export const adminRoutes = [
   {
@@ -25,31 +26,21 @@ export const adminRoutes = [
     meta: { requiresAuth: true, roles: [ROLES.ADMIN] },
   },
   {
-    path: "rooms-showcase",
-    name: "rooms",
-    component: ComingSoonView,
-    props: { title: "Rooms Showcase" },
-    meta: { requiresAuth: true, roles: [ROLES.ADMIN] },
-  },
-  {
     path: "payment-verifications",
-    name: "paymentVerifications",
-    component: ComingSoonView,
-    props: { title: "Payment Verifications" },
+    name: "admin.paymentVerifications", // ⚡ aligned with dashboard.store.js quickLinks
+    component: PaymentMonitorView, // ⚡ replaced ComingSoonView
     meta: { requiresAuth: true, roles: [ROLES.ADMIN] },
   },
   {
     path: "reservations",
-    name: "reservations",
-    component: ComingSoonView,
-    props: { title: "Reservation Monitoring" },
+    name: "admin.reservations", // ⚡ aligned with dashboard.store.js quickLinks
+    component: ReservationMonitorView,
     meta: { requiresAuth: true, roles: [ROLES.ADMIN] },
   },
   {
     path: "users",
-    name: "users",
-    component: ComingSoonView,
-    props: { title: "User Management" },
+    name: "admin.users", // ⚡ aligned with dashboard.store.js quickLinks
+    component: UserManagementView,
     meta: { requiresAuth: true, roles: [ROLES.ADMIN] },
   },
 ];
