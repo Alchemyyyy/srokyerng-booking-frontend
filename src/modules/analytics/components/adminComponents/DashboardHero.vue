@@ -8,7 +8,7 @@ defineProps({
   selectedHistory: { type: String, default: '12m' }
 })
 
-const emit = defineEmits(['refresh', 'changeHistory'])
+const emit = defineEmits(['refresh', 'change-history'])
 </script>
 
 <template>

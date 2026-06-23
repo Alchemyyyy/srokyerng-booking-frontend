@@ -21,7 +21,10 @@ const tabs = [
 
 const getCount = (value) => {
     if (value === '') return props.allProperties.length;
-    return props.allProperties.filter(p => p.status_id === value).length;
+
+    return props.allProperties.filter(
+        p => Number(p.status?.status_id) === Number(value)
+    ).length;
 };
 
 const selectTab = (value) => {

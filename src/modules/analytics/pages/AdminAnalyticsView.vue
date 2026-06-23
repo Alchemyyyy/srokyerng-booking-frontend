@@ -1,6 +1,8 @@
 <script setup>
+import { onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useSidebar } from '@/shared/composables/useSidebar'
-import { useAnalyticsDashboard } from '../composables/useAnalyticsDashboard'
+import { useAdminAnalyticsStore } from '../stores/AdminAnalyticsStore'
 
 import DashboardHero from '../components/adminComponents/DashboardHero.vue'
 import MetricsGrid from '../components/adminComponents/MetricsGrid.vue'
@@ -9,16 +11,26 @@ import ApprovalDoughnut from '../components/adminComponents/ApprovalDoughnut.vue
 import ActivityFeed from '../components/adminComponents/ActivityFeed.vue'
 import PipelineTable from '../components/adminComponents/PipelineTable.vue'
 import QuickActions from '../components/adminComponents/QuickActions.vue'
+import LoadingSpinner from '@/shared/components/LoadingSpinner.vue'
 
 const { isSidebarOpen } = useSidebar()
+
+const store = useAdminAnalyticsStore()
 const {
   loading, error, stats, propertiesPipeline, systemActivities,
-  approvalBreakdown, quickLinks, loadDashboard,
-  selectedHistory, historyOptions, overviewSeries, setSelectedHistory
-} = useAnalyticsDashboard()
+  approvalBreakdown, quickLinks, selectedHistory, historyOptions, overviewSeries
+} = storeToRefs(store)
+
+onMounted(() => {
+  store.fetchDashboardData()
+})
 
 const handleChangeHistory = (value) => {
-  setSelectedHistory(value)
+  store.setHistoryWindow(value)
+}
+
+const handleRefresh = () => {
+  store.fetchDashboardData()
 }
 </script>
 
@@ -26,14 +38,17 @@ const handleChangeHistory = (value) => {
   <div class="admin-dashboard-container my-25 space-y-6" :class="isSidebarOpen ? 'ml-64' : 'ml-20'">
 
     <div v-if="error" class="error-alert-banner">
-      <p class="text-sm font-semibold">{{ $t(`analytics.errors.${error}`) }}</p>
-      <button @click="loadDashboard" class="retry-action-btn">
-        {{ $t('analytics.retry') }}
-      </button>
+      <p class="text-sm font-semibold">Error: {{ error }}</p>
+      <button @click="handleRefresh" class="retry-action-btn">Retry</button>
     </div>
 
     <DashboardHero :loading="loading" :history-options="historyOptions" :selected-history="selectedHistory"
-      @change-history="handleChangeHistory" @refresh="loadDashboard" />
+      @change-history="handleChangeHistory" @refresh="handleRefresh" />
+
+    <!-- Full-page loading overlay on first load -->
+    <div v-if="loading && !stats.properties" class="loading-overlay">
+      <LoadingSpinner />
+    </div>
 
     <template v-if="!error">
       <MetricsGrid :stats="stats" :loading="loading" />
@@ -47,42 +62,46 @@ const handleChangeHistory = (value) => {
       <section class="grid gap-6 lg:grid-cols-5">
         <ActivityFeed v-if="systemActivities.length > 0" :activities="systemActivities" />
         <div v-else class="empty-panel lg:col-span-2">
-          {{ $t('analytics.noActivity') }}
+          <LoadingSpinner v-if="loading" />
+          <span v-else>No system activities found.</span>
         </div>
 
-        <PipelineTable v-if="propertiesPipeline.length > 0" :properties="propertiesPipeline" />
+        <!-- <PipelineTable v-if="propertiesPipeline.length > 0" :properties="propertiesPipeline" />
         <div v-else class="empty-panel lg:col-span-3">
-          {{ $t('analytics.noPipeline') }}
+          <LoadingSpinner v-if="loading" />
+          <span v-else>No pending property pipeline recorded.</span>
+        </div> -->
+        <div class="lg:col-span-3">
+          <QuickActions :links="quickLinks" :formatter="(v) => new Intl.NumberFormat('en-US').format(v)" />
         </div>
       </section>
 
-      <QuickActions :links="quickLinks" :formatter="(v) => new Intl.NumberFormat('en-US').format(v)" />
     </template>
   </div>
 </template>
 
 <style scoped>
 .admin-dashboard-container {
-  font-family: var(--font-main);
-  background-color: var(--color-page);
-  color: var(--color-text);
+  font-family: var(--font-main, sans-serif);
+  background-color: var(--color-page, #f9fafb);
+  color: var(--color-text, #111827);
   transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 0 var(--space-lg);
+  padding: 0 var(--space-lg, 1.5rem);
 }
 
 .error-alert-banner {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: var(--color-danger-soft, #fef2f2);
-  border: 1px solid var(--color-danger, #ef4444);
-  color: var(--color-danger, #b91c1c);
-  padding: var(--space-md);
-  border-radius: var(--radius-md);
+  background-color: #fef2f2;
+  border: 1px solid #ef4444;
+  color: #b91c1c;
+  padding: 1rem;
+  border-radius: 8px;
 }
 
 .retry-action-btn {
-  background: var(--color-danger);
+  background: #ef4444;
   color: #fff;
   padding: 4px 12px;
   font-size: 12px;
@@ -92,14 +111,25 @@ const handleChangeHistory = (value) => {
 }
 
 .empty-panel {
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-panel);
-  padding: var(--space-xl);
+  background-color: var(--color-surface, #fff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-panel, 12px);
+  padding: var(--space-xl, 2rem);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-muted);
+  color: var(--color-muted, #6b7280);
   font-size: 13px;
+}
+
+.loading-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl, 2rem);
+  background-color: var(--color-surface, #fff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-panel, 12px);
+  min-height: 120px;
 }
 </style>

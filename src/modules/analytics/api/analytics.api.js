@@ -1,20 +1,43 @@
-// Analytics API calls will be added by the analytics module owner.
+// modules/analytics/api/analytics.api.js
 import http from '@/app/api/http';
 
 export const analyticsApi = {
-    // ទាញយកបញ្ជី Properties ទាំងអស់ (ដើម្បីយកមកប្រកបសំបក count និងធ្វើ Pipeline, Breakdown)
-    getProperties() {
-        return http.get('/admin/properties', { params: { limit: 1000 } });
+    getAdminSummary(params) {
+        return http.get('/admin/analytics/summary', { params });
+    },
+    getAdminUsers(params) {
+        return http.get('/admin/analytics/users', { params });
+    },
+    getAdminProperties(params) {
+        return http.get('/admin/analytics/properties', { params });
+    },
+    getAdminReservations(params) {
+        return http.get('/admin/analytics/reservations', { params });
+    },
+    getAdminPayments(params) {
+        return http.get('/admin/analytics/payments', { params });
+    },
+    getAdminReviews(params) {
+        return http.get('/admin/analytics/reviews', { params });
+    },
+    getAdminActivity(params) {
+        return http.get('/admin/analytics/activity', { params });
     },
 
-    // ទាញយកបញ្ជី Bookings ទាំងអស់
-    getBookings() {
-        return http.get('/admin/reservations', { params: { limit: 1000 } });
+    //owner
+    getOwnerRevenue(params) {
+        return http.get('/owner/analytics/revenue', { params });
     },
-
-    // ទាញយកបញ្ជី Users ទាំងអស់
-    getUsers() {
-        return http.get('/users');
-        
+    getOwnerSummary(params) {
+        return http.get('/owner/analytics/summary', { params });
+    },
+    getOwnerProperties(params) {
+        return http.get('/owner/analytics/properties', { params });
+    },
+    getOwnerRooms(params) {
+        return http.get('/owner/analytics/rooms', { params });
+    },
+    getOwnerReservations(params) {
+        return http.get('/owner/analytics/reservations', { params });
     }
 };

@@ -23,26 +23,28 @@ const approvalStore = useApprovalStore();
 const currentFilterStatus = ref(1); // បង្ហាញ Pending (status_id: 1) មុនគេពេលដំបូង
 const searchKeyword = ref('');
 
-// 💡 ធ្វើការ Filter ចេញពី State របស់ Store រួម
 const filteredProperties = computed(() => {
     let list = approvalStore.properties || [];
 
+    // 1. Filter ស្វែងរកតាមពាក្យគន្លឹះ (Search)
     if (searchKeyword.value && searchKeyword.value.trim() !== '') {
         const query = searchKeyword.value.toLowerCase().trim();
         list = list.filter(item => {
             return (
                 item.property_name?.toLowerCase().includes(query) ||
-                item.owner_name?.toLowerCase().includes(query) ||
-                item.owner_email?.toLowerCase().includes(query) ||
+                item.owner?.owner_name?.toLowerCase().includes(query) ||   // ✅ ចូលទៅយក owner_name
+                item.owner?.owner_email?.toLowerCase().includes(query) ||  // ✅ ចូលទៅយក owner_email
                 item.address?.toLowerCase().includes(query) ||
-                item.city?.toLowerCase().includes(query)
+                item.status?.status_name?.toLowerCase().includes(query)    // ✅ ចូលទៅយក status_name ("approved"/"pending")
             );
         });
     }
 
+    // 2. Filter តាមផ្ទាំង Status (Tabs)
     if (currentFilterStatus.value !== undefined && currentFilterStatus.value !== null && currentFilterStatus.value !== '') {
         list = list.filter(item => {
-            return Number(item.status_id) === Number(currentFilterStatus.value);
+            // ✅ ផ្ទៀងផ្ទាត់លេខ status_id នៅក្នុង Object status
+            return Number(item.status?.status_id) === Number(currentFilterStatus.value);
         });
     }
 

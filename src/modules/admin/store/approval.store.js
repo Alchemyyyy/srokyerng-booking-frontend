@@ -17,7 +17,7 @@ export const useApprovalStore = defineStore('admin-approval', () => {
         try {
             const response = await approvalService.getAllProperties(propertyId);
             if (Array.isArray(response)) {
-                properties.value = response;
+                properties.value = response?.data?.data || [];
             } else if (response && Array.isArray(response.data)) {
                 properties.value = response.data;
             } else {
