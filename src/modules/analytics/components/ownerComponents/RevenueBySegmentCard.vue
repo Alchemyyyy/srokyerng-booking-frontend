@@ -59,10 +59,10 @@ const chartOptions = ref({
     plugins: {
         legend: { display: false },
         tooltip: {
-            backgroundColor: 'var(--color-surface-strong)',
-            titleColor: 'var(--color-text-inverse)',
-            bodyColor: 'var(--color-text-inverse)',
-            borderColor: 'var(--color-border)',
+            backgroundColor: getCssColor('--color-surface-strong'),
+            // titleColor: getCssColor('--color-text-inverse'),
+            // bodyColor: getCssColor('--color-text-inverse'),
+            borderColor: getCssColor('--color-border'),
             borderWidth: 1,
         },
     },
@@ -102,10 +102,10 @@ const rebuildChart = () => {
         plugins: {
             legend: { display: false },
             tooltip: {
-                backgroundColor: 'var(--color-surface-strong)',
-                titleColor: 'var(--color-text-inverse)',
-                bodyColor: 'var(--color-text-inverse)',
-                borderColor: 'var(--color-border)',
+                backgroundColor: getCssColor('--color-surface-strong'),
+                // titleColor: getCssColor('--color-text-inverse'),
+                // bodyColor: getCssColor('--color-text-inverse'),
+                borderColor: getCssColor('--color-border'),
                 borderWidth: 1,
             },
         },

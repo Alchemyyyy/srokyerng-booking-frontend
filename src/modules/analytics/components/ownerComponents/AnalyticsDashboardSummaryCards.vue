@@ -158,8 +158,8 @@ onBeforeUnmount(() => {
 }
 
 .metric__icon--amber {
-    background: var(--color-info-soft);
-    color: var(--color-info);
+    background: var(--color-warning-soft);
+    color: var(--color-warning);
 }
 
 .metric__icon--coral {
@@ -169,7 +169,6 @@ onBeforeUnmount(() => {
 
 .metric__label {
     margin: 0;
-    color: var(--color-muted);
     font-size: 12px;
     font-weight: 700;
     color: var(--color-muted);

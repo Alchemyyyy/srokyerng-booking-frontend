@@ -1,4 +1,5 @@
-import { computed, ref } from 'vue';
+// modules/analytics/stores/OwnerAnalyticsStore.js
+import { computed, ref, watch } from 'vue';
 import { defineStore } from 'pinia';
 import {
     BuildingOffice2Icon,
@@ -8,16 +9,15 @@ import {
 } from '@heroicons/vue/24/outline';
 
 import i18n from '@/app/i18n';
+import { analyticsApi } from '@/modules/analytics/api/analytics.api';
+import { ownerAnalyticsService } from '@/modules/analytics/services/ownerAnalytics.service';
 
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const palette = ['var(--color-primary)', 'var(--color-success)', 'var(--color-warning)', 'var(--color-danger)', 'var(--color-info)', 'var(--color-muted)'];
-
+// ─── Formatters ───────────────────────────────────────────────────────────────
 const moneyFormatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
     maximumFractionDigits: 0,
 });
-
 const integerFormatter = new Intl.NumberFormat('en-US');
 const t = (...args) => i18n.global.t(...args);
 
@@ -25,308 +25,191 @@ const formatMoney = (value) => moneyFormatter.format(Number(value) || 0);
 
 const formatDate = (value) => {
     if (!value) return '—';
-
     const parsed = new Date(value);
     if (Number.isNaN(parsed.getTime())) return value;
-
     return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
+        month: 'short', day: 'numeric', year: 'numeric',
     }).format(parsed);
 };
 
+const palette = [
+    'var(--color-primary)',
+    'var(--color-success)',
+    'var(--color-warning)',
+    'var(--color-danger)',
+    'var(--color-info)',
+    'var(--color-muted)',
+];
+
+// ─── Store ────────────────────────────────────────────────────────────────────
 export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard', () => {
     const loading = ref(true);
     const error = ref(null);
-    const selectedYear = ref(null);
+    const selectedYear = ref(new Date().getFullYear());
+
     const dashboardData = ref({
         summary: {
-            totalProperties: 0,
-            totalBookings: 0,
+            totalReservations: 0,
+            confirmedReservations: 0,
+            completedReservations: 0,
+            upcomingReservations: 0,
             totalRevenue: 0,
+            paidRevenue: 0,
+            netRevenue: 0,
+            totalProperties: 0,
             avgRating: 0,
-            trends: {
-                properties: '',
-                bookings: '',
-                revenue: '',
-                rating: '',
-            },
+            trends: { properties: '', bookings: '', revenue: '', rating: '' },
         },
         analytics: {
             weeklyTraffic: [],
             monthlyPerformance: [],
             segmentPerformance: [],
+            yearlyPerformance: [],
+            reservationChart: { labels: [], counts: [], amounts: [] },
         },
-        paymentStatus: {
-            isComplete: true,
-            missingFields: [],
-            lastUpdated: null,
+        reservationStats: {
+            totalReservations: 0,
+            totalReservationRevenue: 0,
+            byStatus: [],
         },
+        paymentStatus: { isComplete: true, missingFields: [], lastUpdated: null },
         properties: [],
         rooms: [],
         recentReservations: [],
     });
 
-    const analyticsData = computed(() => dashboardData.value.analytics || {});
+    // បញ្ជីផ្ទុកទិន្នន័យកក់បន្ទប់ថ្មីៗពី Postman API
+    const recentBookingsList = ref([]);
+    const allReservationsList = ref([]);
 
-    const yearlyPerformance = computed(() => {
-        const source = analyticsData.value.yearlyPerformance;
-
-        if (!Array.isArray(source)) {
-            return [];
-        }
-
-        return source
-            .map((entry) => ({
-                year: Number(entry.year) || 0,
-                summary: entry.summary || null,
-                segmentPerformance: Array.isArray(entry.segmentPerformance) ? entry.segmentPerformance : [],
-                monthlyPerformance: Array.isArray(entry.monthlyPerformance)
-                    ? entry.monthlyPerformance.map((item) => ({
-                        label: item.label,
-                        revenue: Number(item.revenue) || 0,
-                        expenses: Number(item.expenses) || 0,
-                        profit: Number(item.profit) || (Number(item.revenue) || 0) - (Number(item.expenses) || 0),
-                    }))
-                    : [],
-            }))
-            .filter((entry) => entry.year > 0);
+    // ── Year Options ─────────────────────────────────────────────────────────
+    const yearOptions = computed(() => {
+        const currentYear = new Date().getFullYear();
+        return [currentYear, currentYear - 1, currentYear - 2];
     });
+    const selectedYearLabel = computed(() => selectedYear.value || yearOptions.value[0]);
 
-    const yearOptions = computed(() => [...new Set(yearlyPerformance.value.map((entry) => entry.year))].sort((left, right) => right - left));
-
-    const selectedYearEntry = computed(() => {
-        const availableYears = yearlyPerformance.value;
-
-        if (!availableYears.length) {
-            return null;
-        }
-
-        const fallbackYear = yearOptions.value[0] || new Date().getFullYear();
-        const targetYear = Number(selectedYear.value) || fallbackYear;
-
-        return availableYears.find((entry) => entry.year === targetYear) || availableYears[0];
-    });
-
-    const selectedYearLabel = computed(() => selectedYearEntry.value?.year || selectedYear.value || yearOptions.value[0] || new Date().getFullYear());
-
-    const selectedYearSummary = computed(() => {
-        const summary = selectedYearEntry.value?.summary || dashboardData.value.summary || {};
-        const properties = dashboardData.value.properties || [];
-
-        return {
-            ...summary,
-            totalProperties: properties.length,
-        };
-    });
-
-    const selectedYearSegments = computed(() => {
-        const selectedYearPerformance = selectedYearEntry.value?.segmentPerformance;
-
-        if (Array.isArray(selectedYearPerformance) && selectedYearPerformance.length > 0) {
-            const total = selectedYearPerformance.reduce((sum, item) => sum + (Number(item.value) || 0), 0) || 1;
-
-            return selectedYearPerformance.map((item, index) => ({
-                id: item.name,
-                name: item.name,
-                type: item.name,
-                revenue: Number(item.value) || 0,
-                share: Math.round(((Number(item.value) || 0) / total) * 100),
-                color: palette[index % palette.length],
-            }));
-        }
-
-        return [];
-    });
-
-    const selectedYearSeries = computed(() => {
-        if (selectedYearEntry.value) {
-            return selectedYearEntry.value.monthlyPerformance;
-        }
-
-        const source = analyticsData.value.monthlyPerformance;
-
-        if (Array.isArray(source) && source.length > 0) {
-            return source.map((item) => ({
-                label: item.label,
-                revenue: Number(item.revenue) || 0,
-                expenses: Number(item.expenses) || 0,
-                profit: Number(item.profit) || (Number(item.revenue) || 0) - (Number(item.expenses) || 0),
-            }));
-        }
-
-        return deriveMonthlyPerformance();
-    });
-
-    const deriveMonthlyPerformance = () => {
-        const summary = dashboardData.value.summary || {};
-        const properties = dashboardData.value.properties || [];
-        const reservations = dashboardData.value.recentReservations || [];
-        const totalRevenue = Number(summary.totalRevenue) || properties.reduce((sum, property) => sum + (Number(property.revenue) || 0), 0);
-        const baseRevenue = Math.max(totalRevenue, 6000) / 6;
-        const reservationMix = Math.max(reservations.reduce((sum, reservation) => sum + (Number(reservation.amount) || 0), 0), 1);
-        const factors = [0.84, 0.91, 0.89, 0.86, 1.02, 1.08];
-
-        return months.slice(0, 6).map((label, index) => {
-            const revenue = Math.round(baseRevenue * factors[index] + (reservationMix / 100));
-            const expenses = Math.round(revenue * (0.52 + (index * 0.015)));
-
-            return {
-                label,
-                revenue,
-                expenses,
-                profit: revenue - expenses,
-            };
-        });
-    };
-
-    const visibleMonthlySeries = computed(() => selectedYearSeries.value);
-
-    const propertyBreakdown = computed(() => selectedYearSegments.value.length > 0
-        ? selectedYearSegments.value
-        : (() => {
-            const source = analyticsData.value.segmentPerformance;
-
-            if (Array.isArray(source) && source.length > 0) {
-                const total = source.reduce((sum, item) => sum + (Number(item.value) || 0), 0) || 1;
-
-                return source.map((item, index) => ({
-                    id: item.name,
-                    name: item.name,
-                    type: item.name,
-                    revenue: Number(item.value) || 0,
-                    share: Math.round(((Number(item.value) || 0) / total) * 100),
-                    color: palette[index % palette.length],
-                }));
-            }
-
-            const properties = dashboardData.value.properties || [];
-            const totalRevenue = properties.reduce((sum, property) => sum + (Number(property.revenue) || 0), 0) || 1;
-
-            return properties
-                .slice(0, 4)
-                .map((property, index) => ({
-                    id: property.id,
-                    name: property.type,
-                    type: property.location,
-                    revenue: Number(property.revenue) || 0,
-                    share: Math.round(((Number(property.revenue) || 0) / totalRevenue) * 100),
-                    color: palette[index % palette.length],
-                }))
-                .sort((left, right) => right.revenue - left.revenue);
-        })());
-
-    const segmentBreakdown = computed(() => propertyBreakdown.value.slice(0, 4));
-
-    const propertyLookup = computed(() => {
-        const properties = dashboardData.value.properties || [];
-
-        return properties.reduce((lookup, property) => {
-            lookup[property.id] = property;
-            return lookup;
-        }, {});
-    });
-
-    const roomLookup = computed(() => {
-        const rooms = dashboardData.value.rooms || [];
-
-        return rooms.reduce((lookup, room) => {
-            lookup[room.id] = room;
-            return lookup;
-        }, {});
-    });
-
-    const reservationRows = computed(() => (dashboardData.value.recentReservations || []).slice(0, 5));
-
-    const activeReservations = computed(() =>
-        reservationRows.value.map((reservation) => {
-            const room = reservation.roomId ? roomLookup.value[reservation.roomId] : null;
-            const property = reservation.propertyId ? propertyLookup.value[reservation.propertyId] : null;
-
-            return {
-                ...reservation,
-                propertyName: property?.name || reservation.propertyName || t('owner.analytics.unknownProperty'),
-                roomName: room?.type || reservation.roomName || t('owner.analytics.noRoomAssigned'),
-                roomType: room?.type || reservation.roomType || '',
-                propertyId: property?.id || reservation.propertyId || '',
-                roomId: room?.id || reservation.roomId || '',
-                statusTone: reservation.status === 'cancelled' ? 'danger' : reservation.status === 'paid' ? 'success' : 'warning',
-            };
-        }),
-    );
-
+    // ── Summary Cards ────────────────────────────────────────────────────────
     const summaryCards = computed(() => {
-        const summary = selectedYearSummary.value || {};
-
+        const s = dashboardData.value.summary || {};
         return [
             {
                 label: t('owner.analytics.summary.totalProperties'),
-                value: integerFormatter.format(summary.totalProperties || 0),
-                delta: summary.trends?.properties || '',
+                value: integerFormatter.format(s.totalProperties || 0),
+                delta: s.trends?.properties || '',
                 tone: 'blue',
                 icon: BuildingOffice2Icon,
                 kind: 'number',
             },
             {
                 label: t('owner.analytics.summary.totalBookings'),
-                value: integerFormatter.format(summary.totalBookings || 0),
-                delta: summary.trends?.bookings || '',
+                value: integerFormatter.format(s.totalReservations || 0),
+                delta: s.trends?.bookings || '',
                 tone: 'teal',
                 icon: CalendarDaysIcon,
                 kind: 'number',
             },
             {
                 label: t('owner.analytics.summary.totalRevenue'),
-                value: formatMoney(summary.totalRevenue || 0),
-                delta: summary.trends?.revenue || '',
+                value: formatMoney(s.totalRevenue || 0),
+                delta: s.trends?.revenue || '',
                 tone: 'amber',
                 icon: CurrencyDollarIcon,
                 kind: 'currency',
             },
             {
-                label: t('owner.analytics.summary.avgRating'),
-                value: `${Number(summary.avgRating || 0).toFixed(1)}★`,
-                delta: summary.trends?.rating || '',
-                tone: 'coral',
-                icon: StarIcon,
-                kind: 'rating',
+                label: t('owner.analytics.summary.paidRevenue'),
+                value: formatMoney(s.paidRevenue || 0),
+                delta: s.trends?.revenue || '',
+                tone: 'amber',
+                icon: CurrencyDollarIcon,
+                kind: 'currency',
             },
         ];
     });
 
+    // ── Line chart ───────────────────────────────────────────────────────────
+    const visibleMonthlySeries = computed(() => {
+        const chart = dashboardData.value.analytics?.reservationChart || {};
+        const labels = chart.labels || [];
+        const amounts = chart.amounts || [];
 
+        return labels.map((label, i) => ({
+            label,
+            profit: amounts[i] || 0,
+        }));
+    });
+
+    // ── Segment breakdown (Donut chart) ──────────────────────────────────────
+    const propertyBreakdown = computed(() => {
+        const source = dashboardData.value.analytics?.segmentPerformance || [];
+
+        if (source.length > 0) {
+            const total = source.reduce((sum, item) => sum + (Number(item.value) || 0), 0) || 1;
+            return source.map((item, i) => ({
+                id: item.name,
+                name: item.name,
+                type: item.name,
+                revenue: Number(item.value) || 0,
+                share: Math.round(((Number(item.value) || 0) / total) * 100),
+                color: palette[i % palette.length],
+            }));
+        }
+
+        const properties = dashboardData.value.properties || [];
+        const totalRevenue = properties.reduce((s, p) => s + (Number(p.revenue) || 0), 0) || 1;
+        const paidRevenue = properties.reduce((s, p) => s + (Number(p.revenue) || 0), 0) || 1;
+        return properties.slice(0, 4).map((p, i) => ({
+            id: p.id,
+            name: p.name,
+            type: p.name,
+            revenue: Number(p.revenue) || 0,
+            share: Math.round(((Number(p.revenue) || 0) / totalRevenue) * 100),
+            shard: Math.round(((Number(p.revenue) || 0) / paidRevenue) * 100),
+            color: palette[i % palette.length],
+        })).sort((a, b) => b.revenue - a.revenue);
+    });
+
+    const segmentBreakdown = computed(() => propertyBreakdown.value.slice(0, 4));
+
+    // ── Fetch Data ───────────────────────────────────────────────────────────
     const fetchDashboardData = async () => {
         loading.value = true;
         error.value = null;
 
+        const params = {
+            start_date: `${selectedYear.value}-01-01`,
+            end_date: `${selectedYear.value}-12-31`
+        };
+
         try {
-            const response = await fetch('/data.json');
+            const [summary, revenue, properties, rooms, reservations, latestRes] = await Promise.all([
+                analyticsApi.getOwnerSummary(params),
+                analyticsApi.getOwnerRevenue(params),
+                analyticsApi.getOwnerProperties(params),
+                analyticsApi.getOwnerRooms(params),
+                analyticsApi.getOwnerReservations(params),
+                analyticsApi.getOwnerReservationLatest(params),
+            ]);
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            // ១. ចម្បងទិន្នន័យស្ថិតិរួមសម្រាប់ Dashboard
+            dashboardData.value = ownerAnalyticsService.processDashboardData({
+                summary, revenue, properties, rooms, reservations
+            });
 
-            const data = await response.json();
-            dashboardData.value = data;
+            // ២. ចម្បងបញ្ជីទិន្នន័យនៃការកក់ថ្មីៗដែលទាញចេញពី Postman
+            recentBookingsList.value = ownerAnalyticsService.processLatestReservations(latestRes);
+            allReservationsList.value = ownerAnalyticsService.extractRawReservations(latestRes);
 
-            const availableYears = Array.isArray(data.analytics?.yearlyPerformance)
-                ? data.analytics.yearlyPerformance.map((entry) => Number(entry.year)).filter((year) => Number.isFinite(year))
-                : [];
-
-            if (availableYears.length > 0) {
-                selectedYear.value = availableYears.includes(Number(selectedYear.value))
-                    ? Number(selectedYear.value)
-                    : Math.max(...availableYears);
-            }
-        } catch (requestError) {
-            error.value = t('owner.analytics.error.failedToLoadDashboardData');
-            console.error('Dashboard Fetch Error:', requestError);
+        } catch (err) {
+            error.value = i18n.global.t('owner.analytics.error.failedToLoadDashboardData');
+            console.error('Owner Analytics Fetch Error:', err);
         } finally {
             loading.value = false;
         }
     };
 
+    watch(selectedYear, () => { void fetchDashboardData(); });
     void fetchDashboardData();
 
     return {
@@ -339,7 +222,8 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
         summaryCards,
         visibleMonthlySeries,
         segmentBreakdown,
-        activeReservations,
+        recentBookingsList,
+        allReservationsList,
         fetchDashboardData,
         formatMoney,
         formatDate,

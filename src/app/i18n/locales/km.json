@@ -1277,10 +1277,11 @@
       "dashboardSubtitle": "តាមដានប្រាក់ចំណូល ចរាចរណ៍ការកក់ និងដំណើរការអចលនទ្រព្យតាមប្រវត្តិទិដ្ឋភាពទូទៅ។",
       "year": "ប្រវត្តិសង្ខេប",
       "summaryMetrics": "សូចនាករសរុប",
-      "approvalTitle": "ស្ថានភាពអនុម័តបញ្ជី",
-      "quickNavigation": "ការរុករករហ័ស",
+      "quickActions": "សកម្មភាពរហ័ស",
+      "quickActionsSubtitle": "រុករកទៅផ្នែកសំខាន់ៗភ្លាមៗ",
       "noApprovalStatuses": "មិនមានស្ថានភាពអនុម័តទេ។",
       "noQuickLinks": "មិនមានតំណរហ័សទេ។",
+      "totalProperties": "អចលនទ្រព្យសរុប",
       "approval": {
         "activeListings": "បញ្ជីដែលបានអនុម័ត និងសកម្ម",
         "pendingAudits": "កំពុងរង់ចាំការត្រួតពិនិត្យ",
@@ -1321,7 +1322,7 @@
         "totalProperties": "អចលនទ្រព្យសរុប",
         "totalBookings": "ការកក់សរុប",
         "totalRevenue": "ប្រាក់ចំណូលសរុប",
-        "avgRating": "ពិន្ទុមធ្យម"
+        "paidRevenue": "ប្រាក់ចំណូលដែលបានទទួល"
       }
     }
   },

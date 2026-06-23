@@ -1281,10 +1281,11 @@
       "dashboardSubtitle": "Track revenue, booking traffic, and property performance by overview history.",
       "year": "overview History",
       "summaryMetrics": "Summary metrics",
-      "approvalTitle": "Listing Approval Status",
-      "quickNavigation": "Quick Navigation",
+      "quickActions": "Quick Actions",
+      "quickActionsSubtitle": "Navigate to key sections instantly",
       "noApprovalStatuses": "No approval statuses available.",
       "noQuickLinks": "No quick links configured.",
+      "totalProperties": "Total Properties",
       "approval": {
         "activeListings": "Approved & Active Listings",
         "pendingAudits": "Pending Compliance Audits",
@@ -1325,7 +1326,7 @@
         "totalProperties": "Total Properties",
         "totalBookings": "Total Bookings",
         "totalRevenue": "Total Revenue",
-        "avgRating": "Avg Rating"
+        "paidRevenue": "Paid Revenue"
       }
     }
   },
