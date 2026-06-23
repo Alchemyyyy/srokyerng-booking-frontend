@@ -22,5 +22,22 @@ export const analyticsApi = {
     },
     getAdminActivity(params) {
         return http.get('/admin/analytics/activity', { params });
+    },
+
+    //owner
+    getOwnerRevenue(params) {
+        return http.get('/owner/analytics/revenue', { params });
+    },
+    getOwnerSummary(params) {
+        return http.get('/owner/analytics/summary', { params });
+    },
+    getOwnerProperties(params) {
+        return http.get('/owner/analytics/properties', { params });
+    },
+    getOwnerRooms(params) {
+        return http.get('/owner/analytics/rooms', { params });
+    },
+    getOwnerReservations(params) {
+        return http.get('/owner/analytics/reservations', { params });
     }
 };

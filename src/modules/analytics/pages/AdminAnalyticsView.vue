@@ -66,14 +66,16 @@ const handleRefresh = () => {
           <span v-else>No system activities found.</span>
         </div>
 
-        <PipelineTable v-if="propertiesPipeline.length > 0" :properties="propertiesPipeline" />
+        <!-- <PipelineTable v-if="propertiesPipeline.length > 0" :properties="propertiesPipeline" />
         <div v-else class="empty-panel lg:col-span-3">
           <LoadingSpinner v-if="loading" />
           <span v-else>No pending property pipeline recorded.</span>
+        </div> -->
+        <div class="lg:col-span-3">
+          <QuickActions :links="quickLinks" :formatter="(v) => new Intl.NumberFormat('en-US').format(v)" />
         </div>
       </section>
 
-      <QuickActions :links="quickLinks" :formatter="(v) => new Intl.NumberFormat('en-US').format(v)" />
     </template>
   </div>
 </template>

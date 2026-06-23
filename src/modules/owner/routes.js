@@ -1,4 +1,5 @@
-import AnalyticsDashboardView from "@/modules/owner/pages/AnalyticsDashboardView.vue";
+// import AnalyticsDashboardView from "@/modules/owner/pages/AnalyticsDashboardView.vue";
+import OwnerAnalyticsView from "@/modules/analytics/pages/OwnerAnalyticsView.vue";
 import OwnerPaymentAccountsView from "@/modules/payments/pages/OwnerPaymentAccountsView.vue";
 import MyPropertiesView from "@/modules/properties/pages/OwnerPropertiesView.vue";
 import OwnerPropertyDetailView from "@/modules/properties/pages/OwnerPropertyDetailView.vue";
@@ -12,9 +13,9 @@ import OwnerPaymentDetailView from "./pages/OwnerPaymentDetailView.vue";
 
 export const ownerRoutes = [
   {
-    path: "",
+    path: "analytics",
     name: "dashboard",
-    component: AnalyticsDashboardView,
+    component: OwnerAnalyticsView,
   },
   {
     path: "properties",
