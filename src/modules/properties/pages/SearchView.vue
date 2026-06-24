@@ -1,16 +1,28 @@
 <script setup>
 import { computed, onMounted, ref, watch } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
+import { propertyApi } from "@/modules/properties/api/property.api";
 
 import { usePropertyStore } from "../store/propertyStore";
 import PropertyFilter from "@/modules/properties/components/PropertyFilter.vue";
 import SearchBar from "@/modules/properties/components/SearchBar.vue";
 import PropertySortBar from "../components/PropertySortBar.vue";
 import PropertyPagination from "../components/PropertyPagination.vue";
+import HeroImg from "@/assets/images/home/hero/hero_banner.png";
+import placeholderImage from "@/assets/images/properties/placeholder.png";
+import {
+  ArrowRightIcon,
+  BuildingOffice2Icon,
+  MapPinIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
+  StarIcon,
+} from "@heroicons/vue/24/outline";
 
 const { t, te } = useI18n({ useScope: "global" });
 const router = useRouter();
+const route = useRoute();
 const propertyStore = usePropertyStore();
 
 // ── UI state ──────────────────────────────────────────────────────────────────
@@ -18,16 +30,6 @@ const sortBy = ref("newest");
 const viewMode = ref("grid");
 const currentPage = ref(1);
 const itemsPerPage = 6;
-
-// ── Filters ───────────────────────────────────────────────────────────────────
-const filters = ref({
-  query: "",
-  city: "all",
-  type: "all",
-  province: "all",
-  maxPrice: 220,
-  minRating: 0,
-});
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
@@ -38,18 +40,50 @@ const normalize = (value) =>
     .toLowerCase()
     .replace(/\s+/g, " ");
 
+const normalizeCityValue = (value) => normalize(value).replace(/\s+/g, "-");
+
+// ── Filters ───────────────────────────────────────────────────────────────────
+const initialCityQuery = route.query.city
+  ? normalizeCityValue(route.query.city)
+  : "all";
+
+const filters = ref({
+  query: route.query.search || "",
+  city: initialCityQuery,
+  type: route.query.type || "all",
+  province: "all",
+  maxPrice: 220,
+  minRating: 0,
+  checkIn: route.query.checkIn || "",
+  checkOut: route.query.checkOut || "",
+  guests: route.query.guests || 1,
+});
+
+
+
 // ── Filter options ────────────────────────────────────────────────────────────
-const cityOptions = computed(() => [
-  { value: "all", label: safeT("home.search.allCities", "All Cities") },
-  { value: "phnom-penh", label: safeT("home.cities.phnomPenh", "Phnom Penh") },
-  { value: "siem-reap", label: safeT("home.cities.siemReap", "Siem Reap") },
-  {
-    value: "sihanoukville",
-    label: safeT("home.cities.sihanoukville", "Sihanoukville"),
-  },
-  { value: "battambang", label: safeT("home.cities.battambang", "Battambang") },
-  { value: "kampot", label: safeT("home.cities.kampot", "Kampot") },
-]);
+const dynamicCities = ref([]);
+
+const cityOptions = computed(() => {
+  const options = [
+    { value: "all", label: safeT("home.search.allCities", "All Cities") },
+  ];
+  
+  if (dynamicCities.value.length > 0) {
+    dynamicCities.value.forEach(city => {
+      options.push({ value: normalizeCityValue(city), label: city });
+    });
+  } else {
+    options.push(
+      { value: "phnom-penh", label: safeT("home.cities.phnomPenh", "Phnom Penh") },
+      { value: "siem-reap", label: safeT("home.cities.siemReap", "Siem Reap") },
+      { value: "sihanoukville", label: safeT("home.cities.sihanoukville", "Sihanoukville") },
+      { value: "battambang", label: safeT("home.cities.battambang", "Battambang") },
+      { value: "kampot", label: safeT("home.cities.kampot", "Kampot") }
+    );
+  }
+  return options;
+});
 
 const typeOptions = computed(() => [
   {
@@ -162,8 +196,12 @@ const resetFilters = () => {
     query: "",
     city: "all",
     type: "all",
+    province: "all",
     maxPrice: 220,
     minRating: 0,
+    checkIn: "",
+    checkOut: "",
+    guests: 1,
   };
 };
 
@@ -173,10 +211,20 @@ const openProperty = (propertyId) => {
 
 onMounted(async () => {
   try {
+    const res = await propertyApi.getCities();
+    const fetchedCities = Array.isArray(res) ? res : (res?.data ?? []);
+    if (fetchedCities.length > 0) {
+      dynamicCities.value = fetchedCities.map(c => c.name || c.city_name || c);
+    }
+  } catch (error) {
+    console.error("Failed to load cities in SearchView", error);
+  }
+
+  try {
     await propertyStore.fetchApprovedProperties({
       search: filters.value.query,
-      city: filters.value.city,
-      category: filters.value.type,
+      city: filters.value.city === "all" ? "" : filters.value.city,
+      category: filters.value.type === "all" ? "" : filters.value.type,
       page: currentPage.value,
     });
   } catch (err) {
@@ -191,46 +239,48 @@ onMounted(async () => {
   >
     <!-- ── Hero ──────────────────────────────────────────────────────────────── -->
     <section
-      class="relative bg-(--color-primary-strong) overflow-hidden min-h-[400px] sm:min-h-[440px] flex items-center"
+      class="relative flex min-h-[460px] items-center overflow-hidden bg-(--color-primary-strong)"
     >
+      <img
+        :src="HeroImg"
+        alt="Cambodian accommodation"
+        class="absolute inset-0 h-full w-full object-cover"
+      />
       <div
-        class="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:32px_32px]"
+        class="absolute inset-0"
+        style="
+          background: linear-gradient(
+            110deg,
+            rgba(5, 23, 45, 0.94) 0%,
+            rgba(5, 31, 66, 0.88) 44%,
+            rgba(20, 117, 174, 0.4) 76%,
+            rgba(4, 20, 38, 0.58) 100%
+          );
+        "
       ></div>
 
-      <div class="absolute right-0 top-0 bottom-0 w-1/2 hidden lg:block">
-        <div
-          class="absolute inset-0 bg-gradient-to-r from-(--color-primary-strong) via-(--color-primary-strong)/40 to-transparent z-10"
-        ></div>
-        <img
-          src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80"
-          alt="Premium Resort Space Background"
-          class="w-full h-full object-cover object-center"
-        />
-      </div>
+      <div
+        class="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:36px_36px]"
+      ></div>
 
       <div
-        class="relative z-20 mx-auto max-w-7xl w-full px-4 py-16 sm:px-6 lg:px-8"
+        class="relative z-20 mx-auto grid w-full max-w-7xl gap-8 px-4 py-20 sm:px-6 lg:grid-cols-[1fr_360px] lg:px-8"
       >
-        <div class="max-w-xl lg:max-w-2xl">
+        <div class="max-w-3xl">
           <div
-            class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10"
+            class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.24em] text-white backdrop-blur-md"
           >
-            <span
-              class="w-1.5 h-1.5 rounded-full bg-sky-300 animate-pulse"
-            ></span>
-            <p
-              class="text-[10px] font-bold uppercase tracking-[0.24em] text-sky-100"
-            >
-              {{ safeT("nav.properties", "Properties Explore") }}
-            </p>
+            <SparklesIcon class="h-4 w-4 text-(--color-primary)" />
+            {{ safeT("nav.properties", "Explore stays") }}
           </div>
+
           <h1
-            class="mt-5 text-4xl font-black leading-tight text-white sm:text-5xl tracking-tight"
+            class="mt-6 text-4xl font-black leading-tight tracking-tight text-white drop-shadow-lg sm:text-5xl lg:text-6xl"
           >
             {{ safeT("propertiesPage.hero.title", "Find Your Perfect Stay") }}
           </h1>
           <p
-            class="mt-4 text-sm sm:text-base leading-relaxed text-sky-100/70 max-w-lg"
+            class="mt-5 max-w-2xl text-base leading-8 text-white/82 sm:text-lg"
           >
             {{
               safeT(
@@ -239,6 +289,45 @@ onMounted(async () => {
               )
             }}
           </p>
+
+          <div class="mt-8 flex flex-wrap gap-3">
+            <span
+              v-for="item in whyBrowseItems"
+              :key="item"
+              class="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/15 backdrop-blur-md"
+            >
+              <ShieldCheckIcon class="h-4 w-4 text-(--color-primary)" />
+              {{ item }}
+            </span>
+          </div>
+        </div>
+
+        <div
+          class="rounded-[var(--radius-panel)] border border-white/15 bg-white/10 p-5 text-white backdrop-blur-md lg:self-end"
+        >
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-white/65">
+            Search summary
+          </p>
+          <div class="mt-4 grid grid-cols-3 gap-3 text-center">
+            <div>
+              <p class="text-3xl font-black">{{ propertyStore.approvedProperties.length }}</p>
+              <p class="mt-1 text-[10px] font-bold uppercase tracking-widest text-white/55">
+                Stays
+              </p>
+            </div>
+            <div>
+              <p class="text-3xl font-black">{{ totalCities }}</p>
+              <p class="mt-1 text-[10px] font-bold uppercase tracking-widest text-white/55">
+                Cities
+              </p>
+            </div>
+            <div>
+              <p class="text-3xl font-black">{{ averageRating }}</p>
+              <p class="mt-1 text-[10px] font-bold uppercase tracking-widest text-white/55">
+                Rating
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -249,7 +338,6 @@ onMounted(async () => {
         <SearchBar
           v-model="filters"
           :cityOptions="cityOptions"
-          :typeOptions="typeOptions"
           :activeFilterCount="activeFilterCount"
           @reset="resetFilters"
         />
@@ -264,15 +352,13 @@ onMounted(async () => {
         <!-- Left: Filters sidebar -->
         <aside class="lg:sticky lg:top-8 lg:self-start">
           <div
-            class="rounded-[24px] border border-(--color-border)/60 bg-(--color-surface) p-2"
+            class="rounded-[22px] border border-(--color-border)/60 bg-(--color-surface) p-1.5"
           >
             <PropertyFilter
               v-model="filters"
               :activeFilterCount="activeFilterCount"
               :cityOptions="cityOptions"
-              :typeOptions="typeOptions"
               :minimumRatings="minimumRatings"
-              :whyBrowseItems="whyBrowseItems"
               :propertyCountByCity="propertyCountByCity"
               @reset="resetFilters"
             />
@@ -281,6 +367,47 @@ onMounted(async () => {
 
         <!-- Right: Sort + Grid + Pagination -->
         <section class="min-w-0">
+          <!-- Property type chips -->
+          <div class="mb-5 rounded-[22px] border border-(--color-border)/70 bg-(--color-surface) p-3">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p class="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-(--color-primary)">
+                  <BuildingOffice2Icon class="h-4 w-4" />
+                  {{ safeT("home.search.type", "Property type") }}
+                </p>
+                <p class="mt-1 text-sm text-(--color-muted)">
+                  Choose the kind of stay you want to browse.
+                </p>
+              </div>
+
+              <button
+                v-if="filters.type !== 'all'"
+                type="button"
+                class="text-xs font-bold text-(--color-primary) hover:underline"
+                @click="filters.type = 'all'"
+              >
+                Clear type
+              </button>
+            </div>
+
+            <div class="mt-4 flex gap-2 overflow-x-auto pb-1">
+              <button
+                v-for="type in typeOptions"
+                :key="type.value"
+                type="button"
+                class="shrink-0 rounded-full border px-4 py-2 text-sm font-bold transition active:scale-[0.98]"
+                :class="
+                  filters.type === type.value
+                    ? 'border-(--color-primary) bg-(--color-primary) text-white shadow-sm'
+                    : 'border-(--color-border) bg-(--color-surface-soft) text-(--color-muted) hover:border-(--color-primary)/50 hover:text-(--color-text)'
+                "
+                @click="filters.type = type.value"
+              >
+                {{ type.label }}
+              </button>
+            </div>
+          </div>
+
           <!-- Sort bar -->
           <PropertySortBar
             v-model="sortBy"
@@ -337,37 +464,59 @@ onMounted(async () => {
             <article
               v-for="property in paginatedProperties"
               :key="property.id"
-              class="cursor-pointer rounded-[24px] border border-(--color-border)/60 bg-(--color-surface) overflow-hidden hover:shadow-lg transition-all duration-300"
+              class="group cursor-pointer overflow-hidden rounded-[24px] border border-(--color-border)/70 bg-(--color-surface) transition-all duration-300 hover:-translate-y-1 hover:border-(--color-primary)/40 hover:shadow-[var(--shadow-panel)]"
               @click="openProperty(property.id)"
             >
               <!-- Property Image -->
-              <div class="relative h-48 overflow-hidden">
+              <div class="relative h-52 overflow-hidden bg-(--color-surface-soft)">
                 <img
-                  :src="property.image"
+                  :src="property.image || placeholderImage"
                   :alt="property.name"
-                  class="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                  class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
+                <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/55 to-transparent"></div>
+                <div class="absolute left-3 top-3 flex flex-wrap gap-2">
+                  <span class="inline-flex items-center gap-1 rounded-full bg-white/92 px-3 py-1 text-[11px] font-bold capitalize text-slate-800 shadow-sm backdrop-blur-md">
+                    <BuildingOffice2Icon class="h-3.5 w-3.5 text-(--color-primary)" />
+                    {{ property.type }}
+                  </span>
+                </div>
+                <span class="absolute bottom-3 right-3 inline-flex items-center gap-1 rounded-full bg-black/55 px-3 py-1 text-xs font-bold text-white backdrop-blur-md">
+                  <StarIcon class="h-3.5 w-3.5 text-amber-300" />
+                  {{ property.rating }}
+                </span>
               </div>
 
               <!-- Property Info -->
-              <div class="p-4 space-y-2">
+              <div class="space-y-4 p-4">
                 <h3
-                  class="text-sm font-black text-(--color-text) tracking-tight truncate"
+                  class="line-clamp-1 text-base font-black tracking-tight text-(--color-text)"
                 >
                   {{ property.name }}
                 </h3>
-                <p class="text-xs text-(--color-muted) font-medium">
-                  {{ property.location }}
+                <p class="flex items-center gap-1.5 text-xs font-semibold text-(--color-muted)">
+                  <MapPinIcon class="h-4 w-4 shrink-0 text-(--color-primary)" />
+                  <span class="truncate">{{ property.location }}</span>
                 </p>
-                <div class="flex items-center justify-between pt-1">
-                  <span class="text-sm font-black text-(--color-primary)">
+                <p class="line-clamp-2 min-h-[40px] text-sm leading-5 text-(--color-muted)">
+                  {{ property.description }}
+                </p>
+
+                <div class="flex items-end justify-between gap-3 border-t border-(--color-border)/60 pt-4">
+                  <div>
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-(--color-muted)">
+                      From
+                    </p>
+                    <span class="text-lg font-black text-(--color-primary)">
                     ${{ property.price
                     }}<span class="text-xs font-medium text-(--color-muted)"
                       >/night</span
                     >
-                  </span>
-                  <span class="text-xs font-bold text-(--color-muted)">
-                    ⭐ {{ property.rating }}
+                    </span>
+                  </div>
+                  <span class="inline-flex items-center gap-1 rounded-[var(--radius-sm)] bg-(--color-primary-soft) px-3 py-2 text-xs font-bold text-(--color-primary) transition group-hover:bg-(--color-primary) group-hover:text-white">
+                    View
+                    <ArrowRightIcon class="h-3.5 w-3.5" />
                   </span>
                 </div>
               </div>

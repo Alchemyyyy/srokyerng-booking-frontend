@@ -4,7 +4,6 @@ import { useI18n } from "vue-i18n";
 import {
   MagnifyingGlassIcon,
   MapPinIcon,
-  HomeModernIcon,
   XMarkIcon,
 } from "@heroicons/vue/24/outline";
 
@@ -16,10 +15,6 @@ const props = defineProps({
     required: true,
   },
   cityOptions: {
-    type: Array,
-    required: true,
-  },
-  typeOptions: {
     type: Array,
     required: true,
   },
@@ -93,42 +88,6 @@ const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
           >
             <option
               v-for="opt in cityOptions"
-              :key="opt.value"
-              :value="opt.value"
-            >
-              {{ opt.label }}
-            </option>
-          </select>
-          <div
-            class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-(--color-muted) text-[10px]"
-          >
-            ▼
-          </div>
-        </div>
-      </div>
-
-      <!-- Desktop Visual Divider Line -->
-      <div
-        class="hidden lg:block w-px h-10 bg-(--color-border)/60 self-end mb-1"
-      ></div>
-
-      <!-- 🏠 Accommodation Select Dropdown Segment -->
-      <div class="w-full lg:w-60 shrink-0">
-        <label
-          class="block text-[10px] font-black uppercase tracking-wider text-(--color-muted) mb-1 px-1"
-        >
-          {{ safeT("propertiesPage.filters.propertyType", "Property Type") }}
-        </label>
-        <div class="relative">
-          <HomeModernIcon
-            class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-(--color-muted) pointer-events-none"
-          />
-          <select
-            v-model="localFilters.type"
-            class="w-full h-12 pl-12 pr-10 bg-(--color-surface-soft) border border-(--color-border)/50 rounded-2xl text-sm font-medium text-(--color-text) appearance-none focus:outline-hidden focus:border-(--color-primary) focus:ring-2 focus:ring-(--color-primary-soft)/10 transition-all cursor-pointer"
-          >
-            <option
-              v-for="opt in typeOptions"
               :key="opt.value"
               :value="opt.value"
             >

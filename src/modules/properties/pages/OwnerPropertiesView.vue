@@ -23,9 +23,9 @@ import {
 } from "@heroicons/vue/24/outline";
 import { StarIcon as StarIconSolid } from "@heroicons/vue/24/solid";
 
-const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  "https://api-srokyerng.devspace.linkpc.net";
+const BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5001/api"
+).replace(/\/api\/?$/, "");
 
 const propertyStore = usePropertyStore();
 const toast = useToastStore();

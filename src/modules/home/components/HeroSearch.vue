@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import {
@@ -11,6 +11,8 @@ import {
 } from "@heroicons/vue/24/outline";
 import AppButton from "@/shared/components/AppButton.vue";
 import HeroImg from "@/assets/images/home/hero/hero_banner.png";
+import { propertyApi } from "@/modules/properties/api/property.api";
+
 const { t, locale } = useI18n({ useScope: "global" });
 const router = useRouter();
 
@@ -33,13 +35,46 @@ const handleSearch = () => {
   });
 };
 
-const cities = computed(() => [
-  t("home.cities.phnomPenh"),
-  t("home.cities.siemReap"),
-  t("home.cities.sihanoukville"),
-  t("home.cities.battambang"),
-  t("home.cities.kampot"),
-]);
+const today = computed(() => {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+});
+
+const minCheckOutDate = computed(() => {
+  return searchForm.value.checkIn ? searchForm.value.checkIn : today.value;
+});
+
+const cities = ref([]);
+
+onMounted(async () => {
+  try {
+    const res = await propertyApi.getCities();
+    const fetchedCities = Array.isArray(res) ? res : (res?.data ?? []);
+    if (fetchedCities.length > 0) {
+      cities.value = fetchedCities.map(c => c.name || c.city_name || c);
+    } else {
+      cities.value = [
+        t("home.cities.phnomPenh"),
+        t("home.cities.siemReap"),
+        t("home.cities.sihanoukville"),
+        t("home.cities.battambang"),
+        t("home.cities.kampot"),
+      ];
+    }
+  } catch (error) {
+    console.error("Failed to load cities", error);
+    cities.value = [
+      t("home.cities.phnomPenh"),
+      t("home.cities.siemReap"),
+      t("home.cities.sihanoukville"),
+      t("home.cities.battambang"),
+      t("home.cities.kampot"),
+    ];
+  }
+});
 
 const quickTags = computed(() => [
   t("home.cities.siemReap"),
@@ -150,7 +185,7 @@ const quickTags = computed(() => [
         </div>
 
         <div class="space-y-3">
-          <label class="block rounded-[var(--radius-lg)] border border-(--color-border) bg-(--color-surface-soft) px-4 py-3 transition focus-within:border-(--color-primary)">
+          <label class="block rounded-[var(--radius-sm)] border border-(--color-border) bg-(--color-surface-soft) px-4 py-3 transition focus-within:border-(--color-primary)">
             <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-(--color-primary)">
               <MapPinIcon class="h-4 w-4" />
               {{ t("home.search.city") }}
@@ -168,7 +203,7 @@ const quickTags = computed(() => [
           </label>
 
           <div class="grid gap-3 sm:grid-cols-2">
-            <label class="block rounded-[var(--radius-lg)] border border-(--color-border) bg-(--color-surface-soft) px-4 py-3 transition focus-within:border-(--color-primary)">
+            <label class="block rounded-[var(--radius-sm)] border border-(--color-border) bg-(--color-surface-soft) px-4 py-3 transition focus-within:border-(--color-primary)">
               <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-(--color-primary)">
                 <CalendarDaysIcon class="h-4 w-4" />
                 Check in
@@ -176,11 +211,12 @@ const quickTags = computed(() => [
               <input
                 v-model="searchForm.checkIn"
                 type="date"
+                :min="today"
                 class="hero-search-field mt-2 w-full border-none bg-transparent p-0 text-sm font-semibold text-(--color-text) outline-none focus:ring-0"
               />
             </label>
 
-            <label class="block rounded-[var(--radius-lg)] border border-(--color-border) bg-(--color-surface-soft) px-4 py-3 transition focus-within:border-(--color-primary)">
+            <label class="block rounded-[var(--radius-sm)] border border-(--color-border) bg-(--color-surface-soft) px-4 py-3 transition focus-within:border-(--color-primary)">
               <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-(--color-primary)">
                 <CalendarDaysIcon class="h-4 w-4" />
                 Check out
@@ -188,12 +224,13 @@ const quickTags = computed(() => [
               <input
                 v-model="searchForm.checkOut"
                 type="date"
+                :min="minCheckOutDate"
                 class="hero-search-field mt-2 w-full border-none bg-transparent p-0 text-sm font-semibold text-(--color-text) outline-none focus:ring-0"
               />
             </label>
           </div>
 
-          <label class="block rounded-[var(--radius-lg)] border border-(--color-border) bg-(--color-surface-soft) px-4 py-3 transition focus-within:border-(--color-primary)">
+          <label class="block rounded-[var(--radius-sm)] border border-(--color-border) bg-(--color-surface-soft) px-4 py-3 transition focus-within:border-(--color-primary)">
             <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-(--color-primary)">
               <UserGroupIcon class="h-4 w-4" />
               Guests
@@ -209,7 +246,7 @@ const quickTags = computed(() => [
           <AppButton
             variant="primary"
             size="lg"
-            class="mt-2 w-full !rounded-[var(--radius-lg)]"
+            class="mt-2 w-full !rounded-[var(--radius-sm)]"
             @click="handleSearch"
           >
             <MagnifyingGlassIcon class="h-5 w-5" />

@@ -13,9 +13,9 @@ const loading = ref(true);
 const error = ref("");
 const property = ref(null);
 
-const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  "https://api-srokyerng.devspace.linkpc.net";
+const BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5001/api"
+).replace(/\/api\/?$/, "");
 const images = ref([]);
 
 const getImageUrl = (url) => {

@@ -27,7 +27,9 @@ onMounted(async () => {
 
     const roomsRes = await http.get(`/properties/${propertyId}/rooms`);
     const rawRooms = roomsRes.data?.data || roomsRes.data || [];
-    const BASE_URL = "https://api-srokyerng.devspace.linkpc.net";
+    const BASE_URL = (
+      import.meta.env.VITE_API_BASE_URL || "http://localhost:5001/api"
+    ).replace(/\/api\/?$/, "");
 
     // Fetch images for all rooms in parallel
     const roomsWithImages = await Promise.all(
@@ -200,7 +202,7 @@ const filteredRooms = computed(() => {
           <img
             :src="
               property?.image
-                ? `https://api-srokyerng.devspace.linkpc.net${property.image}`
+                ? `${BASE_URL}${property.image}`
                 : 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1000&q=80'
             "
             alt="Room Cover View"

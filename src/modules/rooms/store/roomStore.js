@@ -3,7 +3,9 @@ import { defineStore } from "pinia";
 import { roomService } from "@/modules/rooms/services/roomService";
 import { usePropertyStore } from "@/modules/properties/store/propertyStore";
 
-const BASE_URL = "https://api-srokyerng.devspace.linkpc.net";
+const BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5001/api"
+).replace(/\/api\/?$/, "");
 
 export const useRoomStore = defineStore("rooms", () => {
   const loading = ref(false);

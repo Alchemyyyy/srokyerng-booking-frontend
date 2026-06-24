@@ -23,6 +23,10 @@ const error = ref(null);
 
 const paymentId = computed(() => route.params.paymentId);
 
+const BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5001/api"
+).replace(/\/api\/?$/, "");
+
 const goToUpload = () => {
   router.push({
     name: "customer.payment-upload",
@@ -257,7 +261,7 @@ onMounted(() => {
                 class="relative rounded-2xl overflow-hidden border border-(--color-border) group shadow-xs hover:shadow-md transition duration-300"
               >
                 <img
-                  :src="`https://api-srokyerng.devspace.linkpc.net${payment.receipt_image_url}`"
+                  :src="`${BASE_URL}${payment.receipt_image_url}`"
                   class="w-full h-auto object-cover max-h-[380px] transition duration-500 group-hover:scale-[1.01]"
                   alt="Voucher Receipt Image Proof"
                 />
