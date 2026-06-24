@@ -39,5 +39,9 @@ export const analyticsApi = {
     },
     getOwnerReservations(params) {
         return http.get('/owner/analytics/reservations', { params });
-    }
+    },
+
+    getOwnerReservationLatest(params) {
+        return http.get('/owner/reservations', { params });
+    },
 };

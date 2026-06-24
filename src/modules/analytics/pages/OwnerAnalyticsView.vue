@@ -10,7 +10,8 @@ import {
 } from '@heroicons/vue/24/outline';
 
 import '@/assets/styles/variables.css';
-import ApprovalStatusPanel from '@/modules/analytics/components/ownerComponents/ApprovalStatusPanel.vue';
+// import ApprovalStatusPanel from '@/modules/analytics/components/ownerComponents/ApprovalStatusPanel.vue';
+import QuickActionsPanel from '@/modules/analytics/components/ownerComponents/QuickActionsPanel.vue';
 import AnalyticsDashboardState from '@/modules/analytics/components/ownerComponents/AnalyticsDashboardState.vue';
 import AnalyticsDashboardSummaryCards from '@/modules/analytics/components/ownerComponents/AnalyticsDashboardSummaryCards.vue';
 import AnalyticsDashboardTopbar from '@/modules/analytics/components/ownerComponents/AnalyticsDashboardTopbar.vue';
@@ -33,54 +34,52 @@ const {
   summaryCards,
   visibleMonthlySeries,
   segmentBreakdown,
-  activeReservations,
+  recentBookingsList, // Extract the new array ref here
+  allReservationsList,
 } = storeToRefs(dashboardStore);
 
 const { fetchDashboardData, formatMoney, formatDate } = dashboardStore;
 
 const { isSidebarOpen } = useSidebar();
 
+// ── ReservationOverviewChart: restored original Line shape { labels, data } ──
+// labels = status names (Cancelled, Confirmed, Pending)
+// data   = total amounts per status
 const reservationOverviewChart = computed(() => ({
   labels: visibleMonthlySeries.value.map((item) => item.label),
   data: visibleMonthlySeries.value.map((item) => Number(item.profit) || 0),
 }));
 
-const revenueSegments = computed(() => segmentBreakdown.value.map((segment) => ({
-  id: segment.id,
-  name: segment.name,
-  share: segment.share,
-  color: segment.color,
-})));
+// ── RevenueBySegmentCard ──────────────────────────────────────────────────────
+const revenueSegments = computed(() =>
+  segmentBreakdown.value.map((segment) => ({
+    id: segment.id,
+    name: segment.name,
+    share: segment.share,
+    color: segment.color,
+  })),
+);
 
 const revenuePeriodLabel = computed(() => {
   const currentQuarter = Math.ceil((new Date().getMonth() + 1) / 3);
   return `Q${currentQuarter} ${selectedYearLabel.value}`;
 });
 
-const propertyCount = computed(() => dashboardData.value.summary?.totalProperties || 1);
+// ── ApprovalStatusPanel ───────────────────────────────────────────────────────
+const propertyCount = computed(() =>
+  Math.max(dashboardData.value.properties?.length || 1, 1),
+);
 
 const approvalStatuses = computed(() => {
   const properties = dashboardData.value.properties || [];
-  const approved = properties.filter((property) => String(property.status).toLowerCase() === 'approved').length;
-  const pending = properties.filter((property) => String(property.status).toLowerCase() === 'pending').length;
+  const approved = properties.filter(p => String(p.status).toLowerCase() === 'approved').length;
+  const pending = properties.filter(p => String(p.status).toLowerCase() === 'pending').length;
   const suspended = Math.max(properties.length - approved - pending, 0);
 
   return [
-    {
-      label: t('owner.analytics.approval.activeListings'),
-      count: approved,
-      tone: 'success',
-    },
-    {
-      label: t('owner.analytics.approval.pendingAudits'),
-      count: pending,
-      tone: 'warning',
-    },
-    {
-      label: t('owner.analytics.approval.draftModeSuspended'),
-      count: suspended,
-      tone: 'danger',
-    },
+    { label: t('owner.analytics.approval.activeListings'), count: approved, tone: 'success' },
+    { label: t('owner.analytics.approval.pendingAudits'), count: pending, tone: 'warning' },
+    { label: t('owner.analytics.approval.draftModeSuspended'), count: suspended, tone: 'danger' },
   ];
 });
 
@@ -91,26 +90,36 @@ const quickLinks = computed(() => [
   { label: t('owner.sidebar.paymentAccounts'), href: '/owner/payment-accounts', icon: 'CreditCardIcon' },
 ]);
 
-const iconMap = {
-  BuildingOfficeIcon,
-  HomeIcon,
-  CalendarDaysIcon,
-  CreditCardIcon,
-};
+const localizedActiveReservations = computed(() => {
+  return activeReservations.value.map(item => {
+    // 1. Safe capitalization or localization mapping for the text label
+    let statusLabel = item.status;
+    if (item.status === 'confirmed') statusLabel = t('owner.analytics.status.confirmed', 'Confirmed');
+    else if (item.status === 'pending') statusLabel = t('owner.analytics.status.pending', 'Pending');
+    else if (item.status === 'cancelled') statusLabel = t('owner.analytics.status.cancelled', 'Cancelled');
+    else if (item.status === 'completed') statusLabel = t('owner.analytics.status.completed', 'Completed');
+    else if (item.status === 'submitted') statusLabel = t('owner.analytics.status.submitted', 'Submitted');
 
+    // Force first letter uppercase if no translation is found
+    if (statusLabel === item.status) {
+      statusLabel = item.status.charAt(0).toUpperCase() + item.status.slice(1);
+    }
+
+    return {
+      ...item,
+      status: statusLabel // Send clean text wrapper to the badge
+    };
+  });
+});
+
+const iconMap = { BuildingOfficeIcon, HomeIcon, CalendarDaysIcon, CreditCardIcon };
+
+// ── Animation seed ────────────────────────────────────────────────────────────
 const animationSeed = ref(0);
-const bumpAnimationSeed = () => {
-  animationSeed.value += 1;
-};
+const bumpAnimationSeed = () => { animationSeed.value += 1; };
 
-onMounted(() => {
-  bumpAnimationSeed();
-});
-
-onActivated(() => {
-  bumpAnimationSeed();
-});
-
+onMounted(bumpAnimationSeed);
+onActivated(bumpAnimationSeed);
 </script>
 
 <template>
@@ -125,16 +134,17 @@ onActivated(() => {
 
       <section class="grid gap-6">
         <div class="grid gap-6 lg:grid-cols-3">
-          <ReservationOverviewChart :chart="reservationOverviewChart" :year-label="selectedYearLabel"
+          <!-- Restored original Line chart — amounts by reservation status -->
+          <ReservationOverviewChart :chart="allReservationsList" :year-label="selectedYearLabel"
             :animation-seed="animationSeed" />
-          <ApprovalStatusPanel :statuses="approvalStatuses" :quick-links="quickLinks" :property-count="propertyCount"
-            :icon-map="iconMap" />
+          <QuickActionsPanel :quick-links="quickLinks" :property-count="propertyCount" :icon-map="iconMap" />
         </div>
 
         <div class="grid gap-6 lg:grid-cols-3">
           <RevenueBySegmentCard :segments="revenueSegments" :period-label="revenuePeriodLabel"
             :animation-seed="animationSeed" class="lg:col-span-1" />
-          <RecentReservationsPanel :reservations="activeReservations" :format-date="formatDate"
+
+          <RecentReservationsPanel :reservations="recentBookingsList" :format-date="formatDate"
             :format-money="formatMoney" class="lg:col-span-2" />
         </div>
       </section>
