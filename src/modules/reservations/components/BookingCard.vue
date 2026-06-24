@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from "vue";
+import { computed, ref, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import BookingStatusBadge from "./BookingStatusBadge.vue";
 import {
@@ -12,6 +12,7 @@ import {
   CreditCardIcon,
   XCircleIcon,
   ArrowPathIcon,
+  EllipsisVerticalIcon,
 } from "@heroicons/vue/24/outline";
 
 const props = defineProps({
@@ -81,16 +82,35 @@ const canCancel = computed(() => {
     !["submitted", "paid", "verified"].includes(paymentStatus.value)
   );
 });
+
+const menuOpen = ref(false);
+const menuRef  = ref(null);
+
+const toggleMenu = () => { menuOpen.value = !menuOpen.value; };
+const closeMenu  = () => { menuOpen.value = false; };
+
+// close when clicking outside the dropdown
+const handleOutsideClick = (e) => {
+  if (menuRef.value && !menuRef.value.contains(e.target)) {
+    closeMenu();
+  }
+};
+
+onMounted(()        => document.addEventListener("click", handleOutsideClick));
+onBeforeUnmount(()  => document.removeEventListener("click", handleOutsideClick));
 </script>
 
 <template>
   <div
-    class="bg-(--color-surface) border border-(--color-border) rounded-3xl p-5 md:p-6 shadow-xs hover:shadow-md hover:border-(--color-primary)/30 transition-all duration-300 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative overflow-hidden group"
+    class="bg-(--color-surface) border border-(--color-border) rounded-3xl shadow-xs hover:shadow-md hover:border-(--color-primary)/30 transition-all duration-300 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative group"
   >
-    <!-- Accent Gradient Left Border Reveal on Hover -->
-    <div
-      class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-(--color-primary) to-sky-400 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"
-    ></div>
+    <!-- Accent Gradient Left Border — clipped by its own rounded wrapper -->
+    <div class="absolute left-0 top-0 bottom-0 w-1 rounded-l-3xl overflow-hidden pointer-events-none">
+      <div class="w-full h-full bg-gradient-to-b from-(--color-primary) to-sky-400 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
+    </div>
+
+    <!-- inner padding wrapper so overflow-hidden only applies to content, not dropdown -->
+    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 w-full p-5 md:p-6">
 
     <!-- Left Compartment: Visual Asset Image + Meta Content Descriptor -->
     <div
@@ -122,6 +142,8 @@ const canCancel = computed(() => {
             <HashtagIcon class="w-2.5 h-2.5" />
             RES-{{ booking.id }}
           </span>
+          <span class="text-(--color-muted)/40 text-xs">·</span>
+          <BookingStatusBadge :status="status" />
         </div>
 
         <!-- Property / Geo Anchor Node -->
@@ -182,104 +204,98 @@ const canCancel = computed(() => {
       </div>
     </div>
 
-    <!-- Right Compartment: Absolute Financial Totals + Control Button Bar -->
+    <!-- Right Compartment -->
     <div
-      class="flex sm:flex-row lg:flex-col sm:items-center lg:items-end justify-between lg:justify-center gap-6 w-full lg:w-auto border-t lg:border-t-0 border-(--color-border)/60 pt-4 lg:pt-0"
+      class="flex sm:flex-row lg:flex-col sm:items-center lg:items-end justify-between lg:justify-center gap-3 w-full lg:w-auto border-t lg:border-t-0 border-(--color-border)/60 pt-4 lg:pt-0 lg:min-w-[160px]"
     >
-      <!-- Pricing Ledger Grid block -->
+      <!-- Price block -->
       <div class="lg:text-right">
-        <span
-          class="text-[9px] uppercase font-black text-(--color-muted) tracking-widest block"
-          >Settled Volume</span
-        >
-        <span
-          class="text-2xl font-black text-(--color-text) tracking-tight block mt-0.5"
-        >
-          ${{ Number(booking.total_amount || booking.totalPrice || 0) }}
+        <span class="text-[9px] uppercase font-black text-(--color-muted) tracking-widest block">
+          Settled Volume
         </span>
-        <span
-          class="text-(--color-muted) text-[10px] font-semibold block capitalize mt-0.5"
-        >
-          {{
-            paymentStatus ? `Status: ${paymentStatus}` : "No payload generated"
-          }}
+        <span class="text-2xl font-black text-(--color-text) tracking-tight block mt-0.5">
+          ${{ Number(booking.total_amount || booking.totalPrice || 0) }}
         </span>
       </div>
 
-      <!-- Action Framework Button Stack -->
-      <div class="flex items-center gap-2">
-        <BookingStatusBadge :status="status" />
+      <!-- Primary CTA: Pay Now / Book Again (only when applicable) -->
+      <button
+        v-if="showPayButton"
+        @click="emit('pay', booking.paymentId)"
+        class="w-full bg-(--color-primary) hover:opacity-90 text-white font-bold text-sm px-4 py-2.5 rounded-xl shadow-sm transition duration-200 cursor-pointer flex items-center justify-center gap-2"
+      >
+        <component :is="paymentStatus === 'failed' ? ArrowPathIcon : CreditCardIcon" class="w-4 h-4" />
+        <span>{{ paymentStatus === "failed" ? "Re-upload" : "Pay Now" }}</span>
+      </button>
 
-        <div class="flex items-center gap-1.5">
-          <!-- Document Receipt Accessor Trigger -->
+      <button
+        v-else-if="!canCancel"
+        @click="router.push({ name: 'public.room-detail', params: { id: booking.roomId ?? booking.room_id } })"
+        class="w-full bg-(--color-primary) hover:opacity-90 text-white font-bold text-sm px-4 py-2.5 rounded-xl shadow-sm transition duration-200 cursor-pointer flex items-center justify-center gap-2"
+      >
+        <ArrowPathIcon class="w-4 h-4" />
+        <span>Book Again</span>
+      </button>
+
+      <!-- Secondary row: View Details + ⋮ menu -->
+      <div class="flex items-center gap-2 w-full relative">
+        <!-- Details button -->
+        <button
+          @click="emit('view', booking.id)"
+          class="flex-1 border border-(--color-border) bg-(--color-surface) hover:bg-(--color-surface-soft) text-(--color-text) font-bold text-sm px-3 py-2.5 rounded-xl transition duration-200 flex items-center justify-center gap-1.5"
+        >
+          <ArrowRightIcon class="w-4 h-4" />
+          <span>{{ showPayButton ? 'Details' : 'View Details' }}</span>
+        </button>
+
+        <!-- ⋮ dropdown trigger -->
+        <div class="relative" ref="menuRef">
           <button
-            @click="
-              booking.paymentId ? emit('receipt', booking.paymentId) : null
-            "
-            :disabled="!booking.paymentId"
-            :class="
-              booking.paymentId
-                ? 'bg-(--color-surface-soft) border-(--color-border) hover:bg-(--color-border)/30 text-(--color-text) cursor-pointer'
-                : 'bg-(--color-surface-soft)/40 border-(--color-border)/40 text-(--color-muted)/40 cursor-not-allowed'
-            "
-            class="border text-xs font-bold px-3 py-2 rounded-xl transition duration-200 flex items-center gap-1"
-            title="View Statement Receipt"
+            @click="toggleMenu"
+            class="border border-(--color-border) bg-(--color-surface) hover:bg-(--color-surface-soft) text-(--color-text) p-2.5 rounded-xl transition duration-200 flex items-center justify-center"
           >
-            <DocumentTextIcon class="w-4 h-4" />
-            <span class="hidden sm:inline">Receipt</span>
+            <EllipsisVerticalIcon class="w-4 h-4" />
           </button>
 
-          <!-- View Detail Page -->
-          <button
-            @click="emit('view', booking.id)"
-            class="bg-(--color-surface-soft) border border-(--color-border) hover:border-(--color-primary)/40 hover:text-(--color-primary) text-(--color-text) font-bold text-xs px-3 py-2 rounded-xl transition duration-200 cursor-pointer flex items-center gap-1"
-            title="View Reservation Details"
+          <!-- Dropdown menu -->
+          <div
+            v-if="menuOpen"
+            class="absolute right-0 top-full mt-1.5 w-44 bg-(--color-surface) border border-(--color-border) rounded-2xl shadow-lg z-50 py-1 overflow-hidden"
           >
-            <ArrowRightIcon class="w-4 h-4" />
-            <span class="hidden sm:inline">Details</span>
-          </button>
+            <!-- Receipt -->
+            <button
+              @click="booking.paymentId ? (emit('receipt', booking.paymentId), closeMenu()) : null"
+              :disabled="!booking.paymentId"
+              :class="booking.paymentId ? 'hover:bg-(--color-surface-soft) text-(--color-text) cursor-pointer' : 'text-(--color-muted)/40 cursor-not-allowed'"
+              class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold transition duration-150"
+            >
+              <DocumentTextIcon class="w-4 h-4 shrink-0" />
+              <span>Receipt</span>
+            </button>
 
-          <!-- Transaction Execution Trigger (Pay / Re-upload) -->
-          <button
-            v-if="showPayButton"
-            @click="emit('pay', booking.paymentId)"
-            class="bg-(--color-primary) hover:bg-(--color-primary-soft)/80 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-xs transition duration-200 cursor-pointer flex items-center gap-1.5"
-          >
-            <component
-              :is="paymentStatus === 'failed' ? ArrowPathIcon : CreditCardIcon"
-              class="w-4 h-4"
-            />
-            <span>{{
-              paymentStatus === "failed" ? "Re-upload" : "Pay Now"
-            }}</span>
-          </button>
+            <!-- Cancel -->
+            <button
+              v-if="canCancel"
+              @click="emit('cancel', booking.id); closeMenu()"
+              class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition duration-150 cursor-pointer"
+            >
+              <XCircleIcon class="w-4 h-4 shrink-0" />
+              <span>Cancel Booking</span>
+            </button>
 
-          <!-- Safe Removal Control Vector (Cancel Stay) -->
-          <button
-            v-if="canCancel"
-            @click="emit('cancel', booking.id)"
-            class="bg-rose-500/5 hover:bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-xs px-4 py-2 rounded-xl transition duration-200 cursor-pointer flex items-center gap-1.5"
-          >
-            <XCircleIcon class="w-4 h-4" />
-            <span>Cancel</span>
-          </button>
-
-          <!-- Re-allocation Hook (Book Again Router Trigger) -->
-          <button
-            v-else-if="!showPayButton"
-            @click="
-              router.push({
-                name: 'public.room-detail',
-                params: { id: booking.roomId ?? booking.room_id },
-              })
-            "
-            class="bg-(--color-primary) hover:opacity-90 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-xs transition duration-200 cursor-pointer flex items-center gap-1.5"
-          >
-            <ArrowPathIcon class="w-4 h-4" />
-            <span>Book Again</span>
-          </button>
+            <!-- Book Again (in menu when pay button is shown) -->
+            <button
+              v-if="showPayButton"
+              @click="router.push({ name: 'public.room-detail', params: { id: booking.roomId ?? booking.room_id } }); closeMenu()"
+              class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-(--color-text) hover:bg-(--color-surface-soft) transition duration-150 cursor-pointer"
+            >
+              <ArrowPathIcon class="w-4 h-4 shrink-0" />
+              <span>Book Again</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
+    </div><!-- end inner padding wrapper -->
   </div>
 </template>

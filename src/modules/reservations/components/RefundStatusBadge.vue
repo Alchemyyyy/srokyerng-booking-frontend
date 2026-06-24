@@ -13,13 +13,13 @@ const CheckIcon = defineComponent({ render: () => h('svg', { width:12, height:12
 const CloseIcon = defineComponent({ render: () => h('svg', { width:12, height:12, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', 'stroke-width':'2.5' }, [h('path', { d:'M18 6 6 18M6 6l12 12' })]) })
 
 const STATUS_MAP = {
-  not_requested: { label: 'No Refund',        tone: 'neutral',  dot: false, icon: null },
-  pending:       { label: 'Refund Pending',    tone: 'warning',  dot: true,  icon: null },
-  processing:    { label: 'Processing',        tone: 'info',     dot: true,  icon: null },
-  approved:      { label: 'Refund Approved',   tone: 'success',  dot: false, icon: CheckIcon },
-  paid:          { label: 'Refunded',          tone: 'success',  dot: false, icon: CheckIcon },
-  rejected:      { label: 'Refund Rejected',   tone: 'danger',   dot: false, icon: CloseIcon },
-  cancelled:     { label: 'Cancelled',         tone: 'neutral',  dot: false, icon: null },
+  not_requested: { label: 'No Refund',      tone: 'neutral', dot: false, icon: null },
+  pending:       { label: 'Refund Pending',  tone: 'warning', dot: true,  icon: null },
+  processing:    { label: 'Processing',      tone: 'info',    dot: true,  icon: null },
+  approved:      { label: 'Refund Approved', tone: 'success', dot: false, icon: CheckIcon },
+  paid:          { label: 'Refunded',        tone: 'success', dot: false, icon: CheckIcon },
+  rejected:      { label: 'Refund Rejected', tone: 'danger',  dot: false, icon: CloseIcon },
+  cancelled:     { label: 'Cancelled',       tone: 'neutral', dot: false, icon: null },
 }
 
 const props = defineProps({

@@ -1449,5 +1449,118 @@
       "noResults": "No amenities found",
       "selected": "{count} selected"
     }
+  },
+  "bookingHistory": {
+    "breadcrumb": {
+      "dashboard": "Dashboard",
+      "title": "Booking History"
+    },
+    "export": "Export Stays (CSV)",
+    "stats": {
+      "totalBookings": "Total Bookings",
+      "acrossProperties": "Across all integrated properties",
+      "totalNights": "Total Nights",
+      "tierStatus": "Tier Status",
+      "tierLabel": "Elite Gold",
+      "capitalInvested": "Capital Invested",
+      "inclusive": "Inclusive of room updates",
+      "activeItinerary": "Active Itinerary",
+      "live": "{count} Live",
+      "checkInActive": "Check-in timeframe active now"
+    },
+    "filters": {
+      "title": "Your Reservation Timeline",
+      "subtitle": "Manage, evaluate, or update your registered accommodations records.",
+      "all": "All Stays",
+      "upcoming": "Upcoming",
+      "completed": "Completed"
+    },
+    "state": {
+      "loading": "Retrieving database index entries...",
+      "error": "Failed to load reservations.",
+      "retry": "Re-establish Fetch",
+      "empty": "No reservations found.",
+      "cancelFailed": "Failed to cancel reservation. Please try again.",
+      "noPayment": "No payment found for this reservation.",
+      "noPaymentTitle": "No Payment"
+    }
+  },
+  "reservationDetail": {
+    "back": "Back",
+    "title": "Reservation Details",
+    "yourStay": "Your Stay",
+    "loading": "Loading reservation…",
+    "error": "Failed to load reservation details.",
+    "retry": "Try Again",
+    "bookingSummary": {
+      "label": "Booking Summary",
+      "checkIn": "Check-in",
+      "checkOut": "Check-out",
+      "nights": "Nights",
+      "guests": "Guests",
+      "totalPaid": "Total Paid",
+      "payment": "Payment",
+      "refund": "Refund"
+    },
+    "cancellationReason": {
+      "label": "Cancellation Reason"
+    },
+    "policy": {
+      "label": "Cancellation Policy",
+      "free": "Free Cancellation",
+      "partial": "Partial Refund",
+      "strict": "Non-Refundable",
+      "youReceive": "You'll receive",
+      "cancelBy": "Cancel by {deadline} for a full refund"
+    },
+    "notice": {
+      "title": "Before you cancel",
+      "irreversible": "Cancellations are irreversible and cannot be undone.",
+      "refundTime": "Refunds are processed within 5–10 business days.",
+      "notification": "A success notification will appear once your cancellation is confirmed."
+    },
+    "form": {
+      "reasonLabel": "Reason for cancellation",
+      "reasonPlaceholder": "e.g. Change of plans, personal reasons…",
+      "reasonError": "Please provide a reason for cancellation.",
+      "cancelError": "Failed to cancel. Please try again."
+    },
+    "actions": {
+      "keep": "Keep Reservation",
+      "goBack": "Go Back",
+      "cancel": "Cancel Reservation",
+      "confirm": "Confirm Cancellation",
+      "cancelling": "Cancelling…"
+    },
+    "toast": {
+      "successTitle": "Cancelled",
+      "successMessage": "Your reservation has been successfully cancelled."
+    }
+  },
+  "cancellationPolicy": {
+    "free": {
+      "description": "Cancel at least 7 days before check-in for a full refund."
+    },
+    "partial": {
+      "description": "Cancelling within 7 days of check-in gives a 50% refund."
+    },
+    "strict": {
+      "description": "Check-in is today or has already passed. No refund available."
+    },
+    "breakdown": {
+      "sevenPlus": "7+ days before check-in",
+      "oneToSix": "1–6 days before check-in",
+      "sameDay": "Same day",
+      "sameDayAfter": "Same day or after check-in",
+      "fullRefund": "100% refund",
+      "halfRefund": "50% refund",
+      "noRefund": "No refund"
+    },
+    "blocked": {
+      "alreadyCancelled": "This reservation has already been cancelled.",
+      "completed": "Completed stays cannot be cancelled.",
+      "checkInPassed": "Cancellation is not available after check-in has started.",
+      "notEligible": "This reservation is not eligible for cancellation."
+    }
   }
 }
