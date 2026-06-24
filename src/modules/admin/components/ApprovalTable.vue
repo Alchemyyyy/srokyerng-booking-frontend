@@ -74,22 +74,22 @@ const handleRowClick = (event, itemId) => {
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="item in items" :key="item.id || item.property_id"
-                    @click="handleRowClick($event, item.id || item.property_id  )" style="cursor: pointer;">
+                <tr v-for="item in items" :key="item.id"
+                    @click="handleRowClick($event, item.id)" style="cursor: pointer;">
                     <td>
                         <div class="property-name">{{ item.property_name || 'Unnamed Property' }}</div>
-                        <div class="property-category">{{ item.category_name || 'Standard Listing' }}</div>
+                        <div class="property-category">{{ item.category?.category_name || 'Standard Listing' }}</div>
                     </td>
 
                     <td>
-                        <div class="owner-name">{{ item.owner_name || 'Unknown Host' }}</div>
-                        <div class="owner-email">{{ item.owner_email || 'No email provided' }}</div>
+                        <div class="owner-name">{{ item.owner?.owner_name || 'Unknown Host' }}</div>
+                        <div class="owner-email">{{ item.owner?.owner_email || 'No email provided' }}</div>
                     </td>
 
                     <td>
                         <div class="location-wrapper">
                             <span v-if="item.address">{{ item.address }}, </span>
-                            <span>{{ item.city || item.province || 'Cambodia' }}</span>
+                            <span>{{ item.city?.city_name || item.province?.province_name || 'Cambodia' }}</span>
                         </div>
                     </td>
 
@@ -97,26 +97,21 @@ const handleRowClick = (event, itemId) => {
                         <span :class="[
                             'status-badge',
                             {
-                                'status-pending': item.status_name?.toLowerCase() === 'pending' || item.status_id === 1,
-                                'status-approved': item.status_name?.toLowerCase() === 'approved' || item.status_id === 2,
-                                'status-rejected': item.status_name?.toLowerCase() === 'rejected' || item.status_id === 3
+                                'status-pending': item.status?.status_name?.toLowerCase() === 'pending' || item.status?.status_id === 1,
+                                'status-approved': item.status?.status_name?.toLowerCase() === 'approved' || item.status?.status_id === 2,
+                                'status-rejected': item.status?.status_name?.toLowerCase() === 'rejected' || item.status?.status_id === 3
                             }
-                        ]">{{ item.status_name || 'Pending' }}</span>
+                        ]">{{ item.status?.status_name || 'Pending' }}</span>
                     </td>
 
                     <td class="text-right">
                         <div class="action-buttons-container">
-                            <!-- <button @click="navigateToReview(item.id || item.property_id)" class="icon-btn view-btn"
-                                title="View Details">
-                                <EyeIcon class="btn-icon" />
-                            </button> -->
-
-                            <template v-if="item.status_id === 1 || item.status_name?.toLowerCase() === 'pending'">
-                                <button @click="emit('approve', item.id || item.property_id)" :disabled="isProcessing"
+                            <template v-if="item.status?.status_id === 1 || item.status?.status_name?.toLowerCase() === 'pending'">
+                                <button @click="emit('approve', item.id)" :disabled="isProcessing"
                                     class="action-inline-btn btn-approve-sm">
                                     <CheckIcon class="btn-icon-sm" /> Approve
                                 </button>
-                                <button @click="emit('reject', item.id || item.property_id)" :disabled="isProcessing"
+                                <button @click="emit('reject', item.id)" :disabled="isProcessing"
                                     class="action-inline-btn btn-reject-sm">
                                     <XMarkIcon class="btn-icon-sm" /> Reject
                                 </button>
@@ -124,22 +119,22 @@ const handleRowClick = (event, itemId) => {
 
                             <template v-else>
                                 <div class="dropdown-menu-wrapper">
-                                    <button @click="toggleDropdown($event, item.id || item.property_id)"
+                                    <button @click="toggleDropdown($event, item.id)"
                                         :disabled="isProcessing" class="action-inline-btn btn-edit-sm">
                                         Edit Status
                                         <ChevronDownIcon class="btn-icon-sm ml-1" />
                                     </button>
 
-                                    <div v-if="activeDropdownId === (item.id || item.property_id)"
+                                    <div v-if="activeDropdownId === item.id"
                                         class="dropdown-popover" :class="{ 'open-upward': isDropup }">
-                                        <button v-if="item.status_id !== 1"
-                                            @click.stop="handleSelectStatus(item.id || item.property_id, 'pending')"
+                                        <button v-if="item.status?.status_id !== 1"
+                                            @click.stop="handleSelectStatus(item.id, 'pending')"
                                             class="dropdown-item text-warning-item">Set to Pending</button>
-                                        <button v-if="item.status_id !== 2"
-                                            @click.stop="handleSelectStatus(item.id || item.property_id, 'approve')"
+                                        <button v-if="item.status?.status_id !== 2"
+                                            @click.stop="handleSelectStatus(item.id, 'approve')"
                                             class="dropdown-item text-success-item">Approve Listing</button>
-                                        <button v-if="item.status_id !== 3"
-                                            @click.stop="handleSelectStatus(item.id || item.property_id, 'reject')"
+                                        <button v-if="item.status?.status_id !== 3"
+                                            @click.stop="handleSelectStatus(item.id, 'reject')"
                                             class="dropdown-item text-danger-item">Reject Listing</button>
                                     </div>
                                 </div>

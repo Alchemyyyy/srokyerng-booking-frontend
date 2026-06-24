@@ -6,11 +6,16 @@ import {
   ShareIcon,
   ChevronRightIcon,
 } from "@heroicons/vue/24/outline";
+import { HeartIcon as HeartIconSolid } from "@heroicons/vue/24/solid";
 import { useI18n } from "vue-i18n";
 
 const { t } = useI18n({ useScope: "global" });
 
 const props = defineProps({
+  isSaved: {
+    type: Boolean,
+    default: false,
+  },
   property: {
     type: Object,
     required: true,
@@ -169,11 +174,14 @@ const emit = defineEmits(["save", "share"]);
         <!-- Action Buttons -->
         <div class="flex items-center gap-3">
           <button
-            class="flex h-11 w-11 items-center justify-center rounded-2xl border border-(--color-border) bg-(--color-surface) text-(--color-muted) transition hover:border-(--color-primary) hover:text-(--color-primary)"
+            class="flex h-11 w-11 items-center justify-center rounded-2xl border border-(--color-border) bg-(--color-surface) transition hover:border-rose-500 hover:text-rose-500"
+            :class="isSaved ? 'text-rose-500 border-rose-500 bg-rose-50' : 'text-(--color-muted)'"
             type="button"
             @click="emit('save')"
+            title="Save to Wishlist"
           >
-            <HeartIcon class="h-5 w-5" />
+            <HeartIconSolid v-if="isSaved" class="h-5 w-5" />
+            <HeartIcon v-else class="h-5 w-5" />
           </button>
           <button
             class="flex h-11 w-11 items-center justify-center rounded-2xl border border-(--color-border) bg-(--color-surface) text-(--color-muted) transition hover:border-(--color-primary) hover:text-(--color-primary)"

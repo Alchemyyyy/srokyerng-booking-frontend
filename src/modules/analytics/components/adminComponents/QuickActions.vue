@@ -32,22 +32,31 @@ const formattedCount = (val) => props.formatter(val)
   font-weight: 700;
   color: var(--color-text);
 }
+
 .quick-links header p {
   font-size: 13px;
   color: var(--color-muted);
   margin-bottom: var(--space-md);
 }
+
 .quick-links-grid {
   display: grid;
   gap: var(--space-md);
   grid-template-columns: repeat(1, minmax(0, 1fr));
 }
+
 @media (min-width: 640px) {
-  .quick-links-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .quick-links-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
+
 @media (min-width: 1024px) {
-  .quick-links-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .quick-links-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
+
 .quick-link-card {
   display: flex;
   justify-content: space-between;
@@ -55,22 +64,26 @@ const formattedCount = (val) => props.formatter(val)
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: var(--space-md);
+  padding: var(--space-xl);
   text-decoration: none;
   transition: border-color 0.15s ease;
 }
+
 .quick-link-card:hover {
   border-color: var(--color-primary);
 }
+
 .quick-link-card h3 {
   font-size: 13px;
   font-weight: 600;
   color: var(--color-text);
 }
+
 .quick-link-card p {
   font-size: 11px;
   color: var(--color-muted);
 }
+
 .quick-link-count {
   font-size: 16px;
   font-weight: 700;

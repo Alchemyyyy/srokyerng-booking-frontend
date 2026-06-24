@@ -18,12 +18,14 @@ import PropertyGallery from "../components/PropertyGallery.vue";
 import AvailabilityCalendar from "@/modules/calendar/components/AvailabilityCalendar.vue";
 import { usePropertyStore } from "../store/propertyStore";
 import { propertyApi } from "../api/property.api";
+import { useWishlistStore } from "@/modules/wishlists/store/wishlistStore";
 import http from "@/app/api/http";
 
 const { t } = useI18n({ useScope: "global" });
 const route = useRoute();
 const router = useRouter();
 const propertyStore = usePropertyStore();
+const wishlistStore = useWishlistStore();
 const rooms = ref([]);
 
 const fallbackRoom = {
@@ -60,6 +62,7 @@ const roomSubtotal = computed(
 const totalPrice = computed(() => roomSubtotal.value + serviceFee);
 
 const property = computed(() => propertyStore.property);
+const isSaved = computed(() => wishlistStore.isPropertySaved(property.value?.id));
 
 const currentRooms = computed(() => {
   return rooms.value.length ? rooms.value : [fallbackRoom];
@@ -74,6 +77,10 @@ const selectRoom = (room) => {
 
 const fetchProperty = async () => {
   await propertyStore.fetchPropertyById(route.params.id).catch(() => {});
+  
+  if (route.params.id) {
+    wishlistStore.checkStatus(route.params.id);
+  }
 
   console.log("property.images:", propertyStore.property?.images); // 👈 add this
   console.log("property.image:", propertyStore.property?.image); // 👈 and this
@@ -106,7 +113,11 @@ watch(
   { immediate: true },
 );
 
-const handleSave = () => {};
+const handleSave = async () => {
+  if (property.value?.id) {
+    await wishlistStore.toggleWishlist(property.value.id);
+  }
+};
 const handleShare = () => {};
 
 // ── Availability Calendar ──
@@ -263,6 +274,7 @@ const writeReviewLink = { path: "/customer/reviews" };
         :selected-room="selectedRoom"
         :property-rating="reviewSummary.average"
         :review-count="reviewSummary.total"
+        :is-saved="isSaved"
         @save="handleSave"
         @share="handleShare"
       />

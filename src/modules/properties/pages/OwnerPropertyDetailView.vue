@@ -92,7 +92,9 @@ onMounted(async () => {
             {{ property.property_name }}
           </h1>
           <p class="text-sm text-(--color-muted) mt-1">
-            {{ property.city }}, {{ property.province }}, {{ property.country }}
+            {{ property.city?.city_name }},
+            {{ property.province?.province_name }},
+            {{ property.country?.country_name }}
           </p>
         </div>
 
@@ -100,9 +102,11 @@ onMounted(async () => {
         <span
           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border"
           :class="[
-            property.status_name === 'approved'
+            (property.status?.status_name || property.status_name) ===
+            'approved'
               ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-              : property.status_name === 'pending'
+              : (property.status?.status_name || property.status_name) ===
+                  'pending'
                 ? 'bg-amber-50 text-amber-700 border-amber-100'
                 : 'bg-rose-50 text-rose-700 border-rose-100',
           ]"
@@ -110,14 +114,16 @@ onMounted(async () => {
           <span
             class="w-1.5 h-1.5 rounded-full"
             :class="[
-              property.status_name === 'approved'
+              (property.status?.status_name || property.status_name) ===
+              'approved'
                 ? 'bg-emerald-500'
-                : property.status_name === 'pending'
+                : (property.status?.status_name || property.status_name) ===
+                    'pending'
                   ? 'bg-amber-500 animate-pulse'
                   : 'bg-rose-500',
             ]"
           />
-          {{ property.status_name }}
+          {{ property.status?.status_name || property.status_name }}
         </span>
       </header>
 
@@ -206,28 +212,45 @@ onMounted(async () => {
                   class="text-[10px] font-bold uppercase tracking-wider text-(--color-muted) block mb-0.5"
                   >Category</span
                 >
-                <span class="font-semibold">{{ property.category_name }}</span>
+                <span class="font-semibold">{{
+                  property.category?.category_name || property.category_name
+                }}</span>
               </div>
               <div>
                 <span
                   class="text-[10px] font-bold uppercase tracking-wider text-(--color-muted) block mb-0.5"
                   >City</span
                 >
-                <span class="font-semibold">{{ property.city }}</span>
+                <span class="font-semibold">{{
+                  property.city?.city_name || property.city
+                }}</span>
               </div>
               <div>
                 <span
                   class="text-[10px] font-bold uppercase tracking-wider text-(--color-muted) block mb-0.5"
                   >Province</span
                 >
-                <span class="font-semibold">{{ property.province }}</span>
+                <span class="font-semibold">{{
+                  property.province?.province_name || property.province
+                }}</span>
               </div>
               <div>
                 <span
                   class="text-[10px] font-bold uppercase tracking-wider text-(--color-muted) block mb-0.5"
                   >Country</span
                 >
-                <span class="font-semibold">{{ property.country }}</span>
+                <span class="font-semibold">{{
+                  property.country?.country_name || property.country
+                }}</span>
+              </div>
+              <div>
+                <span
+                  class="text-[10px] font-bold uppercase tracking-wider text-(--color-muted) block mb-0.5"
+                  >Number of Floors</span
+                >
+                <span class="font-semibold">{{
+                  property.number_of_floors ?? "-"
+                }}</span>
               </div>
               <div>
                 <span
@@ -325,21 +348,27 @@ onMounted(async () => {
                   class="text-[10px] font-bold uppercase tracking-wider text-(--color-muted) block mb-0.5"
                   >Name</span
                 >
-                <span class="font-semibold">{{ property.full_name }}</span>
+                <span class="font-semibold">{{
+                  property.owner?.full_name || property.full_name
+                }}</span>
               </div>
               <div>
                 <span
                   class="text-[10px] font-bold uppercase tracking-wider text-(--color-muted) block mb-0.5"
                   >Phone</span
                 >
-                <span class="font-semibold">{{ property.owner_phone }}</span>
+                <span class="font-semibold">{{
+                  property.owner?.phone || property.owner_phone
+                }}</span>
               </div>
               <div>
                 <span
                   class="text-[10px] font-bold uppercase tracking-wider text-(--color-muted) block mb-0.5"
                   >Email</span
                 >
-                <span class="font-semibold">{{ property.owner_email }}</span>
+                <span class="font-semibold">{{
+                  property.owner?.email || property.owner_email
+                }}</span>
               </div>
             </div>
           </div>

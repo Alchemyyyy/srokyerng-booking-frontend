@@ -7,7 +7,6 @@ import logoDark from "@/assets/images/logos/logo2.png";
 import {
   ChartBarIcon,
   BuildingOffice2Icon,
-  KeyIcon,
   CalendarDaysIcon,
   CreditCardIcon,
   Cog6ToothIcon,
@@ -27,8 +26,6 @@ const menuItems = [
     icon: BuildingOffice2Icon,
     badge: 3,
   },
-  { name: "Rooms", path: "/admin/rooms-showcase", icon: KeyIcon, badge: null },
-
   {
     name: "Reservations",
     path: "/admin/reservations",
