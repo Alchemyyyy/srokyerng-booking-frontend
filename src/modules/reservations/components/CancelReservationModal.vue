@@ -1,273 +1,334 @@
 <template>
-  <AppModal :open="open" title="Cancel Reservation" @close="$emit('close')">
-    <!-- Eligibility blocked -->
-    <div v-if="!eligible" class="crm__blocked">
-      <div class="crm__blocked-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <circle cx="12" cy="12" r="10"/>
-          <path d="M18 6 6 18M6 6l12 12"/>
-        </svg>
+  <Teleport to="body">
+    <Transition name="modal">
+      <div v-if="open" class="crm-backdrop" @click.self="$emit('close')">
+        <div class="crm-modal" role="dialog" aria-modal="true">
+
+          <!-- Header -->
+          <div class="crm-header">
+            <div class="crm-header-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+              </svg>
+            </div>
+            <div class="crm-header-text">
+              <h3 class="crm-title">{{ t('reservationDetail.notice.title') }}</h3>
+              <p class="crm-subtitle">{{ t('reservationDetail.notice.irreversible') }}</p>
+            </div>
+            <button class="crm-close" @click="$emit('close')" :disabled="loading">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Notice bullets -->
+          <div class="crm-notices">
+            <div class="crm-notice-row">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <span>{{ t('reservationDetail.notice.refundTime') }}</span>
+            </div>
+            <div class="crm-notice-row">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+              <span>{{ t('reservationDetail.notice.notification') }}</span>
+            </div>
+          </div>
+
+          <!-- Body -->
+          <div class="crm-body">
+            <label class="crm-label">
+              {{ t('reservationDetail.form.reasonLabel') }}
+              <span class="crm-optional">({{ t('common.cancel').toLowerCase() === 'cancel' ? 'optional' : '' }})</span>
+            </label>
+            <textarea
+              v-model="reason"
+              class="crm-textarea"
+              :placeholder="t('reservationDetail.form.reasonPlaceholder')"
+              rows="4"
+              maxlength="500"
+              :disabled="loading"
+            ></textarea>
+            <span class="crm-char">{{ reason.length }}/500</span>
+
+            <!-- Error -->
+            <div v-if="error" class="crm-error">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              {{ error }}
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="crm-footer">
+            <button class="crm-btn-keep" @click="$emit('close')" :disabled="loading">
+              {{ t('reservationDetail.actions.keep') }}
+            </button>
+            <button class="crm-btn-danger" @click="handleConfirm" :disabled="loading">
+              <div v-if="loading" class="crm-spinner"></div>
+              <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              {{ loading
+                ? t('reservationDetail.actions.cancelling')
+                : t('reservationDetail.actions.confirm') }}
+            </button>
+          </div>
+
+        </div>
       </div>
-      <h3 class="crm__blocked-title">Cancellation Not Available</h3>
-      <p class="crm__blocked-text">
-        {{ blockedReason || 'This reservation cannot be cancelled at this time.' }}
-      </p>
-    </div>
-
-    <!-- Eligible form -->
-    <div v-else class="crm__body">
-      <!-- Policy reminder -->
-      <CancellationPolicyBox
-        v-if="policy"
-        :tone="policy.tone"
-        :description="policy.description"
-        :deadline="policy.deadline"
-        :refund-breakdown="policy.refundBreakdown || []"
-      />
-
-      <!-- Refund preview -->
-      <div v-if="refundAmount !== null" class="crm__refund-preview">
-        <span class="crm__refund-label">Estimated Refund</span>
-        <span class="crm__refund-amount" :class="refundAmount > 0 ? 'crm__refund-amount--positive' : 'crm__refund-amount--zero'">
-          ${{ Number(refundAmount).toFixed(2) }}
-        </span>
-      </div>
-
-      <!-- Reason input -->
-      <div class="crm__field">
-        <label class="crm__label" for="cancel-reason">
-          Reason for cancellation <span class="crm__required">*</span>
-        </label>
-        <textarea
-          id="cancel-reason"
-          v-model="reason"
-          class="crm__textarea"
-          rows="3"
-          maxlength="500"
-          placeholder="e.g. Change of travel plans, personal reasons…"
-          :disabled="loading"
-        />
-        <p class="crm__char-count">{{ reason.length }}/500</p>
-        <p v-if="reasonError" class="crm__field-error">{{ reasonError }}</p>
-      </div>
-
-      <!-- Warning -->
-      <div class="crm__warning">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-          <line x1="12" y1="9" x2="12" y2="13"/>
-          <line x1="12" y1="17" x2="12.01" y2="17"/>
-        </svg>
-        <span>This action cannot be undone. Your reservation will be permanently cancelled.</span>
-      </div>
-
-      <!-- API error -->
-      <p v-if="error" class="crm__error" role="alert">{{ error }}</p>
-    </div>
-
-    <!-- Footer -->
-    <template #footer>
-      <button class="crm__btn crm__btn--secondary" :disabled="loading" @click="$emit('close')">
-        Keep Reservation
-      </button>
-      <button
-        v-if="eligible"
-        class="crm__btn crm__btn--danger"
-        :disabled="loading || !reason.trim()"
-        @click="handleConfirm"
-      >
-        <span v-if="loading" class="crm__spinner"/>
-        <span>{{ loading ? 'Cancelling…' : 'Confirm Cancellation' }}</span>
-      </button>
-    </template>
-  </AppModal>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue'
-import AppModal from '@/shared/components/AppModal.vue'
-import CancellationPolicyBox from './CancellationPolicyBox.vue'
+import { ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
-  open: { type: Boolean, default: false },
-  eligible: { type: Boolean, default: false },
-  loading: { type: Boolean, default: false },
-  error: { type: String, default: '' },
-  policy: { type: Object, default: null }
+  open:     { type: Boolean, default: false },
+  eligible: { type: Boolean, default: true  },
+  loading:  { type: Boolean, default: false },
+  error:    { type: String,  default: ''    },
 })
 
 const emit = defineEmits(['close', 'confirm'])
 
 const reason = ref('')
-const reasonError = ref('')
 
-// Computed refund amount (fallback if policy doesn't provide it)
-const refundAmount = computed(() => {
-  if (!props.policy) return null
-  return props.policy.refundAmount ?? props.policy.refund_amount ?? 0
-})
-
-const blockedReason = computed(() => {
-  if (props.policy?.cancellation_eligibility?.reasons?.[0]) {
-    return props.policy.cancellation_eligibility.reasons[0]
-  }
-  return null
-})
-
+// Reset reason each time modal opens
 watch(() => props.open, (val) => {
-  if (!val) {
-    reason.value = ''
-    reasonError.value = ''
-  }
+  if (val) reason.value = ''
 })
 
-function handleConfirm() {
-  if (!reason.value.trim()) {
-    reasonError.value = 'Please provide a reason.'
-    return
-  }
-  reasonError.value = ''
+const handleConfirm = () => {
   emit('confirm', reason.value.trim())
 }
 </script>
 
 <style scoped>
-/* Your existing styles (unchanged) */
-.crm__body { display: flex; flex-direction: column; gap: 1rem; padding-bottom: 0.5rem; }
-
-.crm__blocked {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 0.75rem;
-  padding: 2rem 1rem;
-}
-
-.crm__blocked-icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: rgba(220,53,69,0.1);
-  color: #dc3545;
+.crm-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.6);
+  backdrop-filter: blur(4px);
+  z-index: 200;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 20px;
 }
 
-.crm__blocked-title { margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--color-text); }
-.crm__blocked-text  { margin: 0; color: var(--color-muted); font-size: 0.9rem; max-width: 36ch; }
-
-.crm__refund-preview {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.85rem 1rem;
-  border-radius: 12px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface-soft, rgba(0,0,0,0.03));
-}
-
-.crm__refund-label { font-size: 0.85rem; font-weight: 600; color: var(--color-muted); }
-.crm__refund-amount { font-size: 1.1rem; font-weight: 800; }
-.crm__refund-amount--positive { color: #1d9e75; }
-.crm__refund-amount--zero     { color: var(--color-muted); }
-
-.crm__field { display: flex; flex-direction: column; gap: 0.4rem; }
-
-.crm__label {
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-text);
-}
-
-.crm__required { color: #dc3545; margin-left: 2px; }
-
-.crm__textarea {
+.crm-modal {
+  background: var(--color-surface, #ffffff);
+  border-radius: 24px;
   width: 100%;
-  padding: 0.75rem;
-  border: 1.5px solid var(--color-border);
-  border-radius: 12px;
-  background: var(--color-surface);
-  color: var(--color-text);
-  font-size: 0.9rem;
-  line-height: 1.5;
-  resize: vertical;
-  outline: none;
-  transition: border-color 0.2s;
-  box-sizing: border-box;
+  max-width: 460px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.2);
+  overflow: hidden;
 }
 
-.crm__textarea:focus { border-color: var(--color-primary); }
-.crm__textarea:disabled { opacity: 0.6; }
-
-.crm__char-count { margin: 0; font-size: 0.72rem; color: var(--color-muted); text-align: right; }
-.crm__field-error { margin: 0; font-size: 0.8rem; color: #dc3545; font-weight: 600; }
-
-.crm__warning {
+/* Header */
+.crm-header {
   display: flex;
   align-items: flex-start;
-  gap: 0.6rem;
-  padding: 0.75rem 0.9rem;
-  background: rgba(239,159,39,0.08);
-  border: 1px solid rgba(239,159,39,0.25);
-  border-radius: 10px;
-  font-size: 0.82rem;
-  color: #c97c0a;
-  line-height: 1.5;
+  gap: 12px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-border, #f1f5f9);
 }
 
-.crm__error {
-  margin: 0;
-  padding: 0.7rem 0.9rem;
-  background: rgba(220,53,69,0.07);
-  border: 1px solid rgba(220,53,69,0.2);
-  border-radius: 10px;
-  color: #dc3545;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-/* Footer buttons */
-.crm__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.65rem 1.25rem;
+.crm-header-icon {
+  width: 38px;
+  height: 38px;
+  background: #fef2f2;
   border-radius: 12px;
-  font-size: 0.875rem;
-  font-weight: 700;
-  cursor: pointer;
-  border: none;
-  transition: all 0.2s;
-}
-
-.crm__btn:disabled { opacity: 0.55; cursor: not-allowed; }
-
-.crm__btn--secondary {
-  background: var(--color-surface-soft, #f3f4f6);
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
-}
-
-.crm__btn--danger {
-  background: #dc3545;
-  color: white;
-}
-
-.crm__btn--danger:not(:disabled):hover { background: #b02a37; }
-
-.crm__spinner {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-top-color: white;
-  animation: spin 0.7s linear infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #dc2626;
   flex-shrink: 0;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+.crm-header-text { flex: 1; }
+
+.crm-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--color-text, #0f2942);
+  margin: 0 0 3px;
+}
+
+.crm-subtitle {
+  font-size: 0.78rem;
+  color: var(--color-muted, #64748b);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.crm-close {
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: var(--color-surface-soft, #f8fafc);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--color-muted, #94a3b8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.crm-close:hover:not(:disabled) { background: var(--color-border, #f1f5f9); }
+.crm-close:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Notices */
+.crm-notices {
+  padding: 12px 24px;
+  background: #fffbeb;
+  border-bottom: 1px solid #fef3c7;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.crm-notice-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 0.78rem;
+  color: #92400e;
+  line-height: 1.4;
+}
+.crm-notice-row svg { flex-shrink: 0; margin-top: 1px; }
+
+/* Body */
+.crm-body {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.crm-label {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--color-text, #0f2942);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.crm-optional {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--color-muted, #94a3b8);
+  font-style: italic;
+}
+
+.crm-textarea {
+  width: 100%;
+  border: 1.5px solid var(--color-border, #e2e8f0);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 0.88rem;
+  color: var(--color-text, #0f2942);
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+  line-height: 1.5;
+  background: var(--color-surface, #fff);
+}
+.crm-textarea:focus { border-color: var(--color-primary, #1062b3); }
+.crm-textarea:disabled { opacity: 0.6; background: var(--color-surface-soft, #f8fafc); }
+.crm-textarea::placeholder { color: var(--color-muted, #94a3b8); }
+
+.crm-char {
+  font-size: 0.72rem;
+  color: var(--color-muted, #94a3b8);
+  text-align: right;
+}
+
+.crm-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-top: 4px;
+}
+.crm-error svg { flex-shrink: 0; }
+
+/* Footer */
+.crm-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-border, #f1f5f9);
+  background: var(--color-surface-soft, #fafafa);
+}
+
+.crm-btn-keep {
+  padding: 10px 20px;
+  border: 1.5px solid var(--color-border, #e2e8f0);
+  border-radius: 12px;
+  background: var(--color-surface, white);
+  color: var(--color-text, #374151);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.crm-btn-keep:hover:not(:disabled) { background: var(--color-surface-soft, #f8fafc); }
+.crm-btn-keep:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.crm-btn-danger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.crm-btn-danger:hover:not(:disabled) { background: #b91c1c; }
+.crm-btn-danger:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.crm-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: crm-spin 0.7s linear infinite;
+}
+@keyframes crm-spin { to { transform: rotate(360deg); } }
+
+/* Modal transition */
+.modal-enter-active,
+.modal-leave-active { transition: opacity 250ms cubic-bezier(0.4,0,0.2,1); }
+.modal-enter-from,
+.modal-leave-to    { opacity: 0; }
 </style>

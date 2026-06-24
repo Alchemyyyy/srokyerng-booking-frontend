@@ -18,6 +18,14 @@ export const cancellationApi = {
   },
 
   /**
+   * GET /properties/:id/images
+   * Get all images for a property
+   */
+  getPropertyImages(propertyId) {
+    return http.get(`/properties/${propertyId}/images`)
+  },
+
+  /**
    * PATCH /owner/payments/:id/refund
    * Body: { notes: string }
    */

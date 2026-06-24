@@ -6,7 +6,6 @@ import BookingCreateView from "./pages/BookingCreateView.vue";
 import PaymentDetailView from "@/modules/payments/pages/PaymentDetailView.vue";
 import PaymentUploadView from "@/modules/payments/pages/PaymentUploadView.vue";
 
-
 export const reservationRoutes = [
   {
     path: "reservations",
@@ -29,7 +28,7 @@ export const reservationRoutes = [
   },
   {
     path: "booking/:id",
-    name: "booking-detail",
+    name: "booking-detail",  // ← updated to match BookingHistoryView
     component: BookingDetailView,
     meta: { requiresAuth: true, roles: [ROLES.CUSTOMER] },
   },
@@ -39,26 +38,16 @@ export const reservationRoutes = [
     component: BookingCreateView,
     meta: { requiresAuth: true, roles: [ROLES.CUSTOMER] },
   },
-  // ─── Payment routes ───────────────────────────────────────────────
   {
     path: "payments/:paymentId",
-    name: "payment-detail",
+    name: "payment-detail ",
     component: PaymentDetailView,
     meta: { requiresAuth: true, roles: [ROLES.CUSTOMER] },
   },
   {
     path: "payments/:paymentId/upload",
-    name: "payment-upload",
+    name: "payment-upload",  // ← updated to match BookingHistoryView
     component: PaymentUploadView,
     meta: { requiresAuth: true, navbarSolid: true, roles: [ROLES.CUSTOMER] },
   },
-  // routes.js — add this to the existing array
-  {
-    path: '/customer/reservations/:id',
-    name: 'customer.booking-detail',  // ← must match exactly
-    component: () => import('./pages/BookingDetailView.vue'),
-    meta: { requiresAuth: true, role: 'customer' },
-  }
 ];
-
-

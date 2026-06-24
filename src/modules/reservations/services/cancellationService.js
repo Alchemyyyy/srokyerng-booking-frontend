@@ -1,13 +1,14 @@
 import { cancellationApi } from '../api/cancellation.api'
 
+
 // Statuses that allow cancellation
 export const CANCELLABLE_STATUSES = ['pending', 'confirmed', 'upcoming']
 
 /**
  * Derive cancellation policy based on days until check-in.
- * Replace with real API call if backend supports it.
+ * Pass the `t` function from useI18n() for translated strings.
  */
-export function deriveCancellationPolicy(checkInDate, totalAmount = 0) {
+export function deriveCancellationPolicy(checkInDate, totalAmount = 0, t = (k) => k) {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const checkIn = new Date(checkInDate)
@@ -22,13 +23,13 @@ export function deriveCancellationPolicy(checkInDate, totalAmount = 0) {
   if (daysUntil >= 7) {
     return {
       tone: 'free',
-      description: 'Cancel at least 7 days before check-in for a full refund.',
+      description: t('cancellationPolicy.free.description'),
       deadline,
       refundAmount: totalAmount,
       refundBreakdown: [
-        { label: '7+ days before check-in', value: '100% refund', type: 'full' },
-        { label: '1–6 days before check-in', value: '50% refund', type: 'partial' },
-        { label: 'Same day or after',         value: 'No refund',  type: 'none' },
+        { label: t('cancellationPolicy.breakdown.sevenPlus'),  value: t('cancellationPolicy.breakdown.fullRefund'), type: 'full' },
+        { label: t('cancellationPolicy.breakdown.oneToSix'),   value: t('cancellationPolicy.breakdown.halfRefund'), type: 'partial' },
+        { label: t('cancellationPolicy.breakdown.sameDay'),    value: t('cancellationPolicy.breakdown.noRefund'),   type: 'none' },
       ],
     }
   }
@@ -36,23 +37,23 @@ export function deriveCancellationPolicy(checkInDate, totalAmount = 0) {
   if (daysUntil >= 1) {
     return {
       tone: 'partial',
-      description: 'Cancelling within 7 days of check-in gives a 50% refund.',
+      description: t('cancellationPolicy.partial.description'),
       deadline: null,
       refundAmount: totalAmount * 0.5,
       refundBreakdown: [
-        { label: '1–6 days before check-in', value: '50% refund', type: 'partial' },
-        { label: 'Same day',                  value: 'No refund',  type: 'none' },
+        { label: t('cancellationPolicy.breakdown.oneToSix'),   value: t('cancellationPolicy.breakdown.halfRefund'), type: 'partial' },
+        { label: t('cancellationPolicy.breakdown.sameDay'),    value: t('cancellationPolicy.breakdown.noRefund'),   type: 'none' },
       ],
     }
   }
 
   return {
     tone: 'strict',
-    description: 'Check-in is today or has already passed. No refund available.',
+    description: t('cancellationPolicy.strict.description'),
     deadline: null,
     refundAmount: 0,
     refundBreakdown: [
-      { label: 'Same day or after check-in', value: 'No refund', type: 'none' },
+      { label: t('cancellationPolicy.breakdown.sameDayAfter'), value: t('cancellationPolicy.breakdown.noRefund'), type: 'none' },
     ],
   }
 }
@@ -72,17 +73,18 @@ export function isCancellable(status, checkInDate) {
 
 /**
  * Human-readable reason why cancellation is blocked.
+ * Pass the `t` function from useI18n() for translated strings.
  */
-export function blockedReason(status, checkInDate) {
+export function blockedReason(status, checkInDate, t = (k) => k) {
   const s = String(status).toLowerCase()
-  if (s === 'cancelled') return 'This reservation has already been cancelled.'
-  if (s === 'completed') return 'Completed stays cannot be cancelled.'
+  if (s === 'cancelled') return t('cancellationPolicy.blocked.alreadyCancelled')
+  if (s === 'completed') return t('cancellationPolicy.blocked.completed')
   if (checkInDate) {
     const today = new Date(); today.setHours(0, 0, 0, 0)
     const checkIn = new Date(checkInDate); checkIn.setHours(0, 0, 0, 0)
-    if (checkIn <= today) return 'Cancellation is not available after check-in has started.'
+    if (checkIn <= today) return t('cancellationPolicy.blocked.checkInPassed')
   }
-  return 'This reservation is not eligible for cancellation.'
+  return t('cancellationPolicy.blocked.notEligible')
 }
 
 /**

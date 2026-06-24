@@ -15,7 +15,7 @@
         </svg>
       </div>
       <div>
-        <p class="policy-box__eyebrow">Cancellation Policy</p>
+        <p class="policy-box__eyebrow">{{ $t('reservationDetail.policy.label') }}</p>
         <h3 class="policy-box__title">{{ policyLabel }}</h3>
       </div>
     </div>
@@ -23,7 +23,7 @@
     <!-- Loading -->
     <div v-if="loading" class="policy-box__loading">
       <div class="policy-box__spinner"/>
-      <span>Loading policy...</span>
+      <span>{{ $t('reservationDetail.loading') }}</span>
     </div>
 
     <!-- Content -->
@@ -36,7 +36,7 @@
           <rect x="3" y="4" width="18" height="18" rx="2"/>
           <path d="M16 2v4M8 2v4M3 10h18"/>
         </svg>
-        <span>Cancel by <strong>{{ deadline }}</strong> for a full refund</span>
+        <span>{{ $t('reservationDetail.policy.cancelBy', { deadline }) }}</span>
       </div>
 
       <!-- Refund breakdown -->
@@ -54,6 +54,9 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
   /** 'free' | 'partial' | 'strict' */
@@ -65,9 +68,9 @@ const props = defineProps({
 })
 
 const policyLabel = computed(() => {
-  if (props.tone === 'free') return 'Free Cancellation'
-  if (props.tone === 'strict') return 'Non-Refundable'
-  return 'Partial Refund'
+  if (props.tone === 'free') return t('reservationDetail.policy.free')
+  if (props.tone === 'strict') return t('reservationDetail.policy.strict')
+  return t('reservationDetail.policy.partial')
 })
 </script>
 
