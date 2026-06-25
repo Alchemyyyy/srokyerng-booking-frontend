@@ -182,7 +182,7 @@ const goToReceipt = (paymentId) => {
     toast.warning(t('bookingHistory.state.noPayment'), { title: t('bookingHistory.state.noPaymentTitle') });
     return;
   }
-  router.push({ name: "customer.payment-detail", params: { paymentId } });
+  router.push({ name: 'customer.payment-detail', params: { paymentId } })
 };
 
 const goToUpload = (paymentId) => {
@@ -327,7 +327,7 @@ onMounted(async () => {
               v-for="booking in filteredBookings"
               :key="booking.id"
               :booking="booking"
-             @view="router.push({ name: 'customer.booking-detail', params: { id: $event } })"
+              @view="router.push({ name: 'customer.booking-detail', params: { id: $event } })"
               @cancel="handleCancel"
               @pay="goToUpload($event)"
               @receipt="goToReceipt($event)"

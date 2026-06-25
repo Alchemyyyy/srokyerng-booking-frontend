@@ -40,7 +40,7 @@ export const reservationRoutes = [
   },
   {
     path: "payments/:paymentId",
-    name: "payment-detail ",
+    name: "payment-detail",
     component: PaymentDetailView,
     meta: { requiresAuth: true, roles: [ROLES.CUSTOMER] },
   },
