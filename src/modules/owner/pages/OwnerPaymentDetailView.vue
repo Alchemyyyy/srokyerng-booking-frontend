@@ -117,7 +117,7 @@ const handleReject = async () => {
     actionLoading.value = true;
     try {
         await ownerPaymentApi.rejectPayment(reservation.value.customerPaymentId, {
-            reason: rejectReason.value.trim()
+            rejection_reason: rejectReason.value.trim()
         });
         toastStore.warning("Payment has been rejected.", { title: "Rejected" });
         router.back();
@@ -314,17 +314,23 @@ onMounted(fetchPaymentDetails);
                     class="flex items-start gap-3 p-3.5 rounded-2xl border border-(--color-border)/50 bg-(--color-surface-soft)/40">
                     <ShieldCheckIcon class="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
                     <div>
-                        <p class="text-[10px] font-black uppercase tracking-wider text-(--color-muted)">Verification Note</p>
-                        <p class="text-sm font-bold text-(--color-text) mt-0.5">Only accept clear and valid payment proof showing transaction details. Reject if the image is blurred, irrelevant, or if transaction details do not match the booking information.</p>
+                        <p class="text-[10px] font-black uppercase tracking-wider text-(--color-muted)">Verification
+                            Note</p>
+                        <p class="text-sm font-bold text-(--color-text) mt-0.5">Only accept clear and valid payment
+                            proof showing transaction details. Reject if the image is blurred, irrelevant, or if
+                            transaction details do not match the booking information.</p>
                     </div>
                 </div>
 
-                 <div
+                <div
                     class="flex items-start gap-3 p-3.5 rounded-2xl border border-(--color-border)/50 bg-(--color-surface-soft)/40">
                     <ShieldCheckIcon class="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
                     <div>
-                        <p class="text-[10px] font-black uppercase tracking-wider text-(--color-muted)">Important Reminder</p>
-                        <p class="text-sm font-bold text-(--color-text) mt-0.5">Verify the payment proof against the booking details and transaction reference. If in doubt, communicate with the customer for clarification before making a decision.</p>
+                        <p class="text-[10px] font-black uppercase tracking-wider text-(--color-muted)">Important
+                            Reminder</p>
+                        <p class="text-sm font-bold text-(--color-text) mt-0.5">Verify the payment proof against the
+                            booking details and transaction reference. If in doubt, communicate with the customer for
+                            clarification before making a decision.</p>
                     </div>
                 </div>
 

@@ -130,8 +130,8 @@ const rebuildChart = async () => {
             legend: { display: false },
             tooltip: {
                 backgroundColor: getCssColor('--color-surface-strong'),
-                titleColor: getCssColor('--color-text'),
-                bodyColor: getCssColor('--color-muted'),
+                // titleColor: getCssColor('--color-text'),
+                // bodyColor: getCssColor('--color-muted'),
                 borderColor: getCssColor('--color-border'),
                 borderWidth: 1,
             },
