@@ -26,9 +26,21 @@ const { currentTheme, resolvedTheme, isNavbarSolid, toggleTheme } =
 
 const navigationItems = computed(() => [
   { label: t("nav.home"), to: { name: "public.home" }, icon: "bi-house" },
-  { label: t("nav.properties"), to: { name: "public.properties" }, icon: "bi-houses" },
-  { label: t("nav.about"), to: { name: "public.about" }, icon: "bi-info-circle" },
-  { label: t("nav.contact"), to: { name: "public.contact" }, icon: "bi-envelope" },
+  {
+    label: t("nav.properties"),
+    to: { name: "public.properties" },
+    icon: "bi-houses",
+  },
+  {
+    label: t("nav.about"),
+    to: { name: "public.about" },
+    icon: "bi-info-circle",
+  },
+  {
+    label: t("nav.contact"),
+    to: { name: "public.contact" },
+    icon: "bi-envelope",
+  },
 ]);
 
 const dashboardRoute = computed(() =>
@@ -80,7 +92,9 @@ watch(
     ]"
   >
     <!-- Inner Centered Wrapper -->
-    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+    <div
+      class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8"
+    >
       <!-- Left Brand & Contacts -->
       <div class="flex shrink-0 items-center gap-3">
         <RouterLink
@@ -125,7 +139,9 @@ watch(
 
         <!-- Main Nav Links inside capsule (filtering duplicate Properties) -->
         <RouterLink
-          v-for="item in navigationItems.filter(i => i.to.name !== 'public.properties')"
+          v-for="item in navigationItems.filter(
+            (i) => i.to.name !== 'public.properties',
+          )"
           :key="item.label"
           :to="item.to"
           class="flex items-center gap-1.5 rounded-sm px-3.5 h-8 text-sm font-semibold leading-none whitespace-nowrap transition-all border"
@@ -134,7 +150,9 @@ watch(
               ? 'bg-(--color-surface) !text-(--color-primary) border-(--color-border)/30 shadow-sm'
               : 'bg-transparent border-transparent !text-(--color-muted) hover:!text-(--color-text)',
             locale === 'km' ? 'font-kantumruy text-sm' : 'font-sans',
-            (item.to.name === 'public.about' || item.to.name === 'public.contact') ? 'hidden xl:flex' : 'flex'
+            item.to.name === 'public.about' || item.to.name === 'public.contact'
+              ? 'hidden xl:flex'
+              : 'flex',
           ]"
         >
           <i class="bi" :class="item.icon" aria-hidden="true"></i>
@@ -204,7 +222,11 @@ watch(
         <div class="h-4 w-px bg-(--color-border)/30 mx-0.5"></div>
 
         <!-- Customer Quick-Access Shortcuts -->
-        <template v-if="authStore.isAuthenticated && authStore.user?.role === 'customer'">
+        <template
+          v-if="
+            authStore.isAuthenticated && authStore.user?.role === 'customer'
+          "
+        >
           <RouterLink
             :to="{ name: 'customer.wishlist' }"
             class="h-8 w-8 flex items-center justify-center rounded-sm text-(--color-muted) hover:bg-(--color-surface-soft) hover:text-red-500 hover:border-red-500/20 border border-transparent transition"
@@ -249,11 +271,7 @@ watch(
           </RouterLink>
 
           <RouterLink :to="{ name: 'public.loginCustomer' }">
-            <AppButton
-              variant="ghost"
-              size="sm"
-              class="!rounded-sm"
-            >
+            <AppButton variant="ghost" size="sm" class="!rounded-sm">
               {{ t("nav.login") }}
             </AppButton>
           </RouterLink>
@@ -311,7 +329,7 @@ watch(
             <div class="h-4 w-px bg-(--color-border)/30"></div>
             <LanguageToggle />
           </div>
-          
+
           <!-- Mobile Quick Search Shortcut -->
           <RouterLink
             :to="{ name: 'public.properties' }"
@@ -343,7 +361,12 @@ watch(
         </nav>
 
         <!-- Customer Mobile Shortcuts -->
-        <div v-if="authStore.isAuthenticated && authStore.user?.role === 'customer'" class="grid grid-cols-3 gap-2 border-t border-(--color-border)/30 pt-3">
+        <div
+          v-if="
+            authStore.isAuthenticated && authStore.user?.role === 'customer'
+          "
+          class="grid grid-cols-3 gap-2 border-t border-(--color-border)/30 pt-3"
+        >
           <RouterLink
             :to="{ name: 'customer.wishlist' }"
             @click="closeMobileMenu"
@@ -449,13 +472,21 @@ watch(
         </div>
 
         <!-- Integrated Contacts at bottom of Mobile Drawer -->
-        <div class="border-t border-(--color-border)/30 pt-4 mt-4 text-xs text-(--color-muted) space-y-2">
+        <div
+          class="border-t border-(--color-border)/30 pt-4 mt-4 text-xs text-(--color-muted) space-y-2"
+        >
           <div class="flex items-center gap-2 px-2">
-            <i class="bi bi-geo-alt-fill text-(--color-primary)" aria-hidden="true"></i>
+            <i
+              class="bi bi-geo-alt-fill text-(--color-primary)"
+              aria-hidden="true"
+            ></i>
             <span>Phnom Penh, Cambodia</span>
           </div>
           <div class="flex items-center gap-2 px-2">
-            <i class="bi bi-telephone-fill text-(--color-primary)" aria-hidden="true"></i>
+            <i
+              class="bi bi-telephone-fill text-(--color-primary)"
+              aria-hidden="true"
+            ></i>
             <span>+855 12 345 678</span>
           </div>
         </div>

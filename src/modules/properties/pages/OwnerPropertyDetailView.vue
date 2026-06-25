@@ -4,6 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { propertyApi } from "../api/property.api";
 import AvailabilityCalendar from "@/modules/calendar/components/AvailabilityCalendar.vue";
+import { resolveAssetUrl } from "@/shared/utils/assetUrl";
 
 const route = useRoute();
 const router = useRouter();
@@ -12,33 +13,38 @@ const authStore = useAuthStore();
 const loading = ref(true);
 const error = ref("");
 const property = ref(null);
-
-const BASE_URL = (
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5001/api"
-).replace(/\/api\/?$/, "");
 const images = ref([]);
 
-const getImageUrl = (url) => {
-  if (!url) return null;
-  return url.startsWith("http") ? url : `${BASE_URL}${url}`;
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const formatDate = (value) => {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 };
 
 const fallbackImage =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800'%3E%3Crect width='1200' height='800' fill='%23f0f2f5'/%3E%3Crect x='300' y='160' width='600' height='440' rx='32' ry='32' fill='none' stroke='%23c8cdd6' stroke-width='18'/%3E%3Ccircle cx='460' cy='310' r='60' fill='%23c8cdd6'/%3E%3Cpolygon points='300,600 560,340 720,500 840,380 900,600' fill='%23c8cdd6'/%3E%3C/svg%3E";
 
+// ── Fetch images ──────────────────────────────────────────────────────────────
 const fetchImages = async () => {
   try {
     const res = await propertyApi.getAllPropertyImages(route.params.id);
     const items = Array.isArray(res) ? res : res?.data || [];
     images.value = items.map((img) => ({
       ...img,
-      url: getImageUrl(img.image_url),
+      url: resolveAssetUrl(img.image_url), // ✅ replaced BASE_URL logic
     }));
   } catch (err) {
     console.error("Failed to load images:", err);
   }
 };
 
+// ── Fetch property ────────────────────────────────────────────────────────────
 const fetchProperty = async () => {
   loading.value = true;
   error.value = "";
@@ -131,7 +137,7 @@ onMounted(async () => {
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Left column -->
         <div class="lg:col-span-2 space-y-6">
-          <!-- 1. Images TOP -->
+          <!-- 1. Images -->
           <div
             v-if="images.length > 0"
             class="rounded-2xl border border-(--color-border) bg-(--color-surface) p-6 shadow-sm space-y-4"
@@ -161,7 +167,7 @@ onMounted(async () => {
             </div>
           </div>
 
-          <!-- No images yet -->
+          <!-- No images -->
           <div
             v-else-if="!loading"
             class="rounded-2xl border border-dashed border-(--color-border) bg-(--color-surface) p-6 text-center space-y-3"
@@ -329,7 +335,6 @@ onMounted(async () => {
             </div>
           </div>
         </div>
-        <!-- END of left column -->
 
         <!-- Right Column -->
         <div class="space-y-6">
@@ -413,7 +418,7 @@ onMounted(async () => {
                 >Created</span
               >
               <span class="font-semibold">{{
-                new Date(property.created_at).toLocaleDateString()
+                formatDate(property.created_at)
               }}</span>
             </div>
             <div>
@@ -422,12 +427,11 @@ onMounted(async () => {
                 >Last Updated</span
               >
               <span class="font-semibold">{{
-                new Date(property.updated_at).toLocaleDateString()
+                formatDate(property.updated_at ?? property.created_at)
               }}</span>
             </div>
           </div>
         </div>
-        <!-- END of right column -->
       </div>
     </div>
   </main>

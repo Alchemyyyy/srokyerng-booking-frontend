@@ -32,12 +32,7 @@ const menuItems = [
     icon: CalendarDaysIcon,
     badge: 7,
   },
-  {
-    name: "Payment Accounts",
-    path: "/admin/payment-verifications",
-    icon: CreditCardIcon,
-    badge: null,
-  },
+
   { name: "Users", path: "/admin/users", icon: UsersIcon, badge: null },
 ];
 
