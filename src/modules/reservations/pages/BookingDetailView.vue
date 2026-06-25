@@ -628,14 +628,14 @@ onMounted(fetchReservation);
 .booking-card {
   display: flex; border-radius: 24px; overflow: hidden;
   box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05);
-  background: white; min-height: 420px;
+  background: white; min-height: 420px; align-items: stretch;
 }
 
 /* Left image side */
 .booking-img-side {
   width: 38%; min-width: 220px; position: relative;
   background: linear-gradient(135deg, #0f172a, #1e3a5f);
-  flex-shrink: 0;
+  flex-shrink: 0; align-self: stretch;
 }
 
 .booking-img {
