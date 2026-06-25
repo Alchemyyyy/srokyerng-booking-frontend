@@ -4,7 +4,14 @@
     <div class="top-bar">
       <div class="search-bar">
         <span class="search-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.35-4.35" />
           </svg>
@@ -15,8 +22,20 @@
           :placeholder="$t('amenityManagement.selector.searchPlaceholder')"
           class="search-input"
         />
-        <button v-if="searchQuery" class="clear-btn" type="button" @click="searchQuery = ''">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <button
+          v-if="searchQuery"
+          class="clear-btn"
+          type="button"
+          @click="searchQuery = ''"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
             <path d="M18 6 6 18M6 6l12 12" />
           </svg>
         </button>
@@ -30,8 +49,8 @@
           :class="{ active: activeCategory === null }"
           @click="activeCategory = null"
         >
-          <span class="tab-icon">✦</span>
-          {{ $t('amenityManagement.selector.all') }}
+          <Squares2X2Icon class="tab-icon" />
+          {{ $t("amenityManagement.selector.all") }}
           <span class="tab-count">{{ enrichedAmenities.length }}</span>
         </button>
         <button
@@ -42,7 +61,7 @@
           :class="{ active: activeCategory === group.category }"
           @click="activeCategory = group.category"
         >
-          <span class="tab-icon">{{ group.icon }}</span>
+          <component :is="group.icon" class="tab-icon" />
           {{ group.category }}
           <span class="tab-count">{{ group.total }}</span>
         </button>
@@ -54,12 +73,18 @@
 
     <!-- Groups -->
     <div v-if="groupedAmenities.length" class="groups-wrapper">
-      <div v-for="group in groupedAmenities" :key="group.category" class="category-group">
+      <div
+        v-for="group in groupedAmenities"
+        :key="group.category"
+        class="category-group"
+      >
         <!-- Header -->
         <div class="category-header">
-          <span class="category-icon">{{ group.icon }}</span>
+          <component :is="group.icon" class="category-icon" />
           <span class="category-title">{{ group.category }}</span>
-          <span class="category-count" :style="countStyle(group.category)">{{ group.items.length }}</span>
+          <span class="category-count" :style="countStyle(group.category)">{{
+            group.items.length
+          }}</span>
         </div>
 
         <!-- Grid -->
@@ -80,7 +105,14 @@
               <div class="amenity-desc">{{ amenity.description }}</div>
             </div>
             <div class="check-badge" v-if="isSelected(amenity.id)">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                stroke-width="3"
+              >
                 <path d="M20 6 9 17l-5-5" />
               </svg>
             </div>
@@ -91,17 +123,21 @@
 
     <!-- Empty -->
     <div v-else class="empty-state">
-      <div class="empty-icon">🔍</div>
-      <p>{{ $t('amenityManagement.selector.noResults') }}</p>
+      <MagnifyingGlassIcon class="empty-icon" />
+      <p>{{ $t("amenityManagement.selector.noResults") }}</p>
     </div>
 
     <!-- Footer -->
     <div class="selection-footer" v-if="selectedAmenities.length">
       <span class="selected-count">
-        {{ $t('amenityManagement.selector.selected', { count: selectedAmenities.length }) }}
+        {{
+          $t("amenityManagement.selector.selected", {
+            count: selectedAmenities.length,
+          })
+        }}
       </span>
       <button type="button" class="clear-all-btn" @click="clearAll">
-        {{ $t('amenityManagement.saveBar.discard') }}
+        {{ $t("amenityManagement.saveBar.discard") }}
       </button>
     </div>
   </div>
@@ -110,6 +146,18 @@
 <script setup>
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
+import {
+  WifiIcon,
+  SunIcon,
+  CakeIcon,
+  TruckIcon,
+  BellIcon,
+  GlobeAmericasIcon,
+  SparklesIcon,
+  CubeIcon,
+  MagnifyingGlassIcon,
+  Squares2X2Icon,
+} from "@heroicons/vue/24/outline";
 
 const { t } = useI18n();
 
@@ -243,13 +291,13 @@ const amenityMeta = {
 };
 
 const categoryIcons = {
-  Connectivity: "📶",
-  Recreation: "🏖️",
-  Dining: "🍽️",
-  Transport: "🚗",
-  Services: "🛎️",
-  "Views & Nature": "🌿",
-  Other: "✨",
+  Connectivity: WifiIcon,
+  Recreation: SunIcon,
+  Dining: CakeIcon,
+  Transport: TruckIcon,
+  Services: BellIcon,
+  "Views & Nature": GlobeAmericasIcon,
+  Other: SparklesIcon,
 };
 
 const categoryColors = {
@@ -290,7 +338,7 @@ const allGroups = computed(() => {
   });
   return Object.entries(groups).map(([category, total]) => ({
     category,
-    icon: categoryIcons[category] || "📦",
+    icon: categoryIcons[category] || CubeIcon,
     total,
   }));
 });
@@ -304,9 +352,12 @@ const filteredAmenities = computed(() => {
       const name = a.amenity_name?.toLowerCase() || "";
       const desc = a.description?.toLowerCase() || "";
       const cat = a.category?.toLowerCase() || "";
-      return query.split(" ").every(
-        (word) => name.includes(word) || desc.includes(word) || cat.includes(word),
-      );
+      return query
+        .split(" ")
+        .every(
+          (word) =>
+            name.includes(word) || desc.includes(word) || cat.includes(word),
+        );
     });
   }
 
@@ -325,7 +376,7 @@ const groupedAmenities = computed(() => {
   });
   return Object.entries(groups).map(([category, items]) => ({
     category,
-    icon: categoryIcons[category] || "📦",
+    icon: categoryIcons[category] || CubeIcon,
     items,
   }));
 });
@@ -351,7 +402,11 @@ const clearAll = () => {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-.top-bar { display: flex; flex-direction: column; gap: 16px; }
+.top-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
 .search-bar {
   width: 300px;
@@ -381,7 +436,9 @@ const clearAll = () => {
   color: var(--color-text, #111);
 }
 
-.search-input:focus { border-color: #0ea5e9; }
+.search-input:focus {
+  border-color: #0ea5e9;
+}
 
 .clear-btn {
   position: absolute;
@@ -395,7 +452,9 @@ const clearAll = () => {
   padding: 0;
 }
 
-.clear-btn:hover { color: #374151; }
+.clear-btn:hover {
+  color: #374151;
+}
 
 .filter-tabs {
   display: flex;
@@ -431,7 +490,11 @@ const clearAll = () => {
   color: white;
 }
 
-.tab-icon { font-size: 14px; }
+.tab-icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
 
 .tab-count {
   background: rgba(0, 0, 0, 0.08);
@@ -441,7 +504,9 @@ const clearAll = () => {
   font-weight: 700;
 }
 
-.filter-tab.active .tab-count { background: rgba(255, 255, 255, 0.25); }
+.filter-tab.active .tab-count {
+  background: rgba(255, 255, 255, 0.25);
+}
 
 .amenity-count {
   font-size: 13px;
@@ -449,13 +514,34 @@ const clearAll = () => {
   margin: 0;
 }
 
-.groups-wrapper { display: flex; flex-direction: column; gap: 32px; }
+.groups-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
 
-.category-group { display: flex; flex-direction: column; gap: 16px; }
+.category-group {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
-.category-header { display: flex; align-items: center; gap: 10px; }
-.category-icon { font-size: 18px; }
-.category-title { font-size: 17px; font-weight: 700; color: #111827; }
+.category-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.category-icon {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+  color: #6b7280;
+}
+.category-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111827;
+}
 
 .category-count {
   min-width: 22px;
@@ -520,13 +606,33 @@ const clearAll = () => {
   filter: brightness(0.95) saturate(1.1);
 }
 
-.amenity-card.selected .amenity-icon-wrap { filter: brightness(0.9) saturate(1.2); }
+.amenity-card.selected .amenity-icon-wrap {
+  filter: brightness(0.9) saturate(1.2);
+}
 
-.amenity-svg { display: flex; align-items: center; justify-content: center; line-height: 1; }
+.amenity-svg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
 
-.amenity-info { display: flex; flex-direction: column; gap: 4px; }
-.amenity-name { font-size: 15px; font-weight: 700; color: #111827; line-height: 1.3; }
-.amenity-desc { font-size: 12.5px; color: #6b7280; line-height: 1.4; }
+.amenity-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.amenity-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.3;
+}
+.amenity-desc {
+  font-size: 12.5px;
+  color: #6b7280;
+  line-height: 1.4;
+}
 
 .check-badge {
   position: absolute;
@@ -554,7 +660,11 @@ const clearAll = () => {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
-.selected-count { font-size: 14px; font-weight: 700; color: #111827; }
+.selected-count {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
 
 .clear-all-btn {
   border: none;
@@ -566,8 +676,16 @@ const clearAll = () => {
   padding: 0;
 }
 
-.empty-state { padding: 80px 20px; text-align: center; color: #9ca3af; }
-.empty-icon { font-size: 36px; margin-bottom: 10px; }
+.empty-state {
+  padding: 80px 20px;
+  text-align: center;
+  color: #9ca3af;
+}
+.empty-icon {
+  width: 38px;
+  height: 38px;
+  margin: 0 auto 10px;
+}
 
 [data-theme="dark"] .search-input {
   background: var(--color-surface);
@@ -591,17 +709,30 @@ const clearAll = () => {
   border-color: rgba(255, 255, 255, 0.1);
 }
 
-[data-theme="dark"] .amenity-name { color: var(--color-text); }
-[data-theme="dark"] .category-title { color: var(--color-text); }
+[data-theme="dark"] .amenity-name {
+  color: var(--color-text);
+}
+[data-theme="dark"] .category-title {
+  color: var(--color-text);
+}
 [data-theme="dark"] .selection-footer {
   background: var(--color-surface);
   border-color: var(--color-border);
 }
 
 @media (max-width: 768px) {
-  .search-bar { width: 100%; }
-  .amenity-grid { grid-template-columns: 1fr; }
-  .filter-tabs { gap: 6px; }
-  .filter-tab { padding: 7px 12px; font-size: 13px; }
+  .search-bar {
+    width: 100%;
+  }
+  .amenity-grid {
+    grid-template-columns: 1fr;
+  }
+  .filter-tabs {
+    gap: 6px;
+  }
+  .filter-tab {
+    padding: 7px 12px;
+    font-size: 13px;
+  }
 }
 </style>
