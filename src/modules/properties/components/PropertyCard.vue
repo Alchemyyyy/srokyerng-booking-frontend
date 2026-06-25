@@ -1,11 +1,11 @@
 <script setup>
 import { computed } from "vue";
+import { useRouter } from "vue-router";
 import AppButton from "@/shared/components/AppButton.vue";
 import placeholer from "@/assets/images/properties/placeholder.png";
 import {
   BuildingOffice2Icon,
   PencilSquareIcon,
-  EyeIcon,
   TrashIcon,
   MapPinIcon,
 } from "@heroicons/vue/24/outline";
@@ -19,6 +19,8 @@ const props = defineProps({
   },
 });
 
+const router = useRouter();
+
 const statusBadgeClass = computed(() => {
   const status = props.property.status?.toUpperCase();
   if (status === "APPROVED")
@@ -27,10 +29,30 @@ const statusBadgeClass = computed(() => {
     return "bg-(--color-warning-soft) text-(--color-warning)";
   return "bg-(--color-surface-soft) text-(--color-muted)";
 });
+
+// Editing an approved property is allowed — the backend automatically
+// reverts it to "pending" on save, so this is just used for the
+// tooltip hint, not to disable the button.
+const isApproved = computed(
+  () => props.property.status?.toUpperCase() === "APPROVED",
+);
+
+// ⚠️ Route name guessed to match what PropertyCard already used for the
+// old "Detail" button — confirm it's right if the card doesn't navigate.
+const goToDetail = () => {
+  router.push({
+    name: "owner.property-detail",
+    params: { id: props.property.id },
+  });
+};
 </script>
 <template>
   <div
-    class="bg-(--color-surface) rounded-2xl border border-(--color-border) shadow-sm overflow-hidden flex flex-col justify-between group hover:shadow-md transition-shadow duration-200"
+    class="bg-(--color-surface) rounded-2xl border border-(--color-border) shadow-sm overflow-hidden flex flex-col justify-between group hover:shadow-md hover:border-(--color-primary)/40 transition-all duration-200 cursor-pointer"
+    role="button"
+    tabindex="0"
+    @click="goToDetail"
+    @keydown.enter="goToDetail"
   >
     <div
       class="relative aspect-[4/3] w-full bg-(--color-surface-soft) overflow-hidden"
@@ -103,6 +125,7 @@ const statusBadgeClass = computed(() => {
           <RouterLink
             :to="`/owner/rooms?propertyId=${property.id}`"
             class="flex items-center justify-center gap-1 bg-(--color-primary-soft) hover:bg-(--color-primary)/20 text-(--color-primary) font-semibold text-[11px] px-2.5 py-2 rounded-lg transition flex-1"
+            @click.stop
           >
             <BuildingOffice2Icon class="w-3.5 h-3.5" />
 
@@ -112,24 +135,20 @@ const statusBadgeClass = computed(() => {
           <AppButton
             variant="ghost"
             size="sm"
-            :disabled="property.status === 'approved'"
-            @click="emit('edit', property)"
+            :title="
+              isApproved
+                ? 'Editing this approved property will require admin re-approval'
+                : 'Edit property'
+            "
+            @click.stop="emit('edit', property)"
           >
             <PencilSquareIcon class="w-3.5 h-3.5" />
             Edit
           </AppButton>
-
-          <RouterLink
-            :to="{ name: 'owner.property-detail', params: { id: property.id } }"
-            class="flex items-center justify-center gap-1 bg-(--color-surface-soft) hover:bg-(--color-border) text-(--color-muted) font-semibold text-[11px] px-2.5 py-2 rounded-lg transition flex-1"
-          >
-            <EyeIcon class="w-3.5 h-3.5" />
-            Detail
-          </RouterLink>
         </div>
 
         <button
-          @click="emit('delete', props.property.id)"
+          @click.stop="emit('delete', props.property.id)"
           class="text-(--color-danger) hover:bg-(--color-danger-soft) p-2 rounded-lg transition-colors ml-0.5"
           title="Delete Property"
         >

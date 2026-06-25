@@ -2,7 +2,9 @@
 import { ref, computed, watch, onMounted } from "vue";
 import { Calendar } from "v-calendar";
 import "v-calendar/style.css";
-import http from "@/app/api/http";
+// ⚠️ ADJUST PATH if Calendar.api.js doesn't actually live at ../api/Calendar.api
+// relative to this component — match wherever you placed the file you shared.
+import { calendarApi } from "../api/Calendar.api";
 
 const props = defineProps({
   roomId: { type: [Number, String], default: null },
@@ -16,10 +18,17 @@ const loading = ref(false);
 const error = ref(null);
 const availableDates = ref([]);
 const unavailableDates = ref([]);
+// Full reservation objects, kept around (not just flattened date strings) so
+// owner mode can show guest name / check-in / check-out on click.
+const reservations = ref([]);
 const today = new Date();
 const visibleYear = ref(today.getFullYear());
 const visibleMonth = ref(today.getMonth());
 const selectedRange = ref({ start: null, end: null });
+
+// The date string (YYYY-MM-DD) of a booked day the owner clicked, so we can
+// show who's staying. Customer mode never touches this — see handleDayClick.
+const selectedBookingDate = ref(null);
 
 const handlePagesUpdate = (pages) => {
   const page = Array.isArray(pages) ? pages[0] : pages;
@@ -41,27 +50,52 @@ const endDate = computed(() => {
   d.setMonth(d.getMonth() + 3);
   return d.toISOString().split("T")[0];
 });
-const apiUrl = computed(() => {
-  if (props.roomId) return `/rooms/${props.roomId}/availability-calendar`;
-  if (props.propertyId)
-    return `/properties/${props.propertyId}/availability-calendar`;
-  return null;
-});
+
 const fetchCalendar = async () => {
-  if (!apiUrl.value) return;
+  if (!props.roomId && !props.propertyId) return;
 
   loading.value = true;
   error.value = null;
   endpointNotReady.value = false;
 
   try {
-    const res = await http.get(apiUrl.value, {
-      params: { start_date: startDate.value, end_date: endDate.value },
-    });
+    // ⚠️ FIX: previously this always hit the public/customer endpoint
+    // (/properties/:id/availability-calendar) even when mode="owner".
+    // Now it actually uses the owner-authenticated endpoints from
+    // Calendar.api.js, which is what should return real guest/reservation
+    // detail rather than a privacy-stripped public view.
+    let res;
+    if (props.mode === "owner") {
+      res = props.roomId
+        ? await calendarApi.getOwnerRoomCalendar(
+            props.roomId,
+            startDate.value,
+            endDate.value,
+          )
+        : await calendarApi.getOwnerPropertyCalendar(
+            props.propertyId,
+            startDate.value,
+            endDate.value,
+          );
+    } else {
+      res = props.roomId
+        ? await calendarApi.getRoomCalendar(
+            props.roomId,
+            startDate.value,
+            endDate.value,
+          )
+        : await calendarApi.getPropertyCalendar(
+            props.propertyId,
+            startDate.value,
+            endDate.value,
+          );
+    }
 
     const data = res?.data?.data ?? res?.data ?? res;
 
     if (Array.isArray(data)) {
+      reservations.value = data;
+
       const unavailable = [];
       data.forEach((reservation) => {
         const checkIn = reservation.check_in_date ?? reservation.checkIn;
@@ -89,6 +123,7 @@ const fetchCalendar = async () => {
         (d) => !unavailableDates.value.includes(d),
       );
     } else {
+      reservations.value = [];
       availableDates.value = data?.available_dates ?? [];
       unavailableDates.value = data?.unavailable_dates ?? [];
     }
@@ -105,6 +140,32 @@ const fetchCalendar = async () => {
     loading.value = false;
   }
 };
+
+// ── Reservations grouped by date, for the owner-mode detail panel ─────────
+
+const reservationsByDate = computed(() => {
+  const map = {};
+  reservations.value.forEach((reservation) => {
+    const checkIn = reservation.check_in_date ?? reservation.checkIn;
+    const checkOut = reservation.check_out_date ?? reservation.checkOut;
+    if (!checkIn || !checkOut) return;
+
+    const cursor = new Date(checkIn);
+    const end = new Date(checkOut);
+    while (cursor < end) {
+      const key = cursor.toISOString().split("T")[0];
+      if (!map[key]) map[key] = [];
+      map[key].push(reservation);
+      cursor.setDate(cursor.getDate() + 1);
+    }
+  });
+  return map;
+});
+
+const selectedBookings = computed(() => {
+  if (!selectedBookingDate.value) return [];
+  return reservationsByDate.value[selectedBookingDate.value] ?? [];
+});
 
 // ── Stats for the current visible month ────────────────────────────────────
 
@@ -202,7 +263,9 @@ const calendarAttributes = computed(() => {
       key: "unavailable",
       highlight: { color: "red", fillMode: "solid" },
       dates: unavailableDates.value.map((d) => new Date(d)),
-      popover: { label: "Booked" },
+      popover: {
+        label: props.mode === "owner" ? "Booked — click for details" : "Booked",
+      },
     });
   }
 
@@ -236,12 +299,31 @@ const calendarAttributes = computed(() => {
   return attrs;
 });
 
+// ⚠️ FIX: previously this disabled booked dates for every mode, which makes
+// v-calendar suppress dayclick on them entirely — owners could never click a
+// booked day to see who's staying. Customers still can't select/interact with
+// booked days (correct — they shouldn't be able to book over an existing
+// reservation), but owners need clicks to go through.
 const disabledDates = computed(() =>
-  unavailableDates.value.map((d) => new Date(d)),
+  props.mode === "owner" ? [] : unavailableDates.value.map((d) => new Date(d)),
 );
 
 const handleDayClick = (day) => {
-  if (unavailableDates.value.includes(day.id)) return;
+  const isBooked = unavailableDates.value.includes(day.id);
+
+  if (isBooked) {
+    if (props.mode === "owner") {
+      selectedBookingDate.value = day.id;
+      emit("date-selected", {
+        date: day.id,
+        bookings: reservationsByDate.value[day.id] ?? [],
+      });
+    }
+    // Booked days are never a valid start/end for a new range, in any mode.
+    return;
+  }
+
+  selectedBookingDate.value = null;
 
   if (
     !selectedRange.value.start ||
@@ -363,6 +445,79 @@ onMounted(fetchCalendar);
             @dayclick="handleDayClick"
             @update:pages="handlePagesUpdate"
           />
+
+          <!-- Owner-only: details for a booked day that was clicked -->
+          <div
+            v-if="mode === 'owner' && selectedBookings.length"
+            class="mt-4 rounded-xl border border-(--color-border) bg-(--color-surface-soft) px-4 py-3 text-sm"
+          >
+            <div class="flex items-center justify-between mb-2">
+              <p class="font-bold text-(--color-text)">
+                Booking{{ selectedBookings.length > 1 ? "s" : "" }} —
+                {{ selectedBookingDate }}
+              </p>
+              <button
+                type="button"
+                class="text-xs font-semibold text-(--color-muted) hover:text-(--color-text)"
+                @click="selectedBookingDate = null"
+              >
+                Close ✕
+              </button>
+            </div>
+
+            <div
+              v-for="(booking, idx) in selectedBookings"
+              :key="booking.id ?? booking.reservation_id ?? idx"
+              :class="{ 'mt-3 pt-3 border-t border-(--color-border)': idx > 0 }"
+            >
+              <!-- ⚠️ Field names below are best-guess fallbacks (guest_name /
+                   customer_name / guestName). Confirm the real field names
+                   against what /owner/properties/:id/availability-calendar
+                   actually returns and trim the fallbacks once known. -->
+              <p class="font-semibold text-(--color-text)">
+                {{
+                  booking.guest_name ??
+                  booking.customer_name ??
+                  booking.guestName ??
+                  "Guest"
+                }}
+              </p>
+              <div
+                class="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-(--color-muted)"
+              >
+                <span>
+                  Check-in:
+                  <strong class="text-(--color-text)">
+                    {{ booking.check_in_date ?? booking.checkIn ?? "—" }}
+                  </strong>
+                </span>
+                <span>
+                  Check-out:
+                  <strong class="text-(--color-text)">
+                    {{ booking.check_out_date ?? booking.checkOut ?? "—" }}
+                  </strong>
+                </span>
+                <span v-if="booking.status ?? booking.reservation_status">
+                  Status:
+                  <strong class="text-(--color-text) capitalize">
+                    {{ booking.status ?? booking.reservation_status }}
+                  </strong>
+                </span>
+              </div>
+              <!-- ⚠️ Route name guessed — point this at your real owner
+                   reservation detail route. -->
+              <RouterLink
+                v-if="booking.id ?? booking.reservation_id"
+                :to="{
+                  name: 'owner.reservation-detail',
+                  params: { id: booking.id ?? booking.reservation_id },
+                }"
+                class="inline-block mt-2 text-xs font-bold text-(--color-primary) hover:underline"
+              >
+                View full reservation →
+              </RouterLink>
+            </div>
+          </div>
 
           <div
             v-if="selectedRange.start"

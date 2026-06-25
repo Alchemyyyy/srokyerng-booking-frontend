@@ -11,6 +11,8 @@ import { useSidebar } from "@/shared/composables/useSidebar";
 import { usePropertyStore } from "@/modules/properties/store/propertyStore";
 import { useToastStore } from "@/shared/store/toastStore";
 import { propertyApi } from "@/modules/properties/api/property.api";
+import { resolveAssetUrl } from "@/shared/utils/assetUrl";
+
 import {
   PlusIcon,
   TrashIcon,
@@ -22,10 +24,6 @@ import {
   BuildingOffice2Icon,
 } from "@heroicons/vue/24/outline";
 import { StarIcon as StarIconSolid } from "@heroicons/vue/24/solid";
-
-const BASE_URL = (
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5001/api"
-).replace(/\/api\/?$/, "");
 
 const propertyStore = usePropertyStore();
 const toast = useToastStore();
@@ -1125,7 +1123,7 @@ onMounted(async () => {
                 "
               >
                 <img
-                  :src="`${BASE_URL}${img.image_url}`"
+                  :src="resolveAssetUrl(img.image_url)"
                   class="w-full h-full object-cover"
                 />
                 <div
