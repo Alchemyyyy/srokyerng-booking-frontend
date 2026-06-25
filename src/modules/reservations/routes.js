@@ -10,9 +10,8 @@ export const reservationRoutes = [
   {
     path: "reservations",
     name: "reservations",
-    component: ComingSoonView,
-    props: { title: "My Reservations" },
-    meta: { requiresAuth: true, roles: [ROLES.CUSTOMER] },
+    component: BookingHistoryView,
+    meta: { requiresAuth: true, navbarSolid: false, roles: [ROLES.CUSTOMER] },
   },
   {
     path: "booking-history",
@@ -40,7 +39,7 @@ export const reservationRoutes = [
   },
   {
     path: "payments/:paymentId",
-    name: "payment-detail ",
+    name: "payment-detail",
     component: PaymentDetailView,
     meta: { requiresAuth: true, roles: [ROLES.CUSTOMER] },
   },

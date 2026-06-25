@@ -187,7 +187,7 @@ const fileSizeLabel = computed(() => {
 .upload-form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 /* Drop zone */
@@ -195,8 +195,8 @@ const fileSizeLabel = computed(() => {
   position: relative;
   background: var(--color-surface);
   border: 2px dashed var(--color-border);
-  border-radius: 28px;
-  min-height: 280px;
+  border-radius: 22px;
+  min-height: 230px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -235,20 +235,20 @@ const fileSizeLabel = computed(() => {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 2rem;
+  padding: 1.25rem;
   pointer-events: none;
   user-select: none;
 }
 
 .upload-zone__icon-wrap {
-  width: 4.5rem;
-  height: 4.5rem;
-  border-radius: 20px;
+  width: 3.75rem;
+  height: 3.75rem;
+  border-radius: 18px;
   background: var(--color-primary-soft, rgba(55, 138, 221, 0.1));
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.9rem;
   transition: transform 0.2s;
 }
 
@@ -257,8 +257,8 @@ const fileSizeLabel = computed(() => {
 }
 
 .upload-zone__icon {
-  width: 2rem;
-  height: 2rem;
+  width: 1.75rem;
+  height: 1.75rem;
   color: var(--color-primary);
 }
 
@@ -298,7 +298,7 @@ const fileSizeLabel = computed(() => {
 
 .upload-zone__preview-img {
   width: 100%;
-  max-height: 260px;
+  max-height: 210px;
   object-fit: cover;
   display: block;
 }

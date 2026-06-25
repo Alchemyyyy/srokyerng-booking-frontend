@@ -17,6 +17,7 @@ import {
   QueueListIcon,
   ClockIcon,
   CheckCircleIcon,
+  CalendarDaysIcon,
 } from "@heroicons/vue/24/outline";
 import PublicNavbar from "@/shared/components/PublicNavbar.vue";
 
@@ -67,7 +68,7 @@ const confirmCancel = async (reason) => {
     toast.success(t('reservationDetail.toast.successMessage'), { title: t('reservationDetail.toast.successTitle') });
   } catch (err) {
     cancelError.value =
-      err?.response?.data?.message ?? t('bookingHistory.state.cancelFailed');
+      err?.message || err?.response?.data?.message || t('bookingHistory.state.cancelFailed');
   } finally {
     cancelLoading.value = false;
   }
@@ -91,6 +92,29 @@ const filteredBookings = computed(() => {
     );
   return bookings.value;
 });
+
+const filterOptions = computed(() => [
+  {
+    value: "all",
+    label: t("bookingHistory.filters.all"),
+    count: bookings.value.length,
+    icon: QueueListIcon,
+  },
+  {
+    value: "upcoming",
+    label: t("bookingHistory.filters.upcoming"),
+    count: stats.value.activeCount,
+    icon: ClockIcon,
+  },
+  {
+    value: "completed",
+    label: t("bookingHistory.filters.completed"),
+    count: bookings.value.filter(
+      (b) => String(b.status).toLowerCase() === "completed",
+    ).length,
+    icon: CheckCircleIcon,
+  },
+]);
 
 const stats = computed(() => ({
   totalReservations: bookings.value.length,
@@ -182,7 +206,7 @@ const goToReceipt = (paymentId) => {
     toast.warning(t('bookingHistory.state.noPayment'), { title: t('bookingHistory.state.noPaymentTitle') });
     return;
   }
-  router.push({ name: "customer.payment-detail", params: { paymentId } });
+  router.push({ name: 'customer.payment-detail', params: { paymentId } })
 };
 
 const goToUpload = (paymentId) => {
@@ -206,27 +230,37 @@ onMounted(async () => {
 
       <div class="absolute top-0 left-1/4 w-[500px] h-[300px] bg-gradient-to-tr from-(--color-primary-soft)/10 to-transparent blur-3xl pointer-events-none"></div>
 
-      <header class="border-b border-(--color-border)/60 bg-(--color-surface)/70 backdrop-blur-xl sticky top-0 z-40 transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between text-xs font-semibold">
-          <div class="flex items-center gap-2 text-(--color-muted)">
-            <a href="#" class="hover:text-(--color-primary) transition duration-300">{{ t('bookingHistory.breadcrumb.dashboard') }}</a>
-            <span class="text-(--color-muted)/40 text-[10px] font-light">/</span>
-            <span class="text-(--color-text) font-bold tracking-tight">{{ t('bookingHistory.breadcrumb.title') }}</span>
-          </div>
-          <button class="inline-flex items-center gap-1.5 text-(--color-muted) hover:text-(--color-text) text-xs font-bold transition-colors border border-(--color-border)/60 px-3 py-1.5 rounded-xl bg-(--color-surface-soft)/40">
-            <ArrowDownTrayIcon class="w-3.5 h-3.5" />
-            <span>{{ t('bookingHistory.export') }}</span>
-          </button>
-        </div>
-      </header>
+      <div class="mx-auto max-w-7xl px-4 pt-28 sm:px-6">
+        <section class="overflow-hidden rounded-[28px] border border-(--color-border) bg-(--color-surface)">
+          <div class="relative p-6 sm:p-8">
+            <div class="absolute right-0 top-0 h-full w-1/2 bg-gradient-to-l from-(--color-primary-soft)/30 to-transparent pointer-events-none"></div>
+            <div class="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+              <div class="max-w-3xl">
+                <div class="inline-flex items-center gap-2 rounded-full bg-(--color-primary-soft) px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-(--color-primary)">
+                  <CalendarDaysIcon class="h-4 w-4" />
+                  {{ t('bookingHistory.breadcrumb.title') }}
+                </div>
+                <h1 class="mt-5 text-4xl font-black tracking-tight text-(--color-text) sm:text-5xl">
+                  Manage your bookings
+                </h1>
+                <p class="mt-3 max-w-2xl text-base leading-7 text-(--color-muted)">
+                  Review upcoming stays, payment receipts, cancellation options, and completed reservations in one place.
+                </p>
+              </div>
 
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 mt-10">
+              <button class="inline-flex items-center justify-center gap-2 rounded-[var(--radius-lg)] border border-(--color-border) bg-(--color-surface-soft) px-4 py-3 text-sm font-bold text-(--color-text) transition hover:border-(--color-primary)/40 hover:text-(--color-primary)">
+                <ArrowDownTrayIcon class="h-4 w-4" />
+                <span>{{ t('bookingHistory.export') }}</span>
+              </button>
+            </div>
+          </div>
+        </section>
 
         <!-- Stats -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+        <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
-          <div class="bg-(--color-surface) border border-(--color-border)/80 rounded-[28px] p-6 shadow-xs relative overflow-hidden group hover:border-(--color-primary)/30 transition-all duration-300">
-            <div class="absolute top-4 right-4 p-2 bg-(--color-surface-soft) rounded-2xl text-(--color-primary) group-hover:scale-105 transition-transform duration-300 border border-(--color-border)/30">
+          <div class="relative overflow-hidden rounded-[22px] border border-(--color-border)/80 bg-(--color-surface) p-5 transition-all duration-300 hover:border-(--color-primary)/30">
+            <div class="absolute right-4 top-4 rounded-[var(--radius-md)] border border-(--color-border)/30 bg-(--color-surface-soft) p-2 text-(--color-primary)">
               <BriefcaseIcon class="w-5 h-5" />
             </div>
             <p class="text-[10px] font-black uppercase text-(--color-muted) tracking-widest">{{ t('bookingHistory.stats.totalBookings') }}</p>
@@ -234,8 +268,8 @@ onMounted(async () => {
             <p class="text-[11px] text-(--color-muted) font-semibold mt-2">{{ t('bookingHistory.stats.acrossProperties') }}</p>
           </div>
 
-          <div class="bg-(--color-surface) border border-(--color-border)/80 rounded-[28px] p-6 shadow-xs relative overflow-hidden group hover:border-indigo-500/30 transition-all duration-300">
-            <div class="absolute top-4 right-4 p-2 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-2xl text-indigo-500 group-hover:scale-105 transition-transform duration-300 border border-indigo-500/10">
+          <div class="relative overflow-hidden rounded-[22px] border border-(--color-border)/80 bg-(--color-surface) p-5 transition-all duration-300 hover:border-indigo-500/30">
+            <div class="absolute right-4 top-4 rounded-[var(--radius-md)] border border-indigo-500/10 bg-indigo-500/5 p-2 text-indigo-500 dark:bg-indigo-500/10">
               <MoonIcon class="w-5 h-5" />
             </div>
             <p class="text-[10px] font-black uppercase text-(--color-muted) tracking-widest">{{ t('bookingHistory.stats.totalNights') }}</p>
@@ -246,8 +280,8 @@ onMounted(async () => {
             </p>
           </div>
 
-          <div class="bg-(--color-surface) border border-(--color-border)/80 rounded-[28px] p-6 shadow-xs relative overflow-hidden group hover:border-emerald-500/30 transition-all duration-300">
-            <div class="absolute top-4 right-4 p-2 bg-emerald-500/5 dark:bg-emerald-500/10 rounded-2xl text-emerald-500 group-hover:scale-105 transition-transform duration-300 border border-emerald-500/10">
+          <div class="relative overflow-hidden rounded-[22px] border border-(--color-border)/80 bg-(--color-surface) p-5 transition-all duration-300 hover:border-emerald-500/30">
+            <div class="absolute right-4 top-4 rounded-[var(--radius-md)] border border-emerald-500/10 bg-emerald-500/5 p-2 text-emerald-500 dark:bg-emerald-500/10">
               <BanknotesIcon class="w-5 h-5" />
             </div>
             <p class="text-[10px] font-black uppercase text-(--color-muted) tracking-widest">{{ t('bookingHistory.stats.capitalInvested') }}</p>
@@ -255,7 +289,7 @@ onMounted(async () => {
             <p class="text-[11px] text-(--color-muted) font-semibold mt-2">{{ t('bookingHistory.stats.inclusive') }}</p>
           </div>
 
-          <div class="bg-gradient-to-br from-[#0f2942] to-[#1d4166] dark:from-slate-950 dark:to-slate-900 rounded-[28px] p-6 shadow-xs relative overflow-hidden text-white border border-transparent dark:border-(--color-border)/50">
+          <div class="relative overflow-hidden rounded-[22px] border border-transparent bg-gradient-to-br from-[#0f2942] to-[#1d4166] p-5 text-white dark:border-(--color-border)/50 dark:from-slate-950 dark:to-slate-900">
             <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-500/10 via-transparent to-transparent"></div>
             <p class="text-[10px] font-black uppercase text-slate-300 tracking-widest">{{ t('bookingHistory.stats.activeItinerary') }}</p>
             <p class="text-4xl font-black mt-3 tracking-tight">{{ t('bookingHistory.stats.live', { count: stats.activeCount }) }}</p>
@@ -268,36 +302,27 @@ onMounted(async () => {
         </div>
 
         <!-- Filter Bar -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 border-b border-(--color-border)/60 pb-5">
+        <div class="mt-8 mb-8 rounded-[24px] border border-(--color-border) bg-(--color-surface) p-4">
+          <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 class="text-2xl font-black text-(--color-text) tracking-tight">{{ t('bookingHistory.filters.title') }}</h2>
             <p class="text-xs text-(--color-muted) font-semibold mt-0.5">{{ t('bookingHistory.filters.subtitle') }}</p>
           </div>
-          <div class="inline-flex bg-(--color-surface-soft) p-1 rounded-2xl border border-(--color-border)/60 text-xs font-bold self-start md:self-center shadow-inner">
+          <div class="flex flex-wrap gap-2 rounded-[var(--radius-lg)] bg-(--color-surface-soft) p-1 text-xs font-bold md:self-center">
             <button
-              :class="activeFilter === 'all' ? 'bg-(--color-surface) text-(--color-text) shadow-xs' : 'text-(--color-muted) hover:text-(--color-text)'"
-              class="px-4 py-2 rounded-xl transition-all duration-200 inline-flex items-center gap-1.5"
-              @click="activeFilter = 'all'"
+              v-for="option in filterOptions"
+              :key="option.value"
+              :class="activeFilter === option.value ? 'bg-(--color-surface) text-(--color-text) shadow-xs' : 'text-(--color-muted) hover:text-(--color-text)'"
+              class="inline-flex items-center gap-2 rounded-[var(--radius-md)] px-4 py-2.5 transition-all duration-200"
+              @click="activeFilter = option.value"
             >
-              <QueueListIcon class="w-3.5 h-3.5" />
-              <span>{{ t('bookingHistory.filters.all') }}</span>
+              <component :is="option.icon" class="h-4 w-4" />
+              <span>{{ option.label }}</span>
+              <span class="rounded-full bg-(--color-primary-soft) px-2 py-0.5 text-[10px] font-black text-(--color-primary)">
+                {{ option.count }}
+              </span>
             </button>
-            <button
-              :class="activeFilter === 'upcoming' ? 'bg-(--color-surface) text-(--color-text) shadow-xs' : 'text-(--color-muted) hover:text-(--color-text)'"
-              class="px-4 py-2 rounded-xl transition-all duration-200 inline-flex items-center gap-1.5"
-              @click="activeFilter = 'upcoming'"
-            >
-              <ClockIcon class="w-3.5 h-3.5" />
-              <span>{{ t('bookingHistory.filters.upcoming') }}</span>
-            </button>
-            <button
-              :class="activeFilter === 'completed' ? 'bg-(--color-surface) text-(--color-text) shadow-xs' : 'text-(--color-muted) hover:text-(--color-text)'"
-              class="px-4 py-2 rounded-xl transition-all duration-200 inline-flex items-center gap-1.5"
-              @click="activeFilter = 'completed'"
-            >
-              <CheckCircleIcon class="w-3.5 h-3.5" />
-              <span>{{ t('bookingHistory.filters.completed') }}</span>
-            </button>
+          </div>
           </div>
         </div>
 
@@ -327,7 +352,7 @@ onMounted(async () => {
               v-for="booking in filteredBookings"
               :key="booking.id"
               :booking="booking"
-             @view="router.push({ name: 'customer.booking-detail', params: { id: $event } })"
+              @view="router.push({ name: 'customer.booking-detail', params: { id: $event } })"
               @cancel="handleCancel"
               @pay="goToUpload($event)"
               @receipt="goToReceipt($event)"

@@ -48,6 +48,12 @@ export const propertyApi = {
   getPropertyRooms(propertyId) {
     return http.get(`/properties/${propertyId}/rooms`);
   },
+  getPropertyReviews(propertyId) {
+    return http.get(`/properties/${propertyId}/reviews`);
+  },
+  getPropertyAmenities(propertyId) {
+    return http.get(`/properties/${propertyId}/amenities`);
+  },
 
   // All reservations across every property this owner manages —
   // used to compute bookings count + revenue per property.

@@ -7,6 +7,7 @@ import WishlistCard from "../components/WishlistCard.vue";
 import EmptyState from "@/shared/components/EmptyState.vue";
 import AppButton from "@/shared/components/AppButton.vue";
 import { HeartIcon } from "@heroicons/vue/24/outline";
+import PublicNavbar from "@/shared/components/PublicNavbar.vue";
 
 const router = useRouter();
 const wishlistStore = useWishlistStore();
@@ -30,8 +31,10 @@ const goToSearch = () => {
 </script>
 
 <template>
-  <main class="bg-(--color-page) min-h-[calc(100vh-80px)] py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
+  <div>
+    <PublicNavbar />
+    <main class="bg-(--color-page) min-h-screen pt-28 pb-24 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto">
       <div class="mb-8">
         <h1 class="text-3xl font-black text-(--color-text) tracking-tight">Your Wishlist</h1>
         <p class="text-(--color-muted) mt-2">Saved properties you want to keep an eye on.</p>
@@ -69,6 +72,7 @@ const goToSearch = () => {
           @remove="handleRemove"
         />
       </div>
-    </div>
-  </main>
+      </div>
+    </main>
+  </div>
 </template>

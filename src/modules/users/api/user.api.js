@@ -20,6 +20,10 @@ export const userApi = {
     return http.patch("/users/me/profile-image", formData);
   },
 
+  deleteProfileImage() {
+    return http.delete("/users/me/profile-image");
+  },
+
   listUsers(params) {
     return http.get("/users", { params });
   },

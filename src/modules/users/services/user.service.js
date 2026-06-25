@@ -17,6 +17,10 @@ export const userService = {
     return userApi.updateProfileImage(file);
   },
 
+  deleteProfileImage() {
+    return userApi.deleteProfileImage();
+  },
+
   listUsers(params) {
     return userApi.listUsers(params);
   },

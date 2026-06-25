@@ -22,7 +22,7 @@ import {
   getSettingsRouteByRole,
 } from "@/shared/utils/roleRoutes";
 import UserAvatar from "@/shared/components/UserAvatar.vue";
- 
+
 const isActiveRoute = (target) => {
   if (!target) return false;
   if (typeof target === "string") return route.path === target;
@@ -43,7 +43,6 @@ const authStore = useAuthStore();
 const { t } = useI18n({ useScope: "global" });
 
 const menuOpen = ref(false);
-
 
 const userLabel = computed(() => {
   return (
@@ -68,11 +67,21 @@ const roleLabel = computed(() => {
   return role.charAt(0).toUpperCase() + role.slice(1);
 });
 
-const dashboardRoute = computed(() => getDashboardRouteByRole(authStore.user?.role));
-const notificationRoute = computed(() => getNotificationRouteByRole(authStore.user?.role));
-const profileRoute = computed(() => getProfileRouteByRole(authStore.user?.role));
-const settingsRoute = computed(() => getSettingsRouteByRole(authStore.user?.role));
-const showListPropertyLink = computed(() => authStore.user?.role === "customer");
+const dashboardRoute = computed(() =>
+  getDashboardRouteByRole(authStore.user?.role),
+);
+const notificationRoute = computed(() =>
+  getNotificationRouteByRole(authStore.user?.role),
+);
+const profileRoute = computed(() =>
+  getProfileRouteByRole(authStore.user?.role),
+);
+const settingsRoute = computed(() =>
+  getSettingsRouteByRole(authStore.user?.role),
+);
+const showListPropertyLink = computed(
+  () => authStore.user?.role === "customer",
+);
 const isCustomer = computed(() => authStore.user?.role === "customer");
 
 const toggleMenu = () => {
@@ -89,47 +98,53 @@ const handleLogout = async () => {
   await router.push({ name: "public.home" });
 };
 
-const accountActions = computed(() => [
-  profileRoute.value && {
-    label: isCustomer.value ? t("nav.myAccount") : t("nav.profile"),
-    to: profileRoute.value,
-    icon: UserCircleIcon,
-  },
-  dashboardRoute.value && {
-    label: isCustomer.value ? t("nav.myBookings") : t("nav.dashboard"),
-    to: dashboardRoute.value,
-    icon: Squares2X2Icon,
-  },
-  isCustomer.value && {
-    label: t("nav.savedStays"),
-    to: { name: "customer.wishlist" },
-    icon: HeartIcon,
-  },
-  notificationRoute.value && {
-    label: t("nav.notifications"),
-    to: notificationRoute.value,
-    icon: BellIcon,
-  },
-  settingsRoute.value && {
-    label: t("nav.settings"),
-    to: settingsRoute.value,
-    icon: Cog6ToothIcon,
-  },
-  {
-    label: t("nav.helpSupport"),
-    to: { name: "public.contact" },
-    icon: QuestionMarkCircleIcon,
-  },
-  showListPropertyLink.value && {
-    label: t("nav.becomePartner"),
-    to: { name: "public.listProperty" },
-    icon: BuildingOffice2Icon,
-    accent: true,
-  },
-].filter(Boolean));
+const accountActions = computed(() =>
+  [
+    profileRoute.value && {
+      label: isCustomer.value ? t("nav.myAccount") : t("nav.profile"),
+      to: profileRoute.value,
+      icon: UserCircleIcon,
+    },
+    dashboardRoute.value && {
+      label: isCustomer.value ? t("nav.myBookings") : t("nav.dashboard"),
+      to: dashboardRoute.value,
+      icon: Squares2X2Icon,
+    },
+    isCustomer.value && {
+      label: t("nav.savedStays"),
+      to: { name: "customer.wishlist" },
+      icon: HeartIcon,
+    },
+    notificationRoute.value && {
+      label: t("nav.notifications"),
+      to: notificationRoute.value,
+      icon: BellIcon,
+    },
+    settingsRoute.value && {
+      label: t("nav.settings"),
+      to: settingsRoute.value,
+      icon: Cog6ToothIcon,
+    },
+    {
+      label: t("nav.helpSupport"),
+      to: { name: "public.contact" },
+      icon: QuestionMarkCircleIcon,
+    },
+    showListPropertyLink.value && {
+      label: t("nav.becomePartner"),
+      to: { name: "public.listProperty" },
+      icon: BuildingOffice2Icon,
+      accent: true,
+    },
+  ].filter(Boolean),
+);
 
-const primaryActions = computed(() => accountActions.value.filter((action) => !action.accent));
-const partnerAction = computed(() => accountActions.value.find((action) => action.accent));
+const primaryActions = computed(() =>
+  accountActions.value.filter((action) => !action.accent),
+);
+const partnerAction = computed(() =>
+  accountActions.value.find((action) => action.accent),
+);
 
 watch(
   () => route.fullPath,
@@ -157,13 +172,12 @@ watch(
         :name="userLabel"
         :src="authStore.user?.profile_image_url"
         size-class="h-7 w-7 text-xs"
-        :class="
-          solid
-            ? ''
-            : '!bg-white/20 !text-white'
-        "
+        :class="solid ? '' : '!bg-white/20 !text-white'"
       />
-      <ChevronDownIcon class="h-4 w-4 transition" :class="menuOpen ? 'rotate-180' : ''" />
+      <ChevronDownIcon
+        class="h-4 w-4 transition"
+        :class="menuOpen ? 'rotate-180' : ''"
+      />
     </button>
 
     <Teleport to="body">
@@ -183,7 +197,9 @@ watch(
               aria-modal="true"
               aria-label="Account menu"
             >
-              <div class="flex items-start justify-between gap-4 px-5 pb-3 pt-5">
+              <div
+                class="flex items-start justify-between gap-4 px-5 pb-3 pt-5"
+              >
                 <div class="min-w-0">
                   <p class="text-xl font-bold text-(--color-text)">
                     {{ t("nav.account") }}
@@ -198,15 +214,23 @@ watch(
                   aria-label="Close account menu"
                   @click="closeMenu"
                 >
-                  <XMarkIcon class="h-4.5 w-4.5 transition-transform duration-200 group-hover:rotate-90" />
+                  <XMarkIcon
+                    class="h-4.5 w-4.5 transition-transform duration-200 group-hover:rotate-90"
+                  />
                 </button>
               </div>
 
-              <div class="flex-1 overflow-y-auto overscroll-contain px-5 pb-5 pt-3">
-                <div class="account-drawer-card relative overflow-hidden rounded-md border border-(--color-border)/45 bg-gradient-to-br from-(--color-surface-soft) to-(--color-surface) p-5 shadow-sm">
+              <div
+                class="flex-1 overflow-y-auto overscroll-contain px-5 pb-5 pt-3"
+              >
+                <div
+                  class="account-drawer-card relative overflow-hidden rounded-md border border-(--color-border)/45 bg-gradient-to-br from-(--color-surface-soft) to-(--color-surface) p-5 shadow-sm"
+                >
                   <!-- Ambient user card accent blob -->
-                  <div class="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-(--color-primary)/10 blur-xl pointer-events-none"></div>
-                  
+                  <div
+                    class="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-(--color-primary)/10 blur-xl pointer-events-none"
+                  ></div>
+
                   <div class="relative z-10 flex items-start gap-4">
                     <UserAvatar
                       :name="userLabel"
@@ -214,18 +238,26 @@ watch(
                       size-class="h-16 w-16 text-lg"
                     />
                     <div class="min-w-0 flex-1 pt-1">
-                      <p class="truncate text-lg font-bold leading-6 text-(--color-text)">
+                      <p
+                        class="truncate text-lg font-bold leading-6 text-(--color-text)"
+                      >
                         {{ userLabel }}
                       </p>
                       <p class="mt-1 truncate text-sm text-(--color-muted)">
                         {{ userEmail }}
                       </p>
                       <div class="mt-3 flex flex-wrap items-center gap-2">
-                        <span class="inline-flex items-center rounded-full bg-(--color-primary-soft) border border-(--color-primary)/20 px-2.5 py-0.5 text-xs font-bold uppercase tracking-[0.1em] text-(--color-primary)">
+                        <span
+                          class="inline-flex items-center rounded-full bg-(--color-primary-soft) border border-(--color-primary)/20 px-2.5 py-0.5 text-xs font-bold uppercase tracking-[0.1em] text-(--color-primary)"
+                        >
                           {{ roleLabel }}
                         </span>
-                        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-                          <i class="bi bi-patch-check-fill text-emerald-500"></i>
+                        <span
+                          class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full"
+                        >
+                          <i
+                            class="bi bi-patch-check-fill text-emerald-500"
+                          ></i>
                           <span>{{ t("nav.verifiedProfile") }}</span>
                         </span>
                       </div>
@@ -234,7 +266,9 @@ watch(
                 </div>
 
                 <div class="mt-6">
-                  <p class="px-1 text-xs font-bold uppercase tracking-[0.18em] text-(--color-muted)">
+                  <p
+                    class="px-1 text-xs font-bold uppercase tracking-[0.18em] text-(--color-muted)"
+                  >
                     Menu
                   </p>
                 </div>
@@ -248,7 +282,7 @@ watch(
                     :class="[
                       isActiveRoute(action.to)
                         ? 'bg-gradient-to-r from-(--color-primary-soft)/60 to-transparent border-(--color-primary) !text-(--color-primary)'
-                        : 'border-transparent text-(--color-text) hover:bg-(--color-surface-soft)'
+                        : 'border-transparent text-(--color-text) hover:bg-(--color-surface-soft)',
                     ]"
                     @click="closeMenu"
                   >
@@ -257,13 +291,15 @@ watch(
                       :class="[
                         isActiveRoute(action.to)
                           ? 'bg-gradient-to-tr from-(--color-primary) to-(--color-secondary) text-white'
-                          : 'bg-gradient-to-tr from-(--color-primary-soft) to-(--color-surface-soft) text-(--color-primary) group-hover:from-(--color-primary) group-hover:to-(--color-secondary) group-hover:text-white'
+                          : 'bg-gradient-to-tr from-(--color-primary-soft) to-(--color-surface-soft) text-(--color-primary) group-hover:from-(--color-primary) group-hover:to-(--color-secondary) group-hover:text-white',
                       ]"
                     >
                       <component :is="action.icon" class="h-4.5 w-4.5" />
                     </span>
                     <span class="flex-1">{{ action.label }}</span>
-                    <ChevronDownIcon class="h-4 w-4 -rotate-90 text-(--color-muted) transition-transform duration-200 group-hover:translate-x-0.5" />
+                    <ChevronDownIcon
+                      class="h-4 w-4 -rotate-90 text-(--color-muted) transition-transform duration-200 group-hover:translate-x-0.5"
+                    />
                   </RouterLink>
                 </div>
 
@@ -274,16 +310,26 @@ watch(
                   @click="closeMenu"
                 >
                   <!-- Ambient reflection blobs inside banner -->
-                  <div class="absolute -right-10 -bottom-10 h-28 w-28 rounded-full bg-gradient-to-tr from-(--color-primary) to-(--color-secondary) opacity-20 blur-xl group-hover:scale-110 transition-all duration-500"></div>
-                  <div class="absolute -left-6 -top-6 h-20 w-20 rounded-full bg-amber-500/10 blur-lg group-hover:scale-110 transition-all duration-500"></div>
+                  <div
+                    class="absolute -right-10 -bottom-10 h-28 w-28 rounded-full bg-gradient-to-tr from-(--color-primary) to-(--color-secondary) opacity-20 blur-xl group-hover:scale-110 transition-all duration-500"
+                  ></div>
+                  <div
+                    class="absolute -left-6 -top-6 h-20 w-20 rounded-full bg-amber-500/10 blur-lg group-hover:scale-110 transition-all duration-500"
+                  ></div>
 
                   <div class="relative z-10 flex items-start gap-4">
-                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm bg-white/10 backdrop-blur-sm text-white shadow-inner transition-transform duration-300 group-hover:scale-105">
+                    <span
+                      class="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm bg-white/10 backdrop-blur-sm text-white shadow-inner transition-transform duration-300 group-hover:scale-105"
+                    >
                       <component :is="partnerAction.icon" class="h-5.5 w-5.5" />
                     </span>
                     <div>
-                      <p class="font-bold text-white tracking-wide text-[15px]">{{ partnerAction.label }}</p>
-                      <p class="mt-1.5 text-xs leading-normal text-white/80 font-medium">
+                      <p class="font-bold text-white tracking-wide text-[15px]">
+                        {{ partnerAction.label }}
+                      </p>
+                      <p
+                        class="mt-1.5 text-xs leading-normal text-white/80 font-medium"
+                      >
                         {{ t("nav.becomePartnerDesc") }}
                       </p>
                     </div>
@@ -291,13 +337,17 @@ watch(
                 </RouterLink>
               </div>
 
-              <div class="account-drawer-footer border-t border-(--color-border) bg-(--color-surface) p-5">
+              <div
+                class="account-drawer-footer border-t border-(--color-border) bg-(--color-surface) p-5"
+              >
                 <button
                   type="button"
                   class="group flex w-full items-center justify-center gap-2 rounded-sm border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm font-bold text-red-500 transition-all duration-300 hover:bg-red-500 hover:text-white hover:border-red-500/10 hover:shadow-[0_4px_15px_rgba(239,68,68,0.25)]"
                   @click="handleLogout"
                 >
-                  <ArrowRightOnRectangleIcon class="h-5 w-5 transition-transform duration-200 group-hover:translate-x-0.5" />
+                  <ArrowRightOnRectangleIcon
+                    class="h-5 w-5 transition-transform duration-200 group-hover:translate-x-0.5"
+                  />
                   {{ t("nav.logout") }}
                 </button>
               </div>

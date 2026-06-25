@@ -1,148 +1,103 @@
 <script setup>
-import { computed, ref, onMounted, onUnmounted } from 'vue';
-import { useRoute } from 'vue-router';
-import { useI18n } from 'vue-i18n';
+import { computed, ref, onMounted, onUnmounted } from "vue";
+import { useRoute } from "vue-router";
+import { useI18n } from "vue-i18n";
 
-import ThemeToggle from './ThemeToggle1.vue';
-import LanguageToggle from './LanguageToggle.vue';
-import { useSidebar } from '@/shared/composables/useSidebar';
-import { useAuthStore } from "@/modules/auth/store/authStore";
+import ThemeToggle from "./ThemeToggle1.vue";
+import LanguageToggle from "./LanguageToggle.vue";
+import NavbarAccountMenu from "./NavbarAccountMenu.vue";
+import NotificationBell from "@/modules/notifications/components/NotificationBell.vue";
+import { useSidebar } from "@/shared/composables/useSidebar";
 
-import { MagnifyingGlassIcon, BellIcon, ChevronRightIcon } from '@heroicons/vue/24/outline';
+import { ChevronRightIcon } from "@heroicons/vue/24/outline";
 
 defineProps({
-    showSearch: {
-        type: Boolean,
-        default: true
-    },
+  showSearch: {
+    type: Boolean,
+    default: true,
+  },
 
-    showNotifications: {
-        type: Boolean,
-        default: true
-    },
+  showNotifications: {
+    type: Boolean,
+    default: true,
+  },
 
-    user: {
-        type: Object,
-        default: () => ({
-            initials: 'AD'
-        })
-    }
+  // Kept for backward compatibility with callers like:
+  // <AppHeader :user="user" /> — no longer used internally since
+  // NavbarAccountMenu pulls the user straight from authStore itself.
+  user: {
+    type: Object,
+    default: () => ({
+      initials: "AD",
+    }),
+  },
 });
 
 const route = useRoute();
 const { t } = useI18n();
-const authStore = useAuthStore();
 
-const displayUserName = computed(() => {
-    return (
-        authStore.user?.name ||
-        authStore.user?.full_name ||
-        authStore.user?.fullName ||
-        authStore.user?.username ||
-        authStore.user?.email ||
-        t("owner.profile.name")
-    );
-});
-
-const displayUserInitials = computed(() => {
-    const name = displayUserName.value;
-    return name ? name.substring(0, 2).toUpperCase() : 'US';
-});
-
-const homeLabel = computed(() => t('nav.home'));
-// const searchLabel = computed(() => t('owner.header.search'));
+const homeLabel = computed(() => t("nav.home"));
 
 const routeLabel = computed(() => {
-    return route.meta.title || t('nav.dashboard');
+  return route.meta.title || t("nav.dashboard");
 });
 
 const isScrolled = ref(false);
 
 const handleScroll = () => {
-    isScrolled.value = window.scrollY > 50;
+  isScrolled.value = window.scrollY > 50;
 };
 
 onMounted(() => {
-    window.addEventListener('scroll', handleScroll);
+  window.addEventListener("scroll", handleScroll);
 });
 
 onUnmounted(() => {
-    window.removeEventListener('scroll', handleScroll);
+  window.removeEventListener("scroll", handleScroll);
 });
 
 const { isSidebarOpen } = useSidebar();
-
 </script>
 
 <template>
-    <header class="fixed top-0 right-0 z-10 h-16 flex items-center gap-3 px-6
-               bg-(--color-surface) border-b border-(--color-border)
-               transition-all duration-300" :class="isSidebarOpen ? 'left-64' : 'left-20'">
-        <!-- Breadcrumb -->
-        <nav class="flex items-center gap-1.5 text-sm flex-1 min-w-0" aria-label="Breadcrumb">
-            <span class="text-(--color-muted) font-medium">
-                {{ homeLabel }}
-            </span>
+  <header
+    class="fixed top-0 right-0 z-10 h-16 flex items-center gap-3 px-6 bg-(--color-surface) border-b border-(--color-border) transition-all duration-300"
+    :class="isSidebarOpen ? 'left-64' : 'left-20'"
+  >
+    <!-- Breadcrumb -->
+    <nav
+      class="flex items-center gap-1.5 text-sm flex-1 min-w-0"
+      aria-label="Breadcrumb"
+    >
+      <span class="text-(--color-muted) font-medium">
+        {{ homeLabel }}
+      </span>
 
-            <ChevronRightIcon class="w-3.5 h-3.5 text-(--color-muted) shrink-0" />
+      <ChevronRightIcon class="w-3.5 h-3.5 text-(--color-muted) shrink-0" />
 
-            <span class="font-semibold text-(--color-text) truncate">
-                {{ routeLabel }}
-            </span>
-        </nav>
+      <span class="font-semibold text-(--color-text) truncate">
+        {{ routeLabel }}
+      </span>
+    </nav>
 
-        <!-- Search -->
-        <!-- <button v-if="showSearch" type="button" class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm
-                   bg-(--color-surface-soft) border border-(--color-border)
-                   text-(--color-muted)
-                   hover:border-(--color-primary)
-                   hover:text-(--color-primary)
-                   transition-all duration-200">
-            <MagnifyingGlassIcon class="w-3.5 h-3.5 shrink-0" />
+    <!-- Notifications — same working component PublicNavbar uses for
+             customers (real unread count, dropdown, mark-as-read), instead
+             of a static decorative icon. -->
+    <NotificationBell v-if="showNotifications" :solid="true" />
 
-            <span>{{ searchLabel }}</span>
+    <div class="h-5 w-px bg-(--color-border)"></div>
 
-            <kbd class="text-[10px] px-1.5 py-0.5 rounded bg-(--color-border)">
-                ⌘K
-            </kbd>
-        </button> -->
+    <!-- Language -->
+    <LanguageToggle />
 
-        <!-- Notifications -->
-        <button v-if="showNotifications" type="button" class="relative w-9 h-9 flex items-center justify-center rounded-lg
-                   bg-(--color-surface-soft)
-                   border border-(--color-border)
-                   text-(--color-muted)
-                   hover:bg-(--color-primary-soft)
-                   hover:border-(--color-primary)
-                   hover:text-(--color-primary)
-                   transition-all duration-200">
-            <BellIcon class="w-4.5 h-4.5" />
+    <div class="h-5 w-px bg-(--color-border)"></div>
 
-            <span class="absolute top-1.5 right-2 w-1.5 h-1.5 rounded-full bg-(--color-danger)"></span>
-        </button>
+    <!-- Theme -->
+    <ThemeToggle />
 
-        <div class="h-5 w-px bg-(--color-border)"></div>
+    <div class="h-5 w-px bg-(--color-border)"></div>
 
-        <!-- Language -->
-        <LanguageToggle />
-
-        <div class="h-5 w-px bg-(--color-border)"></div>
-
-        <!-- Theme -->
-        <ThemeToggle />
-
-        <div class="h-5 w-px bg-(--color-border)"></div>
-
-        <!-- Profile -->
-        <button type="button" class="w-8 h-8 rounded-full flex items-center justify-center shrink-0
-                   bg-(--color-primary-soft)
-                   border-2 border-(--color-primary)
-                   text-(--color-primary)
-                   text-xs font-bold
-                   hover:ring-2 hover:ring-(--color-primary)
-                   hover:ring-offset-2
-                   transition-all duration-200">
-            {{ displayUserInitials }}
-        </button>
-    </header>
+    <!-- Profile / account dropdown — Profile, Dashboard, Settings, Logout -->
+    <NavbarAccountMenu />
+  </header>
 </template>

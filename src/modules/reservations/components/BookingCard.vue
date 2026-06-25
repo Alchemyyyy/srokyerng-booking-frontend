@@ -134,7 +134,7 @@ onBeforeUnmount(()  => document.removeEventListener("click", handleOutsideClick)
       <div class="space-y-2 w-full sm:w-auto">
         <div class="flex flex-wrap items-center gap-2">
           <h4 class="text-base font-black text-(--color-text) tracking-tight">
-            {{ booking.room_name || booking.roomName || "Luxury Suite" }}
+          {{ booking.room_name || booking.roomName || "Room" }}
           </h4>
           <span
             class="inline-flex items-center gap-0.5 text-[10px] text-(--color-muted) font-mono font-bold bg-(--color-surface-soft) px-1.5 py-0.5 rounded-md border border-(--color-border)/60"
@@ -152,7 +152,7 @@ onBeforeUnmount(()  => document.removeEventListener("click", handleOutsideClick)
         >
           <MapPinIcon class="w-3.5 h-3.5 text-(--color-primary) shrink-0" />
           <span>{{
-            booking.property_name || booking.location || "Premium Sanctuary"
+            booking.property_name || booking.location || "Property"
           }}</span>
         </p>
 
@@ -211,7 +211,7 @@ onBeforeUnmount(()  => document.removeEventListener("click", handleOutsideClick)
       <!-- Price block -->
       <div class="lg:text-right">
         <span class="text-[9px] uppercase font-black text-(--color-muted) tracking-widest block">
-          Settled Volume
+          Total amount
         </span>
         <span class="text-2xl font-black text-(--color-text) tracking-tight block mt-0.5">
           ${{ Number(booking.total_amount || booking.totalPrice || 0) }}

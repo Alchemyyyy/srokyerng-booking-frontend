@@ -64,7 +64,11 @@ http.interceptors.response.use(
       }
     }
 
-    return Promise.reject(error.response?.data || error);
+    const errorData = error.response?.data || error;
+    if (errorData && typeof errorData === 'object' && error.response?.status) {
+      errorData.status = error.response.status;
+    }
+    return Promise.reject(errorData);
   }
 );
 

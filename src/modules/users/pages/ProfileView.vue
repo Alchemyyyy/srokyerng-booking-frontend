@@ -318,6 +318,23 @@ const handleProfileImageSelect = (event) => {
   }
 };
 
+const removeProfileImage = async () => {
+  uploadingImage.value = true;
+  error.value = "";
+  success.value = "";
+
+  try {
+    const response = await userService.deleteProfileImage();
+    syncForm(response.data);
+    syncAuthUser(response.data);
+    toastStore.success(t("profile.toast.imageRemoved", "Profile image removed successfully"));
+  } catch (requestError) {
+    toastStore.danger(requestError.message || t("profile.errors.removeImage", "Failed to remove profile image"));
+  } finally {
+    uploadingImage.value = false;
+  }
+};
+
 const applyCropAndUpload = async () => {
   const result = cropperRef.value?.getResult();
   if (!result?.canvas) {
@@ -571,6 +588,7 @@ onUnmounted(() => {
                       compact
                       class="border-0 !bg-transparent !p-0 !shadow-none"
                       @select-image="handleProfileImageSelect"
+                      @remove-image="removeProfileImage"
                     />
 
                     <div class="min-w-0">
@@ -650,6 +668,7 @@ onUnmounted(() => {
             :has-selected-image="hasSelectedImage"
             :selected-image-name="selectedImageFile?.name"
             @select-image="handleProfileImageSelect"
+            @remove-image="removeProfileImage"
           />
 
           <ProfileCompletionCard

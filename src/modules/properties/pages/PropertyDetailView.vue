@@ -13,6 +13,18 @@ import {
   BuildingOfficeIcon,
   ArrowRightIcon,
   CheckCircleIcon,
+  WifiIcon,
+  TvIcon,
+  TruckIcon,
+  SunIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
+  CakeIcon,
+  BriefcaseIcon,
+  BoltIcon,
+  KeyIcon,
+  HomeModernIcon,
+  XMarkIcon,
 } from "@heroicons/vue/24/outline";
 
 import PropertyGallery from "../components/PropertyGallery.vue";
@@ -20,6 +32,7 @@ import AvailabilityCalendar from "@/modules/calendar/components/AvailabilityCale
 import { usePropertyStore } from "../store/propertyStore";
 import { propertyApi } from "../api/property.api";
 import { useWishlistStore } from "@/modules/wishlists/store/wishlistStore";
+import { useToastStore } from "@/shared/store/toastStore";
 import http from "@/app/api/http";
 
 const { t } = useI18n({ useScope: "global" });
@@ -27,7 +40,30 @@ const route = useRoute();
 const router = useRouter();
 const propertyStore = usePropertyStore();
 const wishlistStore = useWishlistStore();
+const toastStore = useToastStore();
 const rooms = ref([]);
+const amenities = ref([]);
+
+const getAmenityIcon = (name) => {
+  const n = String(name).toLowerCase();
+  if (n.includes('wifi') || n.includes('internet') || n.includes('wi-fi')) return WifiIcon;
+  if (n.includes('tv') || n.includes('cable') || n.includes('television') || n.includes('netflix')) return TvIcon;
+  if (n.includes('park') || n.includes('garage') || n.includes('car') || n.includes('shuttle') || n.includes('airport')) return TruckIcon;
+  if (n.includes('air condition') || n.includes('ac') || n.includes('heat') || n.includes('climate') || n.includes('beach') || n.includes('sun')) return SunIcon;
+  if (n.includes('security') || n.includes('guard') || n.includes('alarm') || n.includes('smoke') || n.includes('safe')) return ShieldCheckIcon;
+  if (n.includes('wash') || n.includes('laundry') || n.includes('dryer') || n.includes('clean') || n.includes('bedding') || n.includes('linens') || n.includes('spa') || n.includes('yoga')) return SparklesIcon;
+  if (n.includes('kitchen') || n.includes('cook') || n.includes('food') || n.includes('dining') || n.includes('breakfast') || n.includes('restaurant')) return CakeIcon;
+  if (n.includes('pool') || n.includes('swim') || n.includes('gym') || n.includes('fitness') || n.includes('family') || n.includes('group') || n.includes('tennis')) return UserGroupIcon;
+  if (n.includes('work') || n.includes('desk') || n.includes('office') || n.includes('business')) return BriefcaseIcon;
+  if (n.includes('key') || n.includes('lock') || n.includes('check-in')) return KeyIcon;
+  if (n.includes('electric') || n.includes('power') || n.includes('charge')) return BoltIcon;
+  if (n.includes('villa') || n.includes('space') || n.includes('lounge') || n.includes('balcony') || n.includes('view') || n.includes('garden')) return HomeModernIcon;
+  if (n.includes('location') || n.includes('city') || n.includes('center')) return MapPinIcon;
+  if (n.includes('date') || n.includes('flexible')) return CalendarDaysIcon;
+  if (n.includes('premium') || n.includes('star')) return StarIcon;
+  if (n.includes('pet')) return HeartIcon;
+  return CheckCircleIcon;
+};
 
 const fallbackRoom = {
   name: "Standard Room",
@@ -37,6 +73,7 @@ const fallbackRoom = {
 };
 
 const selectedRoom = ref(fallbackRoom);
+const minDate = new Date().toISOString().split('T')[0];
 const checkInDate = ref("");
 const checkOutDate = ref("");
 const guestCount = ref(2);
@@ -64,6 +101,40 @@ const totalPrice = computed(() => roomSubtotal.value + serviceFee);
 
 const property = computed(() => propertyStore.property);
 const isSaved = computed(() => wishlistStore.isPropertySaved(property.value?.id));
+
+const hostName = computed(() => {
+  const p = property.value;
+  if (!p) return "Srok-Yerng Premium";
+  return p.raw?.full_name || p.raw?.owner_name || p.raw?.owner?.name || "Srok-Yerng Premium";
+});
+
+const hostInitials = computed(() => {
+  const name = hostName.value;
+  if (!name) return "SY";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+});
+
+const roomFeatures = computed(() => {
+  const r = selectedRoom.value;
+  const spec = r?.spec || "";
+  const matchBed = spec.match(/(\d+)\s*bed/i);
+  const matchBath = spec.match(/(\d+)\s*bath/i);
+  const matchBedroom = spec.match(/(\d+)\s*bedroom/i);
+  
+  const beds = matchBed ? Number(matchBed[1]) : (r?.capacity > 2 ? 2 : 1);
+  const bedrooms = matchBedroom ? Number(matchBedroom[1]) : (r?.capacity > 4 ? 2 : 1);
+  const baths = matchBath ? Number(matchBath[1]) : 1;
+
+  return {
+    bedrooms: `${bedrooms} ${bedrooms > 1 ? 'bedrooms' : 'bedroom'}`,
+    beds: `${beds} ${beds > 1 ? 'beds' : 'bed'}`,
+    baths: `${baths} ${baths > 1 ? 'baths' : 'private bath'}`
+  };
+});
 
 const currentRooms = computed(() => {
   return rooms.value.length ? rooms.value : [fallbackRoom];
@@ -103,6 +174,28 @@ const fetchProperty = async () => {
     rooms.value = [];
   }
 
+  try {
+    const resAmenity = await propertyApi.getPropertyAmenities(route.params.id);
+    const rawAmenities = resAmenity.data?.data || resAmenity.data || [];
+    amenities.value = rawAmenities.length ? rawAmenities : [
+      { id: 1, amenity_name: "High-speed WiFi" },
+      { id: 2, amenity_name: "Top city center location" },
+      { id: 3, amenity_name: "Dedicated family space" },
+      { id: 4, amenity_name: "Luggage dropoff allowed" },
+      { id: 5, amenity_name: "Flexible stay dates" },
+      { id: 6, amenity_name: "Premium verified bedding" },
+    ];
+  } catch {
+    amenities.value = [
+      { id: 1, amenity_name: "High-speed WiFi" },
+      { id: 2, amenity_name: "Top city center location" },
+      { id: 3, amenity_name: "Dedicated family space" },
+      { id: 4, amenity_name: "Luggage dropoff allowed" },
+      { id: 5, amenity_name: "Flexible stay dates" },
+      { id: 6, amenity_name: "Premium verified bedding" },
+    ];
+  }
+
   const firstRoom = rooms.value[0] || fallbackRoom;
   selectedRoom.value = firstRoom;
 };
@@ -119,7 +212,12 @@ const handleSave = async () => {
     await wishlistStore.toggleWishlist(property.value.id);
   }
 };
-const handleShare = () => {};
+const handleShare = () => {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(window.location.href);
+    toastStore.success(t("propertyDetail.shareSuccess", "Property link copied to clipboard!"));
+  }
+};
 
 // ── Smooth Scroll Navigation ──
 const scrollToSection = (id) => {
@@ -139,6 +237,22 @@ const handleRangeSelected = ({ start, end }) => {
 };
 
 const goToBooking = () => {
+  if (!selectedRoom.value?.id) {
+    toastStore.warning(t("propertyDetail.selectRoomPrompt", "Please select a room type first."));
+    return;
+  }
+  if (!checkInDate.value || !checkOutDate.value) {
+    toastStore.warning(t("propertyDetail.selectDatesPrompt", "Please select your check-in and check-out dates."));
+    return;
+  }
+  if (checkInDate.value < minDate) {
+    toastStore.warning(t("propertyDetail.pastDatePrompt", "Check-in date cannot be in the past."));
+    return;
+  }
+  if (checkInDate.value >= checkOutDate.value) {
+    toastStore.warning(t("propertyDetail.invalidDatesPrompt", "Check-out date must be after check-in date."));
+    return;
+  }
   router.push({
     name: "customer.room-book",
     params: { id: selectedRoom.value?.id },
@@ -160,7 +274,7 @@ const reviewSummary = computed(() => {
   const total = list.length;
   const average = total
     ? list.reduce((sum, r) => sum + (r.rating || 0), 0) / total
-    : property.value?.rating || 0;
+    : 0;
 
   const breakdown = [5, 4, 3, 2, 1].map((stars) => {
     const count = list.filter((r) => Math.round(r.rating) === stars).length;
@@ -169,8 +283,8 @@ const reviewSummary = computed(() => {
   });
 
   return {
-    average: Number(average).toFixed(1),
-    total: total || property.value?.reviews || 0,
+    average: total ? Number(average).toFixed(1) : "0.0",
+    total: total,
     breakdown,
   };
 });
@@ -204,6 +318,7 @@ const reviewerInitials = (name) => {
 
 const ratingWordLabel = (rating) => {
   const value = Number(rating);
+  if (value === 0) return t("propertyDetail.noReviewsYet", "No reviews yet");
   if (value >= 4.5) return t("reviewCreate.ratingLabel.excellent");
   if (value >= 4) return t("reviewCreate.ratingLabel.veryGood");
   if (value >= 3) return t("reviewCreate.ratingLabel.good");
@@ -256,6 +371,10 @@ watch(
 
 // ── Write review target ──
 const writeReviewLink = { path: "/customer/reviews" };
+
+// ── Amenity Modal State ──
+const showAmenityModal = ref(false);
+const displayedAmenities = computed(() => amenities.value.slice(0, 6));
 </script>
 
 <template>
@@ -264,14 +383,22 @@ const writeReviewLink = { path: "/customer/reviews" };
       v-if="propertyStore.loading"
       class="mx-auto max-w-7xl px-4 py-32 text-center text-(--color-muted) sm:px-6 lg:px-8"
     >
-      Loading property details...
+      <div class="flex flex-col items-center justify-center gap-4">
+        <div class="h-10 w-10 animate-spin rounded-full border-4 border-(--color-primary) border-t-transparent"></div>
+        <p class="text-base font-bold">Loading spectacular property details...</p>
+      </div>
     </div>
 
     <div
       v-else-if="propertyStore.error"
-      class="mx-auto max-w-7xl px-4 py-32 text-center text-rose-600 sm:px-6 lg:px-8"
+      class="mx-auto max-w-7xl px-4 py-32 text-center sm:px-6 lg:px-8"
     >
-      {{ propertyStore.error }}
+      <div class="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-8 text-rose-600 max-w-lg mx-auto shadow-sm">
+        <p class="text-lg font-bold">{{ propertyStore.error }}</p>
+        <button @click="fetchProperty" class="mt-4 px-6 py-2 rounded-xl bg-rose-600 text-white text-sm font-bold shadow-md hover:opacity-90 transition active:scale-95 cursor-pointer">
+          Try Again
+        </button>
+      </div>
     </div>
 
     <div v-else-if="property">
@@ -286,132 +413,207 @@ const writeReviewLink = { path: "/customer/reviews" };
         @share="handleShare"
       />
 
-      <!-- Sticky Quick Navigation Bar -->
-      <div class="sticky top-0 z-30 border-b bg-(--color-surface)/90 backdrop-blur-md py-4 shadow-sm" style="border-color: var(--color-border);">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex items-center gap-8 overflow-x-auto text-sm font-bold">
-          <button type="button" class="transition hover:text-(--color-primary)" @click="scrollToSection('about')">
-            {{ t("propertyDetail.aboutProperty") }}
-          </button>
-          <button type="button" class="transition hover:text-(--color-primary)" @click="scrollToSection('rooms')">
-            {{ t("propertyDetail.roomTypes") }}
-          </button>
-          <button type="button" class="transition hover:text-(--color-primary)" @click="scrollToSection('availability')">
-            Availability
-          </button>
-          <button type="button" class="transition hover:text-(--color-primary)" @click="scrollToSection('reviews')">
-            {{ t("propertyDetail.guestReviews") }}
-          </button>
+      <!-- Glassmorphic Quick Navigation Bar -->
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 my-8 transition-all duration-300">
+        <div class="flex items-center justify-between rounded-full border border-(--color-border)/80 bg-(--color-surface)/80 backdrop-blur-2xl p-2 pl-6 shadow-[0_12px_40px_rgba(0,0,0,0.25)] ring-1 ring-black/5 dark:ring-white/10 transition-all">
+          <div class="flex items-center gap-1.5 overflow-x-auto text-xs sm:text-sm font-bold text-(--color-text) py-1 scrollbar-none">
+            <button type="button" class="flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 hover:bg-(--color-primary-soft) hover:text-(--color-primary) active:scale-95 cursor-pointer text-(--color-text)" @click="scrollToSection('about')">
+              <SparklesIcon class="h-4 w-4 text-(--color-primary)" />
+              <span>{{ t("propertyDetail.aboutProperty") }}</span>
+            </button>
+            <button type="button" class="flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 hover:bg-(--color-primary-soft) hover:text-(--color-primary) active:scale-95 cursor-pointer text-(--color-text)" @click="scrollToSection('rooms')">
+              <BuildingOfficeIcon class="h-4 w-4 text-(--color-primary)" />
+              <span>{{ t("propertyDetail.roomTypes") }}</span>
+            </button>
+            <button type="button" class="flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 hover:bg-(--color-primary-soft) hover:text-(--color-primary) active:scale-95 cursor-pointer text-(--color-text)" @click="scrollToSection('availability')">
+              <CalendarDaysIcon class="h-4 w-4 text-(--color-primary)" />
+              <span>Availability</span>
+            </button>
+            <button type="button" class="flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 hover:bg-(--color-primary-soft) hover:text-(--color-primary) active:scale-95 cursor-pointer text-(--color-text)" @click="scrollToSection('reviews')">
+              <StarIcon class="h-4 w-4 text-(--color-primary)" />
+              <span>{{ t("propertyDetail.guestReviews") }}</span>
+            </button>
+          </div>
+
+          <!-- Quick Right Callout (Price & Instant Reserve) -->
+          <div class="hidden md:flex items-center gap-6 shrink-0 border-l border-(--color-border)/60 pl-6 pr-1">
+            <div class="flex items-baseline gap-1.5 text-right">
+              <span class="text-xs font-bold text-(--color-muted) uppercase tracking-wider">From</span>
+              <span class="text-2xl font-black text-(--color-text)">${{ selectedRoom.price }}</span>
+              <span class="text-xs font-extrabold text-(--color-muted)">/ night</span>
+            </div>
+            <button
+              type="button"
+              class="flex items-center gap-2 rounded-full bg-(--color-primary) px-7 py-3 text-sm font-black text-white shadow-lg shadow-(--color-primary)/30 hover:opacity-90 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer group"
+              @click="scrollToSection('availability')"
+            >
+              <BoltIcon class="h-4 w-4 fill-white text-white animate-bounce" />
+              <span>{{ t("propertyDetail.reserveNow", "Reserve Now") }}</span>
+              <ArrowRightIcon class="h-4 w-4 text-white group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
         </div>
       </div>
 
-      <main class="mx-auto max-w-7xl px-4 pt-8 pb-16 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          <div class="space-y-8 lg:col-span-2">
-            <!-- Rich Highlights Bar -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div class="border bg-(--color-surface-soft) p-5 flex flex-col items-center text-center transition-all duration-200 hover:scale-105" style="border-color: var(--color-border); border-radius: var(--radius-lg);">
-                <div class="flex h-12 w-12 items-center justify-center rounded-2xl mb-3" style="background-color: var(--color-primary-soft); color: var(--color-primary);">
-                  <MapPinIcon class="h-6 w-6" />
+      <main class="mx-auto max-w-7xl px-4 pt-4 pb-20 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 gap-12 lg:grid-cols-3">
+          <!-- Left Content Column (Modern Airbnb Flow) -->
+          <div class="space-y-12 lg:col-span-2">
+            <!-- Host / Property Overview Block -->
+            <div class="border-b border-(--color-border) pb-10 space-y-6">
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="inline-flex items-center gap-1 bg-(--color-success-soft) text-(--color-success) px-2.5 py-1 text-xs font-black uppercase tracking-wider" style="border-radius: var(--radius-sm);">
+                    <ShieldCheckIcon class="h-4 w-4 text-(--color-success)" />
+                    <span>Verified Host</span>
+                  </span>
+                  <span class="text-xs font-black text-(--color-muted)">· Entire Serviced Stay</span>
                 </div>
-                <p class="text-sm font-bold text-(--color-text)">Top Location</p>
-                <p class="text-xs text-(--color-muted) mt-1">9.5/10 rating</p>
+
+                <div class="flex items-center gap-4">
+                  <h2 class="text-2xl font-black text-(--color-text) tracking-tight">
+                    Hosted by {{ hostName }}
+                  </h2>
+                  <!-- Compact Host Avatar right near the text -->
+                  <div class="relative shrink-0">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-tr from-(--color-primary) to-sky-400 text-white font-black text-lg shadow-md ring-2 ring-(--color-primary)/20 hover:scale-105 transition-all duration-300">
+                      {{ hostInitials }}
+                    </div>
+                    <div class="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-white ring-2 ring-white dark:ring-gray-900 shadow-xs" title="Superhost Verified">
+                      <ShieldCheckIcon class="h-3 w-3" />
+                    </div>
+                  </div>
+                </div>
+              </div>  
+
+              <!-- Refined Pill Specs -->
+              <div class="flex flex-wrap items-center gap-2.5 pt-2">
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-(--color-surface-soft) border border-(--color-border) px-4 py-1.5 text-xs font-bold text-(--color-text) shadow-xs">
+                  <UserGroupIcon class="h-4 w-4 text-(--color-primary)" />
+                  <span>{{ selectedRoom.capacity }} guests</span>
+                </span>
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-(--color-surface-soft) border border-(--color-border) px-4 py-1.5 text-xs font-bold text-(--color-text) shadow-xs">
+                  <BuildingOfficeIcon class="h-4 w-4 text-(--color-primary)" />
+                  <span>{{ roomFeatures.bedrooms }}</span>
+                </span>
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-(--color-surface-soft) border border-(--color-border) px-4 py-1.5 text-xs font-bold text-(--color-text) shadow-xs">
+                  <SparklesIcon class="h-4 w-4 text-(--color-primary)" />
+                  <span>{{ roomFeatures.beds }}</span>
+                </span>
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-(--color-surface-soft) border border-(--color-border) px-4 py-1.5 text-xs font-bold text-(--color-text) shadow-xs">
+                  <HomeModernIcon class="h-4 w-4 text-(--color-primary)" />
+                  <span>{{ roomFeatures.baths }}</span>
+                </span>
               </div>
-              <div class="border bg-(--color-surface-soft) p-5 flex flex-col items-center text-center transition-all duration-200 hover:scale-105" style="border-color: var(--color-border); border-radius: var(--radius-lg);">
-                <div class="flex h-12 w-12 items-center justify-center rounded-2xl mb-3" style="background-color: var(--color-primary-soft); color: var(--color-primary);">
-                  <StarIcon class="h-6 w-6" />
+            </div>
+
+            <!-- Modern Bento Highlight Cards -->
+            <div class="border-b border-(--color-border) pb-10">
+              <h3 class="text-xl font-bold text-(--color-text) mb-6">Why guests love this stay</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="flex items-start gap-4 p-5 rounded-2xl bg-(--color-surface) border border-(--color-border) shadow-xs hover:shadow-md transition-shadow duration-200">
+                  <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-(--color-primary-soft) text-(--color-primary) shrink-0 shadow-xs">
+                    <MapPinIcon class="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p class="text-base font-bold text-(--color-text)">Spectacular Location</p>
+                    <p class="text-xs text-(--color-muted) mt-1 leading-relaxed">100% of recent guests gave this property's location a flawless 5-star rating.</p>
+                  </div>
                 </div>
-                <p class="text-sm font-bold text-(--color-text)">Verified Clean</p>
-                <p class="text-xs text-(--color-muted) mt-1">Sparkling stay</p>
-              </div>
-              <div class="border bg-(--color-surface-soft) p-5 flex flex-col items-center text-center transition-all duration-200 hover:scale-105" style="border-color: var(--color-border); border-radius: var(--radius-lg);">
-                <div class="flex h-12 w-12 items-center justify-center rounded-2xl mb-3" style="background-color: var(--color-primary-soft); color: var(--color-primary);">
-                  <CalendarDaysIcon class="h-6 w-6" />
+                <div class="flex items-start gap-4 p-5 rounded-2xl bg-(--color-surface) border border-(--color-border) shadow-xs hover:shadow-md transition-shadow duration-200">
+                  <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-(--color-primary-soft) text-(--color-primary) shrink-0 shadow-xs">
+                    <CheckCircleIcon class="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p class="text-base font-bold text-(--color-text)">Seamless Self Check-In</p>
+                    <p class="text-xs text-(--color-muted) mt-1 leading-relaxed">Checking in is totally effortless with our smart digital lockpad system.</p>
+                  </div>
                 </div>
-                <p class="text-sm font-bold text-(--color-text)">Flexible Stay</p>
-                <p class="text-xs text-(--color-muted) mt-1">Easy booking</p>
-              </div>
-              <div class="border bg-(--color-surface-soft) p-5 flex flex-col items-center text-center transition-all duration-200 hover:scale-105" style="border-color: var(--color-border); border-radius: var(--radius-lg);">
-                <div class="flex h-12 w-12 items-center justify-center rounded-2xl mb-3" style="background-color: var(--color-primary-soft); color: var(--color-primary);">
-                  <BuildingOfficeIcon class="h-6 w-6" />
+                <div class="flex items-start gap-4 p-5 rounded-2xl bg-(--color-surface) border border-(--color-border) shadow-xs hover:shadow-md transition-shadow duration-200">
+                  <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-(--color-primary-soft) text-(--color-primary) shrink-0 shadow-xs">
+                    <CalendarDaysIcon class="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p class="text-base font-bold text-(--color-text)">Flexible Cancellation</p>
+                    <p class="text-xs text-(--color-muted) mt-1 leading-relaxed">Take the stress out of planning with full flexibility on your upcoming travel dates.</p>
+                  </div>
                 </div>
-                <p class="text-sm font-bold text-(--color-text)">Fast WiFi</p>
-                <p class="text-xs text-(--color-muted) mt-1">High-speed</p>
+                <div class="flex items-start gap-4 p-5 rounded-2xl bg-(--color-surface) border border-(--color-border) shadow-xs hover:shadow-md transition-shadow duration-200">
+                  <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-(--color-primary-soft) text-(--color-primary) shrink-0 shadow-xs">
+                    <WifiIcon class="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p class="text-base font-bold text-(--color-text)">Dedicated High-Speed WiFi</p>
+                    <p class="text-xs text-(--color-muted) mt-1 leading-relaxed">Experience ultra-fast, stable internet tailored for remote working or streaming.</p>
+                  </div>
+                </div>
               </div>
             </div>
 
             <!-- About Property -->
-            <div
-              id="about"
-              class="rounded-2xl border bg-(--color-surface) p-6 md:p-8 scroll-mt-28"
-              style="border-color: var(--color-border); box-shadow: var(--shadow-card); border-radius: var(--radius-panel);"
-            >
-              <h2
-                class="mb-4 text-xl font-bold text-(--color-text) border-l-4 pl-3.5 py-0.5"
-                style="border-color: var(--color-accent);"
-              >
+            <div id="about" class="border-b border-(--color-border) pb-10 scroll-mt-28">
+              <h2 class="mb-4 text-2xl font-extrabold text-(--color-text) tracking-tight">
                 {{ t("propertyDetail.aboutProperty") }}
               </h2>
-              <p class="text-base leading-relaxed text-(--color-muted)">
+              <p class="text-base leading-relaxed text-(--color-muted) whitespace-pre-line">
                 {{ property.description || t("propertyDetail.description") }}
               </p>
             </div>
 
             <!-- Room Types Bento Cards -->
-            <div
-              id="rooms"
-              class="rounded-2xl border bg-(--color-surface) p-6 md:p-8 scroll-mt-28"
-              style="border-color: var(--color-border); box-shadow: var(--shadow-card); border-radius: var(--radius-panel);"
-            >
-              <h2
-                class="mb-6 text-xl font-bold text-(--color-text) border-l-4 pl-3.5 py-0.5"
-                style="border-color: var(--color-accent);"
-              >
-                {{ t("propertyDetail.roomTypes") }}
-              </h2>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div id="rooms" class="border-b border-(--color-border) pb-10 scroll-mt-28">
+              <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-extrabold text-(--color-text) tracking-tight">
+                  {{ t("propertyDetail.roomTypes") }}
+                </h2>
+                <span class="text-xs font-extrabold text-(--color-primary) bg-(--color-primary-soft) px-3 py-1 rounded-full uppercase tracking-wider">
+                  {{ currentRooms.length }} Available Options
+                </span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <button
                   v-for="room in currentRooms"
                   :key="room.name"
                   type="button"
-                  class="flex flex-col justify-between border p-6 text-left transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden"
+                  class="flex flex-col justify-between border-2 p-6.5 text-left transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] relative overflow-hidden group cursor-pointer"
                   :style="
                     selectedRoom.name === room.name
-                      ? 'border-color: var(--color-primary); background-color: var(--color-primary-soft); border-radius: var(--radius-lg); box-shadow: var(--shadow-card);'
+                      ? 'border-color: var(--color-primary); background-color: var(--color-primary-soft); border-radius: var(--radius-lg); box-shadow: var(--shadow-panel);'
                       : 'border-color: var(--color-border); background-color: var(--color-surface); border-radius: var(--radius-lg);'
                   "
                   @click="selectRoom(room)"
                 >
                   <div class="absolute top-4 right-4" v-if="selectedRoom.name === room.name">
-                    <CheckCircleIcon class="h-6 w-6" style="color: var(--color-primary);" />
+                    <CheckCircleIcon class="h-7 w-7 text-(--color-primary) animate-scaleUp" />
                   </div>
                   <div>
                     <div
-                      class="flex h-12 w-12 items-center justify-center rounded-2xl mb-4"
+                      class="flex h-14 w-14 items-center justify-center rounded-2xl mb-5 transition-transform group-hover:scale-110"
                       :style="
                         selectedRoom.name === room.name
                           ? 'background-color: var(--color-primary); color: var(--color-text-inverse);'
                           : 'background-color: var(--color-surface-soft); color: var(--color-muted);'
                       "
                     >
-                      <UserGroupIcon class="h-6 w-6" />
+                      <UserGroupIcon class="h-7 w-7" />
                     </div>
-                    <p class="text-lg font-black text-(--color-text)">{{ room.name }}</p>
+                    <p class="text-xl font-black text-(--color-text) group-hover:text-(--color-primary) transition-colors">{{ room.name }}</p>
                     <p class="mt-2 text-xs leading-relaxed text-(--color-muted) line-clamp-2">
                       {{ room.spec }}
                     </p>
                     <div class="mt-4 flex flex-wrap gap-2">
-                      <span class="inline-block rounded-full bg-(--color-surface) px-3 py-1 text-xs font-semibold text-(--color-muted) border border-(--color-border)">
+                      <span class="inline-block rounded-full bg-(--color-surface) px-3.5 py-1 text-xs font-bold text-(--color-muted) border border-(--color-border) shadow-xs">
                         Up to {{ room.capacity }} guests
                       </span>
                     </div>
                   </div>
-                  <div class="mt-6 pt-4 border-t border-(--color-border)/50 flex items-baseline justify-between w-full">
-                    <span class="text-xs font-bold text-(--color-muted)">Price</span>
+                  <div class="mt-8 pt-4 border-t border-(--color-border)/50 flex items-baseline justify-between w-full">
+                    <span class="text-xs font-bold text-(--color-muted)">Price per night</span>
                     <div class="text-right">
-                      <span class="text-2xl font-black" style="color: var(--color-primary);">
+                      <span class="text-3xl font-black" style="color: var(--color-primary);">
                         {{ room.price > 0 ? '$' + room.price : 'See Detail' }}
                       </span>
-                      <span class="text-xs font-medium text-(--color-muted)">
+                      <span class="text-xs font-semibold text-(--color-muted)">
                         /{{ t("propertyDetail.night") }}
                       </span>
                     </div>
@@ -420,78 +622,76 @@ const writeReviewLink = { path: "/customer/reviews" };
               </div>
             </div>
 
-            <!-- Availability Calendar -->
-            <div
-              id="availability"
-              class="rounded-2xl border bg-(--color-surface) p-6 md:p-8 scroll-mt-28"
-              style="border-color: var(--color-border); box-shadow: var(--shadow-card); border-radius: var(--radius-panel);"
-            >
-              <h2
-                class="mb-2 text-xl font-bold text-(--color-text) border-l-4 pl-3.5 py-0.5"
-                style="border-color: var(--color-accent);"
+            <!-- What This Place Offers (Amenities Grid) -->
+            <div class="border-b border-(--color-border) pb-10">
+              <h2 class="text-2xl font-extrabold text-(--color-text) tracking-tight mb-8">
+                What this place offers
+              </h2>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-8 text-base font-bold text-(--color-text)">
+                <div v-for="amenity in displayedAmenities" :key="amenity.id" class="flex items-center gap-4 group">
+                  <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-(--color-surface-soft) border border-(--color-border) text-(--color-primary) group-hover:scale-110 group-hover:bg-(--color-primary-soft) transition-all duration-200 shadow-xs shrink-0">
+                    <component :is="getAmenityIcon(amenity.amenity_name)" class="h-5 w-5 text-(--color-primary)" />
+                  </div>
+                  <span class="group-hover:text-(--color-primary) transition-colors">{{ amenity.amenity_name }}</span>
+                </div>
+              </div>
+              <button
+                v-if="amenities.length > 0"
+                type="button"
+                class="mt-10 rounded-2xl border border-(--color-border) bg-(--color-surface) px-8 py-4 text-base font-extrabold text-(--color-text) transition-all duration-200 hover:bg-(--color-surface-soft) hover:shadow-md active:scale-95 shadow-sm cursor-pointer"
+                @click="showAmenityModal = true"
               >
-                Availability
+                Show all {{ amenities.length }} amenities
+              </button>
+            </div>
+
+            <!-- Availability Calendar -->
+            <div id="availability" class="border-b border-(--color-border) pb-10 scroll-mt-28">
+              <h2 class="mb-2 text-2xl font-extrabold text-(--color-text) tracking-tight">
+                Select check-in date
               </h2>
               <p class="mb-6 text-sm text-(--color-muted)">
-                Select your check-in and check-out dates below. Unavailable
-                dates are highlighted in red.
+                Add your travel dates for exact pricing. Unavailable dates are highlighted in red.
               </p>
-              <AvailabilityCalendar
-                :property-id="property.id"
-                mode="customer"
-                @range-selected="handleRangeSelected"
-              />
+              <div class="border border-(--color-border) bg-(--color-surface) p-6 sm:p-8 shadow-sm" style="border-radius: var(--radius-sm);">
+                <AvailabilityCalendar
+                  :property-id="property.id"
+                  mode="customer"
+                  @range-selected="handleRangeSelected"
+                />
+              </div>
             </div>
 
             <!-- Guest Reviews -->
-            <div
-              id="reviews"
-              class="rounded-2xl border bg-(--color-surface) p-6 md:p-8 scroll-mt-28"
-              style="border-color: var(--color-border); box-shadow: var(--shadow-card); border-radius: var(--radius-panel);"
-            >
-              <div
-                class="flex items-center justify-between flex-wrap gap-4 border-b pb-6"
-                style="border-color: var(--color-border);"
-              >
-                <h2
-                  class="flex items-center gap-3 text-xl font-bold text-(--color-text) border-l-4 pl-3.5 py-0.5"
-                  style="border-color: var(--color-accent);"
-                >
-                  {{ t("propertyDetail.guestReviews") }}
-                  <span
-                    class="flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-bold"
-                    style="background-color: var(--color-accent-soft); color: var(--color-accent-strong);"
-                  >
-                    <StarIcon class="h-4 w-4 fill-current" />
-                    {{ reviewSummary.average }}
-                  </span>
-                  <span class="text-sm font-medium text-(--color-muted)">
-                    ({{ reviewSummary.total }} {{ t("propertyDetail.reviews") }})
-                  </span>
+            <div id="reviews" class="scroll-mt-28">
+              <div class="flex items-center justify-between flex-wrap gap-4 border-b border-(--color-border) pb-6">
+                <h2 class="flex items-center gap-2.5 text-2xl sm:text-3xl font-black text-(--color-text) tracking-tight">
+                  <StarIcon class="h-7 w-7 fill-current text-amber-500" />
+                  <span>{{ reviewSummary.average }}</span>
+                  <span class="text-(--color-muted) select-none">·</span>
+                  <span>{{ reviewSummary.total }} {{ t("propertyDetail.reviews") }}</span>
                 </h2>
                 <RouterLink
                   :to="writeReviewLink"
-                  class="rounded-xl border px-5 py-2.5 text-sm font-bold text-(--color-text) transition-all duration-200 hover:scale-105 active:scale-95"
-                  style="border-color: var(--color-border); background-color: var(--color-surface-soft);"
+                  class="flex items-center gap-2 px-5 py-2.5 bg-(--color-surface) border border-(--color-border) hover:border-(--color-primary)/60 text-xs sm:text-sm font-bold text-(--color-text) shadow-xs hover:shadow-sm active:scale-95 transition-all duration-200 cursor-pointer"
+                  style="border-radius: var(--radius-sm);"
                 >
-                  {{ t("propertyDetail.writeReview") }}
+                  <SparklesIcon class="h-4 w-4 text-(--color-primary)" />
+                  <span>{{ t("propertyDetail.writeReview") }}</span>
                 </RouterLink>
               </div>
 
-              <div class="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
-                <!-- Rating summary -->
-                <div
-                  class="rounded-2xl border bg-(--color-surface-soft) p-6"
-                  style="border-color: var(--color-border); border-radius: var(--radius-lg);"
-                >
-                  <p class="text-base font-bold text-(--color-text)">
+              <div class="mt-10 grid grid-cols-1 gap-12 lg:grid-cols-[300px_1fr]">
+                <!-- Rating summary (Clean unboxed layout) -->
+                <div class="py-2">
+                  <div class="flex items-baseline gap-3">
+                    <span class="text-5xl font-black text-(--color-text) tracking-tight">{{ reviewSummary.average }}</span>
+                    <span class="text-lg font-bold text-(--color-muted)">/ 5</span>
+                  </div>
+                  <p class="mt-2 text-base font-black text-(--color-text)">
                     {{ ratingWordLabel(reviewSummary.average) }}
                   </p>
-                  <p class="mt-2 text-4xl font-black text-(--color-text)">
-                    {{ reviewSummary.average }}
-                    <span class="text-lg font-semibold text-(--color-muted)">/ 5</span>
-                  </p>
-                  <div class="mt-2 flex items-center gap-1" style="color: var(--color-accent);">
+                  <div class="mt-3 flex items-center gap-1 text-amber-500">
                     <StarIcon
                       v-for="n in 5"
                       :key="n"
@@ -499,25 +699,24 @@ const writeReviewLink = { path: "/customer/reviews" };
                       :class="n <= Math.round(reviewSummary.average) ? 'fill-current' : 'fill-none'"
                     />
                   </div>
-                  <p class="mt-3 text-xs text-(--color-muted)">
+                  <p class="mt-3 text-xs font-bold text-(--color-muted)">
                     {{ t("propertyDetail.basedOnReviews", { count: reviewSummary.total }) }}
                   </p>
 
-                  <div class="mt-6 space-y-3">
+                  <div class="mt-8 space-y-3">
                     <div
                       v-for="row in reviewSummary.breakdown"
                       :key="row.stars"
-                      class="flex items-center gap-3 text-xs font-semibold text-(--color-muted)"
+                      class="flex items-center gap-3 text-xs font-bold text-(--color-muted)"
                     >
-                      <span class="w-16 shrink-0 whitespace-nowrap">{{ row.stars }} {{ t("propertyDetail.stars") }}</span>
-                      <div class="h-2 flex-1 rounded-full bg-(--color-border) overflow-hidden">
+                      <span class="w-14 shrink-0 whitespace-nowrap">{{ row.stars }} {{ t("propertyDetail.stars") }}</span>
+                      <div class="h-1.5 flex-1 rounded-full bg-(--color-border)/80 overflow-hidden">
                         <div
-                          class="h-2 rounded-full"
-                          style="background-color: var(--color-accent);"
+                          class="h-1.5 rounded-full bg-amber-500 transition-all duration-500"
                           :style="{ width: row.pct + '%' }"
                         ></div>
                       </div>
-                      <span class="w-10 shrink-0 text-right font-bold text-(--color-text)">{{ row.pct }}%</span>
+                      <span class="w-10 shrink-0 text-right font-black text-(--color-text)">{{ row.pct }}%</span>
                     </div>
                   </div>
                 </div>
@@ -525,47 +724,48 @@ const writeReviewLink = { path: "/customer/reviews" };
                 <!-- Reviewer card carousel -->
                 <div
                   v-if="guestReviews.length"
-                  class="relative rounded-2xl border bg-(--color-surface-soft) p-6 flex flex-col justify-between"
-                  style="border-color: var(--color-border); border-radius: var(--radius-lg);"
+                  class="relative border border-(--color-border) bg-(--color-surface-soft) p-8 flex flex-col justify-between shadow-xs"
+                  style="border-radius: var(--radius-sm);"
                 >
-                  <div class="flex items-start gap-4">
+                  <div class="flex items-start gap-5">
                     <div
-                      class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-base font-extrabold"
-                      style="background-color: var(--color-primary-soft); color: var(--color-primary);"
+                      class="flex h-14 w-14 shrink-0 items-center justify-center text-xl font-black shadow-sm bg-(--color-primary-soft) text-(--color-primary)"
+                      style="border-radius: var(--radius-sm);"
                     >
                       {{ reviewerInitials(activeReview.author) }}
                     </div>
                     <div class="min-w-0 flex-1">
                       <div class="flex flex-wrap items-center justify-between gap-2">
-                        <p class="text-base font-bold text-(--color-text)">
+                        <p class="text-xl font-black text-(--color-text)">
                           {{ activeReview.author }}
                         </p>
-                        <p class="text-xs font-medium text-(--color-muted)">
+                        <p class="text-sm font-medium text-(--color-muted)">
                           {{ activeReview.date }}
                         </p>
                       </div>
 
-                      <div class="mt-1.5 flex items-center gap-1" style="color: var(--color-accent);">
+                      <div class="mt-2.5 flex items-center gap-1 text-amber-500">
                         <StarIcon
                           v-for="n in 5"
                           :key="n"
-                          class="h-4 w-4"
+                          class="h-4.5 w-4.5"
                           :class="n <= activeReview.rating ? 'fill-current' : 'fill-none'"
                         />
                       </div>
 
                       <p
                         v-if="activeReview.title"
-                        class="mt-3 text-base font-bold text-(--color-text)"
+                        class="mt-4 text-lg font-black text-(--color-text)"
                       >
                         {{ activeReview.title }}
                       </p>
-                      <p class="mt-2 text-sm leading-relaxed text-(--color-muted) italic">
+                      <p class="mt-3 text-base leading-relaxed text-(--color-text)">
                         "{{ activeReview.comment }}"
                       </p>
                       <p
                         v-if="activeReview.roomName"
-                        class="mt-4 inline-block rounded-full bg-(--color-surface) px-3 py-1 text-xs font-semibold text-(--color-muted) border border-(--color-border)"
+                        class="mt-6 inline-block bg-(--color-surface) px-4 py-1.5 text-xs font-bold text-(--color-muted) border border-(--color-border) shadow-xs"
+                        style="border-radius: var(--radius-sm);"
                       >
                         {{ t("propertyDetail.stayedIn", { room: activeReview.roomName }) }}
                       </p>
@@ -574,21 +774,20 @@ const writeReviewLink = { path: "/customer/reviews" };
 
                   <div
                     v-if="guestReviews.length > 1"
-                    class="mt-6 flex items-center justify-end gap-3 border-t pt-4"
-                    style="border-color: var(--color-border);"
+                    class="mt-8 flex items-center justify-end gap-3 border-t border-(--color-border)/60 pt-6"
                   >
                     <button
                       type="button"
-                      class="flex h-10 w-10 items-center justify-center rounded-full border bg-(--color-surface) text-(--color-muted) transition-all duration-200 hover:scale-105 active:scale-95"
-                      style="border-color: var(--color-border); box-shadow: var(--shadow-card);"
+                      class="flex h-11 w-11 items-center justify-center border border-(--color-border) bg-(--color-surface) text-(--color-text) transition-all duration-200 hover:scale-105 active:scale-95 shadow-xs cursor-pointer"
+                      style="border-radius: var(--radius-sm);"
                       @click="prevReview"
                     >
                       <ChevronRightIcon class="h-5 w-5 rotate-180" />
                     </button>
                     <button
                       type="button"
-                      class="flex h-10 w-10 items-center justify-center rounded-full border bg-(--color-surface) text-(--color-muted) transition-all duration-200 hover:scale-105 active:scale-95"
-                      style="border-color: var(--color-border); box-shadow: var(--shadow-card);"
+                      class="flex h-11 w-11 items-center justify-center border border-(--color-border) bg-(--color-surface) text-(--color-text) transition-all duration-200 hover:scale-105 active:scale-95 shadow-xs cursor-pointer"
+                      style="border-radius: var(--radius-sm);"
                       @click="nextReview"
                     >
                       <ChevronRightIcon class="h-5 w-5" />
@@ -598,186 +797,196 @@ const writeReviewLink = { path: "/customer/reviews" };
 
                 <div
                   v-else
-                  class="flex items-center justify-center rounded-2xl border bg-(--color-surface-soft) p-8 text-base font-medium text-(--color-muted)"
-                  style="border-color: var(--color-border); border-radius: var(--radius-lg);"
+                  class="flex flex-col items-center justify-center border border-(--color-border) bg-(--color-surface-soft) p-10 sm:p-14 text-center shadow-xs"
+                  style="border-radius: var(--radius-sm);"
                 >
-                  {{ t("propertyDetail.noReviewsYet") }}
+                  <div class="flex h-20 w-20 items-center justify-center bg-amber-500/10 text-amber-500 mb-6 shadow-inner" style="border-radius: var(--radius-sm);">
+                    <StarIcon class="h-10 w-10 fill-current text-amber-500" />
+                  </div>
+                  <h3 class="text-2xl font-black text-(--color-text) tracking-tight">
+                    No reviews (yet)
+                  </h3>
+                  <p class="text-sm font-medium text-(--color-muted) max-w-sm mt-3 leading-relaxed">
+                    This property is waiting for its very first guest review. Book a stay and be the first to share your wonderful experience!
+                  </p>
                 </div>
               </div>
             </div>
           </div>
 
+          <!-- Right Column: The Famous Sticky Airbnb Booking Widget -->
           <div class="h-fit lg:sticky lg:top-24">
-            <div
-              class="border bg-(--color-surface) p-6 md:p-8"
-              style="border-color: var(--color-border); box-shadow: var(--shadow-panel); border-radius: var(--radius-panel);"
-            >
-              <div class="flex items-start justify-between gap-4">
+            <div class="border border-(--color-border) bg-(--color-surface) p-6 md:p-7 relative overflow-hidden shadow-2xl shadow-black/10 dark:shadow-black/40" style="border-radius: var(--radius-sm);">
+              <!-- Top Banner Perk -->
+              <div class="absolute top-0 left-0 right-0 bg-(--color-primary-soft) border-b border-(--color-border) py-2 px-6 flex items-center justify-center gap-1.5 text-xs font-black text-(--color-primary) tracking-wider uppercase">
+                <BoltIcon class="h-3.5 w-3.5 text-(--color-primary)" />
+                <span>Instant Booking Confirmed</span>
+              </div>
+
+              <div class="flex items-baseline justify-between gap-4 pt-6">
                 <div>
-                  <div class="flex items-baseline gap-1.5">
-                    <span
-                      class="text-4xl font-black tracking-tight"
-                      style="color: var(--color-primary);"
-                      >${{ selectedRoom.price }}</span
-                    >
-                    <span class="text-base font-medium text-(--color-muted)"
-                      >/{{ t("propertyDetail.night") }}</span
-                    >
+                  <div class="flex items-baseline gap-1">
+                    <span class="text-3xl font-black tracking-tight text-(--color-text)">
+                      ${{ selectedRoom.price }}
+                    </span>
+                    <span class="text-sm font-bold text-(--color-muted)">
+                      / {{ t("propertyDetail.night") }}
+                    </span>
                   </div>
-                  <p class="mt-1.5 text-sm font-bold text-(--color-muted)">
-                    {{ selectedRoom.name }}
+                  <p class="mt-1 text-xs font-bold text-(--color-primary) flex items-center gap-1">
+                    <span>{{ selectedRoom.name }}</span>
                   </p>
                 </div>
-                <div
-                  class="flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-bold"
-                  style="background-color: var(--color-accent-soft); color: var(--color-accent-strong);"
-                >
-                  <StarIcon class="h-4 w-4 fill-current" />
-                  <span>{{ reviewSummary.average }}</span>
+                <div class="flex items-center gap-1 text-xs font-bold text-(--color-text) bg-(--color-surface-soft) border border-(--color-border) px-2.5 py-1 shadow-xs" style="border-radius: var(--radius-sm);">
+                  <StarIcon class="h-3.5 w-3.5 fill-current text-amber-500" />
+                  <span>{{ reviewSummary.total > 0 ? reviewSummary.average : t("propertyDetail.new", "New") }}</span>
+                  <span class="text-(--color-muted)">·</span>
+                  <span class="text-(--color-muted) underline">{{ reviewSummary.total }} {{ t("propertyDetail.reviews") }}</span>
                 </div>
               </div>
 
-              <div class="mt-6 grid grid-cols-2 gap-3">
-                <label
-                  class="block border bg-(--color-surface-soft) px-4 py-3 transition-colors focus-within:ring-2"
-                  style="border-color: var(--color-border); border-radius: var(--radius-sm); --tw-ring-color: var(--color-primary);"
-                >
-                  <span
-                    class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-(--color-muted)"
-                  >
-                    <CalendarDaysIcon
-                      class="h-4 w-4"
-                      style="color: var(--color-primary);"
+              <!-- Airbnb Date & Guest Picker Box -->
+              <div class="mt-6 border border-(--color-border) overflow-hidden bg-(--color-surface) shadow-xs" style="border-radius: var(--radius-sm);">
+                <div class="grid grid-cols-2 border-b border-(--color-border)">
+                  <label class="block p-3 border-r border-(--color-border) focus-within:bg-(--color-surface-soft) transition cursor-pointer">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-(--color-muted)">
+                      {{ t("propertyDetail.checkIn") }}
+                    </span>
+                    <input
+                      v-model="checkInDate"
+                      type="date"
+                      :min="minDate"
+                      class="mt-1 w-full bg-transparent text-sm font-bold text-(--color-text) outline-none cursor-pointer"
                     />
-                    {{ t("propertyDetail.checkIn") }}
-                  </span>
-                  <input
-                    v-model="checkInDate"
-                    type="date"
-                    class="mt-2 w-full bg-transparent text-base font-bold text-(--color-text) outline-none"
-                  />
-                </label>
-                <label
-                  class="block border bg-(--color-surface-soft) px-4 py-3 transition-colors focus-within:ring-2"
-                  style="border-color: var(--color-border); border-radius: var(--radius-sm); --tw-ring-color: var(--color-primary);"
-                >
-                  <span
-                    class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-(--color-muted)"
-                  >
-                    <CalendarDaysIcon
-                      class="h-4 w-4"
-                      style="color: var(--color-primary);"
+                  </label>
+                  <label class="block p-3 focus-within:bg-(--color-surface-soft) transition cursor-pointer">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-(--color-muted)">
+                      {{ t("propertyDetail.checkOut") }}
+                    </span>
+                    <input
+                      v-model="checkOutDate"
+                      type="date"
+                      :min="checkInDate || minDate"
+                      class="mt-1 w-full bg-transparent text-sm font-bold text-(--color-text) outline-none cursor-pointer"
                     />
-                    {{ t("propertyDetail.checkOut") }}
-                  </span>
-                  <input
-                    v-model="checkOutDate"
-                    type="date"
-                    class="mt-2 w-full bg-transparent text-base font-bold text-(--color-text) outline-none"
-                  />
-                </label>
-              </div>
-
-              <div class="mt-4">
-                <label
-                  class="mb-2 block px-1 text-[10px] font-bold uppercase tracking-wider text-(--color-muted)"
-                >
-                  {{ t("home.search.guests") }}
-                </label>
-                <div
-                  class="flex items-center gap-3 border bg-(--color-surface-soft) px-4 py-3 focus-within:ring-2"
-                  style="border-color: var(--color-border); border-radius: var(--radius-sm); --tw-ring-color: var(--color-primary);"
-                >
-                  <UserGroupIcon
-                    class="h-5 w-5 shrink-0"
-                    style="color: var(--color-primary);"
-                  />
-                  <select
-                    v-model.number="guestCount"
-                    class="w-full bg-transparent text-base font-bold text-(--color-text) outline-none"
-                  >
-                    <option
-                      v-for="count in availableGuestOptions"
-                      :key="count"
-                      :value="count"
-                    >
-                      {{ count }} {{ t("home.search.guests") }}
-                    </option>
-                  </select>
+                  </label>
                 </div>
-              </div>
 
-              <div
-                class="mt-6 border bg-(--color-surface-soft) p-5"
-                style="border-color: var(--color-border); border-radius: var(--radius-md);"
-              >
-                <div class="space-y-3 text-base text-(--color-muted)">
-                  <div class="flex items-center justify-between">
-                    <span
-                      >${{ selectedRoom.price }} x {{ stayNights }}
-                      {{ t("propertyDetail.night") }}</span
+                <div class="p-3 focus-within:bg-(--color-surface-soft) transition">
+                  <label class="block text-[10px] font-black uppercase tracking-widest text-(--color-muted) mb-1">
+                    {{ t("home.search.guests") }}
+                  </label>
+                  <div class="flex items-center gap-2">
+                    <UserGroupIcon class="h-4 w-4 text-(--color-primary)" />
+                    <select
+                      v-model.number="guestCount"
+                      class="w-full bg-transparent text-sm font-bold text-(--color-text) outline-none cursor-pointer"
                     >
-                    <span class="font-bold text-(--color-text)"
-                      >${{ roomSubtotal }}</span
-                    >
-                  </div>
-                  <div class="flex items-center justify-between">
-                    <span>{{ t("propertyDetail.serviceFee") }}</span>
-                    <span class="font-bold text-(--color-text)"
-                      >${{ serviceFee }}</span
-                    >
-                  </div>
-                  <div
-                    class="flex items-center justify-between border-t border-dashed pt-4 text-lg font-black text-(--color-text)"
-                    style="border-color: var(--color-border);"
-                  >
-                    <span>{{ t("propertyDetail.total") }}</span>
-                    <span style="color: var(--color-primary);"
-                      >${{ totalPrice }}</span
-                    >
+                      <option
+                        v-for="count in availableGuestOptions"
+                        :key="count"
+                        :value="count"
+                      >
+                        {{ count }} {{ t("home.search.guests") }}
+                      </option>
+                    </select>
                   </div>
                 </div>
               </div>
 
               <button
                 type="button"
-                class="mt-6 w-full py-4 text-base font-bold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-                style="background-color: var(--color-primary); color: var(--color-text-inverse); border-radius: var(--radius-md); box-shadow: var(--shadow-card);"
+                class="mt-6 w-full py-3 text-base font-black transition-all duration-200 hover:opacity-90 active:scale-[0.98] cursor-pointer shadow-md shadow-(--color-primary)/20"
+                style="background-color: var(--color-primary); color: var(--color-text-inverse); border-radius: var(--radius-sm);"
                 @click="goToBooking"
               >
                 {{ t("propertyDetail.reserveNow") }}
               </button>
+
+              <p class="mt-4 text-center text-xs font-bold text-(--color-muted)">
+                You won't be charged yet
+              </p>
+
+              <div class="mt-6 space-y-3.5 text-sm text-(--color-muted)">
+                <div class="flex items-center justify-between font-medium">
+                  <span class="hover:underline cursor-pointer">${{ selectedRoom.price }} x {{ stayNights }} {{ t("propertyDetail.night") }}</span>
+                  <span class="font-bold text-(--color-text)">${{ roomSubtotal }}</span>
+                </div>
+                <div class="flex items-center justify-between font-medium">
+                  <span class="hover:underline cursor-pointer">{{ t("propertyDetail.serviceFee") }}</span>
+                  <span class="font-bold text-(--color-text)">${{ serviceFee }}</span>
+                </div>
+                <div class="flex items-center justify-between border-t border-(--color-border) pt-4 text-base font-black text-(--color-text)">
+                  <span>{{ t("propertyDetail.total") }} before taxes</span>
+                  <span class="text-(--color-primary)">${{ totalPrice }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="mt-12">
-          <div
-            class="p-8 md:p-12 text-center relative overflow-hidden"
-            style="background-color: var(--color-surface-strong); color: var(--color-text-inverse); border-radius: var(--radius-panel); box-shadow: var(--shadow-panel);"
-          >
-            <div class="absolute inset-0 opacity-10 bg-radial from-white to-transparent pointer-events-none"></div>
-            <h3 class="text-2xl md:text-3xl font-black mb-3">
-              Explore All Accommodation Options
+        <!-- Clean Minimalist Bottom CTA Section -->
+        <div class="mt-12 border-t border-(--color-border) pt-10 pb-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+          <div class="max-w-xl">
+            <h3 class="text-2xl sm:text-3xl font-black text-(--color-text) tracking-tight">
+              Explore all accommodation options
             </h3>
-            <p class="text-base opacity-90 max-w-xl mx-auto mb-8">
+            <p class="mt-2 text-base text-(--color-muted) leading-relaxed">
               Looking for more options? Browse all available rooms for this property to find your perfect match.
             </p>
-            <RouterLink
-              :to="{
-                name: 'public.property-rooms',
-                params: { propertyId: route.params.id },
-              }"
-              class="inline-flex items-center gap-3 px-8 py-4 text-base font-extrabold transition-all duration-200 hover:scale-105 active:scale-95 shadow-xl"
-              style="background-color: var(--color-accent); color: var(--color-surface-strong); border-radius: var(--radius-md);"
-            >
-              <BuildingOfficeIcon class="h-5 w-5" />
-              View All Available Rooms
-              <ArrowRightIcon class="h-5 w-5" />
-            </RouterLink>
           </div>
+          <RouterLink
+            :to="{
+              name: 'public.property-rooms',
+              params: { propertyId: route.params.id },
+            }"
+            class="shrink-0 inline-flex items-center gap-2.5 px-7 py-3.5 text-sm font-bold transition-all duration-200 hover:opacity-90 active:scale-95 shadow-sm"
+            style="background-color: var(--color-accent); color: var(--color-surface-strong); border-radius: var(--radius-sm);"
+          >
+            <span>View all available rooms</span>
+            <ArrowRightIcon class="h-4 w-4" />
+          </RouterLink>
         </div>
       </main>
+
+      <!-- Airbnb-Style Amenity Modal Dialog -->
+      <div
+        v-if="showAmenityModal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-md p-4 sm:p-6 transition-all duration-300"
+        @click.self="showAmenityModal = false"
+      >
+        <div
+          class="flex flex-col max-h-[85vh] w-full max-w-2xl overflow-hidden rounded-3xl bg-(--color-page) text-(--color-text) shadow-2xl border border-(--color-border) animate-scaleUp"
+        >
+          <!-- Modal Header -->
+          <div class="flex items-center justify-between border-b p-7 border-(--color-border)">
+            <h3 class="text-2xl font-black text-(--color-text) tracking-tight">
+              What this place offers
+            </h3>
+            <button
+              type="button"
+              class="flex h-12 w-12 items-center justify-center rounded-full bg-(--color-surface-soft) text-(--color-text) border border-(--color-border) hover:scale-105 transition active:scale-95 cursor-pointer shadow-xs"
+              @click="showAmenityModal = false"
+            >
+              <XMarkIcon class="h-6 w-6" />
+            </button>
+          </div>
+
+          <!-- Modal Body (Scrollable List) -->
+          <div class="overflow-y-auto p-8 space-y-7">
+            <div
+              v-for="amenity in amenities"
+              :key="amenity.id"
+              class="flex items-center gap-6 py-2 border-b border-(--color-border)/40 last:border-none"
+            >
+              <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-(--color-primary-soft) text-(--color-primary) shrink-0 shadow-xs">
+                <component :is="getAmenityIcon(amenity.amenity_name)" class="h-7 w-7 text-(--color-primary)" />
+              </div>
+              <span class="text-xl font-bold text-(--color-text)">{{ amenity.amenity_name }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>

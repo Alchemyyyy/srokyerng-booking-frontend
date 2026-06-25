@@ -4,6 +4,7 @@ import {
   CameraIcon,
   CheckCircleIcon,
   XCircleIcon,
+  TrashIcon,
 } from "@heroicons/vue/24/outline";
 import { CheckCircleIcon as CheckCircleIconSolid } from "@heroicons/vue/24/solid";
 import { useI18n } from "vue-i18n";
@@ -50,7 +51,7 @@ const props = defineProps({
   },
 });
 
-defineEmits(["select-image"]);
+defineEmits(["select-image", "remove-image"]);
 
 const resolvedAvatarSrc = computed(() => resolveAssetUrl(props.avatarSrc));
 const canPreviewAvatar = computed(() => Boolean(resolvedAvatarSrc.value));
@@ -175,6 +176,28 @@ const canPreviewAvatar = computed(() => Boolean(resolvedAvatarSrc.value));
           class="max-h-[70vh] w-full object-contain"
         />
       </div>
+
+      <template #footer>
+        <div class="flex items-center justify-between w-full">
+          <AppButton
+            type="button"
+            variant="danger"
+            class="!rounded-sm flex items-center gap-1.5"
+            @click="$emit('remove-image'); imagePreviewOpen = false"
+          >
+            <TrashIcon class="h-4 w-4" />
+            {{ t("profile.summary.removeImage", "Remove image") }}
+          </AppButton>
+          <AppButton
+            type="button"
+            variant="secondary"
+            class="!rounded-sm"
+            @click="imagePreviewOpen = false"
+          >
+            {{ t("common.close", "Close") }}
+          </AppButton>
+        </div>
+      </template>
     </AppModal>
   </section>
 </template>
