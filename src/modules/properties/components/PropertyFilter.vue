@@ -7,7 +7,7 @@ import {
   CurrencyDollarIcon,
   StarIcon,
   UserGroupIcon,
-  SparklesIcon,
+  AdjustmentsHorizontalIcon,
 } from "@heroicons/vue/24/outline";
 
 const { t } = useI18n({ useScope: "global" });
@@ -31,58 +31,66 @@ const formatPrice = (value) => `$${value}`;
 
 <template>
   <div
-    class="properties-panel rounded-[20px] border border-(--color-border)/80 bg-(--color-surface)/95 p-4 backdrop-blur-2xl transition-all duration-300"
+    class="properties-panel rounded-sm border border-(--color-border) bg-(--color-surface) p-5 shadow-xs transition-all duration-300 text-xs"
+    style="border-radius: var(--radius-sm);"
   >
-    <!-- Header -->
-    <div class="flex items-center justify-between gap-4 border-b border-(--color-border)/40 pb-4">
-      <div>
-        <p class="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.24em] text-(--color-primary)">
-          <SparklesIcon class="h-3.5 w-3.5 animate-pulse text-(--color-accent)" />
-          {{ t("propertiesPage.filters.title") }}
-        </p>
-        <h2 class="mt-1 text-lg font-black text-(--color-text)">
-          {{ t("propertiesPage.filters.refineTrip") }}
+    <!-- ── Balanced Modern Header ── -->
+    <div class="flex items-center justify-between border-b border-(--color-border)/60 pb-3.5 mb-5">
+      <div class="flex items-center gap-2">
+        <AdjustmentsHorizontalIcon class="h-5 w-5 text-(--color-primary)" />
+        <h2 class="text-base font-bold text-(--color-text) tracking-tight">
+          {{ t("propertiesPage.filters.title", "Filters") }}
         </h2>
+        <span
+          v-if="activeFilterCount > 0"
+          class="flex items-center justify-center h-4.5 w-4.5 rounded-sm bg-(--color-primary-soft) text-[11px] font-black text-(--color-primary) border border-(--color-primary)/20"
+          style="border-radius: var(--radius-sm);"
+        >
+          {{ activeFilterCount }}
+        </span>
       </div>
-      <span
-        class="flex items-center justify-center w-8 h-8 rounded-full bg-(--color-primary-soft) text-xs font-bold text-(--color-primary) shadow-sm ring-1 ring-(--color-primary)/20"
+      <button
+        v-if="activeFilterCount > 0"
+        type="button"
+        class="text-xs font-bold text-(--color-primary) hover:underline transition active:scale-95"
+        @click="$emit('reset')"
       >
-        {{ activeFilterCount }}
-      </span>
+        {{ t("common.clearAll", "Clear all") }}
+      </button>
     </div>
 
-    <!-- Dates & Guests Section (New Upgrade) -->
-    <div class="mt-4 space-y-3 border-b border-(--color-border)/40 pb-4">
-      <div class="grid grid-cols-2 gap-3">
-        <label class="block rounded-[var(--radius-lg)] border border-(--color-border)/60 bg-(--color-surface-soft) p-3 transition-all duration-200 focus-within:border-(--color-primary) focus-within:ring-1 focus-within:ring-(--color-primary)/20 hover:border-(--color-primary)/40">
-          <span class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--color-primary)">
-            <CalendarDaysIcon class="h-3.5 w-3.5" />
+    <!-- ── Balanced Dates & Guests Section ── -->
+    <div class="space-y-3.5 border-b border-(--color-border)/60 pb-5 mb-5">
+      <div class="grid grid-cols-2 gap-2.5">
+        <label class="block rounded-sm border border-(--color-border)/60 bg-(--color-surface-soft) px-2.5 py-1.5 transition-all duration-200 focus-within:border-(--color-primary) focus-within:ring-1 focus-within:ring-(--color-primary)/20 hover:border-(--color-border)" style="border-radius: var(--radius-sm);">
+          <span class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-(--color-muted)">
+            <CalendarDaysIcon class="h-3.5 w-3.5 text-(--color-primary)" />
             Check in
           </span>
           <input
             :value="modelValue.checkIn"
             @input="updateFilter('checkIn', $event.target.value)"
             type="date"
-            class="mt-1.5 w-full border-none bg-transparent p-0 text-xs font-bold text-(--color-text) outline-none focus:ring-0"
+            class="mt-1 w-full border-none bg-transparent p-0 text-xs font-bold text-(--color-text) outline-none focus:ring-0 cursor-pointer"
           />
         </label>
-        <label class="block rounded-[var(--radius-lg)] border border-(--color-border)/60 bg-(--color-surface-soft) p-3 transition-all duration-200 focus-within:border-(--color-primary) focus-within:ring-1 focus-within:ring-(--color-primary)/20 hover:border-(--color-primary)/40">
-          <span class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--color-primary)">
-            <CalendarDaysIcon class="h-3.5 w-3.5" />
+        <label class="block rounded-sm border border-(--color-border)/60 bg-(--color-surface-soft) px-2.5 py-1.5 transition-all duration-200 focus-within:border-(--color-primary) focus-within:ring-1 focus-within:ring-(--color-primary)/20 hover:border-(--color-border)" style="border-radius: var(--radius-sm);">
+          <span class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-(--color-muted)">
+            <CalendarDaysIcon class="h-3.5 w-3.5 text-(--color-primary)" />
             Check out
           </span>
           <input
             :value="modelValue.checkOut"
             @input="updateFilter('checkOut', $event.target.value)"
             type="date"
-            class="mt-1.5 w-full border-none bg-transparent p-0 text-xs font-bold text-(--color-text) outline-none focus:ring-0"
+            class="mt-1 w-full border-none bg-transparent p-0 text-xs font-bold text-(--color-text) outline-none focus:ring-0 cursor-pointer"
           />
         </label>
       </div>
 
-      <label class="block rounded-[var(--radius-lg)] border border-(--color-border)/60 bg-(--color-surface-soft) p-3 transition-all duration-200 focus-within:border-(--color-primary) focus-within:ring-1 focus-within:ring-(--color-primary)/20 hover:border-(--color-primary)/40">
-        <span class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-(--color-primary)">
-          <UserGroupIcon class="h-3.5 w-3.5" />
+      <label class="block rounded-sm border border-(--color-border)/60 bg-(--color-surface-soft) px-2.5 py-1.5 transition-all duration-200 focus-within:border-(--color-primary) focus-within:ring-1 focus-within:ring-(--color-primary)/20 hover:border-(--color-border)" style="border-radius: var(--radius-sm);">
+        <span class="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-(--color-muted)">
+          <UserGroupIcon class="h-3.5 w-3.5 text-(--color-primary)" />
           Guests
         </span>
         <input
@@ -91,27 +99,28 @@ const formatPrice = (value) => `$${value}`;
           type="number"
           min="1"
           max="20"
-          class="mt-1.5 w-full border-none bg-transparent p-0 text-sm font-bold text-(--color-text) outline-none focus:ring-0"
+          class="mt-1 w-full border-none bg-transparent p-0 text-xs font-bold text-(--color-text) outline-none focus:ring-0"
         />
       </label>
     </div>
 
-    <!-- City Filter (Scrollable Upgrade) -->
-    <div class="mt-4 border-b border-(--color-border)/40 pb-4">
-      <p class="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.24em] text-(--color-muted) mb-3">
+    <!-- ── Balanced Destination City Chips ── -->
+    <div class="border-b border-(--color-border)/60 pb-5 mb-5">
+      <p class="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-(--color-muted) mb-2.5">
         <MapPinIcon class="h-3.5 w-3.5 text-(--color-primary)" />
-        {{ t("home.search.city") }}
+        {{ t("home.search.city", "Destination City") }}
       </p>
-      <div class="custom-scrollbar max-h-48 space-y-2 overflow-y-auto pr-2">
+      <div class="flex flex-wrap gap-2">
         <button
           v-for="city in cityOptions.slice(1)"
           :key="city.value"
           type="button"
-          class="flex w-full items-center justify-between rounded-[var(--radius-md)] border px-3 py-2.5 text-left text-sm font-semibold transition-all duration-200 active:scale-[0.98]"
+          class="inline-flex items-center gap-1.5 rounded-sm border px-2.5 py-1.5 text-xs font-semibold transition-all duration-200 active:scale-[0.98]"
+          style="border-radius: var(--radius-sm);"
           :class="
             modelValue.city === city.value
-              ? 'border-(--color-primary) bg-(--color-primary-soft) text-(--color-primary) shadow-sm ring-1 ring-(--color-primary)/20'
-              : 'border-(--color-border)/60 bg-(--color-surface-soft) text-(--color-text) hover:border-(--color-primary)/40 hover:shadow-xs'
+              ? 'border-(--color-primary) bg-(--color-primary-soft) text-(--color-primary) font-bold shadow-xs ring-1 ring-(--color-primary)/20'
+              : 'border-(--color-border)/60 bg-(--color-surface-soft) text-(--color-text) hover:border-(--color-border) hover:bg-(--color-surface)'
           "
           @click="
             updateFilter(
@@ -120,13 +129,14 @@ const formatPrice = (value) => `$${value}`;
             )
           "
         >
-          <span class="truncate pr-2">{{ city.label }}</span>
+          <span>{{ city.label }}</span>
           <span
-            class="flex items-center justify-center rounded-lg px-2 py-0.5 text-[10px] font-bold"
+            class="flex items-center justify-center rounded-sm px-1.5 py-0.5 text-[10px] font-bold border"
+            style="border-radius: var(--radius-sm);"
             :class="
               modelValue.city === city.value
-                ? 'bg-(--color-primary) text-white'
-                : 'bg-(--color-border)/30 text-(--color-muted)'
+                ? 'bg-(--color-primary) text-white border-transparent'
+                : 'bg-(--color-surface) text-(--color-muted) border-(--color-border)/60'
             "
           >
             {{ propertyCountByCity(city.value) }}
@@ -135,15 +145,14 @@ const formatPrice = (value) => `$${value}`;
       </div>
     </div>
 
-    <!-- Price Range -->
-    <div class="mt-4 border-b border-(--color-border)/40 pb-4">
-      <label class="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.24em] text-(--color-muted)">
-        <CurrencyDollarIcon class="h-3.5 w-3.5 text-(--color-primary)" />
-        {{ t("propertiesPage.filters.maxPricePerNight") }}
-      </label>
-      <div class="mt-3 flex items-center justify-between rounded-[var(--radius-md)] border border-(--color-border)/50 bg-(--color-surface-soft) px-3 py-2 text-sm font-bold text-(--color-text)">
-        <span class="text-(--color-muted)">{{ formatPrice(0) }}</span>
-        <span class="text-(--color-primary) font-black text-base">{{ formatPrice(modelValue.maxPrice) }}</span>
+    <!-- ── Balanced Price Range Filter ── -->
+    <div class="border-b border-(--color-border)/60 pb-5 mb-5">
+      <div class="flex items-center justify-between mb-2.5">
+        <label class="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-(--color-muted)">
+          <CurrencyDollarIcon class="h-3.5 w-3.5 text-(--color-primary)" />
+          {{ t("propertiesPage.filters.maxPricePerNight", "Max Price / Night") }}
+        </label>
+        <span class="text-(--color-primary) font-black text-xs">{{ formatPrice(modelValue.maxPrice) }}</span>
       </div>
       <input
         :value="modelValue.maxPrice"
@@ -152,44 +161,46 @@ const formatPrice = (value) => `$${value}`;
         min="30"
         max="220"
         step="5"
-        class="property-range mt-4 w-full"
+        class="property-range w-full"
       />
-    </div>
-
-    <!-- Rating Filter -->
-    <div class="mt-4">
-      <!-- Rating Filter -->
-      <div>
-        <p class="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.24em] text-(--color-muted) mb-3">
-          <StarIcon class="h-3.5 w-3.5 text-(--color-primary)" />
-          {{ t("propertiesPage.filters.minimumRating") }}
-        </p>
-        <div class="flex flex-wrap gap-2">
-          <button
-            v-for="rating in minimumRatings"
-            :key="rating"
-            type="button"
-            class="rounded-full border px-3 py-2 text-xs font-bold transition-all duration-200 active:scale-[0.97]"
-            :class="
-              modelValue.minRating === rating
-                ? 'border-(--color-primary) bg-(--color-primary) text-white shadow-md shadow-(--color-primary)/20 ring-2 ring-(--color-primary)/30'
-                : 'border-(--color-border)/60 bg-(--color-surface-soft) text-(--color-muted) hover:border-(--color-primary)/40 hover:text-(--color-text) hover:bg-(--color-surface)'
-            "
-            @click="updateFilter('minRating', rating)"
-          >
-            {{ rating === 0 ? t("propertiesPage.filters.all") : `${rating}+ ⭐` }}
-          </button>
-        </div>
+      <div class="flex items-center justify-between text-[10px] font-bold text-(--color-muted) mt-1.5">
+        <span>{{ formatPrice(30) }}</span>
+        <span>{{ formatPrice(220) }}</span>
       </div>
     </div>
 
-    <!-- Reset Button -->
+    <!-- ── Balanced Minimum Rating Filter ── -->
+    <div>
+      <p class="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-(--color-muted) mb-2.5">
+        <StarIcon class="h-3.5 w-3.5 text-(--color-primary)" />
+        {{ t("propertiesPage.filters.minimumRating", "Minimum Rating") }}
+      </p>
+      <div class="flex flex-wrap gap-2">
+        <button
+          v-for="rating in minimumRatings"
+          :key="rating"
+          type="button"
+          class="rounded-sm border px-2.5 py-1.5 text-xs font-bold transition-all duration-200 active:scale-[0.97]"
+          style="border-radius: var(--radius-sm);"
+          :class="
+            modelValue.minRating === rating
+              ? 'border-(--color-primary) bg-(--color-primary) text-white shadow-xs ring-1 ring-(--color-primary)/30'
+              : 'border-(--color-border)/60 bg-(--color-surface-soft) text-(--color-muted) hover:border-(--color-border) hover:text-(--color-text) hover:bg-(--color-surface)'
+          "
+          @click="updateFilter('minRating', rating)"
+        >
+          {{ rating === 0 ? t("propertiesPage.filters.all", "All") : `${rating}+ ⭐` }}
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Balanced Reset Button ── -->
     <AppButton
       variant="secondary"
-      class="mt-5 w-full py-3 text-sm font-bold transition-all duration-200 active:scale-[0.98]"
+      class="mt-6 w-full py-2 text-xs font-bold !rounded-sm transition-all duration-200 active:scale-[0.98]"
       @click="$emit('reset')"
     >
-      {{ t("propertiesPage.actions.resetFilters") }}
+      {{ t("propertiesPage.actions.resetFilters", "Reset All Filters") }}
     </AppButton>
   </div>
 </template>
@@ -197,45 +208,25 @@ const formatPrice = (value) => `$${value}`;
 <style scoped>
 .property-range {
   -webkit-appearance: none;
-  height: 8px;
+  height: 6px;
   background: var(--color-surface-soft);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
   cursor: pointer;
 }
 
 .property-range::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-sm);
   background: var(--color-primary);
-  border: 4px solid var(--color-surface);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--color-surface);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   transition: transform 0.15s ease;
 }
 
 .property-range::-webkit-slider-thumb:hover {
   transform: scale(1.15);
-}
-
-/* Custom Scrollbar for City List */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: var(--color-surface-soft);
-  border-radius: 999px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 999px;
-  border: 2px solid var(--color-surface-soft);
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--color-primary);
 }
 </style>

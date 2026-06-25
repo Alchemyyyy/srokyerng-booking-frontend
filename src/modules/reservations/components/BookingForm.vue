@@ -62,6 +62,7 @@ const goToStep2 = () => {
 };
 
 const handleSubmit = () => {
+  if (!validateStep1()) return;
   emit("submit", {
     ...form.value,
     special_request: form.value.notes || "",

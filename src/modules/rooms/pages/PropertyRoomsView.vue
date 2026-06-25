@@ -21,7 +21,8 @@ onMounted(async () => {
     property.value = {
       name: p.property_name || p.name,
       city: p.city,
-      rating: p.average_rating || 4.8,
+      rating: p.average_rating || 0,
+      reviewsCount: p.review_count || p.reviews || 0,
       image: p.cover_image,
     };
 
@@ -153,9 +154,14 @@ const filteredRooms = computed(() => {
             "
             class="inline-flex items-center gap-1.5 border rounded-lg px-2.5 py-1 text-[11px] font-bold"
           >
-            <span class="text-amber-400">★</span> 4.8
-            <span style="color: var(--color-border)">|</span>
-            <span>128 Verified Reviews</span>
+            <span v-if="property?.rating > 0" class="inline-flex items-center gap-1.5">
+              <span class="text-amber-400">★</span> {{ Number(property.rating).toFixed(1) }}
+              <span style="color: var(--color-border)">|</span>
+              <span>{{ property.reviewsCount }} Verified Reviews</span>
+            </span>
+            <span v-else class="inline-flex items-center gap-1">
+              <span>🌱 New Listing</span>
+            </span>
           </div>
           <h1
             style="font-family: var(--font-secondary)"

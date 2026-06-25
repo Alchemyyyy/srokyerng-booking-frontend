@@ -70,12 +70,11 @@ defineProps({
 .qr-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 24px;
-  padding: 1.5rem;
+  border-radius: 20px;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  box-shadow: var(--shadow-card);
+  gap: 0.85rem;
 }
 
 /* Header */
@@ -86,8 +85,8 @@ defineProps({
 }
 
 .qr-card__icon-wrap {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.25rem;
+  height: 2.25rem;
   border-radius: 12px;
   background: rgba(29, 158, 117, 0.1);
   display: flex;
@@ -125,8 +124,8 @@ defineProps({
 }
 
 .qr-card__qr-img {
-  width: 200px;
-  height: 200px;
+  width: 172px;
+  height: 172px;
   object-fit: contain;
   border-radius: 16px;
   border: 1px solid var(--color-border);
@@ -135,8 +134,8 @@ defineProps({
 }
 
 .qr-card__qr-placeholder {
-  width: 200px;
-  height: 200px;
+  width: 172px;
+  height: 172px;
   border-radius: 16px;
   border: 2px dashed var(--color-border);
   display: flex;
@@ -170,7 +169,7 @@ defineProps({
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  padding: 0.65rem 1rem;
+  padding: 0.5rem 0.75rem;
   font-size: 0.85rem;
   border-bottom: 1px solid var(--color-border);
 }
@@ -198,7 +197,7 @@ defineProps({
 /* Hint */
 .qr-card__hint {
   margin: 0;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--color-muted);
   text-align: center;
   line-height: 1.6;

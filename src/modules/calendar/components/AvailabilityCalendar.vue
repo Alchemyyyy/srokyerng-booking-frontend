@@ -21,6 +21,15 @@ const visibleYear = ref(today.getFullYear());
 const visibleMonth = ref(today.getMonth());
 const selectedRange = ref({ start: null, end: null });
 
+const formatLocalDate = (date) => {
+  if (!date) return "";
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 const handlePagesUpdate = (pages) => {
   const page = Array.isArray(pages) ? pages[0] : pages;
   if (!page) return;
@@ -32,14 +41,13 @@ const handlePagesUpdate = (pages) => {
 const endpointNotReady = ref(false);
 
 const startDate = computed(() => {
-  const today = new Date();
-  return today.toISOString().split("T")[0];
+  return formatLocalDate(new Date());
 });
 
 const endDate = computed(() => {
   const d = new Date();
   d.setMonth(d.getMonth() + 3);
-  return d.toISOString().split("T")[0];
+  return formatLocalDate(d);
 });
 const apiUrl = computed(() => {
   if (props.roomId) return `/rooms/${props.roomId}/availability-calendar`;
@@ -71,7 +79,7 @@ const fetchCalendar = async () => {
         const cursor = new Date(checkIn);
         const end = new Date(checkOut);
         while (cursor < end) {
-          unavailable.push(cursor.toISOString().split("T")[0]);
+          unavailable.push(formatLocalDate(cursor));
           cursor.setDate(cursor.getDate() + 1);
         }
       });
@@ -82,7 +90,7 @@ const fetchCalendar = async () => {
       const cursor = new Date(startDate.value);
       const rangeEnd = new Date(endDate.value);
       while (cursor <= rangeEnd) {
-        allDates.push(cursor.toISOString().split("T")[0]);
+        allDates.push(formatLocalDate(cursor));
         cursor.setDate(cursor.getDate() + 1);
       }
       availableDates.value = allDates.filter(
@@ -116,7 +124,7 @@ const visibleMonthDates = computed(() => {
   const dates = [];
   for (let day = 1; day <= lastDay; day += 1) {
     const d = new Date(year, month, day);
-    dates.push(d.toISOString().split("T")[0]);
+    dates.push(formatLocalDate(d));
   }
   return dates;
 });
@@ -274,8 +282,8 @@ const handleDayClick = (day) => {
 
     error.value = null;
     emit("range-selected", {
-      start: selectedRange.value.start.toISOString().split("T")[0],
-      end: selectedRange.value.end.toISOString().split("T")[0],
+      start: formatLocalDate(selectedRange.value.start),
+      end: formatLocalDate(selectedRange.value.end),
     });
   }
 };
@@ -373,7 +381,7 @@ onMounted(fetchCalendar);
               <span>
                 Check-in:
                 <strong class="text-(--color-text)">
-                  {{ selectedRange.start?.toISOString().split("T")[0] ?? "—" }}
+                  {{ selectedRange.start ? formatLocalDate(selectedRange.start) : "—" }}
                 </strong>
               </span>
               <span class="text-(--color-border)">→</span>
@@ -381,8 +389,7 @@ onMounted(fetchCalendar);
                 Check-out:
                 <strong class="text-(--color-text)">
                   {{
-                    selectedRange.end?.toISOString().split("T")[0] ??
-                    "Select end date"
+                    selectedRange.end ? formatLocalDate(selectedRange.end) : "Select end date"
                   }}
                 </strong>
               </span>

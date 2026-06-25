@@ -108,7 +108,7 @@ const normalizeProperty = (item, index) => {
         item.base_price ??
         0,
     ),
-    rating: Number(item.rating ?? item.average_rating ?? 4.8),
+    rating: Number(item.rating ?? item.average_rating ?? 0),
     reviews: Number(item.reviews ?? item.review_count ?? 0),
     rooms: item.rooms ?? item.room_count ?? 0,
     bookings: item.bookings ?? item.booking_count ?? 0,

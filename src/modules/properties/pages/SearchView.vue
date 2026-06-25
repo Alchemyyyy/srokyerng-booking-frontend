@@ -1,15 +1,17 @@
 <script setup>
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, onBeforeUnmount, ref, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { propertyApi } from "@/modules/properties/api/property.api";
 
 import { usePropertyStore } from "../store/propertyStore";
+import { useWishlistStore } from "@/modules/wishlists/store/wishlistStore";
+import { useAuthStore } from "@/modules/auth/store/authStore";
+import { useToastStore } from "@/shared/store/toastStore";
 import PropertyFilter from "@/modules/properties/components/PropertyFilter.vue";
 import SearchBar from "@/modules/properties/components/SearchBar.vue";
 import PropertySortBar from "../components/PropertySortBar.vue";
 import PropertyPagination from "../components/PropertyPagination.vue";
-import HeroImg from "@/assets/images/home/hero/hero_banner.png";
 import placeholderImage from "@/assets/images/properties/placeholder.png";
 import {
   ArrowRightIcon,
@@ -18,18 +20,100 @@ import {
   ShieldCheckIcon,
   SparklesIcon,
   StarIcon,
+  HeartIcon,
+  AdjustmentsHorizontalIcon,
+  ChevronDownIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  PlusIcon,
+  MinusIcon,
+  ArrowsPointingOutIcon,
+  PaperAirplaneIcon,
+  XMarkIcon,
+  MapIcon,
 } from "@heroicons/vue/24/outline";
+import { HeartIcon as HeartIconSolid, StarIcon as StarIconSolid } from "@heroicons/vue/24/solid";
 
 const { t, te } = useI18n({ useScope: "global" });
 const router = useRouter();
 const route = useRoute();
 const propertyStore = usePropertyStore();
+const wishlistStore = useWishlistStore();
+const authStore = useAuthStore();
+const toastStore = useToastStore();
 
 // ── UI state ──────────────────────────────────────────────────────────────────
 const sortBy = ref("newest");
 const viewMode = ref("grid");
 const currentPage = ref(1);
-const itemsPerPage = 6;
+const itemsPerPage = 9;
+const showMapModal = ref(false);
+const hoveredPropertyId = ref(null);
+
+// ── Hero Slideshow State ──────────────────────────────────────────────────────
+const currentSlide = ref(0);
+let slideInterval = null;
+
+const heroSlides = [
+  {
+    title: "Mystical Siem Reap",
+    subtitle: "Explore ancient wonders, temple majestic sunrises, and world-class luxury stays right beside Angkor Wat.",
+    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1400&auto=format&fit=crop",
+    badge: "Historic Heritage",
+    location: "Siem Reap, Cambodia"
+  },
+  {
+    title: "Pristine Koh Rong",
+    subtitle: "Discover crystal-clear waters, white sand beaches, and state-of-the-art island villas offering ultimate privacy.",
+    image: "https://images.unsplash.com/photo-1540541338287-41700207dee6?q=80&w=1400&auto=format&fit=crop",
+    badge: "Island Paradise",
+    location: "Koh Rong, Sihanoukville"
+  },
+  {
+    title: "Vibrant Phnom Penh",
+    subtitle: "Experience the bustling energy of the capital, breathtaking skyline views, and sophisticated urban high-rises.",
+    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1400&auto=format&fit=crop",
+    badge: "Capital City",
+    location: "Phnom Penh, Cambodia"
+  },
+  {
+    title: "Serene Kampot & Kep",
+    subtitle: "Unwind in tranquil riverside boutique retreats, pepper farms, and lush mountain backdrops.",
+    image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=1400&auto=format&fit=crop",
+    badge: "Nature Escape",
+    location: "Kampot Province"
+  }
+];
+
+const startSlideTimer = () => {
+  slideInterval = setInterval(() => {
+    currentSlide.value = (currentSlide.value + 1) % heroSlides.length;
+  }, 5500);
+};
+
+const goToSlide = (index) => {
+  currentSlide.value = index;
+  clearInterval(slideInterval);
+  startSlideTimer();
+};
+
+const toggleSave = async (id, e) => {
+  e.stopPropagation();
+  if (!authStore.isAuthenticated) {
+    toastStore.showToast(safeT("wishlist.loginRequired", "Please login to save properties to your wishlist"), "error");
+    return;
+  }
+  const success = await wishlistStore.toggleWishlist(id);
+  if (success) {
+    const isNowSaved = wishlistStore.isPropertySaved(id);
+    toastStore.showToast(
+      isNowSaved ? safeT("wishlist.added", "Added to wishlist!") : safeT("wishlist.removed", "Removed from wishlist!"),
+      "success"
+    );
+  } else {
+    toastStore.showToast(safeT("wishlist.failed", "Failed to update wishlist"), "error");
+  }
+};
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
@@ -59,8 +143,6 @@ const filters = ref({
   guests: route.query.guests || 1,
 });
 
-
-
 // ── Filter options ────────────────────────────────────────────────────────────
 const dynamicCities = ref([]);
 
@@ -85,41 +167,9 @@ const cityOptions = computed(() => {
   return options;
 });
 
-const typeOptions = computed(() => [
-  {
-    value: "all",
-    label: safeT("propertiesPage.filters.allStays", "All Stays"),
-  },
-  { value: "hotel", label: safeT("home.categories.hotel", "Hotel") },
-  {
-    value: "guesthouse",
-    label: safeT("home.categories.guesthouse", "Guesthouse"),
-  },
-  { value: "homestay", label: safeT("home.categories.homestay", "Homestay") },
-  {
-    value: "apartment",
-    label: safeT("home.categories.apartment", "Apartment"),
-  },
-  { value: "villa", label: safeT("home.categories.villa", "Villa") },
-  { value: "resort", label: safeT("home.categories.resort", "Resort") },
-]);
-
 const minimumRatings = [0, 4, 4.5, 4.8];
 
 // ── Computed stats ────────────────────────────────────────────────────────────
-const totalCities = computed(
-  () => new Set(propertyStore.approvedProperties.map((p) => p.city)).size,
-);
-
-const averageRating = computed(() => {
-  if (!propertyStore.approvedProperties.length) return "0.0";
-  const total = propertyStore.approvedProperties.reduce(
-    (sum, p) => sum + p.rating,
-    0,
-  );
-  return (total / propertyStore.approvedProperties.length).toFixed(1);
-});
-
 const activeFilterCount = computed(() => {
   let count = 0;
   if (filters.value.query.trim()) count++;
@@ -129,15 +179,6 @@ const activeFilterCount = computed(() => {
   if (filters.value.minRating > 0) count++;
   return count;
 });
-
-const whyBrowseItems = computed(() => [
-  safeT("propertiesPage.whyBrowse.items.verified", "Verified Accommodations"),
-  safeT("propertiesPage.whyBrowse.items.localFirst", "Local-First Pricing"),
-  safeT(
-    "propertiesPage.whyBrowse.items.realFilters",
-    "Instant Booking Confirmation",
-  ),
-]);
 
 const propertyCountByCity = (city) =>
   propertyStore.approvedProperties.filter((p) => p.city === city).length;
@@ -209,7 +250,25 @@ const openProperty = (propertyId) => {
   router.push({ name: "public.property-detail", params: { id: propertyId } });
 };
 
+const getMapPinPosition = (index) => {
+  const positions = [
+    { top: "42%", left: "48%" },
+    { top: "35%", left: "53%" },
+    { top: "48%", left: "45%" },
+    { top: "52%", left: "55%" },
+    { top: "30%", left: "42%" },
+    { top: "58%", left: "50%" },
+  ];
+  return positions[index % positions.length];
+};
+
 onMounted(async () => {
+  startSlideTimer();
+
+  if (authStore.isAuthenticated) {
+    wishlistStore.fetchWishlists();
+  }
+
   try {
     const res = await propertyApi.getCities();
     const fetchedCities = Array.isArray(res) ? res : (res?.data ?? []);
@@ -231,293 +290,273 @@ onMounted(async () => {
     console.error("Failed to fetch properties:", err);
   }
 });
+
+onBeforeUnmount(() => {
+  if (slideInterval) clearInterval(slideInterval);
+});
 </script>
 
 <template>
-  <main
-    class="bg-(--color-page) text-(--color-text) min-h-screen antialiased selection:bg-(--color-primary-soft)"
-  >
-    <!-- ── Hero ──────────────────────────────────────────────────────────────── -->
-    <section
-      class="relative flex min-h-[460px] items-center overflow-hidden bg-(--color-primary-strong)"
-    >
-      <img
-        :src="HeroImg"
-        alt="Cambodian accommodation"
-        class="absolute inset-0 h-full w-full object-cover"
-      />
+  <main class="bg-(--color-page) text-(--color-text) min-h-screen antialiased pt-[80px] sm:pt-[88px] md:pt-[96px] pb-24">
+    <!-- ── Spectacular Hero Slideshow & Search Section ── -->
+    <section class="relative px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-10 pt-4">
+      <!-- Outer Hero Showcase Box -->
       <div
-        class="absolute inset-0"
-        style="
-          background: linear-gradient(
-            110deg,
-            rgba(5, 23, 45, 0.94) 0%,
-            rgba(5, 31, 66, 0.88) 44%,
-            rgba(20, 117, 174, 0.4) 76%,
-            rgba(4, 20, 38, 0.58) 100%
-          );
-        "
-      ></div>
-
-      <div
-        class="absolute inset-0 opacity-10 bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:36px_36px]"
-      ></div>
-
-      <div
-        class="relative z-20 mx-auto grid w-full max-w-7xl gap-8 px-4 py-20 sm:px-6 lg:grid-cols-[1fr_360px] lg:px-8"
+        class="relative w-full h-[360px] sm:h-[420px] md:h-[480px] bg-(--color-surface) border border-(--color-border) shadow-xl overflow-hidden flex flex-col justify-between p-6 sm:p-10 transition-all duration-500"
+        style="border-radius: var(--radius-sm);"
       >
-        <div class="max-w-3xl">
-          <div
-            class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.24em] text-white backdrop-blur-md"
-          >
-            <SparklesIcon class="h-4 w-4 text-(--color-primary)" />
-            {{ safeT("nav.properties", "Explore stays") }}
-          </div>
-
-          <h1
-            class="mt-6 text-4xl font-black leading-tight tracking-tight text-white drop-shadow-lg sm:text-5xl lg:text-6xl"
-          >
-            {{ safeT("propertiesPage.hero.title", "Find Your Perfect Stay") }}
-          </h1>
-          <p
-            class="mt-5 max-w-2xl text-base leading-8 text-white/82 sm:text-lg"
-          >
-            {{
-              safeT(
-                "propertiesPage.hero.subtitle",
-                "Discover hand-picked premium spaces across Cambodia's finest locations.",
-              )
-            }}
-          </p>
-
-          <div class="mt-8 flex flex-wrap gap-3">
-            <span
-              v-for="item in whyBrowseItems"
-              :key="item"
-              class="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/15 backdrop-blur-md"
-            >
-              <ShieldCheckIcon class="h-4 w-4 text-(--color-primary)" />
-              {{ item }}
-            </span>
-          </div>
-        </div>
-
+        <!-- Background Slides Carousel -->
         <div
-          class="rounded-[var(--radius-panel)] border border-white/15 bg-white/10 p-5 text-white backdrop-blur-md lg:self-end"
+          v-for="(slide, index) in heroSlides"
+          :key="index"
+          class="absolute inset-0 transition-opacity duration-1000 ease-in-out z-0"
+          :class="currentSlide === index ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'"
         >
-          <p class="text-xs font-bold uppercase tracking-[0.18em] text-white/65">
-            Search summary
-          </p>
-          <div class="mt-4 grid grid-cols-3 gap-3 text-center">
-            <div>
-              <p class="text-3xl font-black">{{ propertyStore.approvedProperties.length }}</p>
-              <p class="mt-1 text-[10px] font-bold uppercase tracking-widest text-white/55">
-                Stays
-              </p>
+          <img
+            :src="slide.image"
+            :alt="slide.title"
+            class="w-full h-full object-cover transition-transform duration-[6000ms] ease-out"
+            :class="currentSlide === index ? 'scale-105' : 'scale-100'"
+          />
+          <!-- Rich Multi-Stop Gradients for Phenomenal Text Contrast & Depth -->
+          <div class="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent z-10"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 z-10"></div>
+        </div>
+
+        <!-- Top Content Overlay (Titles & Slide Navigation) -->
+        <div class="relative z-20 flex flex-col sm:flex-row sm:items-start justify-between gap-6 w-full max-w-5xl">
+          <!-- Text Details -->
+          <div class="space-y-3 max-w-2xl">
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <span
+                class="inline-flex items-center gap-1.5 bg-(--color-primary) text-white font-black text-xs px-3 py-1 uppercase tracking-widest shadow-md"
+                style="border-radius: var(--radius-sm);"
+              >
+                <SparklesIcon class="h-3.5 w-3.5 text-white animate-pulse" />
+                {{ heroSlides[currentSlide].badge }}
+              </span>
+              <span class="text-xs font-bold text-gray-300 inline-flex items-center gap-1 backdrop-blur-md bg-white/10 px-3 py-1 border border-white/20" style="border-radius: var(--radius-sm);">
+                <MapPinIcon class="h-3.5 w-3.5 text-(--color-primary)" />
+                {{ heroSlides[currentSlide].location }}
+              </span>
             </div>
-            <div>
-              <p class="text-3xl font-black">{{ totalCities }}</p>
-              <p class="mt-1 text-[10px] font-bold uppercase tracking-widest text-white/55">
-                Cities
-              </p>
-            </div>
-            <div>
-              <p class="text-3xl font-black">{{ averageRating }}</p>
-              <p class="mt-1 text-[10px] font-bold uppercase tracking-widest text-white/55">
-                Rating
-              </p>
-            </div>
+
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight drop-shadow-md">
+              {{ heroSlides[currentSlide].title }}
+            </h1>
+            <p class="text-xs sm:text-sm md:text-base font-medium text-gray-200 leading-relaxed drop-shadow-sm max-w-xl">
+              {{ heroSlides[currentSlide].subtitle }}
+            </p>
           </div>
+
+          <!-- Slide Nav Indicators -->
+          <div class="flex sm:flex-col gap-2 shrink-0 self-start sm:self-center bg-black/40 backdrop-blur-md p-2 border border-white/20 shadow-lg" style="border-radius: var(--radius-sm);">
+            <button
+              v-for="(slide, index) in heroSlides"
+              :key="index"
+              type="button"
+              class="w-10 h-1.5 sm:w-12 sm:h-2 transition-all duration-300 cursor-pointer"
+              style="border-radius: var(--radius-sm);"
+              :class="currentSlide === index ? 'bg-(--color-primary) shadow-lg shadow-(--color-primary)/50 scale-105' : 'bg-white/40 hover:bg-white/70'"
+              @click="goToSlide(index)"
+              :aria-label="`Go to slide ${index + 1}`"
+            ></button>
+          </div>
+        </div>
+
+        <!-- Bottom Integrated SearchBar (Embedded in Hero with Glassmorphism) -->
+        <div class="relative z-20 w-full max-w-3xl mt-auto pt-6">
+          <SearchBar
+            v-model="filters"
+            :cityOptions="cityOptions"
+            :activeFilterCount="activeFilterCount"
+            @reset="resetFilters"
+          />
         </div>
       </div>
     </section>
 
-    <!-- ── Search Bar ─────────────────────────────────────────────────────────── -->
-    <section class="relative z-40 -mt-10 px-4 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-7xl">
-        <SearchBar
-          v-model="filters"
-          :cityOptions="cityOptions"
-          :activeFilterCount="activeFilterCount"
-          @reset="resetFilters"
-        />
-      </div>
-    </section>
-
-    <!-- ── Main Content ───────────────────────────────────────────────────────── -->
-    <section class="mt-12 pb-24 px-4 sm:px-6 lg:px-8">
-      <div
-        class="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[280px_minmax(0,1fr)]"
-      >
-        <!-- Left: Filters sidebar -->
-        <aside class="lg:sticky lg:top-8 lg:self-start">
-          <div
-            class="rounded-[22px] border border-(--color-border)/60 bg-(--color-surface) p-1.5"
-          >
-            <PropertyFilter
-              v-model="filters"
-              :activeFilterCount="activeFilterCount"
-              :cityOptions="cityOptions"
-              :minimumRatings="minimumRatings"
-              :propertyCountByCity="propertyCountByCity"
-              @reset="resetFilters"
-            />
-          </div>
+    <!-- ── Main Content Layout (Sidebar + Grid) ── -->
+    <section class="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] gap-8">
+        <!-- Left Sidebar: Compact Filters -->
+        <aside class="space-y-6 lg:sticky lg:top-28 lg:self-start">
+          <PropertyFilter
+            v-model="filters"
+            :activeFilterCount="activeFilterCount"
+            :cityOptions="cityOptions"
+            :minimumRatings="minimumRatings"
+            :propertyCountByCity="propertyCountByCity"
+            @reset="resetFilters"
+          />
         </aside>
 
-        <!-- Right: Sort + Grid + Pagination -->
-        <section class="min-w-0">
-          <!-- Property type chips -->
-          <div class="mb-5 rounded-[22px] border border-(--color-border)/70 bg-(--color-surface) p-3">
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p class="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-(--color-primary)">
-                  <BuildingOffice2Icon class="h-4 w-4" />
-                  {{ safeT("home.search.type", "Property type") }}
-                </p>
-                <p class="mt-1 text-sm text-(--color-muted)">
-                  Choose the kind of stay you want to browse.
-                </p>
-              </div>
+        <!-- Right: Sort Bar + Properties Grid -->
+        <section class="min-w-0 space-y-6">
+          <!-- Sort Bar Header -->
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-(--color-surface) py-3.5 px-5 rounded-sm border border-(--color-border) shadow-xs transition-colors duration-300" style="border-radius: var(--radius-sm);">
+            <p class="text-sm font-bold text-(--color-text)">
+              {{ filteredProperties.length }} {{ safeT("propertiesPage.resultsFound", "properties found") }}
+            </p>
 
-              <button
-                v-if="filters.type !== 'all'"
-                type="button"
-                class="text-xs font-bold text-(--color-primary) hover:underline"
-                @click="filters.type = 'all'"
-              >
-                Clear type
-              </button>
-            </div>
-
-            <div class="mt-4 flex gap-2 overflow-x-auto pb-1">
-              <button
-                v-for="type in typeOptions"
-                :key="type.value"
-                type="button"
-                class="shrink-0 rounded-full border px-4 py-2 text-sm font-bold transition active:scale-[0.98]"
-                :class="
-                  filters.type === type.value
-                    ? 'border-(--color-primary) bg-(--color-primary) text-white shadow-sm'
-                    : 'border-(--color-border) bg-(--color-surface-soft) text-(--color-muted) hover:border-(--color-primary)/50 hover:text-(--color-text)'
-                "
-                @click="filters.type = type.value"
-              >
-                {{ type.label }}
-              </button>
-            </div>
+            <PropertySortBar
+              v-model="sortBy"
+              v-model:viewMode="viewMode"
+            />
           </div>
 
-          <!-- Sort bar -->
-          <PropertySortBar
-            v-model="sortBy"
-            v-model:viewMode="viewMode"
-            class="mb-6"
-          />
-
-          <!-- Loading -->
+          <!-- Loading State -->
           <div
             v-if="propertyStore.loading"
-            class="rounded-[24px] border border-(--color-border)/60 bg-(--color-surface) px-6 py-20 text-center text-sm font-medium text-(--color-muted) animate-pulse"
+            class="rounded-sm border border-(--color-border) bg-(--color-surface) px-6 py-20 text-center text-sm font-medium text-(--color-muted) animate-pulse"
+            style="border-radius: var(--radius-sm);"
           >
-            Loading accommodations...
+            {{ safeT("propertiesPage.loading", "Searching available properties...") }}
           </div>
 
-          <!-- Error -->
+          <!-- Error State -->
           <div
             v-else-if="propertyStore.error"
-            class="rounded-[24px] border border-rose-500/10 bg-rose-500/5 px-6 py-14 text-center text-sm font-semibold text-rose-500"
+            class="rounded-sm border border-rose-500/10 bg-rose-500/5 px-6 py-14 text-center text-sm font-semibold text-rose-500"
+            style="border-radius: var(--radius-sm);"
           >
             {{ propertyStore.error }}
           </div>
 
-          <!-- Empty -->
+          <!-- Empty State -->
           <div
             v-else-if="filteredProperties.length === 0"
-            class="rounded-[24px] border border-dashed border-(--color-border) bg-(--color-surface) px-6 py-20 text-center text-sm text-(--color-muted) space-y-3"
+            class="rounded-sm border border-dashed border-(--color-border) bg-(--color-surface) px-6 py-20 text-center text-sm text-(--color-muted) space-y-3"
+            style="border-radius: var(--radius-sm);"
           >
-            <p class="font-bold text-(--color-text)">
-              No results match your criteria
-            </p>
-            <p class="text-xs max-w-xs mx-auto">
-              Try loosening your filter metrics or change your query location
-              parameters.
-            </p>
-            <button
-              @click="resetFilters"
-              class="mt-2 text-xs font-bold text-(--color-primary) underline cursor-pointer"
-            >
-              Clear Filters
+            <p class="font-bold text-(--color-text) text-lg">{{ safeT("propertiesPage.noResults", "No properties match your filter criteria") }}</p>
+            <p class="text-xs max-w-xs mx-auto">{{ safeT("propertiesPage.noResultsDesc", "Try loosening your filter metrics, adjusting price thresholds, or resetting your query parameters.") }}</p>
+            <button @click="resetFilters" class="mt-4 px-6 py-2.5 rounded-sm bg-(--color-primary) text-white text-xs font-bold shadow-md hover:opacity-90 transition active:scale-95 cursor-pointer" style="border-radius: var(--radius-sm);">
+              {{ safeT("propertiesPage.filters.reset", "Clear All Filters") }}
             </button>
           </div>
 
-          <!-- Property Grid -->
+          <!-- Properties List/Grid -->
           <div
             v-else
-            class="grid gap-6"
-            :class="
-              viewMode === 'grid'
-                ? 'sm:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3'
-                : 'grid-cols-1'
-            "
+            :class="viewMode === 'list' ? 'space-y-4' : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'"
           >
             <article
               v-for="property in paginatedProperties"
               :key="property.id"
-              class="group cursor-pointer overflow-hidden rounded-[24px] border border-(--color-border)/70 bg-(--color-surface) transition-all duration-300 hover:-translate-y-1 hover:border-(--color-primary)/40 hover:shadow-[var(--shadow-panel)]"
+              class="group cursor-pointer overflow-hidden rounded-sm border border-(--color-border) bg-(--color-surface) shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex"
+              style="border-radius: var(--radius-sm);"
+              :class="viewMode === 'list' ? 'flex-col sm:flex-row gap-6 p-4' : 'flex-col'"
               @click="openProperty(property.id)"
             >
-              <!-- Property Image -->
-              <div class="relative h-52 overflow-hidden bg-(--color-surface-soft)">
+              <!-- Property Image Section -->
+              <div
+                class="relative overflow-hidden bg-(--color-surface-soft) shrink-0 border-(--color-border)"
+                :class="viewMode === 'list' ? 'h-48 sm:h-48 sm:w-72 rounded-sm border' : 'w-full aspect-[4/3] border-b'"
+              >
                 <img
                   :src="property.image || placeholderImage"
                   :alt="property.name"
-                  class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  class="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                 />
-                <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/55 to-transparent"></div>
-                <div class="absolute left-3 top-3 flex flex-wrap gap-2">
-                  <span class="inline-flex items-center gap-1 rounded-full bg-white/92 px-3 py-1 text-[11px] font-bold capitalize text-slate-800 shadow-sm backdrop-blur-md">
-                    <BuildingOffice2Icon class="h-3.5 w-3.5 text-(--color-primary)" />
-                    {{ property.type }}
+                <!-- Smooth gradient overlay for premium contrast -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300"></div>
+
+                <!-- Heart Save Button -->
+                <button
+                  type="button"
+                  class="absolute top-3 right-3 p-2.5 rounded-sm bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 shadow-lg transition-all active:scale-90 z-20 hover:scale-105 hover:shadow-xl cursor-pointer"
+                  style="border-radius: var(--radius-sm);"
+                  @click="(e) => toggleSave(property.id, e)"
+                >
+                  <HeartIconSolid v-if="wishlistStore.isPropertySaved(property.id)" class="h-5 w-5 text-rose-600 animate-scaleUp" />
+                  <HeartIcon v-else class="h-5 w-5 text-gray-900 dark:text-white stroke-[2.5] hover:scale-110 transition" />
+                </button>
+
+                <!-- Top Left Badges -->
+                <div class="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+                  <span
+                    v-if="property.rating >= 4.8"
+                    class="inline-flex items-center gap-1 rounded-sm bg-amber-500 text-gray-900 font-black px-2.5 py-1 text-[10px] shadow-md tracking-wider uppercase animate-pulse"
+                    style="border-radius: var(--radius-sm);"
+                  >
+                    <SparklesIcon class="h-3.5 w-3.5 text-gray-900" />
+                    <span>{{ safeT("propertiesPage.topRated", "Top Rated") }}</span>
+                  </span>
+                  <span
+                    v-else-if="!property.rating || property.rating === 0"
+                    class="inline-flex items-center gap-1 rounded-sm bg-emerald-500 text-white font-black px-2.5 py-1 text-[10px] shadow-md tracking-wider uppercase"
+                    style="border-radius: var(--radius-sm);"
+                  >
+                    <span>🌱 {{ safeT("propertiesPage.newListing", "New Listing") }}</span>
+                  </span>
+                  <span
+                    v-else-if="property.price < 100"
+                    class="inline-flex items-center gap-1 rounded-sm bg-rose-500 text-white font-black px-2.5 py-1 text-[10px] shadow-md tracking-wider uppercase"
+                    style="border-radius: var(--radius-sm);"
+                  >
+                    <span>🔥 {{ safeT("propertiesPage.greatValue", "Great Value") }}</span>
                   </span>
                 </div>
-                <span class="absolute bottom-3 right-3 inline-flex items-center gap-1 rounded-full bg-black/55 px-3 py-1 text-xs font-bold text-white backdrop-blur-md">
-                  <StarIcon class="h-3.5 w-3.5 text-amber-300" />
-                  {{ property.rating }}
+
+                <!-- Bottom Category Badge -->
+                <span class="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-sm bg-black/50 backdrop-blur-md border border-white/20 px-3 py-1 text-xs font-bold text-white shadow-sm tracking-wide" style="border-radius: var(--radius-sm);">
+                  <BuildingOffice2Icon class="h-4 w-4 text-(--color-primary)" />
+                  <span class="capitalize">{{ property.type || 'Stay' }}</span>
                 </span>
               </div>
 
-              <!-- Property Info -->
-              <div class="space-y-4 p-4">
-                <h3
-                  class="line-clamp-1 text-base font-black tracking-tight text-(--color-text)"
-                >
-                  {{ property.name }}
-                </h3>
-                <p class="flex items-center gap-1.5 text-xs font-semibold text-(--color-muted)">
-                  <MapPinIcon class="h-4 w-4 shrink-0 text-(--color-primary)" />
-                  <span class="truncate">{{ property.location }}</span>
-                </p>
-                <p class="line-clamp-2 min-h-[40px] text-sm leading-5 text-(--color-muted)">
-                  {{ property.description }}
-                </p>
-
-                <div class="flex items-end justify-between gap-3 border-t border-(--color-border)/60 pt-4">
-                  <div>
-                    <p class="text-[10px] font-bold uppercase tracking-widest text-(--color-muted)">
-                      From
-                    </p>
-                    <span class="text-lg font-black text-(--color-primary)">
-                    ${{ property.price
-                    }}<span class="text-xs font-medium text-(--color-muted)"
-                      >/night</span
-                    >
-                    </span>
+              <!-- Property Details Section -->
+              <div class="flex flex-col justify-between flex-1 min-w-0" :class="viewMode === 'list' ? 'py-1 pr-2' : 'p-5'">
+                <div>
+                  <div class="flex items-start justify-between gap-3">
+                    <h3 class="text-lg font-bold text-(--color-text) group-hover:text-(--color-primary) transition-colors duration-200 truncate">
+                      {{ property.name }}
+                    </h3>
+                    <div v-if="property.rating > 0" class="flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 font-extrabold px-2.5 py-1 rounded-sm text-xs shrink-0 shadow-xs" style="border-radius: var(--radius-sm);">
+                      <StarIconSolid class="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                      <span>{{ Number(property.rating).toFixed(1) }}</span>
+                    </div>
+                    <div v-else class="flex items-center gap-1 bg-(--color-surface-soft) border border-(--color-border) text-(--color-muted) font-bold px-2.5 py-1 rounded-sm text-[11px] shrink-0 shadow-xs" style="border-radius: var(--radius-sm);">
+                      <span>{{ safeT("propertiesPage.new", "New") }}</span>
+                    </div>
                   </div>
-                  <span class="inline-flex items-center gap-1 rounded-[var(--radius-sm)] bg-(--color-primary-soft) px-3 py-2 text-xs font-bold text-(--color-primary) transition group-hover:bg-(--color-primary) group-hover:text-white">
-                    View
-                    <ArrowRightIcon class="h-3.5 w-3.5" />
+
+                  <!-- Location & Distance -->
+                  <p class="flex items-center gap-1.5 text-xs font-semibold text-(--color-muted) mt-1.5 truncate">
+                    <MapPinIcon class="h-4 w-4 text-(--color-primary) shrink-0" />
+                    <span class="text-(--color-text)">{{ property.location || property.city || 'Cambodia' }}</span>
+                    <span class="text-gray-400 dark:text-gray-600">•</span>
+                    <span class="text-[11px]">{{ safeT("propertiesPage.viewMap", "View on map") }}</span>
+                  </p>
+
+                  <!-- Quick Amenities Snippet -->
+                  <div class="flex items-center flex-wrap gap-x-2 gap-y-1 text-[11px] font-medium text-(--color-muted) mt-3 bg-(--color-surface-soft) px-2.5 py-1.5 rounded-sm border border-(--color-border)/40" style="border-radius: var(--radius-sm);">
+                    <span class="inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-sm bg-(--color-primary)"></span>{{ safeT("amenities.wifi", "Fast WiFi") }}</span>
+                    <span class="text-gray-300 dark:text-gray-700">•</span>
+                    <span class="inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-sm bg-(--color-primary)"></span>{{ safeT("amenities.ac", "Air Conditioning") }}</span>
+                    <span class="text-gray-300 dark:text-gray-700">•</span>
+                    <span class="inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-sm bg-(--color-primary)"></span>{{ safeT("amenities.parking", "Parking") }}</span>
+                  </div>
+
+                  <p v-if="viewMode === 'list'" class="line-clamp-2 text-xs text-(--color-muted) mt-3 leading-relaxed">
+                    {{ property.description }}
+                  </p>
+                </div>
+
+                <!-- Bottom Row: Pricing & Perks -->
+                <div class="flex items-end justify-between gap-4 pt-4 mt-4 border-t border-(--color-border)/60">
+                  <span class="inline-flex items-center gap-1 rounded-sm bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400" style="border-radius: var(--radius-sm);">
+                    <ShieldCheckIcon class="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                    <span>{{ safeT("propertiesPage.freeCancellation", "Free cancellation") }}</span>
                   </span>
+
+                  <div class="text-right shrink-0">
+                    <div class="flex items-baseline justify-end gap-1 group-hover:scale-105 transition-transform origin-right duration-200">
+                      <span class="text-xl font-black text-(--color-text)">${{ property.price }}</span>
+                      <span class="text-xs font-bold text-(--color-muted)">/ {{ safeT("propertiesPage.night", "night") }}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </article>
@@ -528,10 +567,96 @@ onMounted(async () => {
             v-if="totalPages > 1"
             v-model:currentPage="currentPage"
             :totalPages="totalPages"
-            class="mt-8"
+            class="mt-12 border-t border-(--color-border)/40 pt-8"
           />
         </section>
       </div>
     </section>
+
+    <!-- ── Floating "Show Map" Action Button (Fixed Bottom Center) ── -->
+    <div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 pointer-events-auto">
+      <button
+        type="button"
+        class="flex items-center gap-2 px-6 py-3 rounded-sm bg-gray-900 text-white dark:bg-white dark:text-gray-900 shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 font-bold text-sm border border-white/20 dark:border-black/20"
+        style="border-radius: var(--radius-sm);"
+        @click="showMapModal = true"
+      >
+        <span>{{ safeT("propertiesPage.showMap", "Show Map") }}</span>
+        <MapIcon class="h-5 w-5" />
+      </button>
+    </div>
+
+    <!-- ── Fullscreen Interactive Map Modal ── -->
+    <div v-if="showMapModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 sm:p-6 transition-all duration-300" @click.self="showMapModal = false">
+      <div class="flex max-h-[90vh] h-full w-full max-w-7xl overflow-hidden rounded-sm bg-(--color-page) text-(--color-text) shadow-2xl border border-(--color-border) animate-scaleUp flex-col lg:flex-row" style="border-radius: var(--radius-sm);">
+        <!-- Left Property Side Panel -->
+        <div class="w-full lg:w-96 h-1/3 lg:h-full overflow-y-auto p-4 border-b lg:border-b-0 lg:border-r border-(--color-border) flex flex-col gap-4 bg-(--color-surface)">
+          <div class="flex items-center justify-between border-b pb-3 border-(--color-border)">
+            <h3 class="text-lg font-black text-(--color-text)">{{ safeT("propertiesPage.mapProperties", "Properties on Map") }}</h3>
+            <button type="button" class="p-1.5 rounded-sm hover:bg-gray-100 dark:hover:bg-neutral-800 transition active:scale-95" style="border-radius: var(--radius-sm);" @click="showMapModal = false">
+              <XMarkIcon class="h-6 w-6 text-(--color-text)" />
+            </button>
+          </div>
+          <div class="space-y-3 overflow-y-auto pr-1">
+            <div
+              v-for="property in paginatedProperties"
+              :key="property.id"
+              class="flex gap-3 p-2.5 rounded-sm border border-(--color-border) bg-(--color-page) hover:shadow-md transition cursor-pointer"
+              style="border-radius: var(--radius-sm);"
+              :class="hoveredPropertyId === property.id ? 'border-(--color-primary) ring-1 ring-(--color-primary)' : ''"
+              @mouseenter="hoveredPropertyId = property.id"
+              @mouseleave="hoveredPropertyId = null"
+              @click="openProperty(property.id)"
+            >
+              <img :src="property.image || placeholderImage" class="h-20 w-20 object-cover rounded-sm shrink-0" style="border-radius: var(--radius-sm);" alt="thumb" />
+              <div class="flex flex-col justify-between min-w-0 flex-1">
+                <div>
+                  <h4 class="text-xs font-bold text-(--color-text) truncate">{{ property.name }}</h4>
+                  <p class="text-[11px] font-medium text-(--color-muted) truncate">{{ property.location || property.city }}</p>
+                </div>
+                <div class="flex items-center justify-between mt-1">
+                  <span class="text-xs font-bold text-(--color-text)">${{ property.price }}/night</span>
+                  <span class="inline-flex items-center gap-1 text-xs font-bold text-white bg-(--color-primary) px-1.5 py-0.5 rounded-sm" style="border-radius: var(--radius-sm);">
+                    ★ {{ property.rating > 0 ? Number(property.rating).toFixed(1) : safeT("propertiesPage.new", "New") }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Embedded Live Map View -->
+        <div class="flex-1 h-2/3 lg:h-full relative bg-sky-50 dark:bg-neutral-900">
+          <iframe
+            title="Interactive Live Map"
+            src="https://www.openstreetmap.org/export/embed.html?bbox=104.85,11.5,105.0,11.65&layer=mapnik"
+            class="absolute inset-0 h-full w-full border-none filter contrast-105 select-none"
+            style="pointer-events: auto;"
+          ></iframe>
+
+          <!-- Map Pin Overlays -->
+          <div class="absolute inset-0 pointer-events-none p-8">
+            <div
+              v-for="(property, index) in paginatedProperties"
+              :key="property.id"
+              class="absolute pointer-events-auto transition-all duration-300"
+              :style="getMapPinPosition(index)"
+            >
+              <button
+                type="button"
+                class="flex items-center gap-1 rounded-sm px-3 py-1.5 text-xs font-black shadow-xl transition-all duration-200 border"
+                style="border-radius: var(--radius-sm);"
+                :class="hoveredPropertyId === property.id ? 'bg-(--color-primary) text-white border-white scale-125 z-30 shadow-2xl' : 'bg-white text-gray-900 border-black/10 hover:scale-110 z-10'"
+                @mouseenter="hoveredPropertyId = property.id"
+                @mouseleave="hoveredPropertyId = null"
+                @click="openProperty(property.id)"
+              >
+                <span>${{ property.price }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 </template>

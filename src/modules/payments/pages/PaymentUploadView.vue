@@ -26,6 +26,21 @@ const uploadSuccess = ref(false);
 // The single KHQR account (first entry returned by the API)
 const khqrAccount = computed(() => paymentStore.paymentAccounts[0] ?? null);
 
+const assetBaseUrl = computed(() =>
+  (import.meta.env.VITE_API_BASE_URL || "http://localhost:5001/api").replace(
+    /\/api\/?$/,
+    "",
+  ),
+);
+
+const resolveAssetUrl = (url) => {
+  if (!url) return null;
+  if (/^https?:\/\//i.test(url)) return url;
+  return `${assetBaseUrl.value}${url.startsWith("/") ? "" : "/"}${url}`;
+};
+
+const qrImageUrl = computed(() => resolveAssetUrl(khqrAccount.value?.qr_image_url));
+
 const formattedAmount = computed(() => {
   if (!payment.value?.amount) return null;
   return new Intl.NumberFormat("en-US", {
@@ -116,7 +131,7 @@ onMounted(async () => {
           <PaymentMethodCard
             v-else
             :account-name="khqrAccount?.account_name ?? ''"
-            :qr-image-url="khqrAccount?.qr_image_url ?? null"
+            :qr-image-url="qrImageUrl"
             :bakong-id="khqrAccount?.bakong_id ?? ''"
           />
 
@@ -153,7 +168,7 @@ onMounted(async () => {
   min-height: 100vh;
   background: var(--color-page);
   color: var(--color-text);
-  padding-bottom: 5rem;
+  padding-bottom: 1rem;
 }
 
 .upload-page__progress-track {
@@ -176,7 +191,7 @@ onMounted(async () => {
 .upload-page__inner {
   max-width: 1024px;
   margin: 0 auto;
-  padding: 5rem 1.25rem 0;
+  padding: 3.25rem 1.25rem 0;
 }
 
 /* Back */
@@ -193,7 +208,7 @@ onMounted(async () => {
   text-transform: uppercase;
   letter-spacing: 0.12em;
   padding: 0;
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.25rem;
   transition: color 0.15s;
 }
 .upload-page__back:hover {
@@ -212,13 +227,13 @@ onMounted(async () => {
 .upload-page__grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 3rem;
+  gap: 1.25rem;
 }
 
 @media (min-width: 900px) {
   .upload-page__grid {
-    grid-template-columns: 5fr 7fr;
-    align-items: start;
+    grid-template-columns: minmax(300px, 0.9fr) minmax(420px, 1.1fr);
+    align-items: stretch;
   }
 }
 
@@ -226,11 +241,11 @@ onMounted(async () => {
 .upload-page__left {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.9rem;
 }
 
 .upload-page__heading {
-  font-size: 2rem;
+  font-size: 1.55rem;
   font-weight: 900;
   letter-spacing: -0.02em;
   margin: 0 0 0.5rem;
@@ -239,8 +254,8 @@ onMounted(async () => {
 .upload-page__subheading {
   margin: 0;
   color: var(--color-muted);
-  line-height: 1.65;
-  font-size: 0.92rem;
+  line-height: 1.55;
+  font-size: 0.84rem;
 }
 
 /* Amount pill */
@@ -248,7 +263,7 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-  margin-top: 1rem;
+  margin-top: 0.75rem;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 999px;
@@ -283,7 +298,7 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.85rem 1rem;
+  padding: 0.7rem 0.85rem;
   background: rgba(29, 158, 117, 0.06);
   border: 1px solid rgba(29, 158, 117, 0.15);
   border-radius: 14px;
@@ -307,7 +322,7 @@ onMounted(async () => {
 .upload-page__right {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .upload-page__step-label {
