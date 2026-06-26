@@ -7,6 +7,11 @@ import {
   HeartIcon,
   ShieldCheckIcon,
   UserCircleIcon,
+  ChatBubbleLeftEllipsisIcon,
+  BriefcaseIcon,
+  UsersIcon,
+  UserIcon,
+  PencilIcon,
 } from "@heroicons/vue/24/outline";
 import { CheckCircleIcon as CheckCircleIconSolid } from "@heroicons/vue/24/solid";
 import { useI18n } from "vue-i18n";
@@ -49,6 +54,7 @@ const leaveConfirmationOpen = ref(false);
 const pendingLeaveResolver = ref(null);
 const allowNextNavigation = ref(false);
 const activeAccountTab = ref("personal");
+const isEditing = ref(false);
 
 const {
   selectedImageFile,
@@ -96,7 +102,8 @@ const {
 const user = ref(null);
 
 const isCustomerAccount = computed(() => (user.value?.role || authStore.user?.role) === "customer");
-const userLabel = computed(() => user.value?.full_name || user.value?.email || "User");
+const userLabel = computed(() => user.value?.full_name || user.value?.email || "Meoun");
+const userInitial = computed(() => userLabel.value.charAt(0).toUpperCase());
 
 const roleLabel = computed(() => {
   const role = user.value?.role || "member";
@@ -125,33 +132,7 @@ const profileCompletionPercent = computed(() => {
   const completed = profileCompletionItems.value.filter((item) => item.complete).length;
   return Math.round((completed / profileCompletionItems.value.length) * 100);
 });
-const accountCenterNav = computed(() => [
-  {
-    label: t("profile.navPersonal"),
-    icon: UserCircleIcon,
-    tab: "personal",
-  },
-  {
-    label: t("profile.navSecurity"),
-    icon: ShieldCheckIcon,
-    tab: "security",
-  },
-  {
-    label: t("profile.navBookings"),
-    icon: CalendarDaysIcon,
-    to: { name: "customer.reservations" },
-  },
-  {
-    label: t("profile.navSavedStays"),
-    icon: HeartIcon,
-    to: { name: "customer.wishlist" },
-  },
-  {
-    label: t("profile.navPreferences"),
-    icon: Cog6ToothIcon,
-    to: { name: "customer.settings" },
-  },
-]);
+
 const currentProfileSnapshot = computed(() => ({
   full_name: profileForm.full_name.trim(),
   phone: profileForm.phone.trim(),
@@ -241,6 +222,7 @@ const saveProfile = async () => {
 
     syncForm(response.data);
     syncAuthUser(response.data);
+    isEditing.value = false;
     toastStore.success(t("profile.toast.profileUpdated"));
   } catch (requestError) {
     toastStore.danger(requestError.message || t("profile.errors.updateProfile"));
@@ -411,36 +393,12 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <main class="min-h-screen bg-(--color-page) px-4 py-10 text-(--color-text) sm:px-6 lg:px-8">
+  <main class="min-h-screen bg-white dark:bg-neutral-950 px-4 py-16 text-gray-900 dark:text-white sm:px-6 lg:px-8 font-sans transition-colors duration-300">
     <section class="mx-auto max-w-6xl">
-      <header v-if="!isCustomerAccount" class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <AppButton
-            type="button"
-            variant="primary"
-            size="sm"
-            class="mb-4 !rounded-sm"
-            @click="goBack"
-          >
-            <ArrowLeftIcon class="h-4 w-4" />
-            {{ t("common.back") }}
-          </AppButton>
-          <p class="text-sm font-semibold uppercase tracking-[0.18em] text-(--color-primary)">
-            {{ t("profile.account") }}
-          </p>
-          <h1 class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
-            {{ t("profile.title") }}
-          </h1>
-          <p class="mt-2 max-w-2xl text-sm text-(--color-muted)">
-            {{ t("profile.subtitle") }}
-          </p>
-        </div>
-      </header>
-
       <AppAlert
         v-if="error"
         variant="danger"
-        class="mb-5"
+        class="mb-6 rounded-2xl"
         dismissible
         @close="error = ''"
       >
@@ -450,7 +408,7 @@ onUnmounted(() => {
       <AppAlert
         v-if="success"
         variant="success"
-        class="mb-5"
+        class="mb-6 rounded-2xl"
         dismissible
         @close="success = ''"
       >
@@ -459,86 +417,86 @@ onUnmounted(() => {
 
       <div
         v-if="loading"
-        class="rounded-lg border border-(--color-border) bg-(--color-surface) p-8 text-center shadow-(--shadow-card)"
+        class="rounded-3xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-12 text-center shadow-xl"
       >
         <LoadingSpinner :label="t('profile.loading')" />
       </div>
 
-      <div v-else-if="isCustomerAccount" class="grid gap-8 lg:grid-cols-[310px_1fr]">
-        <aside class="lg:sticky lg:top-28 lg:self-start">
-          <div class="rounded-md border border-(--color-border)/40 bg-(--color-surface)/95 shadow-sm p-5 backdrop-blur-md">
-            <AppButton
+      <!-- Main Airbnb Split Layout -->
+      <div v-else class="grid gap-12 lg:grid-cols-[280px_1fr] items-start">
+        <!-- Left Navigation Sidebar -->
+        <aside class="lg:sticky lg:top-28 lg:self-start space-y-6 pr-4 lg:border-r border-gray-200 dark:border-neutral-800/80 lg:min-h-[60vh]">
+          <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-8">
+            Profile
+          </h1>
+
+          <nav class="space-y-2" aria-label="Profile navigation">
+            <!-- About me -->
+            <button
               type="button"
-              variant="secondary"
-              size="sm"
-              class="mb-6 !rounded-sm"
-              @click="goBack"
+              class="w-full flex items-center gap-4 rounded-2xl py-3 px-4 text-left transition-all duration-200 cursor-pointer"
+              :class="[activeAccountTab === 'personal' ? 'bg-gray-100 dark:bg-neutral-800 font-bold text-gray-900 dark:text-white' : 'hover:bg-gray-50 dark:hover:bg-neutral-800/50 font-semibold text-gray-700 dark:text-gray-200']"
+              @click="activeAccountTab = 'personal'"
             >
-              <ArrowLeftIcon class="h-4 w-4" />
-              {{ t("common.back") }}
-            </AppButton>
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-pink-100 text-rose-600 font-bold text-sm shadow-xs">
+                {{ userInitial }}
+              </span>
+              <span>About me</span>
+            </button>
 
-            <p class="text-sm font-bold uppercase tracking-[0.18em] text-(--color-primary)">
-              {{ t("app.name") }}
-            </p>
-            <h1 class="mt-2 text-3xl font-bold tracking-tight">
-              {{ t("profile.accountCenter") }}
-            </h1>
-            <p class="mt-3 text-sm leading-6 text-(--color-muted)">
-              {{ t("profile.accountCenterDesc") }}
-            </p>
+            <!-- Past trips -->
+            <RouterLink
+              :to="{ name: 'customer.reservations' }"
+              class="w-full flex items-center gap-4 rounded-2xl py-3 px-4 text-left transition-all duration-200 hover:bg-gray-50 dark:hover:bg-neutral-800/50 font-semibold text-gray-700 dark:text-gray-200 group"
+            >
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-50 dark:bg-neutral-800 text-amber-600 font-bold text-lg shadow-xs group-hover:scale-105 transition-transform">
+                💼
+              </span>
+              <span>Past trips</span>
+            </RouterLink>
 
-            <nav class="mt-7 space-y-2" aria-label="Account center navigation">
-              <template
-                v-for="item in accountCenterNav"
-                :key="item.label"
-              >
-                <button
-                  v-if="item.tab"
-                  type="button"
-                  class="group flex w-full items-center gap-3 rounded-sm py-2 px-3 border-l-2 text-left text-sm font-semibold transition-all duration-200"
-                  :class="[activeAccountTab === item.tab ? 'bg-gradient-to-r from-(--color-primary-soft)/60 to-transparent border-(--color-primary) !text-(--color-primary)' : 'border-transparent text-(--color-text) hover:bg-(--color-surface-soft)']"
-                  @click="activeAccountTab = item.tab"
-                >
-                  <span
-                    class="flex h-9 w-9 items-center justify-center rounded-sm transition-all duration-300 shadow-sm"
-                    :class="[activeAccountTab === item.tab ? 'bg-gradient-to-tr from-(--color-primary) to-(--color-secondary) text-white' : 'bg-gradient-to-tr from-(--color-primary-soft) to-(--color-surface-soft) text-(--color-primary) group-hover:from-(--color-primary) group-hover:to-(--color-secondary) group-hover:text-white']"
-                  >
-                    <component :is="item.icon" class="h-4.5 w-4.5" />
-                  </span>
-                  <span>{{ item.label }}</span>
-                </button>
+            <!-- Connections -->
+            <RouterLink
+              :to="{ name: 'customer.wishlist' }"
+              class="w-full flex items-center gap-4 rounded-2xl py-3 px-4 text-left transition-all duration-200 hover:bg-gray-50 dark:hover:bg-neutral-800/50 font-semibold text-gray-700 dark:text-gray-200 group"
+            >
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 dark:bg-neutral-800 text-blue-600 font-bold text-lg shadow-xs group-hover:scale-105 transition-transform">
+                👥
+              </span>
+              <span>Connections</span>
+            </RouterLink>
 
-                <RouterLink
-                  v-else
-                  :to="item.to"
-                  class="group flex items-center gap-3 rounded-sm py-2 px-3 border-l-2 border-transparent text-sm font-semibold text-(--color-text) transition-all duration-200 hover:bg-(--color-surface-soft)"
-                >
-                  <span class="flex h-9 w-9 items-center justify-center rounded-sm bg-gradient-to-tr from-(--color-primary-soft) to-(--color-surface-soft) text-(--color-primary) group-hover:from-(--color-primary) group-hover:to-(--color-secondary) group-hover:text-white transition-all duration-300 shadow-sm">
-                    <component :is="item.icon" class="h-4.5 w-4.5" />
-                  </span>
-                  <span>{{ item.label }}</span>
-                </RouterLink>
-              </template>
-            </nav>
-          </div>
+            <!-- Security & Preferences -->
+            <button
+              type="button"
+              class="w-full flex items-center gap-4 rounded-2xl py-3 px-4 text-left transition-all duration-200 cursor-pointer"
+              :class="[activeAccountTab === 'security' ? 'bg-gray-100 dark:bg-neutral-800 font-bold text-gray-900 dark:text-white' : 'hover:bg-gray-50 dark:hover:bg-neutral-800/50 font-semibold text-gray-700 dark:text-gray-200']"
+              @click="activeAccountTab = 'security'"
+            >
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 dark:bg-neutral-800 text-emerald-600 font-bold text-lg shadow-xs">
+                🔒
+              </span>
+              <span>Login & security</span>
+            </button>
+          </nav>
         </aside>
 
-        <div class="space-y-8">
+        <!-- Right Main Content Area -->
+        <div class="lg:pl-6 space-y-8">
           <section
             v-if="!isEmailVerified"
-            class="rounded-md border border-(--color-warning) bg-(--color-warning-soft) p-5 text-(--color-warning)"
+            class="rounded-3xl border border-amber-500/30 bg-amber-500/10 p-6 text-amber-700 dark:text-amber-400 shadow-sm"
           >
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div class="flex items-start gap-3">
-                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm bg-(--color-surface) text-(--color-warning)">
-                  <ShieldCheckIcon class="h-5 w-5" />
+              <div class="flex items-start gap-4">
+                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white dark:bg-neutral-900 text-amber-500 border border-amber-500/30 shadow-xs">
+                  <ShieldCheckIcon class="h-6 w-6" />
                 </span>
                 <div>
-                  <h2 class="font-bold text-(--color-text)">
+                  <h2 class="text-lg font-bold text-gray-900 dark:text-white">
                     {{ t("profile.emailVerification.title") }}
                   </h2>
-                  <p class="mt-1 text-sm leading-6 text-(--color-muted)">
+                  <p class="mt-1 text-xs leading-relaxed text-gray-600 dark:text-gray-400 font-medium">
                     {{ t("profile.emailVerification.description") }}
                   </p>
                 </div>
@@ -547,8 +505,8 @@ onUnmounted(() => {
               <AppButton
                 type="button"
                 variant="secondary"
-                size="sm"
-                class="shrink-0 !rounded-sm whitespace-nowrap"
+                size="md"
+                class="shrink-0 !rounded-2xl shadow-sm whitespace-nowrap font-bold px-6 py-3 hover:scale-105 active:scale-95 transition-all duration-200"
                 :loading="resendingVerification"
                 :disabled="resendingVerification"
                 @click="resendVerificationEmail"
@@ -558,72 +516,70 @@ onUnmounted(() => {
             </div>
           </section>
 
-          <section v-if="activeAccountTab === 'personal'" id="personal-details" class="scroll-mt-28">
-            <div class="mb-5">
-              <h2 class="text-3xl font-bold tracking-tight">{{ t("profile.personalTitle") }}</h2>
-              <p class="mt-2 max-w-3xl text-base leading-7 text-(--color-muted)">
-                {{ t("profile.personalDesc") }}
-              </p>
+          <!-- Personal / About me view -->
+          <section v-if="activeAccountTab === 'personal'" id="personal-details">
+            <div class="flex items-center gap-4 mb-10">
+              <h1 class="text-3xl font-bold text-gray-900 dark:text-white">About me</h1>
+              <button
+                type="button"
+                class="bg-gray-100 hover:bg-gray-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-gray-900 dark:text-white text-xs font-bold px-4 py-1.5 rounded-full transition-all duration-200 cursor-pointer"
+                @click="isEditing = !isEditing"
+              >
+                {{ isEditing ? 'Cancel' : 'Edit' }}
+              </button>
             </div>
 
-            <div class="space-y-6">
-              <section class="overflow-hidden rounded-md border border-(--color-border) bg-(--color-surface)">
-                <div class="border-b border-(--color-border) px-5 py-4">
-                  <h3 class="text-xl font-bold">{{ t("nav.profile") }}</h3>
+            <div v-if="!isEditing">
+              <!-- Airbnb Card & Callout Section -->
+              <div class="flex flex-col lg:flex-row gap-12 items-start mb-12">
+                <!-- Profile Identity Card -->
+                <div class="bg-white dark:bg-neutral-900 rounded-[32px] p-8 shadow-[0_6px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_6px_20px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-neutral-800 flex flex-col items-center justify-center text-center w-full max-w-[320px] min-h-[240px] transition-all duration-300 hover:shadow-[0_12px_30px_rgba(0,0,0,0.12)] group">
+                  <div class="relative mb-5">
+                    <button
+                      type="button"
+                      class="relative block rounded-full overflow-hidden focus:outline-none focus:ring-2 focus:ring-[#FF385C] group-hover:scale-105 transition-all duration-300 shadow-md"
+                      @click="cropModalOpen = true"
+                      title="Update photo"
+                    >
+                      <UserAvatar
+                        :name="userLabel"
+                        :src="avatarPreviewUrl"
+                        size-class="h-28 w-28 text-5xl font-semibold"
+                      />
+                    </button>
+                  </div>
+                  <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">{{ userLabel }}</h2>
+                  <p class="text-xs text-gray-500 font-normal">Guest</p>
                 </div>
 
-                <div class="flex flex-col gap-6 p-5 lg:flex-row lg:items-center lg:justify-between">
-                  <div class="flex min-w-0 flex-col gap-5 sm:flex-row sm:items-center">
-                    <ProfileSummaryCard
-                      :user-label="userLabel"
-                      :email="user?.email"
-                      :role-label="roleLabel"
-                      :avatar-src="avatarPreviewUrl"
-                      :email-verified="Boolean(user?.email_verified_at)"
-                      :email-verification-label="emailVerificationLabel"
-                      :email-verification-tone-class="emailVerificationToneClass"
-                      :uploading-image="uploadingImage"
-                      :has-selected-image="hasSelectedImage"
-                      :selected-image-name="selectedImageFile?.name"
-                      compact
-                      class="border-0 !bg-transparent !p-0 !shadow-none"
-                      @select-image="handleProfileImageSelect"
-                      @remove-image="removeProfileImage"
-                    />
-
-                    <div class="min-w-0">
-                      <div class="flex items-center gap-1.5">
-                        <p class="truncate text-lg font-bold text-(--color-text)">{{ userLabel }}</p>
-                        <span
-                          v-if="isEmailVerified"
-                          class="inline-flex items-center text-(--color-success)"
-                          :title="t('nav.verifiedProfile')"
-                        >
-                          <CheckCircleIconSolid class="h-5 w-5" />
-                        </span>
-                      </div>
-                      <p class="truncate text-sm text-(--color-muted)">{{ user?.email }}</p>
-                      <div class="mt-2 flex flex-wrap gap-2">
-                        <span class="rounded-sm bg-(--color-primary-soft) px-2.5 py-1 text-xs font-bold uppercase tracking-[0.14em] text-(--color-primary)">
-                          {{ roleLabel }}
-                        </span>
-                        <span
-                          class="rounded-sm px-2.5 py-1 text-xs font-bold uppercase tracking-[0.14em]"
-                          :class="emailVerificationToneClass"
-                        >
-                          {{ emailVerificationLabel }}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="min-w-[120px] rounded-sm bg-(--color-primary-soft) px-4 py-3 text-center text-(--color-primary)">
-                    <p class="text-2xl font-bold">{{ profileCompletionPercent }}%</p>
-                    <p class="text-xs font-bold uppercase tracking-[0.12em]">{{ t("profile.completion.complete") }}</p>
-                  </div>
+                <!-- Complete your profile callout -->
+                <div class="flex-1 max-w-md py-4">
+                  <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">Complete your profile</h3>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-6 font-normal">
+                    Your Airbnb profile is an important part of every reservation. Complete yours to help other hosts and guests get to know you.
+                  </p>
+                  <button
+                    type="button"
+                    class="bg-[#FF385C] hover:bg-[#E31C5F] text-white font-bold px-7 py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 active:scale-95 text-sm cursor-pointer"
+                    @click="isEditing = true"
+                  >
+                    Get started
+                  </button>
                 </div>
-              </section>
+              </div>
 
+              <!-- Divider Line -->
+              <div class="border-b border-gray-200 dark:border-neutral-800 my-10 w-full"></div>
+
+              <!-- Reviews Row -->
+              <div class="flex items-center gap-4 text-base font-semibold text-gray-900 dark:text-white hover:underline cursor-pointer py-2 group">
+                <ChatBubbleLeftEllipsisIcon class="h-6 w-6 text-gray-700 dark:text-gray-300 group-hover:text-[#FF385C] transition-colors" />
+                <span>Show reviews I've written</span>
+              </div>
+            </div>
+
+            <!-- Expandable Edit Form -->
+            <div v-else class="space-y-8 animate-fadeIn">
               <ProfileDetailsForm
                 :form="profileForm"
                 :errors="profileErrors"
@@ -634,10 +590,11 @@ onUnmounted(() => {
             </div>
           </section>
 
-          <section v-else-if="activeAccountTab === 'security'" id="security" class="scroll-mt-28 space-y-5">
+          <!-- Security view -->
+          <section v-else-if="activeAccountTab === 'security'" id="security" class="space-y-8">
             <div>
-              <h2 class="text-3xl font-bold tracking-tight">{{ t("profile.securityTitle") }}</h2>
-              <p class="mt-2 max-w-3xl text-base leading-7 text-(--color-muted)">
+              <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">{{ t("profile.securityTitle") }}</h2>
+              <p class="mt-2 max-w-3xl text-base leading-relaxed text-gray-600 dark:text-gray-400 font-medium">
                 {{ t("profile.securityDesc") }}
               </p>
             </div>
@@ -653,59 +610,15 @@ onUnmounted(() => {
           </section>
         </div>
       </div>
-
-      <div v-else class="grid gap-6 lg:grid-cols-[340px_1fr]">
-        <aside class="space-y-6 lg:sticky lg:top-28 lg:self-start">
-           <ProfileSummaryCard
-            :user-label="userLabel"
-            :email="user?.email"
-            :role-label="roleLabel"
-            :avatar-src="avatarPreviewUrl"
-            :email-verified="Boolean(user?.email_verified_at)"
-            :email-verification-label="emailVerificationLabel"
-            :email-verification-tone-class="emailVerificationToneClass"
-            :uploading-image="uploadingImage"
-            :has-selected-image="hasSelectedImage"
-            :selected-image-name="selectedImageFile?.name"
-            @select-image="handleProfileImageSelect"
-            @remove-image="removeProfileImage"
-          />
-
-          <ProfileCompletionCard
-            :completion-percent="profileCompletionPercent"
-            :completion-items="profileCompletionItems"
-          />
-        </aside>
-
-        <div class="space-y-6">
-          <ProfileDetailsForm
-            :form="profileForm"
-            :errors="profileErrors"
-            :saving="savingProfile"
-            :has-changes="hasProfileChanges"
-            @submit="saveProfile"
-          />
-
-          <div id="security" class="scroll-mt-28 space-y-6">
-            <PasswordChangeForm
-              :form="passwordForm"
-              :errors="passwordErrors"
-              :saving="savingPassword"
-              @submit="changePassword"
-            />
-
-            <SessionManagementCard />
-          </div>
-        </div>
-      </div>
     </section>
 
     <AppModal
       :open="leaveConfirmationOpen"
       :title="t('profile.leave.title')"
+      panel-class="!rounded-3xl border border-gray-200 dark:border-neutral-800 shadow-2xl backdrop-blur-2xl bg-white dark:bg-neutral-900"
       @close="resolveLeaveConfirmation(false)"
     >
-      <p class="text-sm leading-6 text-(--color-muted)">
+      <p class="text-base leading-relaxed text-gray-600 dark:text-gray-400 font-medium py-2">
         {{ t("profile.leave.message") }}
       </p>
 
@@ -713,7 +626,7 @@ onUnmounted(() => {
         <AppButton
           type="button"
           variant="secondary"
-          class="!rounded-sm"
+          class="!rounded-2xl font-bold px-6 py-3 shadow-xs hover:scale-105 active:scale-95 transition-all duration-200"
           @click="resolveLeaveConfirmation(false)"
         >
           {{ t("profile.leave.stay") }}
@@ -721,7 +634,7 @@ onUnmounted(() => {
         <AppButton
           type="button"
           variant="danger"
-          class="!rounded-sm"
+          class="!rounded-2xl font-bold px-6 py-3 shadow-md hover:scale-105 active:scale-95 transition-all duration-200 bg-[#FF385C] hover:bg-[#E31C5F]"
           @click="resolveLeaveConfirmation(true)"
         >
           {{ t("profile.leave.confirm") }}
@@ -732,17 +645,17 @@ onUnmounted(() => {
     <AppModal
       :open="cropModalOpen"
       :title="t('profile.summary.cropImage')"
-      panel-class="max-w-xl"
+      panel-class="max-w-xl !rounded-3xl border border-gray-200 dark:border-neutral-800 shadow-[0_30px_100px_rgba(0,0,0,0.5)] backdrop-blur-2xl bg-white dark:bg-neutral-900 transition-all duration-300"
       @close="closeCropModal"
     >
-      <div class="space-y-5">
-        <p class="text-sm leading-6 text-(--color-muted)">
+      <div class="space-y-6 py-2">
+        <p class="text-base leading-relaxed text-gray-600 dark:text-gray-400 font-medium">
           {{ t("profile.summary.cropDescription") }}
         </p>
 
         <Cropper
           ref="cropperRef"
-          class="h-[360px] rounded-md bg-black"
+          class="h-[360px] rounded-2xl bg-black overflow-hidden shadow-inner ring-1 ring-white/10"
           :src="selectedImagePreviewUrl"
           :stencil-props="{ aspectRatio: 1 }"
           image-restriction="stencil"
@@ -754,7 +667,7 @@ onUnmounted(() => {
         <AppButton
           type="button"
           variant="secondary"
-          class="!rounded-sm"
+          class="!rounded-2xl font-bold px-6 py-3.5 shadow-xs hover:scale-105 active:scale-95 transition-all duration-200"
           :disabled="uploadingImage"
           @click="closeCropModal"
         >
@@ -762,7 +675,7 @@ onUnmounted(() => {
         </AppButton>
         <AppButton
           type="button"
-          class="!rounded-sm"
+          class="!rounded-2xl font-bold px-8 py-3.5 shadow-lg shadow-rose-500/30 hover:shadow-xl hover:shadow-rose-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 bg-[#FF385C] hover:bg-[#E31C5F] text-white"
           :loading="uploadingImage"
           :disabled="uploadingImage"
           @click="applyCropAndUpload"

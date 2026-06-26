@@ -31,62 +31,81 @@ defineEmits(["submit"]);
 
 <template>
   <form
-    class="rounded-md border border-(--color-border) bg-(--color-surface) p-6 shadow-(--shadow-card)"
+    class="rounded-3xl border border-(--color-border)/80 bg-(--color-surface)/95 p-8 shadow-[0_10px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.3)] backdrop-blur-xl transition-all duration-300"
     @submit.prevent="$emit('submit')"
   >
-    <div class="mb-5 flex items-center gap-3">
-      <UserCircleIcon class="h-6 w-6 text-(--color-primary)" />
+    <div class="mb-8 flex items-start gap-4 pb-6 border-b border-(--color-border)/60">
+      <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-(--color-primary-soft) text-(--color-primary) shadow-inner">
+        <UserCircleIcon class="h-8 w-8" />
+      </span>
       <div>
-        <h2 class="text-xl font-bold">{{ t("profile.details.title") }}</h2>
-        <p class="text-sm text-(--color-muted)">{{ t("profile.details.description") }}</p>
+        <h2 class="text-2xl font-black tracking-tight text-(--color-text)">{{ t("profile.details.title") }}</h2>
+        <p class="mt-1 text-sm leading-relaxed text-(--color-muted) font-medium">{{ t("profile.details.description") }}</p>
       </div>
     </div>
 
-    <div class="grid gap-4 md:grid-cols-2">
-      <AppInput
-        v-model="form.full_name"
-        :label="t('profile.details.fullName')"
-        :placeholder="t('profile.details.fullNamePlaceholder')"
-        :error="errors.full_name"
-        required
-      />
-      <AppInput
-        v-model="form.phone"
-        :label="t('common.phone')"
-        :placeholder="t('profile.details.phonePlaceholder')"
-        :error="errors.phone"
-      />
-      <label class="grid gap-2 text-sm font-semibold text-(--color-text)">
-        <span>{{ t("profile.details.gender") }}</span>
-        <select
-          v-model="form.gender"
-          class="w-full rounded-sm border border-(--color-border) bg-(--color-input) px-3.5 py-3 text-(--color-text) outline-none transition focus:border-(--color-primary) focus:ring-4 focus:ring-(--color-focus-ring)"
-        >
-          <option value="">{{ t("profile.details.preferNotToSay") }}</option>
-          <option value="male">{{ t("profile.details.male") }}</option>
-          <option value="female">{{ t("profile.details.female") }}</option>
-          <option value="other">{{ t("profile.details.other") }}</option>
-        </select>
-      </label>
-      <AppInput
-        v-model="form.date_of_birth"
-        type="date"
-        :label="t('profile.details.dateOfBirth')"
-        :error="errors.date_of_birth"
-      />
-      <div class="md:col-span-2">
+    <div class="grid gap-6 md:grid-cols-2">
+      <div class="rounded-2xl border border-(--color-border) bg-(--color-surface-soft)/50 p-5 shadow-inner transition-all duration-200 focus-within:border-(--color-primary) focus-within:bg-(--color-surface-soft) focus-within:shadow-md">
+        <AppInput
+          v-model="form.full_name"
+          :label="t('profile.details.fullName')"
+          :placeholder="t('profile.details.fullNamePlaceholder')"
+          :error="errors.full_name"
+          required
+          class="!font-bold"
+        />
+      </div>
+
+      <div class="rounded-2xl border border-(--color-border) bg-(--color-surface-soft)/50 p-5 shadow-inner transition-all duration-200 focus-within:border-(--color-primary) focus-within:bg-(--color-surface-soft) focus-within:shadow-md">
+        <AppInput
+          v-model="form.phone"
+          :label="t('common.phone')"
+          :placeholder="t('profile.details.phonePlaceholder')"
+          :error="errors.phone"
+          class="!font-bold"
+        />
+      </div>
+
+      <div class="rounded-2xl border border-(--color-border) bg-(--color-surface-soft)/50 p-5 shadow-inner transition-all duration-200 focus-within:border-(--color-primary) focus-within:bg-(--color-surface-soft) focus-within:shadow-md">
+        <label class="grid gap-2 text-sm font-black text-(--color-text)">
+          <span>{{ t("profile.details.gender") }}</span>
+          <select
+            v-model="form.gender"
+            class="w-full rounded-xl border border-(--color-border) bg-(--color-input) px-4 py-3 text-(--color-text) font-bold outline-none transition focus:border-(--color-primary) focus:ring-4 focus:ring-(--color-focus-ring) shadow-xs"
+          >
+            <option value="">{{ t("profile.details.preferNotToSay") }}</option>
+            <option value="male">{{ t("profile.details.male") }}</option>
+            <option value="female">{{ t("profile.details.female") }}</option>
+            <option value="other">{{ t("profile.details.other") }}</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="rounded-2xl border border-(--color-border) bg-(--color-surface-soft)/50 p-5 shadow-inner transition-all duration-200 focus-within:border-(--color-primary) focus-within:bg-(--color-surface-soft) focus-within:shadow-md">
+        <AppInput
+          v-model="form.date_of_birth"
+          type="date"
+          :label="t('profile.details.dateOfBirth')"
+          :error="errors.date_of_birth"
+          class="!font-bold"
+        />
+      </div>
+
+      <div class="md:col-span-2 rounded-2xl border border-(--color-border) bg-(--color-surface-soft)/50 p-5 shadow-inner transition-all duration-200 focus-within:border-(--color-primary) focus-within:bg-(--color-surface-soft) focus-within:shadow-md">
         <AppTextarea
           v-model="form.address"
           :label="t('profile.details.address')"
           :placeholder="t('profile.details.addressPlaceholder')"
           rows="3"
+          class="!font-bold"
         />
       </div>
     </div>
 
-    <div class="mt-6 flex flex-col gap-3 border-t border-(--color-border) pt-5 sm:flex-row sm:items-center sm:justify-between">
-      <p class="text-xs text-(--color-muted)">
-        <span v-if="hasChanges" class="font-semibold text-(--color-warning)">
+    <div class="mt-8 flex flex-col gap-4 border-t border-(--color-border)/60 pt-6 sm:flex-row sm:items-center sm:justify-between">
+      <p class="text-sm text-(--color-muted) font-medium">
+        <span v-if="hasChanges" class="font-black text-(--color-warning) flex items-center gap-1.5">
+          <span class="flex h-2 w-2 rounded-full bg-(--color-warning) animate-ping"></span>
           {{ t("profile.details.unsavedChanges") }}
         </span>
         <span v-else>
@@ -95,7 +114,7 @@ defineEmits(["submit"]);
       </p>
       <AppButton
         type="submit"
-        class="!rounded-sm"
+        class="!rounded-2xl font-black px-8 py-3.5 shadow-lg shadow-(--color-primary)/20 hover:shadow-xl hover:shadow-(--color-primary)/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
         :disabled="saving || !hasChanges"
         :loading="saving"
       >
