@@ -1270,6 +1270,7 @@
       "rooms": "Rooms",
       "bookingCalendar": "Calendar",
       "reservations": "Reservations",
+      "reviews": "Reviews",
       "paymentAccounts": "Payment Accounts",
       "settings": "Settings"
     },
@@ -1327,6 +1328,54 @@
         "totalBookings": "Total Bookings",
         "totalRevenue": "Total Revenue",
         "paidRevenue": "Paid Revenue"
+      }
+    },
+    "reviews": {
+      "title": "Guest Reviews",
+      "subtitle": "Reply to guests and build your reputation.",
+      "refresh": "Refresh",
+      "stats": {
+        "totalReviews": "Total Reviews",
+        "avgRating": "Avg Rating",
+        "replied": "Replied",
+        "needsReply": "Needs Reply"
+      },
+      "breakdown": "Rating Breakdown",
+      "filters": {
+        "all": "All",
+        "needsReply": "Needs Reply",
+        "replied": "Replied",
+        "fiveStar": "5★",
+        "low": "Low (≤3★)"
+      },
+      "sort": {
+        "newest": "Most Recent",
+        "oldest": "Oldest First",
+        "highest": "Highest Rating",
+        "lowest": "Lowest Rating"
+      },
+      "search": "Search guest, property…",
+      "empty": "No guest reviews yet.",
+      "emptyFilter": "No reviews match your filters.",
+      "card": {
+        "noReplyYet": "No reply yet",
+        "replyToGuest": "Reply to Guest",
+        "yourReply": "Your Reply",
+        "edit": "Edit",
+        "remove": "Remove",
+        "editReply": "Edit your reply",
+        "replyToThis": "Reply to this guest",
+        "posting": "Posting…",
+        "saveChanges": "Save Changes",
+        "postReply": "Post Reply",
+        "confirmRemove": "Remove your reply to this review?",
+        "ratings": {
+          "excellent": "Excellent",
+          "veryGood": "Very Good",
+          "good": "Good",
+          "fair": "Fair",
+          "poor": "Poor"
+        }
       }
     }
   },
@@ -1530,7 +1579,27 @@
       "goBack": "Go Back",
       "cancel": "Cancel Reservation",
       "confirm": "Confirm Cancellation",
-      "cancelling": "Cancelling…"
+      "cancelling": "Cancelling…",
+      "payNow": "Pay Now",
+      "reupload": "Re-upload Proof"
+    },
+    "blocked": {
+      "paymentSubmitted": "Cancellation is not available — your payment has already been submitted.",
+      "paymentRejected": "Your payment was rejected. Please re-upload your proof of payment."
+    },
+    "refund": {
+      "eyebrow": "Payment Already Submitted",
+      "title": "Request a Refund",
+      "description": "Your payment has been submitted. To cancel this reservation, please submit a refund request. The owner will review and process it.",
+      "reasonLabel": "Reason for refund request",
+      "reasonPlaceholder": "e.g. Change of plans, emergency, personal reasons…",
+      "reasonError": "Please provide a reason for your refund request.",
+      "requestButton": "Request Refund",
+      "submitButton": "Submit Refund Request",
+      "submitting": "Submitting…",
+      "successTitle": "Refund Requested",
+      "successMessage": "Your refund request has been submitted successfully.",
+      "errorMessage": "Failed to submit refund request. Please try again."
     },
     "toast": {
       "successTitle": "Cancelled",

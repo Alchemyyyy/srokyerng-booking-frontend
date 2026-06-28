@@ -60,6 +60,20 @@
         <img :src="review.image" :alt="t('reviewCard.photoAlt')" class="review-img" />
         <div class="image-count" v-if="review.imageCount">+{{ review.imageCount }}</div>
       </div>
+
+      <!-- Owner Reply Block -->
+      <div v-if="review.ownerReply" class="owner-reply">
+        <div class="owner-reply-head">
+          <span class="owner-reply-tag">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            {{ t('reviewCard.ownerReply') }}
+          </span>
+          <span v-if="review.repliedAt" class="owner-reply-date">{{ review.repliedAt }}</span>
+        </div>
+        <p class="owner-reply-text">{{ review.ownerReply }}</p>
+      </div>
     </div>
   </div>
 </template>
@@ -303,6 +317,46 @@ const getAvatarGradient = (name) => {
   }
 }
 
+/* Owner Reply */
+.owner-reply {
+  background: #f0f7ff;
+  border: 1px solid #bfdbfe;
+  border-left: 3px solid #2563eb;
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+.owner-reply-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.owner-reply-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #2563eb;
+  background: #dbeafe;
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+.owner-reply-date {
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+.owner-reply-text {
+  font-size: 0.85rem;
+  color: #1e40af;
+  line-height: 1.6;
+  margin: 0;
+}
+
 /* Dark mode */
 @media (prefers-color-scheme: dark) {
   .review-card {
@@ -315,5 +369,8 @@ const getAvatarGradient = (name) => {
   .tag { background: #1e3a5f; color: #93c5fd; border-color: #1e40af; }
   .verified-badge { background: #1e3a5f; }
   .rating-num { color: #f1f5f9; }
+  .owner-reply { background: #1e3a5f; border-color: #1e40af; }
+  .owner-reply-tag { background: #1e3a5f; color: #93c5fd; }
+  .owner-reply-text { color: #93c5fd; }
 }
 </style>

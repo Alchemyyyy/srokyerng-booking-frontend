@@ -323,6 +323,9 @@
           <div class="rm-breakdown">
             <div v-for="n in [5, 4, 3, 2, 1]" :key="n" class="rm-bar-row">
               <span class="rm-bar-label">{{ n }}</span>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="#f59e0b" stroke="none" class="rm-bar-star">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
               <div class="rm-bar-track">
                 <div
                   class="rm-bar-fill"
@@ -1309,21 +1312,21 @@ const doDelete = async () => {
 
 .rm-bar-track {
   flex: 1;
-  height: 6px;
-  background: var(--rm-border);
+  height: 8px;
+  background: var(--color-border, rgba(59,130,246,0.12));
   border-radius: 99px;
   overflow: hidden;
 }
 
 .rm-bar-fill {
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    var(--color-primary),
-    var(--color-secondary)
-  );
+  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-strong, #1d4ed8));
   border-radius: 99px;
   transition: width 0.6s ease;
+}
+
+.rm-bar-star {
+  flex-shrink: 0;
 }
 
 .rm-bar-count {
