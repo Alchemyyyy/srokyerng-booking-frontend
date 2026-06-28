@@ -31,10 +31,10 @@ const canMarkAllAsRead = computed(
 );
 
 const buttonClass = computed(() => [
-  "relative flex h-10 w-10 items-center justify-center rounded-sm border transition",
+  "group relative flex h-10 w-10 items-center justify-center rounded-xl border transition-all duration-300 active:scale-95 hover:shadow-md",
   props.solid
-    ? "border-(--color-border) bg-(--color-surface-soft) text-(--color-muted) hover:border-(--color-primary) hover:text-(--color-primary)"
-    : "border-white/20 bg-white/10 text-white hover:bg-white/20",
+    ? "border-(--color-border)/60 bg-gradient-to-br from-(--color-surface-soft) to-(--color-surface) text-(--color-muted) hover:border-(--color-primary)/40 hover:text-(--color-primary) hover:bg-(--color-surface-soft)/80 hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)]"
+    : "border-white/20 bg-white/10 backdrop-blur-md text-white hover:bg-white/20 hover:border-white/30 hover:shadow-[0_4px_15px_rgba(255,255,255,0.1)]",
 ]);
 
 const formatDate = (value) => {
@@ -147,114 +147,121 @@ watch(
       :aria-label="t('notifications.title')"
       @click.stop="toggleDropdown"
     >
-      <BellIcon class="h-5 w-5" />
+      <BellIcon class="h-5 w-5 transition-transform duration-300 group-hover:rotate-12 group-active:-rotate-12" />
       <span
         v-if="notificationStore.hasUnread"
-        class="absolute -right-1 -top-1 min-w-5 rounded-full bg-(--color-danger) px-1.5 py-0.5 text-center text-[10px] font-bold leading-none text-white ring-2 ring-(--color-surface)"
+        class="absolute -right-1 -top-1 min-w-5 rounded-full bg-gradient-to-r from-(--color-danger) to-rose-500 px-1.5 py-0.5 text-center text-[10px] font-extrabold leading-none text-white shadow-sm ring-2 ring-(--color-surface) animate-pulse"
       >
         {{ notificationStore.unreadLabel }}
       </span>
     </button>
 
-    <div
-      v-if="dropdownOpen"
-      class="absolute right-0 mt-3 hidden w-[400px] overflow-hidden rounded-xl border border-(--color-border) bg-(--color-surface) shadow-2xl ring-1 ring-black/5 lg:block"
-    >
-      <div class="flex items-center justify-between gap-4 border-b border-(--color-border) px-5 py-4">
-        <div class="min-w-0">
-          <p class="text-base font-bold leading-6 text-(--color-text)">
-            {{ t("notifications.title") }}
-          </p>
-          <p class="mt-0.5 text-sm text-(--color-muted)">
-            {{ t("notifications.unreadUpdates", { count: notificationStore.unreadCount }) }}
-          </p>
-        </div>
-
-        <span
-          v-if="notificationStore.hasUnread"
-          class="shrink-0 rounded-full bg-(--color-primary-soft) px-3 py-1 text-xs font-bold text-(--color-primary)"
-        >
-          {{ notificationStore.unreadLabel }}
-        </span>
-      </div>
-
-      <div class="bg-(--color-surface)">
-        <div
-          v-if="notificationStore.listLoading"
-          class="px-5 py-12 text-center text-sm font-medium text-(--color-muted)"
-        >
-          {{ t("notifications.loading") }}
-        </div>
-
-        <div
-          v-else-if="latestNotifications.length === 0"
-          class="px-6 py-12 text-center"
-        >
-          <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-(--color-surface-soft) text-(--color-muted)">
-            <BellIcon class="h-6 w-6" />
-          </div>
-          <p class="mt-4 text-base font-bold text-(--color-text)">
-            {{ t("notifications.emptyTitle") }}
-          </p>
-          <p class="mx-auto mt-2 max-w-xs text-sm leading-6 text-(--color-muted)">
-            {{ t("notifications.emptyMessage") }}
-          </p>
-        </div>
-
-        <div v-else class="max-h-[360px] overflow-y-auto">
-          <button
-            v-for="notification in latestNotifications"
-            :key="notification.id"
-            type="button"
-            class="block w-full border-b border-(--color-border) px-5 py-4 text-left transition last:border-b-0 hover:bg-(--color-surface-soft)"
-            :class="notification.is_read ? '' : 'bg-(--color-primary-soft)/30'"
-            @click="markAsRead(notification)"
-          >
-            <div class="flex items-start gap-3">
-              <span
-                class="mt-2 h-2 w-2 shrink-0 rounded-full"
-                :class="
-                  notification.is_read
-                    ? 'bg-(--color-border)'
-                    : 'bg-(--color-primary)'
-                "
-              />
-              <div class="min-w-0 flex-1">
-                <div class="flex items-start justify-between gap-3">
-                  <p class="line-clamp-1 text-sm font-bold text-(--color-text)">
-                    {{ notification.title }}
-                  </p>
-                  <span class="shrink-0 pt-0.5 text-[11px] font-medium text-(--color-muted)">
-                    {{ formatDate(notification.created_at) }}
-                  </span>
-                </div>
-                <p class="mt-1 line-clamp-2 text-xs leading-5 text-(--color-muted)">
-                  {{ notification.message }}
-                </p>
-              </div>
+    <Transition name="notification-popup">
+      <div
+        v-if="dropdownOpen"
+        class="absolute right-0 mt-3 hidden w-[400px] overflow-hidden rounded-2xl border border-(--color-border)/60 bg-(--color-surface)/95 backdrop-blur-xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] ring-1 ring-black/5 lg:block z-50"
+      >
+        <div class="relative overflow-hidden border-b border-(--color-border)/60 bg-gradient-to-r from-(--color-surface-soft) to-(--color-surface) px-5 py-4">
+          <!-- Ambient glow -->
+          <div class="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-(--color-primary)/10 blur-xl pointer-events-none"></div>
+          
+          <div class="relative z-10 flex items-center justify-between gap-4">
+            <div class="min-w-0">
+              <p class="text-base font-bold leading-6 text-(--color-text)">
+                {{ t("notifications.title") }}
+              </p>
+              <p class="mt-0.5 text-sm text-(--color-muted)">
+                {{ t("notifications.unreadUpdates", { count: notificationStore.unreadCount }) }}
+              </p>
             </div>
+
+            <span
+              v-if="notificationStore.hasUnread"
+              class="shrink-0 rounded-full bg-(--color-primary-soft) border border-(--color-primary)/20 px-3 py-1 text-xs font-bold text-(--color-primary) shadow-sm"
+            >
+              {{ notificationStore.unreadLabel }}
+            </span>
+          </div>
+        </div>
+
+        <div class="bg-(--color-surface)">
+          <div
+            v-if="notificationStore.listLoading"
+            class="px-5 py-12 text-center text-sm font-medium text-(--color-muted)"
+          >
+            {{ t("notifications.loading") }}
+          </div>
+
+          <div
+            v-else-if="latestNotifications.length === 0"
+            class="px-6 py-12 text-center"
+          >
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-(--color-surface-soft) to-(--color-surface) border border-(--color-border)/40 text-(--color-muted) shadow-inner">
+              <BellIcon class="h-6 w-6" />
+            </div>
+            <p class="mt-4 text-base font-bold text-(--color-text)">
+              {{ t("notifications.emptyTitle") }}
+            </p>
+            <p class="mx-auto mt-2 max-w-xs text-sm leading-6 text-(--color-muted)">
+              {{ t("notifications.emptyMessage") }}
+            </p>
+          </div>
+
+          <div v-else class="max-h-[360px] overflow-y-auto">
+            <button
+              v-for="notification in latestNotifications"
+              :key="notification.id"
+              type="button"
+              class="group/item block w-full border-b border-(--color-border)/40 px-5 py-4 text-left transition-all duration-200 last:border-b-0 hover:bg-(--color-surface-soft)/80 hover:pl-6"
+              :class="notification.is_read ? '' : 'bg-(--color-primary-soft)/20'"
+              @click="markAsRead(notification)"
+            >
+              <div class="flex items-start gap-3">
+                <span
+                  class="mt-2 h-2 w-2 shrink-0 rounded-full transition-transform duration-200 group-hover/item:scale-125"
+                  :class="
+                    notification.is_read
+                      ? 'bg-(--color-border)'
+                      : 'bg-(--color-primary) shadow-[0_0_8px_var(--color-primary)]'
+                  "
+                />
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-start justify-between gap-3">
+                    <p class="line-clamp-1 text-sm font-bold text-(--color-text) transition-colors group-hover/item:text-(--color-primary)">
+                      {{ notification.title }}
+                    </p>
+                    <span class="shrink-0 pt-0.5 text-[11px] font-medium text-(--color-muted)">
+                      {{ formatDate(notification.created_at) }}
+                    </span>
+                  </div>
+                  <p class="mt-1 line-clamp-2 text-xs leading-5 text-(--color-muted)">
+                    {{ notification.message }}
+                  </p>
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 border-t border-(--color-border)/60 bg-gradient-to-b from-(--color-surface) to-(--color-surface-soft) px-5 py-3.5">
+          <button
+            type="button"
+            class="text-xs font-bold text-(--color-primary) transition hover:text-(--color-primary-strong) disabled:cursor-not-allowed disabled:text-(--color-muted)"
+            :disabled="!canMarkAllAsRead"
+            @click="markAllAsRead"
+          >
+            {{ t("notifications.markAllRead") }}
           </button>
+          <RouterLink
+            :to="notificationRoute"
+            class="inline-flex min-h-9 items-center justify-center rounded-xl bg-gradient-to-r from-(--color-primary) to-(--color-secondary) px-4 text-xs font-bold !text-white shadow-md transition-all duration-300 hover:shadow-lg hover:scale-105 hover:!text-white"
+            @click="closeDropdown"
+          >
+            {{ t("notifications.viewAll") }}
+          </RouterLink>
         </div>
       </div>
-
-      <div class="flex items-center justify-between gap-3 border-t border-(--color-border) bg-(--color-surface-soft) px-5 py-3">
-        <button
-          type="button"
-          class="text-xs font-bold text-(--color-primary) transition hover:text-(--color-primary-strong) disabled:cursor-not-allowed disabled:text-(--color-muted)"
-          :disabled="!canMarkAllAsRead"
-          @click="markAllAsRead"
-        >
-          {{ t("notifications.markAllRead") }}
-        </button>
-        <RouterLink
-          :to="notificationRoute"
-          class="inline-flex min-h-9 items-center justify-center rounded-sm bg-(--color-primary) px-4 text-xs font-bold !text-white transition hover:bg-(--color-primary-strong) hover:!text-white"
-          @click="closeDropdown"
-        >
-          {{ t("notifications.viewAll") }}
-        </RouterLink>
-      </div>
-    </div>
+    </Transition>
 
     <RouterLink
       :to="notificationRoute"
@@ -263,3 +270,16 @@ watch(
     />
   </div>
 </template>
+
+<style scoped>
+.notification-popup-enter-active,
+.notification-popup-leave-active {
+  transition: opacity 200ms ease, transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.notification-popup-enter-from,
+.notification-popup-leave-to {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.98);
+}
+</style>
