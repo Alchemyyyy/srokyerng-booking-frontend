@@ -119,33 +119,60 @@ const paymentStatus = computed(() =>
   String(reservation.value?.payment_status ?? "").toLowerCase()
 );
 
-const canCancel = computed(() => {
-  if (!reservation.value) return false;
-  // If payment already submitted/verified/paid, can't cancel directly —
-  // customer must use the refund request flow instead
-  if (["submitted", "verified", "paid"].includes(paymentStatus.value)) return false;
-  return isCancellable(reservation.value.reservation_status, reservation.value.check_in_date);
+// Normalized: maps backend variants to canonical values used in all logic
+// backend "paid"      → "verified"  (money confirmed received)
+// backend "failed"    → "rejected"  (slip invalid / rejected by admin)
+// backend "submitted" → "pending"   (slip uploaded, awaiting review)
+const paymentStatusNorm = computed(() => {
+  const raw = paymentStatus.value;
+  if (raw === "paid")      return "verified";
+  if (raw === "failed")    return "rejected";
+  if (raw === "submitted") return "pending";
+  return raw;
 });
 
-// Show refund form when:
-// 1. Reservation is active (pending/confirmed) AND payment was submitted (money in transit)
-// 2. OR reservation is already cancelled AND payment was submitted (money already sent)
+const canCancel = computed(() => {
+  if (!reservation.value) return false;
+  const resStatus = status.value;
+  const pmtStatus = paymentStatusNorm.value; // normalized: paid→verified, failed→rejected, submitted→pending
+
+  // Terminal states — hide cancel entirely
+  if (resStatus === "cancelled" || resStatus === "completed") return false;
+
+  // PENDING + no-payment / pending / rejected → cancel only, no refund
+  if (resStatus === "pending") {
+    if (!pmtStatus || pmtStatus === "pending" || pmtStatus === "rejected") return true;
+    // verified payment while PENDING → refund flow on detail page (shouldn't normally happen)
+    return false;
+  }
+
+  // CONFIRMED + any payment state → deadline-gated
+  if (resStatus === "confirmed") {
+    return isCancellable(reservation.value.reservation_status, reservation.value.check_in_date);
+  }
+
+  return false;
+});
+
+// Show refund section only when payment was actually verified (money received by host)
+// AND reservation is now cancelled.
+// Spec: CONFIRMED+verified cancellation → refund eligible based on deadline.
+// We surface this card after cancellation (status becomes CANCELLED) with verified payment.
 const canRequestRefund = computed(() => {
   if (!reservation.value) return false;
   const resStatus = String(reservation.value.reservation_status ?? "").toLowerCase();
-  const pmtStatus = paymentStatus.value;
-  // Case 1: Active reservation + submitted payment → cancel+refund path
-  const activeWithPayment =
-    ["pending", "confirmed"].includes(resStatus) &&
-    ["submitted", "verified", "paid"].includes(pmtStatus);
-  // Case 2: Already cancelled + had payment → refund-only path
-  const cancelledWithPayment =
-    resStatus === "cancelled" &&
-    ["submitted", "verified", "paid"].includes(pmtStatus);
-  return activeWithPayment || cancelledWithPayment;
+  const pmtStatus = paymentStatusNorm.value; // normalized
+
+  // Only verified payments can trigger refund flow
+  if (pmtStatus !== "verified") return false;
+
+  // Show refund card only when already CANCELLED (manual refund request form)
+  // CONFIRMED+verified: refund is auto-created inside handleCancel, no card needed
+  return resStatus === "cancelled";
 });
 
-const paymentRejected = computed(() => paymentStatus.value === "rejected");
+// Use normalized status so "failed" also triggers re-upload banner
+const paymentRejected = computed(() => paymentStatusNorm.value === "rejected");
 
 const canPay = computed(() =>
   ["pending", "confirmed"].includes(status.value) && !paymentId.value
@@ -193,6 +220,26 @@ async function handleCancel() {
   cancelError.value = "";
   try {
     await cancelReservation(route.params.id, cancelReason.value.trim());
+
+    // CONFIRMED + verified: auto-create refund request based on policy
+    const resStatus = status.value;
+    const pmtStatus = paymentStatusNorm.value; // normalized
+    if (resStatus === "confirmed" && pmtStatus === "verified") {
+      const amount = Number(reservation.value?.total_amount) || 0;
+      // policy.refundAmount already accounts for deadline (full vs 50%)
+      const refundAmount = policy.value?.refundAmount ?? amount;
+      try {
+        await cancellationApi.requestRefund(route.params.id, {
+          amount: refundAmount,
+          reason: cancelReason.value.trim(),
+        });
+      } catch (refundErr) {
+        // Cancellation succeeded; refund request failed — surface a warning but don't block
+        console.warn("[BookingDetail] Refund request failed after cancel:", refundErr);
+      }
+    }
+    // PENDING + null/pending/rejected → no refund (nothing to refund)
+
     toast.success(t("reservationDetail.toast.successMessage"), {
       title: t("reservationDetail.toast.successTitle"),
     });
@@ -214,12 +261,15 @@ async function handleRefundRequest() {
   refundRequestError.value = "";
   try {
     const resStatus = String(reservation.value?.reservation_status ?? "").toLowerCase();
-    const amount    = Number(reservation.value?.total_amount) || 0;
+    const amount    = (policy.value?.refundAmount ?? Number(reservation.value?.total_amount)) || 0;
     const reason    = refundReason.value.trim();
 
-    // If reservation is still active, cancel it first — backend requires cancelled status
-    if (["pending", "confirmed"].includes(resStatus)) {
-      await cancelReservation(route.params.id, reason);
+    // This form is only reachable when reservation is already CANCELLED + payment verified.
+    // For CONFIRMED+verified, refund is auto-created inside handleCancel.
+    // Guard: if somehow called on a non-cancelled reservation, do NOT re-cancel.
+    if (resStatus !== "cancelled") {
+      refundRequestError.value = "Please cancel the reservation first.";
+      return;
     }
 
     // POST /api/reservations/:id/refund-request  body: { amount, reason }
@@ -410,7 +460,7 @@ onMounted(fetchReservation);
         </div>
 
         <!-- ── Cancellation Policy ── -->
-        <div v-if="policy && (canCancel || canRequestRefund)" class="policy-card" :class="`policy-card--${policy.tone}`">
+        <div v-if="policy && paymentStatusNorm === 'verified'" class="policy-card" :class="`policy-card--${policy.tone}`">
           <div class="policy-top">
             <div class="policy-icon" :class="`policy-icon--${policy.tone}`">
               <svg v-if="policy.tone === 'free'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
@@ -455,8 +505,8 @@ onMounted(fetchReservation);
           </div>
         </div>
 
-        <!-- ── Refund Request Card (payment submitted but want to cancel) ── -->
-        <div v-if="canRequestRefund" class="refund-request-card">
+        <!-- ── Refund Request Card (already cancelled, payment was verified) ── -->
+        <div v-if="status === 'cancelled' && paymentStatusNorm === 'verified'" class="refund-request-card">
           <div class="refund-request-header">
             <div class="refund-request-icon">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
@@ -525,7 +575,7 @@ onMounted(fetchReservation);
         </div>
 
         <!-- ── Blocked banner ── -->
-        <div v-else-if="!canCancel && !canRequestRefund && !isCancelledOrCompleted" class="blocked-banner">
+        <div v-else-if="!canCancel && !isCancelledOrCompleted && !(status === 'cancelled' && paymentStatusNorm === 'verified')" class="blocked-banner">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"/><path d="M18 6 6 18M6 6l12 12"/>
           </svg>
@@ -723,23 +773,23 @@ onMounted(fetchReservation);
 
 /* Policy card */
 .policy-card { background: white; border-radius: 20px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }
-.policy-card--free    { border-color: rgba(16,185,129,0.2); }
+.policy-card--free    { border-color: rgba(245,158,11,0.35); }
 .policy-card--partial { border-color: rgba(245,158,11,0.25); }
 .policy-card--strict  { border-color: rgba(239,68,68,0.2); }
 .policy-top { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
 .policy-icon { width: 50px; height: 50px; border-radius: 16px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-.policy-icon--free    { background: rgba(16,185,129,0.1);  color: #10b981; }
+.policy-icon--free    { background: rgba(245,158,11,0.1);  color: #d97706; }
 .policy-icon--partial { background: rgba(245,158,11,0.1);  color: #d97706; }
 .policy-icon--strict  { background: rgba(239,68,68,0.1);   color: #ef4444; }
 .policy-text { flex: 1; }
 .policy-eyebrow { margin: 0; font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: #94a3b8; }
 .policy-title { margin: 0.2rem 0 0; font-size: 1.15rem; font-weight: 800; color: #0f172a; }
 .policy-refund-block { text-align: right; flex-shrink: 0; background: #f8fafc; border-radius: 14px; padding: 0.75rem 1rem; border: 1px solid #e2e8f0; }
-.policy-refund-block--free    { background: rgba(16,185,129,0.06); border-color: rgba(16,185,129,0.2); }
+.policy-refund-block--free    { background: rgba(245,158,11,0.06); border-color: rgba(245,158,11,0.25); }
 .policy-refund-block--partial { background: rgba(245,158,11,0.06); border-color: rgba(245,158,11,0.2); }
 .policy-refund-eyebrow { margin: 0; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; }
 .policy-refund-amount { margin: 0.15rem 0; font-size: 1.5rem; font-weight: 900; letter-spacing: -0.03em; }
-.policy-card--free    .policy-refund-amount { color: #10b981; }
+.policy-card--free    .policy-refund-amount { color: #d97706; }
 .policy-card--partial .policy-refund-amount { color: #d97706; }
 .policy-card--strict  .policy-refund-amount { color: #94a3b8; }
 .refund-tag { display: inline-block; font-size: 0.6rem; font-weight: 800; background: rgba(245,158,11,0.12); color: #d97706; padding: 0.18rem 0.55rem; border-radius: 6px; letter-spacing: 0.08em; }
@@ -836,7 +886,7 @@ onMounted(fetchReservation);
 .btn-reupload { margin-left: auto; background: #f59e0b; border: none; color: white; padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
 
 /* Notice card */
-.notice-card { background: white; border: 1px solid rgba(245,158,11,0.25); border-radius: 20px; padding: 1.35rem 1.5rem; box-shadow: 0 2px 12px rgba(245,158,11,0.06); }
+.notice-card { background: rgba(239,68,68,0.02); border: 1.5px solid rgba(239,68,68,0.25); border-radius: 20px; padding: 1.35rem 1.5rem; box-shadow: 0 2px 12px rgba(239,68,68,0.06); }
 .notice-body { display: flex; align-items: flex-start; gap: 0.85rem; }
 .notice-icon { width: 42px; height: 42px; border-radius: 13px; flex-shrink: 0; background: rgba(239,68,68,0.08); display: flex; align-items: center; justify-content: center; }
 .notice-content { flex: 1; }

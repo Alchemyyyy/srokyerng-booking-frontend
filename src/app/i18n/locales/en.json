@@ -649,7 +649,6 @@
       "title": "Built for Cambodia,",
       "titleHighlight": "By Cambodians",
       "desc": "SrokYerng Booking was born from a simple idea — to make it easier for travelers to discover authentic local stays across Cambodia, while helping property owners reach more guests.",
-
       "feature1": {
         "title": "Easy & Quick Booking",
         "desc": "Book your stay in just a few clicks, anytime and anywhere."
@@ -703,7 +702,6 @@
       "eyebrow": "The People Behind SrokYerng",
       "title": "Meet Our Team",
       "subtitle": "A group of passionate Cambodians dedicated to creating a better travel experience.",
-
       "members": {
         "leakhena": {
           "name": "Bou Leakhena",
@@ -1105,7 +1103,6 @@
     "checkOut": "Check-Out",
     "description": "A stunning beachfront resort offering pristine white sand beaches, crystal-clear waters, and unforgettable sunset views."
   },
-
   "reviewCreate": {
     "breadcrumb": {
       "stays": "Stays",
@@ -1213,12 +1210,10 @@
       "alreadyReviewed": "You've already reviewed this stay. Redirecting to your reviews…"
     }
   },
-
   "reviewCard": {
     "verifiedGuest": "Verified Guest",
     "photoAlt": "Review photo"
   },
-
   "roomDetail": {
     "breadcrumb": {
       "home": "Home",
@@ -1389,13 +1384,13 @@
       "avgRating": "Avg Rating",
       "readyToReview": "Ready to Review"
     },
-      "ratingLabel": {
+    "ratingLabel": {
       "poor": "Poor",
       "fair": "Fair",
       "good": "Good",
       "veryGood": "Very Good",
       "excellent": "Excellent"
-      },
+    },
     "filter": {
       "searchPlaceholder": "Search reviews...",
       "sortRecent": "Most Recent",
@@ -1608,18 +1603,18 @@
   },
   "cancellationPolicy": {
     "free": {
-      "description": "Cancel at least 7 days before check-in for a full refund."
+      "description": "Cancel at least 24 hours before check-in for a full refund."
     },
     "partial": {
-      "description": "Cancelling within 7 days of check-in gives a 50% refund."
+      "description": "Cancelling within 24 hours of check-in gives a 50% refund."
     },
     "strict": {
       "description": "Check-in is today or has already passed. No refund available."
     },
     "breakdown": {
-      "sevenPlus": "7+ days before check-in",
-      "oneToSix": "1–6 days before check-in",
-      "sameDay": "Same day",
+      "sevenPlus": "More than 24 hours before check-in",
+      "oneToSix": "Within 24 hours of check-in",
+      "sameDay": "Same day or after check-in",
       "sameDayAfter": "Same day or after check-in",
       "fullRefund": "100% refund",
       "halfRefund": "50% refund",

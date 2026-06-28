@@ -8,45 +8,53 @@ export const CANCELLABLE_STATUSES = ['pending', 'confirmed', 'upcoming']
  * Derive cancellation policy based on days until check-in.
  * Pass the `t` function from useI18n() for translated strings.
  */
+// Matches backend CANCELLATION_DEADLINE_HOURS = 24
+const DEADLINE_HOURS = 24
+
 export function deriveCancellationPolicy(checkInDate, totalAmount = 0, t = (k) => k) {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  const now = new Date()
+
+  // Deadline = check-in date midnight minus 24 hours
   const checkIn = new Date(checkInDate)
   checkIn.setHours(0, 0, 0, 0)
-  const daysUntil = Math.ceil((checkIn - today) / (1000 * 60 * 60 * 24))
+  const deadlineMs = checkIn.getTime() - DEADLINE_HOURS * 60 * 60 * 1000
+  const deadlineDate = new Date(deadlineMs)
 
-  const deadlineDate = new Date(checkIn.getTime() - 7 * 86400000)
+  const hoursUntilCheckIn = (checkIn.getTime() - now.getTime()) / (1000 * 60 * 60)
+  const beforeDeadline = now.getTime() < deadlineMs
+
   const deadline = deadlineDate.toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric',
   })
 
-  if (daysUntil >= 7) {
+  // More than 24h before check-in → full refund
+  if (beforeDeadline) {
     return {
       tone: 'free',
       description: t('cancellationPolicy.free.description'),
       deadline,
       refundAmount: totalAmount,
       refundBreakdown: [
-        { label: t('cancellationPolicy.breakdown.sevenPlus'),  value: t('cancellationPolicy.breakdown.fullRefund'), type: 'full' },
-        { label: t('cancellationPolicy.breakdown.oneToSix'),   value: t('cancellationPolicy.breakdown.halfRefund'), type: 'partial' },
-        { label: t('cancellationPolicy.breakdown.sameDay'),    value: t('cancellationPolicy.breakdown.noRefund'),   type: 'none' },
+        { label: t('cancellationPolicy.breakdown.sevenPlus'), value: t('cancellationPolicy.breakdown.fullRefund'), type: 'full' },
+        { label: t('cancellationPolicy.breakdown.oneToSix'),  value: t('cancellationPolicy.breakdown.noRefund'),   type: 'none' },
       ],
     }
   }
 
-  if (daysUntil >= 1) {
+  // Within 24h but not yet checked in → 50% refund
+  if (hoursUntilCheckIn > 0) {
     return {
       tone: 'partial',
       description: t('cancellationPolicy.partial.description'),
       deadline: null,
       refundAmount: totalAmount * 0.5,
       refundBreakdown: [
-        { label: t('cancellationPolicy.breakdown.oneToSix'),   value: t('cancellationPolicy.breakdown.halfRefund'), type: 'partial' },
-        { label: t('cancellationPolicy.breakdown.sameDay'),    value: t('cancellationPolicy.breakdown.noRefund'),   type: 'none' },
+        { label: t('cancellationPolicy.breakdown.oneToSix'), value: t('cancellationPolicy.breakdown.halfRefund'), type: 'partial' },
       ],
     }
   }
 
+  // Check-in date passed → no refund
   return {
     tone: 'strict',
     description: t('cancellationPolicy.strict.description'),
@@ -64,11 +72,16 @@ export function deriveCancellationPolicy(checkInDate, totalAmount = 0, t = (k) =
 export function isCancellable(status, checkInDate) {
   if (!CANCELLABLE_STATUSES.includes(String(status).toLowerCase())) return false
   if (!checkInDate) return true
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+
+  const now = new Date()
   const checkIn = new Date(checkInDate)
   checkIn.setHours(0, 0, 0, 0)
-  return checkIn > today
+
+  // Deadline = 24h before check-in midnight
+  const deadlineMs = checkIn.getTime() - DEADLINE_HOURS * 60 * 60 * 1000
+
+  // Must be before the deadline AND check-in hasn't passed
+  return now.getTime() < deadlineMs
 }
 
 /**
