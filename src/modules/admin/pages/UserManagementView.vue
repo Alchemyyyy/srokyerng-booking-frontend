@@ -1,10 +1,11 @@
 <script setup>
-import { onMounted, ref, computed } from "vue";
-import { useRouter } from "vue-router";
+import { onMounted, ref } from "vue";
 import { useUserStore } from "../store/userStore.js";
 import { useToastStore } from "@/shared/store/toastStore";
 import { useSidebar } from "@/shared/composables/useSidebar";
 import { formatDate } from "../utils/formatters.js";
+import UserDetailModal from "../components/Userdetailmodal.vue";
+import TablePagination from "../components/TablePagination.vue";
 import {
   UsersIcon,
   MagnifyingGlassIcon,
@@ -13,16 +14,38 @@ import {
   CheckCircleIcon,
   NoSymbolIcon,
   ShieldExclamationIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
 } from "@heroicons/vue/24/outline";
 
-const router = useRouter();
 const userStore = useUserStore();
 const toastStore = useToastStore();
 const { isSidebarOpen } = useSidebar();
 
-// ── Local UI state ────────────────────────────────────────────────────────────
+// ── Profile image helper ──────────────────────────────────────────────────────
+const getProfileImageUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith("http")) return url;
+  const base = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/api\/?$/, "");
+  return `${base}${url}`;
+};
+
+// ── Detail modal ──────────────────────────────────────────────────────────────
+const detailModal = ref({ open: false, user: null });
+
+const openDetail = async (user) => {
+  // Open modal with list data immediately, then fetch full profile
+  detailModal.value = { open: true, user };
+  await userStore.fetchUserDetail(user.id);
+  if (userStore.currentUser) {
+    detailModal.value.user = userStore.currentUser;
+  }
+};
+
+const closeDetail = () => {
+  detailModal.value = { open: false, user: null };
+  userStore.currentUser = null;
+};
+
+// ── Confirm modal ─────────────────────────────────────────────────────────────
 const confirmModal = ref({
   open: false,
   userId: null,
@@ -30,7 +53,48 @@ const confirmModal = ref({
   action: null,
 });
 
-// ── Role tab options ──────────────────────────────────────────────────────────
+const ACTION_META = {
+  activate: { label: "Activate", status: "active", color: "btn-approve" },
+  suspend: { label: "Suspend", status: "suspended", color: "btn-suspend" },
+};
+
+const openConfirm = (user, action) => {
+  confirmModal.value = {
+    open: true,
+    userId: user.id,
+    userName: user.full_name,
+    action,
+  };
+};
+
+const closeConfirm = () => {
+  confirmModal.value = { open: false, userId: null, userName: "", action: null };
+};
+
+const confirmAction = async () => {
+  const { userId, action } = confirmModal.value;
+  const meta = ACTION_META[action];
+  if (!meta || !userId) return;
+
+  closeConfirm();
+  const ok = await userStore.updateUserStatus(userId, meta.status);
+  if (ok) {
+    // Keep detail modal open with updated data
+    if (detailModal.value.open && detailModal.value.user?.id === userId) {
+      detailModal.value.user = { ...detailModal.value.user, status: meta.status };
+    }
+    toastStore.success(`User ${meta.label.toLowerCase()}d successfully.`);
+  } else {
+    toastStore.danger(userStore.error || "Failed to update user status.");
+  }
+};
+
+// Called by UserDetailModal when an action button is clicked
+const handleDetailAction = ({ user, action }) => {
+  openConfirm(user, action);
+};
+
+// ── Role tabs ─────────────────────────────────────────────────────────────────
 const roleTabs = [
   { key: "all", label: "All" },
   { key: "customer", label: "Customers" },
@@ -38,7 +102,7 @@ const roleTabs = [
   { key: "admin", label: "Admins" },
 ];
 
-// ── Status badge helper ───────────────────────────────────────────────────────
+// ── Badge helpers ─────────────────────────────────────────────────────────────
 const statusClass = (status) => {
   if (status === "active") return "badge-active";
   if (status === "suspended") return "badge-suspended";
@@ -53,45 +117,7 @@ const roleClass = (role) => {
   return "role-default";
 };
 
-// ── Confirm modal helpers ─────────────────────────────────────────────────────
-const openConfirm = (user, action) => {
-  confirmModal.value = {
-    open: true,
-    userId: user.id,
-    userName: user.full_name,
-    action,
-  };
-};
-
-const closeConfirm = () => {
-  confirmModal.value = {
-    open: false,
-    userId: null,
-    userName: "",
-    action: null,
-  };
-};
-
-const ACTION_META = {
-  activate: { label: "Activate", status: "active", color: "btn-approve" },
-  suspend: { label: "Suspend", status: "suspended", color: "btn-suspend" },
-};
-
-const confirmAction = async () => {
-  const { userId, action } = confirmModal.value;
-  const meta = ACTION_META[action];
-  if (!meta || !userId) return;
-
-  closeConfirm();
-  const ok = await userStore.updateUserStatus(userId, meta.status);
-  if (ok) {
-    toastStore.success(`User ${meta.label.toLowerCase()}d successfully.`);
-  } else {
-    toastStore.danger(userStore.error || "Failed to update user status.");
-  }
-};
-
-// ── Actions available per current status ─────────────────────────────────────
+// ── Quick action buttons (table row) ─────────────────────────────────────────
 const availableActions = (user) => {
   const actions = [];
   if (user.status !== "active") actions.push("activate");
@@ -99,7 +125,7 @@ const availableActions = (user) => {
   return actions;
 };
 
-onMounted(() => userStore.fetchUsers(1));
+onMounted(() => userStore.fetchUsers());
 </script>
 
 <template>
@@ -120,9 +146,8 @@ onMounted(() => userStore.fetchUsers(1));
       </p>
     </div>
 
-    <!-- Role tabs + search bar -->
+    <!-- Role tabs + search -->
     <div class="table-actions-bar">
-      <!-- Role filter tabs -->
       <div class="role-tabs">
         <button
           v-for="tab in roleTabs"
@@ -136,7 +161,6 @@ onMounted(() => userStore.fetchUsers(1));
         </button>
       </div>
 
-      <!-- Search -->
       <div class="search-wrap">
         <MagnifyingGlassIcon class="search-icon" />
         <input
@@ -150,17 +174,12 @@ onMounted(() => userStore.fetchUsers(1));
     </div>
 
     <!-- Error -->
-    <div
-      v-if="userStore.error && !userStore.loading"
-      class="state-card error-card"
-    >
+    <div v-if="userStore.error && !userStore.loading" class="state-card error-card">
       <ExclamationTriangleIcon class="state-icon text-danger" />
       <div class="state-content">
         <h3 class="state-title">Failed to Load Users</h3>
         <p class="state-desc">{{ userStore.error }}</p>
-        <button class="btn-retry" @click="userStore.fetchUsers(1)">
-          Retry
-        </button>
+        <button class="btn-retry" @click="userStore.fetchUsers()">Retry</button>
       </div>
     </div>
 
@@ -202,15 +221,23 @@ onMounted(() => userStore.fetchUsers(1));
         </thead>
         <tbody>
           <tr
-            v-for="user in userStore.filteredUsers"
+            v-for="user in userStore.pagedUsers"
             :key="user.id"
             class="user-row"
+            @click="openDetail(user)"
           >
             <!-- User info -->
             <td>
               <div class="user-info">
                 <div class="user-avatar">
-                  {{ user.full_name?.charAt(0)?.toUpperCase() ?? "?" }}
+                  <img
+                    v-if="getProfileImageUrl(user.profile_image_url)"
+                    :src="getProfileImageUrl(user.profile_image_url)"
+                    :alt="user.full_name"
+                    class="avatar-img"
+                    @error="(e) => e.target.style.display = 'none'"
+                  />
+                  <span v-else>{{ user.full_name?.charAt(0)?.toUpperCase() ?? "?" }}</span>
                 </div>
                 <div>
                   <p class="user-name">{{ user.full_name }}</p>
@@ -223,32 +250,28 @@ onMounted(() => userStore.fetchUsers(1));
               {{ user.phone || "—" }}
             </td>
 
-            <!-- Role -->
             <td>
               <span class="role-badge" :class="roleClass(user.role)">
                 {{ user.role }}
               </span>
             </td>
 
-            <!-- Status -->
             <td>
               <span class="status-badge" :class="statusClass(user.status)">
                 {{ user.status }}
               </span>
             </td>
 
-            <!-- Last login -->
             <td class="text-sm text-(--color-muted)">
               {{ user.last_login ? formatDate(user.last_login) : "Never" }}
             </td>
 
-            <!-- Joined -->
             <td class="text-sm text-(--color-muted)">
               {{ formatDate(user.created_at) }}
             </td>
 
-            <!-- Actions -->
-            <td>
+            <!-- Actions: stop propagation so row-click doesn't also fire -->
+            <td @click.stop>
               <div class="action-group">
                 <button
                   v-for="action in availableActions(user)"
@@ -256,6 +279,7 @@ onMounted(() => userStore.fetchUsers(1));
                   class="action-btn"
                   :class="ACTION_META[action].color"
                   :disabled="userStore.processing"
+                  :title="ACTION_META[action].label"
                   @click="openConfirm(user, action)"
                 >
                   {{ ACTION_META[action].label }}
@@ -267,37 +291,26 @@ onMounted(() => userStore.fetchUsers(1));
       </table>
 
       <!-- Pagination -->
-      <div v-if="userStore.pagination.total_pages > 1" class="pagination">
-        <button
-          class="page-btn"
-          :disabled="userStore.pagination.page === 1"
-          @click="userStore.setPage(userStore.pagination.page - 1)"
-        >
-          <ChevronLeftIcon class="w-4 h-4" />
-        </button>
-
-        <span class="page-info">
-          Page {{ userStore.pagination.page }} of
-          {{ userStore.pagination.total_pages }}
-          <span class="text-(--color-muted) text-xs ml-1"
-            >({{ userStore.pagination.total }} total)</span
-          >
-        </span>
-
-        <button
-          class="page-btn"
-          :disabled="
-            userStore.pagination.page === userStore.pagination.total_pages
-          "
-          @click="userStore.setPage(userStore.pagination.page + 1)"
-        >
-          <ChevronRightIcon class="w-4 h-4" />
-        </button>
+      <div v-if="userStore.pagination.total_pages > 1" class="pagination-wrap">
+        <TablePagination
+          :current-page="userStore.pagination.page"
+          :total-pages="userStore.pagination.total_pages"
+          @update:current-page="userStore.setPage($event)"
+        />
       </div>
     </div>
   </div>
 
-  <!-- Confirm Modal -->
+  <!-- User Detail Modal -->
+  <UserDetailModal
+    :open="detailModal.open"
+    :user="detailModal.user"
+    :processing="userStore.processing"
+    @close="closeDetail"
+    @action="handleDetailAction"
+  />
+
+  <!-- Confirm Action Modal -->
   <Teleport to="body">
     <Transition name="modal-fade">
       <div
@@ -311,7 +324,6 @@ onMounted(() => userStore.fetchUsers(1));
             :class="{
               'modal-icon--approve': confirmModal.action === 'activate',
               'modal-icon--suspend': confirmModal.action === 'suspend',
-              'modal-icon--ban': confirmModal.action === 'ban',
             }"
           >
             <CheckCircleIcon
@@ -330,11 +342,9 @@ onMounted(() => userStore.fetchUsers(1));
           </h3>
           <p class="modal-desc">
             Are you sure you want to
-            <strong>{{
-              ACTION_META[confirmModal.action]?.label?.toLowerCase()
-            }}</strong>
-            <strong> {{ confirmModal.userName }}</strong
-            >? This will immediately change their account status.
+            <strong>{{ ACTION_META[confirmModal.action]?.label?.toLowerCase() }}</strong>
+            <strong> {{ confirmModal.userName }}</strong>?
+            This will immediately change their account status.
           </p>
 
           <div class="modal-actions">
@@ -394,25 +404,21 @@ onMounted(() => userStore.fetchUsers(1));
   cursor: pointer;
   transition: all 0.15s;
 }
-
 .role-tab:hover {
   color: var(--color-primary);
   border-color: var(--color-primary);
 }
-
 .role-tab--active {
   background: var(--color-primary-soft);
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
-
 .tab-count {
   background: var(--color-border);
   border-radius: 999px;
   padding: 0 6px;
   font-size: 0.68rem;
 }
-
 .role-tab--active .tab-count {
   background: var(--color-primary);
   color: white;
@@ -424,7 +430,6 @@ onMounted(() => userStore.fetchUsers(1));
   display: flex;
   align-items: center;
 }
-
 .search-icon {
   position: absolute;
   left: 0.75rem;
@@ -433,7 +438,6 @@ onMounted(() => userStore.fetchUsers(1));
   color: var(--color-muted);
   pointer-events: none;
 }
-
 .search-input {
   padding: 0.5rem 1rem 0.5rem 2.25rem;
   border: 1.5px solid var(--color-border);
@@ -445,7 +449,6 @@ onMounted(() => userStore.fetchUsers(1));
   outline: none;
   transition: border-color 0.15s;
 }
-
 .search-input:focus {
   border-color: var(--color-primary);
 }
@@ -463,23 +466,9 @@ onMounted(() => userStore.fetchUsers(1));
   background: var(--color-surface);
   gap: 0.75rem;
 }
-
-.state-icon {
-  width: 2.5rem;
-  height: 2.5rem;
-  opacity: 0.5;
-}
-.state-title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--color-text);
-  margin: 0;
-}
-.state-desc {
-  font-size: 0.85rem;
-  color: var(--color-muted);
-  margin: 0;
-}
+.state-icon { width: 2.5rem; height: 2.5rem; opacity: 0.5; }
+.state-title { font-size: 1rem; font-weight: 700; color: var(--color-text); margin: 0; }
+.state-desc { font-size: 0.85rem; color: var(--color-muted); margin: 0; }
 .btn-retry {
   margin-top: 0.5rem;
   font-size: 0.78rem;
@@ -491,9 +480,7 @@ onMounted(() => userStore.fetchUsers(1));
   border: none;
   cursor: pointer;
 }
-.btn-retry:hover {
-  text-decoration: underline;
-}
+.btn-retry:hover { text-decoration: underline; }
 
 .loading-spinner {
   width: 2rem;
@@ -503,11 +490,7 @@ onMounted(() => userStore.fetchUsers(1));
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* Table */
 .table-wrap {
@@ -522,12 +505,10 @@ onMounted(() => userStore.fetchUsers(1));
   border-collapse: collapse;
   font-size: 0.85rem;
 }
-
 .user-table thead tr {
   background: var(--color-surface-soft);
   border-bottom: 1px solid var(--color-border);
 }
-
 .user-table th {
   padding: 0.75rem 1rem;
   text-align: left;
@@ -538,30 +519,17 @@ onMounted(() => userStore.fetchUsers(1));
   color: var(--color-muted);
   white-space: nowrap;
 }
-
 .user-row {
   border-bottom: 1px solid var(--color-border);
   transition: background 0.12s;
+  cursor: pointer;
 }
-.user-row:last-child {
-  border-bottom: none;
-}
-.user-row:hover {
-  background: var(--color-surface-soft);
-}
-
-.user-table td {
-  padding: 0.85rem 1rem;
-  vertical-align: middle;
-}
+.user-row:last-child { border-bottom: none; }
+.user-row:hover { background: var(--color-surface-soft); }
+.user-table td { padding: 0.85rem 1rem; vertical-align: middle; }
 
 /* User info cell */
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
+.user-info { display: flex; align-items: center; gap: 0.75rem; }
 .user-avatar {
   width: 2.25rem;
   height: 2.25rem;
@@ -574,18 +542,16 @@ onMounted(() => userStore.fetchUsers(1));
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
 }
-
-.user-name {
-  font-weight: 700;
-  color: var(--color-text);
-  margin: 0;
+.user-avatar .avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
-.user-email {
-  font-size: 0.75rem;
-  color: var(--color-muted);
-  margin: 0;
-}
+.user-name { font-weight: 700; color: var(--color-text); margin: 0; }
+.user-email { font-size: 0.75rem; color: var(--color-muted); margin: 0; }
 
 /* Badges */
 .status-badge,
@@ -599,54 +565,17 @@ onMounted(() => userStore.fetchUsers(1));
   letter-spacing: 0.08em;
   border: 1px solid transparent;
 }
-
-.badge-active {
-  background: rgba(29, 158, 117, 0.1);
-  color: #1d9e75;
-  border-color: rgba(29, 158, 117, 0.25);
-}
-.badge-suspended {
-  background: rgba(239, 159, 39, 0.1);
-  color: #c97c0a;
-  border-color: rgba(239, 159, 39, 0.25);
-}
-.badge-banned {
-  background: rgba(220, 53, 69, 0.1);
-  color: var(--color-danger, #dc3545);
-  border-color: rgba(220, 53, 69, 0.25);
-}
-.badge-default {
-  background: var(--color-surface-soft);
-  color: var(--color-muted);
-}
-
-.role-admin {
-  background: rgba(139, 92, 246, 0.1);
-  color: #7c3aed;
-  border-color: rgba(139, 92, 246, 0.25);
-}
-.role-owner {
-  background: rgba(55, 138, 221, 0.1);
-  color: var(--color-primary);
-  border-color: rgba(55, 138, 221, 0.25);
-}
-.role-customer {
-  background: rgba(29, 158, 117, 0.1);
-  color: #1d9e75;
-  border-color: rgba(29, 158, 117, 0.2);
-}
-.role-default {
-  background: var(--color-surface-soft);
-  color: var(--color-muted);
-}
+.badge-active { background: rgba(29,158,117,.1); color: #1d9e75; border-color: rgba(29,158,117,.25); }
+.badge-suspended { background: rgba(239,159,39,.1); color: #c97c0a; border-color: rgba(239,159,39,.25); }
+.badge-banned { background: rgba(220,53,69,.1); color: var(--color-danger,#dc3545); border-color: rgba(220,53,69,.25); }
+.badge-default { background: var(--color-surface-soft); color: var(--color-muted); }
+.role-admin { background: rgba(139,92,246,.1); color: #7c3aed; border-color: rgba(139,92,246,.25); }
+.role-owner { background: rgba(55,138,221,.1); color: var(--color-primary); border-color: rgba(55,138,221,.25); }
+.role-customer { background: rgba(29,158,117,.1); color: #1d9e75; border-color: rgba(29,158,117,.2); }
+.role-default { background: var(--color-surface-soft); color: var(--color-muted); }
 
 /* Action buttons */
-.action-group {
-  display: flex;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-}
-
+.action-group { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 .action-btn {
   padding: 0.25rem 0.65rem;
   border-radius: 8px;
@@ -658,83 +587,23 @@ onMounted(() => userStore.fetchUsers(1));
   cursor: pointer;
   transition: all 0.15s;
 }
-.action-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+.action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-approve { background: rgba(29,158,117,.1); color: #1d9e75; border-color: rgba(29,158,117,.3); }
+.btn-approve:hover:not(:disabled) { background: #1d9e75; color: white; }
+.btn-suspend { background: rgba(239,159,39,.1); color: #c97c0a; border-color: rgba(239,159,39,.3); }
+.btn-suspend:hover:not(:disabled) { background: #c97c0a; color: white; }
 
-.btn-approve {
-  background: rgba(29, 158, 117, 0.1);
-  color: #1d9e75;
-  border-color: rgba(29, 158, 117, 0.3);
-}
-.btn-approve:hover {
-  background: #1d9e75;
-  color: white;
-}
-
-.btn-suspend {
-  background: rgba(239, 159, 39, 0.1);
-  color: #c97c0a;
-  border-color: rgba(239, 159, 39, 0.3);
-}
-.btn-suspend:hover {
-  background: #c97c0a;
-  color: white;
-}
-
-.btn-ban {
-  background: rgba(220, 53, 69, 0.1);
-  color: var(--color-danger, #dc3545);
-  border-color: rgba(220, 53, 69, 0.3);
-}
-.btn-ban:hover {
-  background: var(--color-danger, #dc3545);
-  color: white;
-}
-
-/* Pagination */
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  padding: 1rem;
+/* Pagination wrapper */
+.pagination-wrap {
   border-top: 1px solid var(--color-border);
-}
-
-.page-btn {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 8px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.page-btn:hover:not(:disabled) {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-.page-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-.page-info {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--color-text);
+  padding: 0.5rem 1rem 1.25rem;
 }
 
 /* Confirm Modal */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: 70;
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(4px);
   display: flex;
@@ -742,7 +611,6 @@ onMounted(() => userStore.fetchUsers(1));
   justify-content: center;
   padding: 1rem;
 }
-
 .modal-box {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -753,7 +621,6 @@ onMounted(() => userStore.fetchUsers(1));
   text-align: center;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.15);
 }
-
 .modal-icon-wrap {
   width: 3rem;
   height: 3rem;
@@ -763,38 +630,11 @@ onMounted(() => userStore.fetchUsers(1));
   justify-content: center;
   margin: 0 auto 1rem;
 }
-
-.modal-icon--approve {
-  background: rgba(29, 158, 117, 0.1);
-  color: #1d9e75;
-}
-.modal-icon--suspend {
-  background: rgba(239, 159, 39, 0.1);
-  color: #c97c0a;
-}
-.modal-icon--ban {
-  background: rgba(220, 53, 69, 0.1);
-  color: var(--color-danger, #dc3545);
-}
-
-.modal-title {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--color-text);
-  margin: 0 0 0.5rem;
-}
-.modal-desc {
-  font-size: 0.88rem;
-  color: var(--color-muted);
-  margin: 0 0 1.5rem;
-  line-height: 1.6;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 0.75rem;
-}
-
+.modal-icon--approve { background: rgba(29,158,117,.1); color: #1d9e75; }
+.modal-icon--suspend { background: rgba(239,159,39,.1); color: #c97c0a; }
+.modal-title { font-size: 1.1rem; font-weight: 800; color: var(--color-text); margin: 0 0 0.5rem; }
+.modal-desc { font-size: 0.88rem; color: var(--color-muted); margin: 0 0 1.5rem; line-height: 1.6; }
+.modal-actions { display: flex; gap: 0.75rem; }
 .btn-cancel {
   flex: 1;
   padding: 0.65rem;
@@ -807,10 +647,7 @@ onMounted(() => userStore.fetchUsers(1));
   cursor: pointer;
   transition: background 0.15s;
 }
-.btn-cancel:hover {
-  background: var(--color-border);
-}
-
+.btn-cancel:hover { background: var(--color-border); }
 .btn-confirm {
   flex: 1;
   padding: 0.65rem;
@@ -822,13 +659,8 @@ onMounted(() => userStore.fetchUsers(1));
   transition: all 0.15s;
 }
 
-/* Transition */
 .modal-fade-enter-active,
-.modal-fade-leave-active {
-  transition: opacity 0.2s ease;
-}
+.modal-fade-leave-active { transition: opacity 0.2s ease; }
 .modal-fade-enter-from,
-.modal-fade-leave-to {
-  opacity: 0;
-}
+.modal-fade-leave-to { opacity: 0; }
 </style>

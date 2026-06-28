@@ -4,6 +4,7 @@ import { ref, computed, watch } from "vue";
 import { ownerPaymentApi } from "@/modules/payments/api/ownerPayment.api";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useToastStore } from "@/shared/store/toastStore";
+import { reservationApi } from "@/modules/reservations/api/reservation.api";
 
 export const useOwnerPaymentStore = defineStore("ownerPayment", () => {
     const authStore = useAuthStore();
@@ -143,6 +144,25 @@ export const useOwnerPaymentStore = defineStore("ownerPayment", () => {
         }
     };
 
+    const changeReservationStatus = async (reservationId, status, reason = "") => {
+        actionLoading.value = true;
+        try {
+            await reservationApi.updateOwnerReservationStatus(reservationId, {
+                status: status,
+                reason: reason || `Status manually updated to ${status} by owner.`
+            });
+
+            toastStore?.success?.(`Reservation status updated to ${status} successfully.`);
+            await loadData(); // ទាញយកទិន្នន័យថ្មីដើម្បី Update Table
+            return true;
+        } catch (err) {
+            toastStore?.danger?.(err.response?.data?.message || "Failed to update reservation status.");
+            return false;
+        } finally {
+            actionLoading.value = false;
+        }
+    };
+
     const verifyPayment = async (customerPaymentId) => {
         actionLoading.value = true;
         try {
@@ -222,6 +242,7 @@ export const useOwnerPaymentStore = defineStore("ownerPayment", () => {
         totalPages,
         switchModule,
         loadData,
+        changeReservationStatus,
         verifyPayment,
         approveRefund,
         rejectPayment,

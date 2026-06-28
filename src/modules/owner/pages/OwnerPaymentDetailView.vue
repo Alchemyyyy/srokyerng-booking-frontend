@@ -74,6 +74,10 @@ const normalizeReservationItem = (refundData, paymentData) => {
         paymentMethod: paymentData.payment_method || "N/A",
         paymentStatus: String(paymentData.payment_status || "").toLowerCase(),
 
+        // បន្ថែមការចាប់យក Status របស់ Reservation រួមជាមួយ Cancellation Reason ពី API
+        reservationStatus: paymentData.reservation_status ? String(paymentData.reservation_status).toLowerCase() : null,
+        cancellationReason: paymentData.cancellation_reason || paymentData.cancellation_note || null,
+
         checkIn: paymentData.check_in_date || "-",
         checkOut: paymentData.check_out_date || "-",
         txRef: paymentData.transaction_reference || "N/A",
@@ -225,13 +229,16 @@ const getStatusBadgeClass = (status) => {
         case "requested":
         case "pending":
         case "submitted":
+        case "confirmed":
             return "bg-amber-500/10 border-amber-500/20 text-amber-600";
         case "approved":
         case "refunded":
         case "verified":
+        case "completed":
             return "bg-emerald-500/10 border-emerald-500/20 text-emerald-600";
         case "rejected":
         case "failed":
+        case "cancelled":
             return "bg-rose-500/10 border-rose-500/20 text-rose-600";
         default:
             return "bg-gray-500/10 border-gray-500/20 text-gray-500";
@@ -277,7 +284,7 @@ onMounted(fetchPaymentDetails);
                         <div>
                             <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Phone Number</span>
                             <span class="font-semibold text-(--color-primary) text-sm">{{ reservation.guestPhone
-                            }}</span>
+                                }}</span>
                         </div>
                         <div class="overflow-hidden">
                             <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Email
@@ -313,13 +320,13 @@ onMounted(fetchPaymentDetails);
                             <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Check-in
                                 Date</span>
                             <span class="font-medium text-(--color-text) text-xs">{{ formatDate(reservation.checkIn)
-                            }}</span>
+                                }}</span>
                         </div>
                         <div class="col-span-2">
                             <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Check-out
                                 Date</span>
                             <span class="font-medium text-(--color-text) text-xs">{{ formatDate(reservation.checkOut)
-                            }}</span>
+                                }}</span>
                         </div>
                     </div>
                 </div>
@@ -342,12 +349,12 @@ onMounted(fetchPaymentDetails);
                             <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Payment
                                 Method</span>
                             <span class="font-bold text-(--color-text) text-sm mt-1 block">{{ reservation.paymentMethod
-                            }}</span>
+                                }}</span>
                         </div>
                         <div class="col-span-2">
                             <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Booking ID</span>
                             <span class="font-mono text-xs font-bold text-(--color-primary)">#{{ reservation.id
-                            }}</span>
+                                }}</span>
                         </div>
                         <div class="col-span-2">
                             <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Transaction
@@ -360,13 +367,31 @@ onMounted(fetchPaymentDetails);
                         <div class="col-span-2">
                             <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Requested At</span>
                             <span class="font-medium text-(--color-muted) text-xs">{{ formatDate(reservation.createdAt)
-                            }}</span>
+                                }}</span>
+                        </div>
+
+                        <div>
+                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Payment
+                                Status</span>
+                            <span class="inline-block text-xs font-bold uppercase px-2 py-0.5 rounded border mt-1"
+                                :class="getStatusBadgeClass(reservation.paymentStatus)">
+                                {{ reservation.paymentStatus || 'N/A' }}
+                            </span>
+                        </div>
+                        <div v-if="reservation.reservationStatus">
+                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Reservation
+                                Status</span>
+                            <span class="inline-block text-xs font-bold uppercase px-2 py-0.5 rounded border mt-1"
+                                :class="getStatusBadgeClass(reservation.reservationStatus)">
+                                {{ reservation.reservationStatus }}
+                            </span>
                         </div>
                     </div>
                 </div>
 
-                <div v-if="reservation.refundStatus || reservation.rejectionReason"
+                <div v-if="reservation.refundReason || reservation.decisionNote || reservation.rejectionReason || reservation.reservationStatus === 'cancelled' || reservation.cancellationReason"
                     class="space-y-4 pt-4 border-t border-(--color-border)">
+
                     <div v-if="reservation.refundReason" class="space-y-2">
                         <span class="text-xs font-bold text-(--color-muted) uppercase tracking-wider block">Customer
                             Refund Request Reason</span>
@@ -376,8 +401,8 @@ onMounted(fetchPaymentDetails);
                     </div>
 
                     <div v-if="reservation.decisionNote" class="space-y-2">
-                        <span class="text-xs font-bold text-rose-600 uppercase tracking-wider block">Refund Rejection
-                            Reason</span>
+                        <span class="text-xs font-bold text-rose-600 tracking-wider block uppercase">Refund Rejection
+                            Reason (Owner Decision)</span>
                         <div class="bg-rose-500/5 p-4 rounded-xl border border-rose-500/10">
                             <p class="text-sm font-bold text-rose-700">" {{ reservation.decisionNote }} "</p>
                         </div>
@@ -388,6 +413,18 @@ onMounted(fetchPaymentDetails);
                             Reason</span>
                         <div class="bg-red-500/5 p-4 rounded-xl border border-red-500/10">
                             <p class="text-sm font-bold text-red-700">" {{ reservation.rejectionReason }} "</p>
+                        </div>
+                    </div>
+
+                    <div v-if="reservation.reservationStatus === 'cancelled' || reservation.cancellationReason"
+                        class="space-y-2">
+                        <span class="text-xs font-bold text-rose-600 uppercase tracking-wider block">Cancellation
+                            Reason</span>
+                        <div class="bg-rose-500/10 p-4 rounded-xl border border-rose-500/20">
+                            <p class="text-sm font-bold text-rose-700">
+                                " {{ reservation.cancellationReason ||
+                                    'No details provided / លុបចោលដោយប្រព័ន្ធឬមិនមានបញ្ជាក់មូលហេតុ' }} "
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -453,6 +490,8 @@ onMounted(fetchPaymentDetails);
 
         <section v-if="reservation"
             class="mt-6 flex items-center justify-end gap-3 bg-(--color-surface) border border-(--color-border) p-4 rounded-2xl shadow-sm">
+
+            
 
             <template v-if="reservation.paymentStatus === 'submitted'">
                 <template v-if="showRejectPaymentInput">
@@ -523,12 +562,23 @@ onMounted(fetchPaymentDetails);
             </template>
 
             <template v-else>
-                <div class="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl border"
-                    :class="getStatusBadgeClass(reservation.refundStatus || reservation.paymentStatus)">
-                    <span>Status:</span>
-                    <span class="font-bold uppercase">
-                        {{ reservation.refundStatus || reservation.paymentStatus }}
-                    </span>
+                <div
+                    class="flex items-center gap-4 text-sm font-medium px-4 py-2 rounded-xl border border-(--color-border) bg-(--color-surface-soft)">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-(--color-muted)">Payment:</span>
+                        <span class="font-bold uppercase px-2 py-0.5 rounded border text-xs"
+                            :class="getStatusBadgeClass(reservation.paymentStatus)">
+                            {{ reservation.paymentStatus || 'N/A' }}
+                        </span>
+                    </div>
+                    <div v-if="reservation.reservationStatus"
+                        class="flex items-center gap-1.5 border-l border-(--color-border) pl-4">
+                        <span class="text-(--color-muted)">Reservation:</span>
+                        <span class="font-bold uppercase px-2 py-0.5 rounded border text-xs"
+                            :class="getStatusBadgeClass(reservation.reservationStatus)">
+                            {{ reservation.reservationStatus }}
+                        </span>
+                    </div>
                 </div>
             </template>
         </section>

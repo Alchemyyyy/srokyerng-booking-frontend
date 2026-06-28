@@ -37,6 +37,7 @@ const isRejectModalOpen = ref(false);
 const isApproveModalOpen = ref(false);
 const selectedItem = ref(null);
 const rejectNoteText = ref("");
+const targetStatus = ref("");
 
 const reservationColumns = [
     { key: "guestName", label: "Guest Info" },
@@ -45,7 +46,8 @@ const reservationColumns = [
     { key: "checkIn", label: "Stay Period" },
     { key: "status", label: "Payment Status" },
     { key: "reservation_status", label: "Reservation Status" },
-    { key: "action", label: "Actions" },
+    { key: "reservation_action", label: "Reservation Action" },
+    { key: "payment_action", label: "Payment Action" },
 ];
 
 const refundColumns = [
@@ -55,7 +57,7 @@ const refundColumns = [
     { key: "amount", label: "Refund Amount" },
     { key: "reason", label: "Reason" },
     { key: "refund_status", label: "Status" },
-    { key: "action", label: "Actions" },
+    { key: "payment_action", label: "Actions" }, // ប្រើសោរដូចគ្នាដើម្បីកាត់បន្ថយភាពស្មុគស្មាញក្នុង Table
 ];
 
 const formatCurrency = (value) =>
@@ -68,7 +70,8 @@ const formatDate = (value) => {
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 };
 
-const openReview = (row) => {
+// បន្ថែមត្រឡប់មកវិញនូវមុខងារ Row Click ពេលអ្នកប្រើចុចលើ Row ណាមួយ
+const handleRowClick = (row) => {
     if (activeModule.value === 'payments') {
         router.push({ path: "reservations/" + (row.customerPaymentId || row.id) });
     } else {
@@ -77,53 +80,89 @@ const openReview = (row) => {
 };
 
 /* --- APPROVAL FLOWS --- */
-const triggerApproveModal = (row) => {
+const handleApprovePaymentSlip = (row) => {
     selectedItem.value = row;
+    targetStatus.value = ""; // Clear reservation status flow
     isApproveModalOpen.value = true;
 };
 
-const closeApproveModal = () => {
-    isApproveModalOpen.value = false;
-    selectedItem.value = null;
+/* --- REJECTION FLOWS --- */
+const handleRejectPaymentSlip = (row) => {
+    selectedItem.value = row;
+    targetStatus.value = ""; // Clear reservation status flow
+    rejectNoteText.value = "";
+    isRejectModalOpen.value = true;
+};
+
+// មុខងារសម្រាប់ចាប់យក Event ផ្លាស់ប្តូរ Reservation Status ពី Dropdown
+const handleReservationStatusChange = (eventData) => {
+    const { row, status } = eventData;
+    selectedItem.value = row;
+    targetStatus.value = status;
+    rejectNoteText.value = "";
+
+    // បើជ្រើសរើស confirmed ឬ completed គឺមិនត្រូវការ reason ទេ -> បើក Approve Modal ភ្លាមៗ
+    if (status === 'confirmed' || status === 'completed') {
+        isApproveModalOpen.value = true;
+    } else {
+        // បើជ្រើសរើស pending ឬ cancelled គឺតម្រូវឱ្យបំពេញ note/reason -> បើក Reject Modal
+        isRejectModalOpen.value = true;
+    }
 };
 
 const handleConfirmApprove = async () => {
     if (!selectedItem.value) return;
     let success = false;
+
     if (activeModule.value === 'payments') {
-        success = await paymentStore.verifyPayment(selectedItem.value.customerPaymentId);
+        if (targetStatus.value) {
+            // លំហូរមកពី Dropdown Reservation Action
+            success = await paymentStore.changeReservationStatus(selectedItem.value.id, targetStatus.value, 'Manually updated by owner');
+        } else {
+            // លំហូរចាស់ មកពីប៊ូតុង Verify Paid របស់ Payment Action
+            success = await paymentStore.verifyPayment(selectedItem.value.customerPaymentId);
+        }
     } else {
         success = await paymentStore.approveRefund(selectedItem.value.id);
     }
+
     if (success) closeApproveModal();
 };
 
-/* --- REJECTION FLOWS --- */
-const triggerRejectModal = (row) => {
-    selectedItem.value = row;
-    rejectNoteText.value = "";
-    isRejectModalOpen.value = true;
+const handleConfirmReject = async () => {
+    if (!rejectNoteText.value || !rejectNoteText.value.trim()) {
+        paymentStore.actionLoading = true;
+        setTimeout(() => { paymentStore.actionLoading = false; }, 1500);
+        return;
+    }
+    let success = false;
+
+    if (activeModule.value === 'payments') {
+        if (targetStatus.value) {
+            // លំហូរមកពី Dropdown Reservation Action (ដូរទៅ pending, cancelled, ឬ completed)
+            success = await paymentStore.changeReservationStatus(selectedItem.value.id, targetStatus.value, rejectNoteText.value.trim());
+        } else {
+            // លំហូរចាស់ មកពីប៊ូតុង Reject Slip របស់ Payment Action
+            success = await paymentStore.rejectPayment(selectedItem.value.customerPaymentId, rejectNoteText.value.trim());
+        }
+    } else {
+        success = await paymentStore.rejectRefund(selectedItem.value.id, rejectNoteText.value.trim());
+    }
+
+    if (success) closeRejectModal();
+};
+
+const closeApproveModal = () => {
+    isApproveModalOpen.value = false;
+    selectedItem.value = null;
+    targetStatus.value = "";
 };
 
 const closeRejectModal = () => {
     isRejectModalOpen.value = false;
     selectedItem.value = null;
     rejectNoteText.value = "";
-};
-
-const handleConfirmReject = async () => {
-    if (!rejectNoteText.value || !rejectNoteText.value.trim()) {
-        actionLoading.value = true;
-        setTimeout(() => { actionLoading.value = false; }, 2000);
-        return;
-    }
-    let success = false;
-    if (activeModule.value === 'payments') {
-        success = await paymentStore.rejectPayment(selectedItem.value.customerPaymentId, rejectNoteText.value.trim());
-    } else {
-        success = await paymentStore.rejectRefund(selectedItem.value.id, rejectNoteText.value.trim());
-    }
-    if (success) closeRejectModal();
+    targetStatus.value = "";
 };
 
 onMounted(paymentStore.loadData);
@@ -190,14 +229,14 @@ onMounted(paymentStore.loadData);
             <div v-if="loading" class="rounded-xl px-5 py-10 text-center text-(--color-muted)">Loading comprehensive
                 data records...</div>
             <div v-else-if="filteredItems.length === 0" class="rounded-xl px-5 py-10 text-center text-(--color-muted)">
-                No entries match the current selection filters.
-            </div>
+                No entries match the current selection filters.</div>
 
             <template v-else>
                 <AppTable :columns="activeModule === 'payments' ? reservationColumns : refundColumns"
-                    :rows="paginatedItems" :is-processing="actionLoading" :active-module="activeModule"
-                    @approve="triggerApproveModal" @reject="triggerRejectModal" @row-click="openReview">
-
+                    :rows="paginatedItems" :clickable="true" :activeModule="activeModule" :isProcessing="actionLoading"
+                    @row-click="handleRowClick" @approve-payment="handleApprovePaymentSlip"
+                    @reject-payment="handleRejectPaymentSlip" @change-reservation-status="handleReservationStatusChange"
+                    @approve="handleApprovePaymentSlip" @reject="handleRejectPaymentSlip">
                     <template #cell-guestName="{ row }">
                         <div class="flex flex-col text-sm">
                             <span class="font-bold text-(--color-text)">{{ row.guestName }}</span>
@@ -218,6 +257,7 @@ onMounted(paymentStore.loadData);
                             <span class="text-xs text-(--color-muted)">Room: {{ row.roomName }}</span>
                         </div>
                     </template>
+
                     <template #cell-property_name="{ row }">
                         <div class="flex flex-col text-sm">
                             <span class="font-semibold text-(--color-text)">{{ row.property_name }}</span>
@@ -282,17 +322,6 @@ onMounted(paymentStore.loadData);
                                 formatDate(row.checkOut) }}</span>
                         </div>
                     </template>
-
-                    <template #cell-action="{ row }">
-                        <template v-if="activeModule === 'payments'">
-                            <span v-if="!['submitted', 'pending'].includes(row.status)"
-                                class="text-xs text-(--color-muted) italic px-2">Processed</span>
-                        </template>
-                        <template v-else-if="activeModule === 'refunds'">
-                            <span v-if="!['pending', 'requested'].includes(row.refund_status)"
-                                class="text-xs text-(--color-muted) italic px-2">Decision Logged</span>
-                        </template>
-                    </template>
                 </AppTable>
 
                 <AppPagination v-model:currentPage="currentPage" :totalPages="totalPages"
@@ -300,19 +329,24 @@ onMounted(paymentStore.loadData);
             </template>
         </section>
 
-        <AppModal :title="activeModule === 'payments' ? 'Confirm Payment' : 'Approve Refund'" :open="isApproveModalOpen"
-            @close="closeApproveModal">
+        <AppModal
+            :title="activeModule === 'payments' ? (targetStatus ? 'Change Reservation Status' : 'Confirm Payment') : 'Approve Refund'"
+            :open="isApproveModalOpen" @close="closeApproveModal">
             <div class="modal-surface-content text-center pt-2">
                 <div class="icon-wrapper confirmation-success">
                     <CheckCircleIcon class="modal-status-icon text-(--color-success)" />
                 </div>
                 <div>
-                    <h3 class="modal-title">{{ activeModule === 'payments' ? 'Confirm' : 'Approve' }} {{ activeModule
-                        ===
-                        'payments' ? 'PaymentReceipt' : 'Listing Refund' }}</h3>
-                    <p class="modal-desc mt-2">Are you sure you want to {{ activeModule === 'payments' ? 'confirm' :
-                        'approve'
-                        }} and publish this financial audit request to the platform live transaction records?</p>
+                    <h3 class="modal-title">
+                        {{ targetStatus ? `Set Status to ${targetStatus}` : (activeModule === 'payments' ?
+                            'ConfirmPaymentSlip'
+                            : 'Approve Refund') }}
+                    </h3>
+                    <p class="modal-desc mt-2">
+                        Are you sure you want to proceed with this operation? This will change the real-time record
+                        statement on
+                        the ecosystem ledger.
+                    </p>
                 </div>
                 <div class="modal-footer-actions justify-center mt-4">
                     <button type="button" @click="closeApproveModal" :disabled="actionLoading"
@@ -320,30 +354,33 @@ onMounted(paymentStore.loadData);
                     <button type="button" @click="handleConfirmApprove" :disabled="actionLoading"
                         class="btn-confirm-approve min-w-120px flex items-center justify-center">
                         <LoadingSpinner v-if="actionLoading" class="h-4 w-4 text-white" />
-                        <span v-else>Yes, {{ activeModule === 'payments' ? 'Confirm' : 'Approve' }}</span>
+                        <span v-else>Yes, Proceed</span>
                     </button>
                 </div>
             </div>
         </AppModal>
 
-        <AppModal :title="activeModule === 'payments' ? 'Reject Payment' : 'Reject Refund'" :open="isRejectModalOpen"
-            @close="closeRejectModal">
+        <AppModal
+            :title="targetStatus ? 'Modify Status Reason' : (activeModule === 'payments' ? 'Reject Payment Slip' : 'Reject Refund')"
+            :open="isRejectModalOpen" @close="closeRejectModal">
             <div class="modal-surface-content">
                 <div class="flex items-center gap-2">
                     <XCircleIcon class="modal-status-icon text-danger small-icon" />
-                    <h3 class="modal-title">Specify Rejection Reason</h3>
+                    <h3 class="modal-title">Specify Log Justification</h3>
                 </div>
-                <p class="modal-desc">Provide clear feedback to help the user understand the cancellation or rejection
-                    criteria.
+                <p class="modal-desc">
+                    {{ targetStatus ? `Please provide a short reason for changing the reservation status to
+                    "${targetStatus}".`
+                        : 'Provide clear feedback to help the user understand the cancellation or rejection criteria.' }}
                 </p>
 
                 <div class="input-container mt-3">
                     <textarea v-model="rejectNoteText" rows="4" class="modal-textarea"
                         :class="{ 'input-error': !rejectNoteText.trim() && actionLoading }"
                         placeholder="Specify reasons..."></textarea>
-                    <span v-if="!rejectNoteText.trim() && actionLoading" class="validation-msg">Validation Warning:
-                        Rejection
-                        justification text field is required.</span>
+                    <span v-if="!rejectNoteText.trim() && actionLoading" class="validation-msg">
+                        Validation Warning: Justification text field is required.
+                    </span>
                 </div>
 
                 <div class="modal-footer-actions mt-4">
@@ -352,7 +389,7 @@ onMounted(paymentStore.loadData);
                     <button type="button" @click="handleConfirmReject" :disabled="actionLoading"
                         class="btn-confirm-reject min-w-150px flex items-center justify-center">
                         <LoadingSpinner v-if="actionLoading" class="h-4 w-4 text-white" />
-                        <span v-else>Confirm Rejection</span>
+                        <span v-else>Confirm Action</span>
                     </button>
                 </div>
             </div>
@@ -361,7 +398,6 @@ onMounted(paymentStore.loadData);
 </template>
 
 <style scoped>
-/* Styles remain untouched */
 .owner-payments {
     font-family: var(--font-main);
     background-color: var(--color-page);
