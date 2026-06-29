@@ -7,6 +7,7 @@ import {
   PhotoIcon,
   XMarkIcon,
   BuildingOffice2Icon,
+  MicrophoneIcon,
 } from "@heroicons/vue/24/outline";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useChatStore } from "../store/chatStore";
@@ -101,6 +102,85 @@ const handleSend = async () => {
   } catch (err) {
     console.error("Failed to send message", err);
   }
+};
+
+// ── Voice Recording Setup ──
+const isRecording = ref(false);
+const mediaRecorder = ref(null);
+const audioChunks = ref([]);
+const recordingDuration = ref(0);
+let durationInterval = null;
+
+const formatDuration = (secs) => {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+};
+
+const isAudioFile = (url) => {
+  if (!url) return false;
+  return url.toLowerCase().match(/\.(webm|mp3|ogg|wav|m4a|aac|opus|mp4)$/) || url.includes("voice_note") || url.includes("audio");
+};
+
+const startRecording = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioChunks.value = [];
+    mediaRecorder.value = new MediaRecorder(stream);
+    
+    mediaRecorder.value.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        audioChunks.value.push(event.data);
+      }
+    };
+
+    mediaRecorder.value.onstop = async () => {
+      const audioBlob = new Blob(audioChunks.value, { type: "audio/webm" });
+      const file = new File([audioBlob], `voice_note_${Date.now()}.webm`, { type: "audio/webm" });
+      
+      // Clear file and set preview
+      clearFile();
+      selectedFile.value = file;
+      filePreviewUrl.value = URL.createObjectURL(file);
+      
+      // Release tracks
+      stream.getTracks().forEach((track) => track.stop());
+      
+      // Automatically send voice note
+      await handleSend();
+    };
+
+    isRecording.value = true;
+    recordingDuration.value = 0;
+    clearInterval(durationInterval);
+    durationInterval = setInterval(() => {
+      recordingDuration.value++;
+    }, 1000);
+
+    mediaRecorder.value.start();
+  } catch (err) {
+    console.error("Microphone access denied or error:", err);
+    alert("Could not access microphone. Please check permissions.");
+  }
+};
+
+const stopRecording = (shouldSend = true) => {
+  if (mediaRecorder.value && mediaRecorder.value.state !== "inactive") {
+    clearInterval(durationInterval);
+    if (!shouldSend) {
+      // Discard recording logic
+      mediaRecorder.value.onstop = () => {
+        audioChunks.value = [];
+        isRecording.value = false;
+      };
+    }
+    mediaRecorder.value.stop();
+    isRecording.value = false;
+  }
+};
+
+const cancelRecording = () => {
+  stopRecording(false);
 };
 
 // Formats absolute URLs dynamically for chats
@@ -222,13 +302,20 @@ const goBack = () => {
                 : 'bg-(--color-surface) text-(--color-text) rounded-tl-xs border border-(--color-border)/40 font-medium'
             "
           >
-            <!-- Image Attachment -->
-            <div v-if="msg.attachment_url" class="mb-2 max-w-sm overflow-hidden rounded-xl border border-black/5">
-              <img
-                :src="getImageUrl(msg.attachment_url)"
-                alt="Attachment"
-                class="w-full h-auto object-cover max-h-60"
-              />
+            <!-- Image / Audio Attachment -->
+            <div v-if="msg.attachment_url">
+              <!-- Audio Player -->
+              <div v-if="isAudioFile(msg.attachment_url)" class="mb-2 w-64 p-2 rounded-xl bg-black/5 dark:bg-white/5 border border-(--color-border)/30">
+                <audio :src="getImageUrl(msg.attachment_url)" controls class="w-full h-8 outline-hidden"></audio>
+              </div>
+              <!-- Image view -->
+              <div v-else class="mb-2 max-w-sm overflow-hidden rounded-xl border border-black/5">
+                <img
+                  :src="getImageUrl(msg.attachment_url)"
+                  alt="Attachment"
+                  class="w-full h-auto object-cover max-h-60"
+                />
+              </div>
             </div>
             <!-- Message Body -->
             <p v-if="msg.message_body" class="whitespace-pre-wrap break-words">{{ msg.message_body }}</p>
@@ -249,8 +336,15 @@ const goBack = () => {
     <!-- Input Footer Bar -->
     <footer class="p-4 bg-(--color-surface) border-t border-(--color-border) shrink-0 space-y-3">
       <!-- File Selector Preview Panel -->
+      <!-- File Selector Preview Panel -->
       <div v-if="filePreviewUrl" class="relative inline-flex rounded-xl overflow-hidden border border-(--color-border) p-1 bg-(--color-page)">
-        <img :src="filePreviewUrl" class="h-16 w-16 object-cover rounded-lg" alt="Preview image" />
+        <img v-if="!isAudioFile(selectedFile?.name)" :src="filePreviewUrl" class="h-16 w-16 object-cover rounded-lg" alt="Preview image" />
+        <div v-else class="h-16 px-4 py-2 bg-(--color-surface-soft) border border-(--color-border) rounded-lg flex items-center gap-2">
+          <svg class="h-5 w-5 text-(--color-primary) animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+          </svg>
+          <span class="text-xs font-bold text-(--color-text)">Voice Note Draft</span>
+        </div>
         <button
           type="button"
           @click="clearFile"
@@ -260,7 +354,35 @@ const goBack = () => {
         </button>
       </div>
 
-      <div class="flex items-end gap-2.5">
+      <!-- Recording Audio Banner -->
+      <div v-if="isRecording" class="flex items-center justify-between w-full bg-rose-500/10 border border-rose-500/20 px-4 py-2.5 rounded-2xl animate-pulse">
+        <div class="flex items-center gap-3">
+          <!-- Red pulsing dot -->
+          <div class="h-2.5 w-2.5 bg-rose-600 rounded-full animate-ping"></div>
+          <span class="text-xs font-black text-rose-600 uppercase tracking-widest">Recording Voice...</span>
+          <span class="text-sm font-extrabold text-(--color-text)">{{ formatDuration(recordingDuration) }}</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <!-- Discard button -->
+          <button
+            type="button"
+            @click="cancelRecording"
+            class="text-xs font-extrabold text-(--color-muted) hover:underline cursor-pointer border-none bg-transparent"
+          >
+            Discard
+          </button>
+          <!-- Done/Send button -->
+          <button
+            type="button"
+            @click="stopRecording(true)"
+            class="px-4 py-1.5 rounded-full bg-rose-600 hover:opacity-90 text-white text-xs font-bold shadow-md cursor-pointer border-none"
+          >
+            Stop & Send
+          </button>
+        </div>
+      </div>
+
+      <div v-else class="flex items-end gap-2.5">
         <!-- Hidden file input -->
         <input
           type="file"
@@ -278,6 +400,16 @@ const goBack = () => {
           title="Add photo"
         >
           <PhotoIcon class="h-6 w-6" />
+        </button>
+
+        <!-- Voice Recorder Trigger -->
+        <button
+          type="button"
+          @click="startRecording"
+          class="h-11 w-11 flex items-center justify-center rounded-full hover:bg-(--color-surface-soft) text-(--color-muted) hover:text-(--color-text) active:scale-90 transition cursor-pointer"
+          title="Record voice note"
+        >
+          <MicrophoneIcon class="h-6 w-6" />
         </button>
 
         <!-- Message input box -->
@@ -298,7 +430,7 @@ const goBack = () => {
           :disabled="!messageText.trim() && !selectedFile"
           class="h-11 w-11 flex items-center justify-center rounded-full bg-(--color-primary) disabled:opacity-40 disabled:cursor-not-allowed text-white hover:opacity-90 active:scale-90 transition shadow-md cursor-pointer shrink-0"
         >
-          <PaperAirplaneIcon class="h-5 w-5 transform rotate-90" />
+          <PaperAirplaneIcon class="h-5 w-5" />
         </button>
       </div>
     </footer>

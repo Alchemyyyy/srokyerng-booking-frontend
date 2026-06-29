@@ -440,124 +440,85 @@ onBeforeUnmount(() => {
           <!-- Properties List/Grid -->
           <div
             v-else
-            :class="viewMode === 'list' ? 'space-y-4' : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'"
+            :class="viewMode === 'list' ? 'space-y-4' : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10'"
           >
             <article
               v-for="property in paginatedProperties"
               :key="property.id"
-              class="group cursor-pointer overflow-hidden rounded-sm border border-(--color-border) bg-(--color-surface) shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex"
-              style="border-radius: var(--radius-sm);"
-              :class="viewMode === 'list' ? 'flex-col sm:flex-row gap-6 p-4' : 'flex-col'"
+              class="group cursor-pointer overflow-hidden bg-transparent transition-all duration-300 flex flex-col"
+              :class="viewMode === 'list' ? 'flex-col sm:flex-row gap-6 p-4 border border-(--color-border) rounded-2xl bg-(--color-surface) shadow-xs hover:shadow-xl hover:-translate-y-1' : 'w-full'"
               @click="openProperty(property.id)"
             >
               <!-- Property Image Section -->
               <div
-                class="relative overflow-hidden bg-(--color-surface-soft) shrink-0 border-(--color-border)"
-                :class="viewMode === 'list' ? 'h-48 sm:h-48 sm:w-72 rounded-sm border' : 'w-full aspect-[4/3] border-b'"
+                class="relative overflow-hidden bg-(--color-surface-soft) shrink-0"
+                :class="viewMode === 'list' ? 'h-48 sm:h-48 sm:w-72 rounded-2xl border border-(--color-border)' : 'w-full aspect-[20/19] rounded-2xl mb-3 border border-(--color-border)/10 shadow-xs group-hover:shadow-md transition-shadow'"
               >
                 <img
                   :src="property.image || placeholderImage"
                   :alt="property.name"
-                  class="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                  class="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                 />
-                <!-- Smooth gradient overlay for premium contrast -->
-                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300"></div>
 
-                <!-- Heart Save Button -->
+                <!-- Heart Save Button (Airbnb Signature transparent heart with dark backdrop) -->
                 <button
                   type="button"
-                  class="absolute top-3 right-3 p-2.5 rounded-sm bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 shadow-lg transition-all active:scale-90 z-20 hover:scale-105 hover:shadow-xl cursor-pointer"
-                  style="border-radius: var(--radius-sm);"
+                  class="absolute top-3 right-3 h-8 w-8 bg-black/30 backdrop-blur-xs hover:bg-black/45 rounded-full flex items-center justify-center border-none active:scale-90 z-20 cursor-pointer transition-all shadow-[0_2px_8px_rgba(0,0,0,0.18)]"
                   @click="(e) => toggleSave(property.id, e)"
                 >
-                  <HeartIconSolid v-if="wishlistStore.isPropertySaved(property.id)" class="h-5 w-5 text-rose-600 animate-scaleUp" />
-                  <HeartIcon v-else class="h-5 w-5 text-gray-900 dark:text-white stroke-[2.5] hover:scale-110 transition" />
+                  <HeartIconSolid v-if="wishlistStore.isPropertySaved(property.id)" class="h-4.5 w-4.5 text-rose-500 animate-scaleUp" />
+                  <HeartIcon v-else class="h-4.5 w-4.5 text-white stroke-[2.5] hover:scale-105 transition" />
                 </button>
 
                 <!-- Top Left Badges -->
                 <div class="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
                   <span
                     v-if="property.rating >= 4.8"
-                    class="inline-flex items-center gap-1 rounded-sm bg-amber-500 text-gray-900 font-black px-2.5 py-1 text-[10px] shadow-md tracking-wider uppercase animate-pulse"
-                    style="border-radius: var(--radius-sm);"
+                    class="inline-flex items-center gap-1 rounded-full bg-white/95 text-gray-900 font-extrabold px-3 py-1 text-[9px] shadow-md tracking-wider uppercase"
                   >
-                    <SparklesIcon class="h-3.5 w-3.5 text-gray-900" />
-                    <span>{{ safeT("propertiesPage.topRated", "Top Rated") }}</span>
+                    <SparklesIcon class="h-3 w-3 text-amber-500 fill-amber-500" />
+                    <span>Guest favorite</span>
                   </span>
                   <span
                     v-else-if="!property.rating || property.rating === 0"
-                    class="inline-flex items-center gap-1 rounded-sm bg-emerald-500 text-white font-black px-2.5 py-1 text-[10px] shadow-md tracking-wider uppercase"
-                    style="border-radius: var(--radius-sm);"
+                    class="inline-flex items-center gap-1 rounded-full bg-emerald-500 text-white font-extrabold px-3 py-1 text-[9px] shadow-md tracking-wider uppercase"
                   >
-                    <span>🌱 {{ safeT("propertiesPage.newListing", "New Listing") }}</span>
-                  </span>
-                  <span
-                    v-else-if="property.price < 100"
-                    class="inline-flex items-center gap-1 rounded-sm bg-rose-500 text-white font-black px-2.5 py-1 text-[10px] shadow-md tracking-wider uppercase"
-                    style="border-radius: var(--radius-sm);"
-                  >
-                    <span>🔥 {{ safeT("propertiesPage.greatValue", "Great Value") }}</span>
+                    <span>New Listing</span>
                   </span>
                 </div>
-
-                <!-- Bottom Category Badge -->
-                <span class="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-sm bg-black/50 backdrop-blur-md border border-white/20 px-3 py-1 text-xs font-bold text-white shadow-sm tracking-wide" style="border-radius: var(--radius-sm);">
-                  <BuildingOffice2Icon class="h-4 w-4 text-(--color-primary)" />
-                  <span class="capitalize">{{ property.type || 'Stay' }}</span>
-                </span>
               </div>
 
               <!-- Property Details Section -->
-              <div class="flex flex-col justify-between flex-1 min-w-0" :class="viewMode === 'list' ? 'py-1 pr-2' : 'p-5'">
+              <div class="flex flex-col justify-between flex-1 min-w-0" :class="viewMode === 'list' ? 'py-1 pr-2' : 'p-0.5'">
                 <div>
                   <div class="flex items-start justify-between gap-3">
-                    <h3 class="text-lg font-bold text-(--color-text) group-hover:text-(--color-primary) transition-colors duration-200 truncate">
+                    <h3 class="text-sm font-extrabold text-(--color-text) group-hover:text-(--color-primary) transition-colors duration-200 truncate">
                       {{ property.name }}
                     </h3>
-                    <div v-if="property.rating > 0" class="flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 font-extrabold px-2.5 py-1 rounded-sm text-xs shrink-0 shadow-xs" style="border-radius: var(--radius-sm);">
+                    <div v-if="property.rating > 0" class="flex items-center gap-1 text-sm font-bold text-(--color-text) shrink-0">
                       <StarIconSolid class="h-3.5 w-3.5 text-amber-500 shrink-0" />
                       <span>{{ Number(property.rating).toFixed(1) }}</span>
                     </div>
-                    <div v-else class="flex items-center gap-1 bg-(--color-surface-soft) border border-(--color-border) text-(--color-muted) font-bold px-2.5 py-1 rounded-sm text-[11px] shrink-0 shadow-xs" style="border-radius: var(--radius-sm);">
-                      <span>{{ safeT("propertiesPage.new", "New") }}</span>
+                    <div v-else class="text-xs font-bold text-(--color-muted) shrink-0">
+                      {{ safeT("propertiesPage.new", "New") }}
                     </div>
                   </div>
 
                   <!-- Location & Distance -->
-                  <p class="flex items-center gap-1.5 text-xs font-semibold text-(--color-muted) mt-1.5 truncate">
-                    <MapPinIcon class="h-4 w-4 text-(--color-primary) shrink-0" />
-                    <span class="text-(--color-text)">{{ property.location || property.city || 'Cambodia' }}</span>
-                    <span class="text-gray-400 dark:text-gray-600">•</span>
-                    <span class="text-[11px]">{{ safeT("propertiesPage.viewMap", "View on map") }}</span>
+                  <p class="text-xs font-semibold text-(--color-muted) mt-1 truncate">
+                    {{ property.location || property.city || 'Cambodia' }}
                   </p>
 
-                  <!-- Quick Amenities Snippet -->
-                  <div class="flex items-center flex-wrap gap-x-2 gap-y-1 text-[11px] font-medium text-(--color-muted) mt-3 bg-(--color-surface-soft) px-2.5 py-1.5 rounded-sm border border-(--color-border)/40" style="border-radius: var(--radius-sm);">
-                    <span class="inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-sm bg-(--color-primary)"></span>{{ safeT("amenities.wifi", "Fast WiFi") }}</span>
-                    <span class="text-gray-300 dark:text-gray-700">•</span>
-                    <span class="inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-sm bg-(--color-primary)"></span>{{ safeT("amenities.ac", "Air Conditioning") }}</span>
-                    <span class="text-gray-300 dark:text-gray-700">•</span>
-                    <span class="inline-flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-sm bg-(--color-primary)"></span>{{ safeT("amenities.parking", "Parking") }}</span>
-                  </div>
-
-                  <p v-if="viewMode === 'list'" class="line-clamp-2 text-xs text-(--color-muted) mt-3 leading-relaxed">
-                    {{ property.description }}
+                  <!-- Specifications -->
+                  <p class="text-xs font-semibold text-(--color-muted) mt-0.5 capitalize truncate">
+                    {{ property.type || 'Stay' }} • Free cancellation
                   </p>
                 </div>
 
-                <!-- Bottom Row: Pricing & Perks -->
-                <div class="flex items-end justify-between gap-4 pt-4 mt-4 border-t border-(--color-border)/60">
-                  <span class="inline-flex items-center gap-1 rounded-sm bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400" style="border-radius: var(--radius-sm);">
-                    <ShieldCheckIcon class="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-                    <span>{{ safeT("propertiesPage.freeCancellation", "Free cancellation") }}</span>
-                  </span>
-
-                  <div class="text-right shrink-0">
-                    <div class="flex items-baseline justify-end gap-1 group-hover:scale-105 transition-transform origin-right duration-200">
-                      <span class="text-xl font-black text-(--color-text)">{{ formatPrice(property.price) }}</span>
-                      <span class="text-xs font-bold text-(--color-muted)">/ {{ safeT("propertiesPage.night", "night") }}</span>
-                    </div>
-                  </div>
+                <!-- Price -->
+                <div class="mt-2 flex items-baseline gap-1">
+                  <span class="text-sm font-black text-(--color-text)">{{ formatPrice(property.price) }}</span>
+                  <span class="text-xs font-normal text-(--color-muted)">/ night</span>
                 </div>
               </div>
             </article>

@@ -2,8 +2,6 @@
 import { computed } from "vue";
 import { RouterLink } from "vue-router";
 import { useI18n } from "vue-i18n";
-import LanguageToggle from "@/shared/components/LanguageToggle.vue";
-import ThemeToggle from "@/shared/components/ThemeToggle.vue";
 import logoUrl from "@/assets/images/logos/logo.png";
 import heroSectionImg from "@/assets/images/about/hero/hero_section.png";
 import heroBannerImg from "@/assets/images/home/hero/hero_banner.png";
@@ -85,10 +83,6 @@ const resolvedHeroImage = computed(() => {
       <div class="auth-shape auth-shape-4"></div>
     </div>
 
-    <div class="auth-toolbar">
-      <ThemeToggle />
-      <LanguageToggle />
-    </div>
 
     <div class="auth-shell">
       <section class="auth-brand" :class="[`auth-brand--${role}`, `auth-brand--${mode}`]">

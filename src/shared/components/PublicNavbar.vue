@@ -91,7 +91,7 @@ watch(
 
 <template>
   <header
-    class="fixed top-0 left-0 z-50 w-full pointer-events-auto transition-all duration-300 ease-in-out border-b border-(--color-border) bg-(--color-page)/95 backdrop-blur-xl py-5 shadow-[0_4px_20px_rgba(0,0,0,0.05)]"
+    class="fixed top-0 left-0 z-50 w-full pointer-events-auto transition-all duration-300 ease-in-out border-b border-(--color-border)/70 bg-(--color-page)/80 backdrop-blur-md py-4 shadow-[0_4px_20px_rgba(0,0,0,0.03)]"
   >
     <!-- Inner Centered Wrapper -->
     <div
@@ -116,7 +116,7 @@ watch(
             class="h-9 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
           />
           <span
-            class="font-kantumruy text-2xl font-black tracking-tight leading-none self-center text-blue-600 dark:text-blue-500"
+            class="font-kantumruy text-2xl font-black tracking-tight leading-none self-center text-(--color-primary)"
           >
             ស្រុកយើង
           </span>
@@ -132,9 +132,9 @@ watch(
         <RouterLink
           :to="{ name: 'public.properties' }"
           class="flex items-center gap-2 px-5 py-2 text-sm font-bold text-(--color-text) hover:bg-(--color-surface-soft) rounded-full transition-colors cursor-pointer"
-          :class="[isActiveRoute('public.properties') ? 'bg-(--color-surface-soft) !text-blue-600 dark:!text-blue-500' : '']"
+          :class="[isActiveRoute('public.properties') ? 'bg-(--color-surface-soft) !text-(--color-primary)' : '']"
         >
-          <i class="bi bi-houses text-base transition-colors" :class="isActiveRoute('public.properties') ? 'text-blue-600 dark:text-blue-500' : 'text-(--color-muted)'"></i>
+          <i class="bi bi-houses text-base transition-colors" :class="isActiveRoute('public.properties') ? 'text-(--color-primary)' : 'text-(--color-muted)'"></i>
           <span>{{ t("nav.properties") }}</span>
         </RouterLink>
 
@@ -144,9 +144,9 @@ watch(
         <RouterLink
           :to="{ name: 'public.about' }"
           class="flex items-center gap-2 px-5 py-2 text-sm font-bold text-(--color-text) hover:bg-(--color-surface-soft) rounded-full transition-colors cursor-pointer"
-          :class="[isActiveRoute('public.about') ? 'bg-(--color-surface-soft) !text-blue-600 dark:!text-blue-500' : '']"
+          :class="[isActiveRoute('public.about') ? 'bg-(--color-surface-soft) !text-(--color-primary)' : '']"
         >
-          <i class="bi bi-info-circle text-base transition-colors" :class="isActiveRoute('public.about') ? 'text-blue-600 dark:text-blue-500' : 'text-(--color-muted)'"></i>
+          <i class="bi bi-info-circle text-base transition-colors" :class="isActiveRoute('public.about') ? 'text-(--color-primary)' : 'text-(--color-muted)'"></i>
           <span>{{ t("nav.about") }}</span>
         </RouterLink>
 
@@ -156,9 +156,9 @@ watch(
         <RouterLink
           :to="{ name: 'public.contact' }"
           class="flex items-center gap-2 px-5 py-2 text-sm font-bold text-(--color-text) hover:bg-(--color-surface-soft) rounded-full transition-colors cursor-pointer"
-          :class="[isActiveRoute('public.contact') ? 'bg-(--color-surface-soft) !text-blue-600 dark:!text-blue-500' : '']"
+          :class="[isActiveRoute('public.contact') ? 'bg-(--color-surface-soft) !text-(--color-primary)' : '']"
         >
-          <i class="bi bi-envelope text-base transition-colors" :class="isActiveRoute('public.contact') ? 'text-blue-600 dark:text-blue-500' : 'text-(--color-muted)'"></i>
+          <i class="bi bi-envelope text-base transition-colors" :class="isActiveRoute('public.contact') ? 'text-(--color-primary)' : 'text-(--color-muted)'"></i>
           <span>{{ t("nav.contact") }}</span>
         </RouterLink>
 
@@ -191,6 +191,13 @@ watch(
             <i class="bi bi-house-add text-base text-(--color-primary)"></i>
             <span>{{ t("nav.listProperty") }}</span>
           </RouterLink>
+
+          <!-- Theme & Language Switchers -->
+          <div class="flex items-center gap-2 px-1">
+            <ThemeToggle />
+            <div class="h-4 w-px bg-(--color-border)/85"></div>
+            <LanguageToggle />
+          </div>
 
           <!-- CTAs / Session Actions -->
           <template v-if="authStore.isAuthenticated">
@@ -232,7 +239,7 @@ watch(
       <button
         v-else
         type="button"
-        class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface-soft) text-(--color-text) transition hover:border-blue-600 hover:text-blue-600 dark:hover:border-blue-500 dark:hover:text-blue-500 lg:hidden pointer-events-auto shadow-sm cursor-pointer"
+        class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface-soft) text-(--color-text) transition hover:border-(--color-primary) hover:text-(--color-primary) lg:hidden pointer-events-auto shadow-sm cursor-pointer"
         :aria-expanded="mobileMenuOpen"
         aria-label="Toggle navigation menu"
         @click="toggleMobileMenu"
@@ -275,7 +282,7 @@ watch(
           <RouterLink
             :to="{ name: 'public.properties' }"
             @click="closeMobileMenu"
-            class="flex items-center gap-2 bg-(--color-surface) border border-blue-500/30 px-4 py-2 rounded-full text-xs font-bold text-blue-600 dark:text-blue-500"
+            class="flex items-center gap-2 bg-(--color-surface) border border-(--color-primary)/30 px-4 py-2 rounded-full text-xs font-bold text-(--color-primary)"
           >
             <i class="bi bi-search"></i>
             <span>{{ t("nav.searchPlaceholder") }}</span>
@@ -291,7 +298,7 @@ watch(
             class="flex items-center gap-4 rounded-2xl px-5 py-3.5 text-base font-semibold transition-colors cursor-pointer"
             :class="
               isActiveRoute(item.to.name)
-                ? 'bg-(--color-surface-soft) text-blue-600 dark:text-blue-500 font-bold'
+                ? 'bg-(--color-surface-soft) text-(--color-primary) font-bold'
                 : 'bg-(--color-surface) text-(--color-text) hover:bg-(--color-surface-soft)'
             "
             @click="closeMobileMenu"
@@ -311,7 +318,7 @@ watch(
           <RouterLink
             :to="{ name: 'customer.wishlist' }"
             @click="closeMobileMenu"
-            class="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-(--color-surface) text-(--color-text) hover:text-blue-600 dark:hover:text-blue-500 transition-colors text-xs font-semibold"
+            class="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-(--color-surface) text-(--color-text) hover:text-(--color-primary) transition-colors text-xs font-semibold"
           >
             <i class="bi bi-heart text-xl"></i>
             <span>Wishlist</span>
@@ -319,7 +326,7 @@ watch(
           <RouterLink
             :to="{ name: 'customer.chats' }"
             @click="closeMobileMenu"
-            class="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-(--color-surface) text-(--color-text) hover:text-blue-600 dark:hover:text-blue-500 transition-colors text-xs font-semibold"
+            class="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-(--color-surface) text-(--color-text) hover:text-(--color-primary) transition-colors text-xs font-semibold"
           >
             <i class="bi bi-chat-dots text-xl"></i>
             <span>Messages</span>
@@ -327,7 +334,7 @@ watch(
           <RouterLink
             :to="{ name: 'customer.booking-history' }"
             @click="closeMobileMenu"
-            class="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-(--color-surface) text-(--color-text) hover:text-blue-600 dark:hover:text-blue-500 transition-colors text-xs font-semibold"
+            class="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-(--color-surface) text-(--color-text) hover:text-(--color-primary) transition-colors text-xs font-semibold"
           >
             <i class="bi bi-ticket-detailed text-xl"></i>
             <span>Bookings</span>
@@ -418,14 +425,14 @@ watch(
         >
           <div class="flex items-center gap-3 px-2">
             <i
-              class="bi bi-geo-alt-fill text-blue-600 dark:text-blue-500 text-base"
+              class="bi bi-geo-alt-fill text-(--color-primary) text-base"
               aria-hidden="true"
             ></i>
             <span>Phnom Penh, Cambodia</span>
           </div>
           <div class="flex items-center gap-3 px-2">
             <i
-              class="bi bi-telephone-fill text-blue-600 dark:text-blue-500 text-base"
+              class="bi bi-telephone-fill text-(--color-primary) text-base"
               aria-hidden="true"
             ></i>
             <span>+855 12 345 678</span>

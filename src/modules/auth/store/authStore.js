@@ -14,6 +14,23 @@ export const useAuthStore = defineStore("auth", () => {
   const error = ref(null);
   let restorePromise = null;
 
+  const authModalOpen = ref(false);
+  const authModalTab = ref("login");
+
+  const openLoginModal = () => {
+    authModalOpen.value = true;
+    authModalTab.value = "login";
+  };
+
+  const openRegisterModal = () => {
+    authModalOpen.value = true;
+    authModalTab.value = "register";
+  };
+
+  const closeAuthModal = () => {
+    authModalOpen.value = false;
+  };
+
   const isAuthenticated = computed(() => Boolean(accessToken.value && user.value));
   const isAdmin = computed(() => user.value?.role === "admin");
   const isOwner = computed(() => user.value?.role === "owner");
@@ -169,6 +186,11 @@ export const useAuthStore = defineStore("auth", () => {
   });
 
   return {
+    authModalOpen,
+    authModalTab,
+    openLoginModal,
+    openRegisterModal,
+    closeAuthModal,
     accessToken,
     user,
     initialized,

@@ -1,11 +1,11 @@
 .auth-page {
-  --auth-page-bg: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%);
-  --auth-panel-bg: #f8fcff;
+  --auth-page-bg: linear-gradient(135deg, #fff5f5 0%, #fed7d7 50%, #feb2b2 100%);
+  --auth-panel-bg: var(--color-surface);
   --auth-panel-text: var(--color-text);
   --auth-panel-muted: var(--color-muted);
-  --auth-panel-subtle: #425c83;
+  --auth-panel-subtle: var(--color-muted);
   --auth-input-bg: var(--color-input);
-  --auth-input-border: #bdd4e6;
+  --auth-input-border: var(--color-border);
   --auth-input-focus: var(--color-primary);
   --auth-card-bg: var(--color-surface);
   --auth-card-border: var(--color-border);
@@ -16,8 +16,8 @@
   --auth-back-link: var(--color-primary);
   --auth-back-link-hover: var(--color-primary-strong);
   --auth-brand-bg: var(--color-primary);
-  --auth-brand-overlay-start: rgba(23, 178, 226, 0.42);
-  --auth-brand-overlay-end: rgba(18, 104, 180, 0.28);
+  --auth-brand-overlay-start: rgba(255, 56, 92, 0.45);
+  --auth-brand-overlay-end: rgba(225, 29, 72, 0.3);
   --auth-brand-overlay-shade: rgba(255, 255, 255, 0.08);
   --auth-brand-image-filter: saturate(0.95) brightness(1.08);
   display: grid;
@@ -32,52 +32,52 @@
 }
 
 [data-theme="dark"] .auth-page {
-  --auth-page-bg: linear-gradient(135deg, #071831 0%, #0a2540 50%, #031024 100%);
-  --auth-panel-bg: #071831;
+  --auth-page-bg: linear-gradient(135deg, #18181b 0%, #09090b 50%, #020202 100%);
+  --auth-panel-bg: #18181b;
   --auth-panel-text: #ffffff;
-  --auth-panel-muted: rgba(226, 236, 248, 0.72);
+  --auth-panel-muted: rgba(244, 244, 245, 0.72);
   color-scheme: dark; /* Override for dark mode */
-  --auth-panel-subtle: rgba(226, 236, 248, 0.78);
-  --auth-input-bg: rgba(18, 47, 91, 0.58);
-  --auth-input-border: rgba(85, 139, 205, 0.72);
-  --auth-input-focus: #38a8df;
-  --auth-card-bg: rgba(18, 47, 91, 0.44);
-  --auth-card-border: rgba(85, 139, 205, 0.42);
-  --auth-card-hover: rgba(56, 168, 223, 0.14);
-  --auth-divider: rgba(85, 139, 205, 0.45);
-  --auth-danger: #ff9f9f;
-  --auth-success: #7ee7a6;
-  --auth-back-link: rgba(226, 236, 248, 0.82);
+  --auth-panel-subtle: rgba(244, 244, 245, 0.78);
+  --auth-input-bg: rgba(39, 39, 42, 0.58);
+  --auth-input-border: var(--color-border);
+  --auth-input-focus: var(--color-primary);
+  --auth-card-bg: rgba(39, 39, 42, 0.44);
+  --auth-card-border: var(--color-border);
+  --auth-card-hover: var(--color-primary-soft);
+  --auth-divider: var(--color-border);
+  --auth-danger: var(--color-danger);
+  --auth-success: var(--color-success);
+  --auth-back-link: rgba(244, 244, 245, 0.82);
   --auth-back-link-hover: #ffffff;
-  --auth-brand-bg: #06152e;
-  --auth-brand-overlay-start: rgba(4, 22, 53, 0.52);
-  --auth-brand-overlay-end: rgba(18, 104, 180, 0.34);
+  --auth-brand-bg: #09090b;
+  --auth-brand-overlay-start: rgba(255, 56, 92, 0.35);
+  --auth-brand-overlay-end: rgba(0, 0, 0, 0.6);
   --auth-brand-overlay-shade: rgba(0, 0, 0, 0.34);
   --auth-brand-image-filter: saturate(0.72) brightness(0.72);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .auth-page {
-    --auth-page-bg: linear-gradient(135deg, #071831 0%, #0a2540 50%, #031024 100%);
-    --auth-panel-bg: #071831;
+    --auth-page-bg: linear-gradient(135deg, #18181b 0%, #09090b 50%, #020202 100%);
+    --auth-panel-bg: #18181b;
     --auth-panel-text: #ffffff;
-    --auth-panel-muted: rgba(226, 236, 248, 0.72);
+    --auth-panel-muted: rgba(244, 244, 245, 0.72);
     color-scheme: dark;
-    --auth-panel-subtle: rgba(226, 236, 248, 0.78);
-    --auth-input-bg: rgba(18, 47, 91, 0.58);
-    --auth-input-border: rgba(85, 139, 205, 0.72);
-    --auth-input-focus: #38a8df;
-    --auth-card-bg: rgba(18, 47, 91, 0.44);
-    --auth-card-border: rgba(85, 139, 205, 0.42);
-    --auth-card-hover: rgba(56, 168, 223, 0.14);
-    --auth-divider: rgba(85, 139, 205, 0.45);
-    --auth-danger: #ff9f9f;
-    --auth-success: #7ee7a6;
-    --auth-back-link: rgba(226, 236, 248, 0.82);
+    --auth-panel-subtle: rgba(244, 244, 245, 0.78);
+    --auth-input-bg: rgba(39, 39, 42, 0.58);
+    --auth-input-border: var(--color-border);
+    --auth-input-focus: var(--color-primary);
+    --auth-card-bg: rgba(39, 39, 42, 0.44);
+    --auth-card-border: var(--color-border);
+    --auth-card-hover: var(--color-primary-soft);
+    --auth-divider: var(--color-border);
+    --auth-danger: var(--color-danger);
+    --auth-success: var(--color-success);
+    --auth-back-link: rgba(244, 244, 245, 0.82);
     --auth-back-link-hover: #ffffff;
-    --auth-brand-bg: #06152e;
-    --auth-brand-overlay-start: rgba(4, 22, 53, 0.52);
-    --auth-brand-overlay-end: rgba(18, 104, 180, 0.34);
+    --auth-brand-bg: #09090b;
+    --auth-brand-overlay-start: rgba(255, 56, 92, 0.35);
+    --auth-brand-overlay-end: rgba(0, 0, 0, 0.6);
     --auth-brand-overlay-shade: rgba(0, 0, 0, 0.34);
     --auth-brand-image-filter: saturate(0.72) brightness(0.72);
   }

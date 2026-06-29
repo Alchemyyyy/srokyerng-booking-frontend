@@ -16,26 +16,21 @@ const toggle = () => {
     type="button"
     @click="toggle"
     :title="currentLocale === 'en' ? 'Switch to ខ្មែរ' : 'Switch to English'"
-    class="relative inline-flex items-center w-[68px] h-9 rounded-full cursor-pointer transition-all duration-300 bg-(--color-surface-soft) border border-(--color-border) shadow-inner"
+    class="h-10 w-10 rounded-full flex items-center justify-center border border-(--color-border) bg-(--color-surface) hover:bg-(--color-surface-soft) transition shadow-xs cursor-pointer active:scale-95 shrink-0 overflow-hidden"
   >
-    <!-- Faded background flag (inactive) -->
+    <!-- Show US flag in English mode (indicating current state is English) -->
     <img
-      :src="currentLocale === 'en' ? 'https://flagcdn.com/w80/kh.png' : 'https://flagcdn.com/w80/us.png'"
-      alt="inactive"
-      class="absolute w-7 h-7 rounded-full object-cover opacity-40 transition-all duration-300 pointer-events-none"
-      :class="currentLocale === 'en' ? 'right-1.5' : 'left-1.5'"
+      v-if="currentLocale === 'en'"
+      src="https://flagcdn.com/w80/us.png"
+      alt="English (US)"
+      class="h-6 w-6 rounded-full object-cover shadow-xs border border-(--color-border)/40"
     />
-
-    <!-- Active sliding flag -->
-    <span
-      class="absolute w-8 h-8 rounded-full overflow-hidden shadow-md border-2 border-(--color-surface) transition-all duration-300 flex items-center justify-center bg-(--color-surface)"
-      :class="currentLocale === 'en' ? 'left-0.5' : 'left-[34px]'"
-    >
-      <img
-        :src="currentLocale === 'en' ? 'https://flagcdn.com/w80/us.png' : 'https://flagcdn.com/w80/kh.png'"
-        :alt="currentLocale"
-        class="w-full h-full object-cover rounded-full"
-      />
-    </span>
+    <!-- Show KH flag in Khmer mode (indicating current state is Khmer) -->
+    <img
+      v-else
+      src="https://flagcdn.com/w80/kh.png"
+      alt="Khmer"
+      class="h-6 w-6 rounded-full object-cover shadow-xs border border-(--color-border)/40"
+    />
   </button>
 </template>
