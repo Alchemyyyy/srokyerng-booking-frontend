@@ -649,7 +649,6 @@
       "title": "Built for Cambodia,",
       "titleHighlight": "By Cambodians",
       "desc": "SrokYerng Booking was born from a simple idea — to make it easier for travelers to discover authentic local stays across Cambodia, while helping property owners reach more guests.",
-
       "feature1": {
         "title": "Easy & Quick Booking",
         "desc": "Book your stay in just a few clicks, anytime and anywhere."
@@ -703,7 +702,6 @@
       "eyebrow": "The People Behind SrokYerng",
       "title": "Meet Our Team",
       "subtitle": "A group of passionate Cambodians dedicated to creating a better travel experience.",
-
       "members": {
         "leakhena": {
           "name": "Bou Leakhena",
@@ -1105,7 +1103,6 @@
     "checkOut": "Check-Out",
     "description": "A stunning beachfront resort offering pristine white sand beaches, crystal-clear waters, and unforgettable sunset views."
   },
-
   "reviewCreate": {
     "breadcrumb": {
       "stays": "Stays",
@@ -1213,12 +1210,10 @@
       "alreadyReviewed": "You've already reviewed this stay. Redirecting to your reviews…"
     }
   },
-
   "reviewCard": {
     "verifiedGuest": "Verified Guest",
     "photoAlt": "Review photo"
   },
-
   "roomDetail": {
     "breadcrumb": {
       "home": "Home",
@@ -1270,6 +1265,7 @@
       "rooms": "Rooms",
       "bookingCalendar": "Calendar",
       "reservations": "Reservations",
+      "reviews": "Reviews",
       "paymentAccounts": "Payment Accounts",
       "settings": "Settings"
     },
@@ -1328,6 +1324,54 @@
         "totalRevenue": "Total Revenue",
         "paidRevenue": "Paid Revenue"
       }
+    },
+    "reviews": {
+      "title": "Guest Reviews",
+      "subtitle": "Reply to guests and build your reputation.",
+      "refresh": "Refresh",
+      "stats": {
+        "totalReviews": "Total Reviews",
+        "avgRating": "Avg Rating",
+        "replied": "Replied",
+        "needsReply": "Needs Reply"
+      },
+      "breakdown": "Rating Breakdown",
+      "filters": {
+        "all": "All",
+        "needsReply": "Needs Reply",
+        "replied": "Replied",
+        "fiveStar": "5★",
+        "low": "Low (≤3★)"
+      },
+      "sort": {
+        "newest": "Most Recent",
+        "oldest": "Oldest First",
+        "highest": "Highest Rating",
+        "lowest": "Lowest Rating"
+      },
+      "search": "Search guest, property…",
+      "empty": "No guest reviews yet.",
+      "emptyFilter": "No reviews match your filters.",
+      "card": {
+        "noReplyYet": "No reply yet",
+        "replyToGuest": "Reply to Guest",
+        "yourReply": "Your Reply",
+        "edit": "Edit",
+        "remove": "Remove",
+        "editReply": "Edit your reply",
+        "replyToThis": "Reply to this guest",
+        "posting": "Posting…",
+        "saveChanges": "Save Changes",
+        "postReply": "Post Reply",
+        "confirmRemove": "Remove your reply to this review?",
+        "ratings": {
+          "excellent": "Excellent",
+          "veryGood": "Very Good",
+          "good": "Good",
+          "fair": "Fair",
+          "poor": "Poor"
+        }
+      }
     }
   },
   "reviewManagement": {
@@ -1340,13 +1384,13 @@
       "avgRating": "Avg Rating",
       "readyToReview": "Ready to Review"
     },
-      "ratingLabel": {
+    "ratingLabel": {
       "poor": "Poor",
       "fair": "Fair",
       "good": "Good",
       "veryGood": "Very Good",
       "excellent": "Excellent"
-      },
+    },
     "filter": {
       "searchPlaceholder": "Search reviews...",
       "sortRecent": "Most Recent",
@@ -1530,7 +1574,27 @@
       "goBack": "Go Back",
       "cancel": "Cancel Reservation",
       "confirm": "Confirm Cancellation",
-      "cancelling": "Cancelling…"
+      "cancelling": "Cancelling…",
+      "payNow": "Pay Now",
+      "reupload": "Re-upload Proof"
+    },
+    "blocked": {
+      "paymentSubmitted": "Cancellation is not available — your payment has already been submitted.",
+      "paymentRejected": "Your payment was rejected. Please re-upload your proof of payment."
+    },
+    "refund": {
+      "eyebrow": "Payment Already Submitted",
+      "title": "Request a Refund",
+      "description": "Your payment has been submitted. To cancel this reservation, please submit a refund request. The owner will review and process it.",
+      "reasonLabel": "Reason for refund request",
+      "reasonPlaceholder": "e.g. Change of plans, emergency, personal reasons…",
+      "reasonError": "Please provide a reason for your refund request.",
+      "requestButton": "Request Refund",
+      "submitButton": "Submit Refund Request",
+      "submitting": "Submitting…",
+      "successTitle": "Refund Requested",
+      "successMessage": "Your refund request has been submitted successfully.",
+      "errorMessage": "Failed to submit refund request. Please try again."
     },
     "toast": {
       "successTitle": "Cancelled",
@@ -1539,18 +1603,18 @@
   },
   "cancellationPolicy": {
     "free": {
-      "description": "Cancel at least 7 days before check-in for a full refund."
+      "description": "Cancel at least 24 hours before check-in for a full refund."
     },
     "partial": {
-      "description": "Cancelling within 7 days of check-in gives a 50% refund."
+      "description": "Cancelling within 24 hours of check-in gives a 50% refund."
     },
     "strict": {
       "description": "Check-in is today or has already passed. No refund available."
     },
     "breakdown": {
-      "sevenPlus": "7+ days before check-in",
-      "oneToSix": "1–6 days before check-in",
-      "sameDay": "Same day",
+      "sevenPlus": "More than 24 hours before check-in",
+      "oneToSix": "Within 24 hours of check-in",
+      "sameDay": "Same day or after check-in",
       "sameDayAfter": "Same day or after check-in",
       "fullRefund": "100% refund",
       "halfRefund": "50% refund",

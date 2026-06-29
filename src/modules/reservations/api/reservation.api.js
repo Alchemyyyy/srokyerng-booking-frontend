@@ -14,9 +14,9 @@ export const reservationApi = {
     return http.get(`/reservations/${reservationId}`);
   },
 
-cancelReservation(id, cancellation_reason) {
-  return http.patch(`/reservations/${id}/cancel`, { cancellation_reason })
-},
+  cancelReservation(id, cancellation_reason) {
+    return http.patch(`/reservations/${id}/cancel`, { cancellation_reason })
+  },
 
   // Owner
   listOwnerReservations() {
@@ -26,4 +26,8 @@ cancelReservation(id, cancellation_reason) {
   getOwnerReservationById(reservationId) {
     return http.get(`/owner/reservations/${reservationId}`);
   },
+
+  updateOwnerReservationStatus(reservationId, data) {
+    return http.patch(`/owner/reservations/${reservationId}/status`, data);
+  }
 };

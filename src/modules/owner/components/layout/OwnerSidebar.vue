@@ -14,6 +14,7 @@ import {
   CalendarIcon,
   CreditCardIcon,
   Cog6ToothIcon,
+  ChatBubbleLeftRightIcon, // Added for the reviews icon
 } from "@heroicons/vue/24/outline";
 
 const { t } = useI18n();
@@ -35,6 +36,11 @@ const menuItems = computed(() => [
     name: t("owner.sidebar.reservations"),
     path: "/owner/reservations",
     icon: CalendarDaysIcon,
+  },
+  {
+    name: t("owner.sidebar.reviews"), // Added Reviews entry
+    path: "/owner/reviews",
+    icon: ChatBubbleLeftRightIcon,
   },
   {
     name: t("owner.sidebar.paymentAccounts"),

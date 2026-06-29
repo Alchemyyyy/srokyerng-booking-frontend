@@ -70,6 +70,21 @@ const confirmCancel = async (reason) => {
   cancelError.value   = "";
   try {
     await reservationApi.cancelReservation(cancellingId.value, reason);
+
+    // If the booking had a verified payment, auto-create a refund request
+    const booking = bookings.value.find(b => b.id === cancellingId.value);
+    if (booking?.refundEligible && booking?.paymentId) {
+      try {
+        await http.post(`/reservations/${cancellingId.value}/refund-request`, {
+          amount: booking.paymentAmount ?? booking.totalPrice,
+          reason,
+        });
+      } catch (refundErr) {
+        console.warn("[BookingHistory] Refund request failed after cancel:", refundErr);
+        // Cancellation still succeeded; warn but don't block
+      }
+    }
+
     cancelModalOpen.value = false;
     cancellingId.value    = null;
     await fetchBookings();
@@ -154,10 +169,37 @@ const normalizeBooking = (item, index) => {
   const checkInPassed = checkInDate ? checkInDate <= today : false;
   const status        = String(item.reservation_status || item.status || "pending").toLowerCase();
   const paymentSt     = String(payment?.payment_status ?? "").toLowerCase();
-  const canCancel =
-    ["pending", "confirmed"].includes(status) &&
-    !checkInPassed &&
-    !["submitted", "paid", "verified"].includes(paymentSt);
+  // Normalize backend variants to canonical values
+  const normPmtSt = paymentSt === "paid" ? "verified"
+                  : paymentSt === "failed" ? "rejected"
+                  : paymentSt === "submitted" ? "pending"
+                  : paymentSt;
+  const CANCELLATION_DEADLINE_HOURS = 24;
+  const deadlineTime = checkInDate ? new Date(checkInDate) : null;
+  if (deadlineTime) {
+    deadlineTime.setHours(0, 0, 0, 0);
+    deadlineTime.setHours(deadlineTime.getHours() - CANCELLATION_DEADLINE_HOURS);
+  }
+  const beforeDeadline = deadlineTime ? new Date() < deadlineTime : false;
+
+  let canCancel = false;
+  let refundEligible = false;
+
+  if (status === "pending") {
+    // PENDING + no payment, pending payment, or rejected/failed → cancel only, no refund
+    if (!normPmtSt || normPmtSt === "pending" || normPmtSt === "rejected") {
+      canCancel = !checkInPassed;
+    }
+    // PENDING + verified (paid) → do not allow simple cancel (needs refund flow on detail page)
+  } else if (status === "confirmed") {
+    // CONFIRMED + any payment state → cancellable only before deadline
+    if (!checkInPassed && beforeDeadline) {
+      canCancel = true;
+      // Refund eligible only if payment was actually verified (paid)
+      if (normPmtSt === "verified") refundEligible = true;
+    }
+  }
+  // CANCELLED or COMPLETED → canCancel stays false
 
   return {
     id: item.id || index + 1,
@@ -175,6 +217,7 @@ const normalizeBooking = (item, index) => {
     paymentAmount: payment?.amount ?? null,
     roomId: item.room_id || item.room?.id || null,
     canCancel,
+    refundEligible,
     cancellationReason: null,
   };
 };

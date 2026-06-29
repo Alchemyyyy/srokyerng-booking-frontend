@@ -1,35 +1,39 @@
-import http from '@/app/api/http'
+import http from '@/app/api/http';
+
+const noCache = {
+  headers: { 'Cache-Control': 'no-cache' },
+  params: { _t: Date.now() },
+};
 
 export const cancellationApi = {
-  /**
-   * GET /reservations/:id
-   * Get reservation details including status
-   */
   getReservationById(id) {
-    return http.get(`/reservations/${id}`)
+    return http.get(`/reservations/${id}`, noCache);
   },
 
-  /**
-   * PATCH /reservations/:id/cancel
-   * Body: { cancellation_reason: string }
-   */
-  cancelReservation(id, cancellation_reason) {
-    return http.patch(`/reservations/${id}/cancel`, { cancellation_reason })
+  getMyPayments() {
+    return http.get('/payments/my', noCache);
   },
 
-  /**
-   * GET /properties/:id/images
-   * Get all images for a property
-   */
   getPropertyImages(propertyId) {
-    return http.get(`/properties/${propertyId}/images`)
+    return http.get(`/properties/${propertyId}/images`, noCache);
   },
 
-  /**
-   * PATCH /owner/payments/:id/refund
-   * Body: { notes: string }
-   */
-  refundPayment(paymentId, notes = '') {
-    return http.patch(`/owner/payments/${paymentId}/refund`, { notes })
+  getCancellationPolicy(id) {
+    return http.get(`/reservations/${id}/cancellation-policy`, noCache);
   },
-}
+
+  cancelReservation(id, cancellation_reason) {
+    // PATCH /api/reservations/:id/cancel
+    return http.patch(`/reservations/${id}/cancel`, { cancellation_reason });
+  },
+
+  // POST /api/reservations/:id/refund-request
+  // body: { amount: number, reason: string }
+  requestRefund(id, payload) {
+    return http.post(`/reservations/${id}/refund-request`, payload);
+  },
+
+  getMyRefundRequests() {
+    return http.get('/reservations/my/refund-requests', noCache);
+  },
+};

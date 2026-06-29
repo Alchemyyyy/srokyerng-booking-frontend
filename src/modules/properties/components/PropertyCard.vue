@@ -1,159 +1,417 @@
 <script setup>
-import { computed } from "vue";
+import { computed, ref, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
-import AppButton from "@/shared/components/AppButton.vue";
 import placeholer from "@/assets/images/properties/placeholder.png";
 import {
-  BuildingOffice2Icon,
-  PencilSquareIcon,
-  TrashIcon,
   MapPinIcon,
+  ClockIcon,
+  XCircleIcon,
+  EllipsisHorizontalIcon,
+  BuildingOffice2Icon,
+  CalendarDaysIcon,
+  PencilSquareIcon,
+  HeartIcon,
+  InformationCircleIcon,
+  PauseCircleIcon,
+  PlayCircleIcon,
 } from "@heroicons/vue/24/outline";
 
-const emit = defineEmits(["edit", "delete"]);
+const emit = defineEmits(["edit", "toggle-status"]);
 
 const props = defineProps({
-  property: {
-    type: Object,
-    required: true,
-  },
+  property: { type: Object, required: true },
 });
 
 const router = useRouter();
 
-const statusBadgeClass = computed(() => {
-  const status = props.property.status?.toUpperCase();
-  if (status === "APPROVED")
-    return "bg-(--color-success-soft) text-(--color-success)";
-  if (status === "PENDING")
-    return "bg-(--color-warning-soft) text-(--color-warning)";
-  return "bg-(--color-surface-soft) text-(--color-muted)";
-});
+// ── Edit-request state ────────────────────────────────────────────────────────
+const hasPendingEdit = computed(
+  () =>
+    props.property.pendingEdit === true ||
+    props.property.has_pending_edit === true,
+);
+const hasRejectedEdit = computed(
+  () =>
+    props.property.rejectedEdit === true ||
+    props.property.has_rejected_edit === true,
+);
+const rejectionReason = computed(
+  () => props.property.rejectionReason || props.property.rejection_reason || "",
+);
 
-// Editing an approved property is allowed — the backend automatically
-// reverts it to "pending" on save, so this is just used for the
-// tooltip hint, not to disable the button.
+// ── Status helpers ────────────────────────────────────────────────────────────
 const isApproved = computed(
   () => props.property.status?.toUpperCase() === "APPROVED",
 );
+const isSuspended = computed(
+  () => props.property.status?.toUpperCase() === "SUSPENDED",
+);
+const isPending = computed(
+  () => props.property.status?.toUpperCase() === "PENDING",
+);
 
-// ⚠️ Route name guessed to match what PropertyCard already used for the
-// old "Detail" button — confirm it's right if the card doesn't navigate.
-const goToDetail = () => {
+// ── Badge config ──────────────────────────────────────────────────────────────
+const badgeConfig = computed(() => {
+  if (hasPendingEdit.value)
+    return {
+      label: "PENDING CHANGES",
+      bg: "bg-orange-500/10 border-orange-500/20",
+      text: "text-orange-700",
+    };
+  if (hasRejectedEdit.value)
+    return {
+      label: "REJECTED",
+      bg: "bg-rose-500/10 border-rose-500/20",
+      text: "text-rose-700",
+    };
+
+  const s = props.property.status?.toUpperCase();
+  if (s === "APPROVED")
+    return {
+      label: "APPROVED",
+      bg: "bg-emerald-500/10 border-emerald-500/20",
+      text: "text-emerald-700",
+    };
+  if (s === "PENDING")
+    return {
+      label: "PENDING",
+      bg: "bg-blue-500/10 border-blue-500/20",
+      text: "text-blue-700",
+    };
+  if (s === "REJECTED")
+    return {
+      label: "REJECTED",
+      bg: "bg-rose-500/10 border-rose-500/20",
+      text: "text-rose-700",
+    };
+  if (s === "SUSPENDED")
+    return {
+      label: "SUSPENDED",
+      bg: "bg-gray-500/10 border-gray-500/20",
+      text: "text-gray-600",
+    };
+
+  return {
+    label: s || "UNKNOWN",
+    bg: "bg-gray-500/10 border-gray-500/20",
+    text: "text-gray-700",
+  };
+});
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+const goToDetail = () =>
   router.push({
     name: "owner.property-detail",
     params: { id: props.property.id },
   });
+
+const onImageError = (e) => {
+  e.target.src = placeholer;
+};
+
+// ── "..." dropdown menu ───────────────────────────────────────────────────────
+const showMenu = ref(false);
+
+const openMenu = (e) => {
+  e.stopPropagation();
+  showMenu.value = !showMenu.value;
+  if (showMenu.value) {
+    // Close on next outside click
+    setTimeout(() => {
+      document.addEventListener("click", closeMenu, { once: true });
+    }, 0);
+  }
+};
+
+const closeMenu = () => {
+  showMenu.value = false;
+};
+
+onBeforeUnmount(() => {
+  document.removeEventListener("click", closeMenu);
+});
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+const handleDeactivate = (e) => {
+  e.stopPropagation();
+  closeMenu();
+  emit("toggle-status", { id: props.property.id, action: "deactivate" });
+};
+
+const handleActivate = (e) => {
+  e.stopPropagation();
+  closeMenu();
+  emit("toggle-status", { id: props.property.id, action: "activate" });
 };
 </script>
+
 <template>
   <div
-    class="bg-(--color-surface) rounded-2xl border border-(--color-border) shadow-sm overflow-hidden flex flex-col justify-between group hover:shadow-md hover:border-(--color-primary)/40 transition-all duration-200 cursor-pointer"
+    class="bg-white rounded-[24px] flex flex-col shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer group"
     role="button"
     tabindex="0"
     @click="goToDetail"
     @keydown.enter="goToDetail"
   >
-    <div
-      class="relative aspect-[4/3] w-full bg-(--color-surface-soft) overflow-hidden"
-    >
-      <img
-        :src="property.image || placeholer"
-        :alt="property.name"
-        class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.01]"
-        @error="onImageError"
-      />
-      <span
-        class="absolute top-3 left-3 text-[9px] tracking-wider font-bold px-2 py-0.5 rounded-md uppercase"
-        :class="statusBadgeClass"
+    <!-- ── Image block ──────────────────────────────────────────────────── -->
+    <div class="relative w-full p-3 pb-0" style="height: 240px">
+      <div
+        class="relative w-full h-full rounded-[18px] overflow-hidden bg-gray-100"
       >
-        {{ property.status }}
-      </span>
+        <img
+          :src="property.image || placeholer"
+          :alt="property.name"
+          class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          @error="onImageError"
+        />
+
+        <!-- Gradient overlay -->
+        <div
+          class="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/10 pointer-events-none"
+        />
+
+        <!-- Status badge -->
+        <span
+          class="absolute top-3 left-3 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest backdrop-blur-md bg-white/80 border"
+          :class="[badgeConfig.bg, badgeConfig.text]"
+        >
+          {{ badgeConfig.label }}
+        </span>
+
+        <!-- Heart Button -->
+        <button
+          class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md border border-white/20 transition-all hover:bg-black/40 hover:scale-110"
+          @click.stop
+          title="Save"
+        >
+          <HeartIcon class="w-4 h-4 text-white" />
+        </button>
+
+        <!-- Pending Changes banner -->
+        <div
+          v-if="hasPendingEdit"
+          class="absolute bottom-3 left-3 right-3 bg-white/85 backdrop-blur-xl rounded-2xl p-3 flex items-start gap-3 border border-white shadow-sm transition-transform duration-300 group-hover:-translate-y-1"
+        >
+          <div class="bg-orange-100/80 p-1.5 rounded-full shrink-0 mt-0.5">
+            <ClockIcon class="w-4 h-4 text-orange-600" />
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[13px] font-bold text-gray-900 leading-tight">
+              Waiting for admin approval
+            </p>
+            <p
+              v-if="property.submittedAt"
+              class="text-[11px] text-gray-500 mt-1 font-medium"
+            >
+              Submitted on {{ property.submittedAt }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Rejected edit banner -->
+        <div
+          v-else-if="hasRejectedEdit"
+          class="absolute bottom-3 left-3 right-3 bg-white/85 backdrop-blur-xl rounded-2xl p-3 flex items-start gap-3 border border-white shadow-sm transition-transform duration-300 group-hover:-translate-y-1"
+        >
+          <div class="bg-rose-100/80 p-1.5 rounded-full shrink-0 mt-0.5">
+            <XCircleIcon class="w-4 h-4 text-rose-600" />
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[13px] font-bold text-gray-900 leading-tight">
+              Rejected by admin
+            </p>
+            <p
+              v-if="rejectionReason"
+              class="text-[11px] text-gray-500 mt-1 truncate font-medium"
+            >
+              Reason: {{ rejectionReason }}
+            </p>
+          </div>
+          <InformationCircleIcon
+            class="w-5 h-5 text-gray-400 mt-0.5 shrink-0"
+          />
+        </div>
+
+        <!-- Pending (new property) banner -->
+        <div
+          v-else-if="isPending"
+          class="absolute bottom-3 left-3 right-3 bg-white/85 backdrop-blur-xl rounded-2xl p-3 flex items-start gap-3 border border-white shadow-sm transition-transform duration-300 group-hover:-translate-y-1"
+        >
+          <div class="bg-blue-100/80 p-1.5 rounded-full shrink-0 mt-0.5">
+            <ClockIcon class="w-4 h-4 text-blue-600" />
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[13px] font-bold text-gray-900 leading-tight">
+              Under admin review
+            </p>
+            <p
+              v-if="property.submittedAt"
+              class="text-[11px] text-gray-500 mt-1 font-medium"
+            >
+              Submitted on {{ property.submittedAt }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Suspended banner -->
+        <div
+          v-else-if="isSuspended"
+          class="absolute bottom-3 left-3 right-3 bg-white/85 backdrop-blur-xl rounded-2xl p-3 flex items-start gap-3 border border-white shadow-sm transition-transform duration-300 group-hover:-translate-y-1"
+        >
+          <div class="bg-gray-100/80 p-1.5 rounded-full shrink-0 mt-0.5">
+            <PauseCircleIcon class="w-4 h-4 text-gray-500" />
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-[13px] font-bold text-gray-900 leading-tight">
+              Deactivated — hidden from guests
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="p-4 flex-1 flex flex-col justify-between">
-      <div>
-        <h3
-          class="text-[15px] font-bold text-(--color-text) tracking-tight line-clamp-1"
-        >
-          {{ property.name }}
-        </h3>
-
-        <p
-          class="text-xs text-(--color-primary) font-medium mt-1 flex items-center gap-1"
-        >
-          <MapPinIcon class="w-3 h-3 text-(--color-muted)" />
-
-          <span class="text-(--color-muted) font-normal"
-            >{{ property.type }} ·</span
+    <!-- ── Card body ────────────────────────────────────────────────────── -->
+    <div class="flex flex-col flex-1 px-5 pt-5 pb-5 gap-5">
+      <!-- Header -->
+      <div class="flex justify-between items-start gap-4">
+        <div>
+          <h3
+            class="text-[17px] font-extrabold text-gray-900 tracking-tight leading-snug line-clamp-1"
           >
-          {{ property.location }}
-        </p>
+            {{ property.name }}
+          </h3>
+          <p
+            class="flex items-center gap-1 mt-1.5 text-[13px] font-medium text-gray-400"
+          >
+            <MapPinIcon class="w-4 h-4 shrink-0 text-gray-400" />
+            {{ property.location }}, Cambodia
+          </p>
+        </div>
 
-        <div class="grid grid-cols-3 gap-1 mt-4">
-          <div class="flex flex-col">
-            <span class="text-sm font-extrabold text-(--color-text)">{{
-              property.rooms
-            }}</span>
-            <span class="text-[11px] text-(--color-muted) font-normal mt-0.5"
+        <div class="text-right shrink-0">
+          <p
+            class="text-[11px] font-semibold text-gray-400 uppercase tracking-wide"
+          >
+            Revenue
+          </p>
+          <p class="text-[16px] font-black text-gray-900 mt-0.5">
+            ${{ property.revenue?.toLocaleString() || 0 }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="flex items-center gap-4 py-3 border-y border-gray-100/80">
+        <div class="flex items-center gap-2">
+          <div class="bg-gray-50 p-1.5 rounded-lg text-gray-500">
+            <BuildingOffice2Icon class="w-4 h-4" />
+          </div>
+          <div>
+            <span
+              class="block text-[13px] font-bold text-gray-900 leading-none"
+              >{{ property.rooms || 0 }}</span
+            >
+            <span
+              class="block text-[11px] font-medium text-gray-400 mt-1 leading-none"
               >Rooms</span
             >
           </div>
-          <div class="flex flex-col">
-            <span class="text-sm font-extrabold text-(--color-text)">{{
-              property.bookings
-            }}</span>
-            <span class="text-[11px] text-(--color-muted) font-normal mt-0.5"
-              >Bookings</span
-            >
+        </div>
+
+        <div class="w-[1px] h-6 bg-gray-100"></div>
+
+        <div class="flex items-center gap-2">
+          <div class="bg-gray-50 p-1.5 rounded-lg text-gray-500">
+            <CalendarDaysIcon class="w-4 h-4" />
           </div>
-          <div class="flex flex-col">
-            <span class="text-sm font-extrabold text-(--color-text)"
-              >${{ property.revenue?.toLocaleString() }}</span
+          <div>
+            <span
+              class="block text-[13px] font-bold text-gray-900 leading-none"
+              >{{ property.bookings || 0 }}</span
             >
-            <span class="text-[11px] text-(--color-muted) font-normal mt-0.5"
-              >Revenue</span
+            <span
+              class="block text-[11px] font-medium text-gray-400 mt-1 leading-none"
+              >Bookings</span
             >
           </div>
         </div>
       </div>
 
-      <div
-        class="flex items-center justify-between gap-1.5 mt-5 pt-3 border-t border-(--color-border)"
-      >
-        <div class="flex items-center gap-1.5 flex-1">
-          <RouterLink
-            :to="`/owner/rooms?propertyId=${property.id}`"
-            class="flex items-center justify-center gap-1 bg-(--color-primary-soft) hover:bg-(--color-primary)/20 text-(--color-primary) font-semibold text-[11px] px-2.5 py-2 rounded-lg transition flex-1"
-            @click.stop
-          >
-            <BuildingOffice2Icon class="w-3.5 h-3.5" />
-
-            Rooms
-          </RouterLink>
-
-          <AppButton
-            variant="ghost"
-            size="sm"
-            :title="
-              isApproved
-                ? 'Editing this approved property will require admin re-approval'
-                : 'Edit property'
-            "
-            @click.stop="emit('edit', property)"
-          >
-            <PencilSquareIcon class="w-3.5 h-3.5" />
-            Edit
-          </AppButton>
-        </div>
-
-        <button
-          @click.stop="emit('delete', props.property.id)"
-          class="text-(--color-danger) hover:bg-(--color-danger-soft) p-2 rounded-lg transition-colors ml-0.5"
-          title="Delete Property"
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-3">
+        <!-- Rooms -->
+        <RouterLink
+          :to="`/owner/rooms?propertyId=${property.id}`"
+          class="flex items-center justify-center gap-2 flex-1 py-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-800 text-[13px] font-bold transition-colors"
+          @click.stop
         >
-          <TrashIcon class="w-3.5 h-3.5" />
+          <BuildingOffice2Icon class="w-4 h-4" />
+          Rooms
+        </RouterLink>
+
+        <!-- Edit -->
+        <button
+          class="flex items-center justify-center gap-2 flex-1 py-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-800 text-[13px] font-bold transition-colors"
+          :class="hasPendingEdit ? 'opacity-50 cursor-not-allowed' : ''"
+          :disabled="hasPendingEdit"
+          @click.stop="emit('edit', property)"
+        >
+          <PencilSquareIcon class="w-4 h-4" />
+          Edit
         </button>
+
+        <!-- ── "..." More Menu ──────────────────────────────────────────── -->
+        <div class="relative shrink-0" @click.stop>
+          <button
+            class="flex items-center justify-center w-11 h-11 rounded-xl transition-colors"
+            :class="
+              showMenu
+                ? 'bg-(--color-primary)/10 text-(--color-primary)'
+                : 'bg-gray-50 hover:bg-gray-100 text-gray-600'
+            "
+            @click="openMenu"
+            title="More options"
+          >
+            <EllipsisHorizontalIcon class="w-5 h-5" />
+          </button>
+
+          <!-- Dropdown -->
+          <Transition
+            enter-active-class="transition duration-150 ease-out"
+            enter-from-class="opacity-0 scale-95 -translate-y-1"
+            enter-to-class="opacity-100 scale-100 translate-y-0"
+            leave-active-class="transition duration-100 ease-in"
+            leave-from-class="opacity-100 scale-100 translate-y-0"
+            leave-to-class="opacity-0 scale-95 -translate-y-1"
+          >
+            <div
+              v-if="showMenu"
+              class="absolute bottom-full right-0 mb-2 w-48 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 overflow-hidden z-50"
+              @click.stop
+            >
+              <!-- Deactivate — only if approved (active) -->
+              <button
+                v-if="isApproved"
+                @click="handleDeactivate"
+                class="flex items-center gap-3 w-full px-4 py-3 text-sm font-semibold text-amber-700 hover:bg-amber-50 transition-colors text-left"
+              >
+                <PauseCircleIcon class="w-4 h-4 text-amber-500 shrink-0" />
+                Deactivate
+              </button>
+
+              <!-- Activate — only if suspended -->
+              <button
+                v-if="isSuspended"
+                @click="handleActivate"
+                class="flex items-center gap-3 w-full px-4 py-3 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 transition-colors text-left"
+              >
+                <PlayCircleIcon class="w-4 h-4 text-emerald-500 shrink-0" />
+                Activate
+              </button>
+            </div>
+          </Transition>
+        </div>
+        <!-- End More Menu -->
       </div>
     </div>
   </div>

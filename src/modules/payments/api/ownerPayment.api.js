@@ -45,5 +45,21 @@ export const ownerPaymentApi = {
 
     rejectPayment(id, data) {
         return http.patch(`/owner/payments/${id}/reject`, data);
-    }
+    },
+
+    listRefundRequests() {
+        return http.get('/owner/refund-requests');
+    },
+
+    getRefundRequestDetails(id) {
+        return http.get(`/owner/refund-requests/${id}`);
+    },
+ 
+    approveRefund(id, data) {
+        return http.patch(`/owner/refund-requests/${id}/approve`, data);
+    },
+ 
+    rejectRefund(id, data) {
+        return http.patch(`/owner/refund-requests/${id}/reject`, data);
+    },
 };
