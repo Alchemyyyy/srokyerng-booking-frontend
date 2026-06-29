@@ -31,4 +31,9 @@ export const chatService = {
   markAsRead(conversationId) {
     return http.patch(`/chats/${conversationId}/read`);
   },
+
+  // Delete/Unsend a message
+  unsendMessage(conversationId, messageId) {
+    return http.delete(`/chats/${conversationId}/messages/${messageId}`);
+  },
 };

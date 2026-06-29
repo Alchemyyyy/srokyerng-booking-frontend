@@ -106,5 +106,24 @@ export const useChatStore = defineStore("chat", {
         }
       }
     },
+
+    // Unsend (delete) a message
+    async unsendMessage(conversationId, messageId) {
+      try {
+        await chatService.unsendMessage(conversationId, messageId);
+        // Remove from local messages state
+        this.messages = this.messages.filter((m) => m.id !== messageId);
+
+        // Update conversation summary text if needed
+        const convo = this.conversations.find((c) => c.id === Number(conversationId));
+        if (convo) {
+          const lastMsg = this.messages[this.messages.length - 1];
+          convo.last_message = lastMsg ? (lastMsg.message_body || "Sent an attachment") : "Message unsent";
+        }
+      } catch (err) {
+        this.error = err.message || "Failed to unsend message";
+        throw err;
+      }
+    },
   },
 });

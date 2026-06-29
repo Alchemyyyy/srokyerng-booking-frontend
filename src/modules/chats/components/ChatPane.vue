@@ -104,6 +104,16 @@ const handleSend = async () => {
   }
 };
 
+const handleUnsend = async (messageId) => {
+  if (confirm("Are you sure you want to unsend this message?")) {
+    try {
+      await chatStore.unsendMessage(props.conversationId, messageId);
+    } catch (err) {
+      console.error("Failed to unsend message", err);
+    }
+  }
+};
+
 // ── Voice Recording Setup ──
 const isRecording = ref(false);
 const mediaRecorder = ref(null);
@@ -290,35 +300,51 @@ const goBack = () => {
         <div
           v-for="msg in group.messages"
           :key="msg.id"
-          class="flex flex-col"
+          class="flex flex-col group/msg"
           :class="msg.sender_id === authStore.user?.id ? 'items-end' : 'items-start'"
         >
-          <!-- Message Bubble -->
-          <div
-            class="max-w-[70%] rounded-2xl px-4 py-3 shadow-xs text-sm leading-relaxed"
-            :class="
-              msg.sender_id === authStore.user?.id
-                ? 'bg-(--color-primary) text-white rounded-tr-xs font-medium'
-                : 'bg-(--color-surface) text-(--color-text) rounded-tl-xs border border-(--color-border)/40 font-medium'
-            "
-          >
-            <!-- Image / Audio Attachment -->
-            <div v-if="msg.attachment_url">
-              <!-- Audio Player -->
-              <div v-if="isAudioFile(msg.attachment_url)" class="mb-2 w-64 p-2 rounded-xl bg-black/5 dark:bg-white/5 border border-(--color-border)/30">
-                <audio :src="getImageUrl(msg.attachment_url)" controls class="w-full h-8 outline-hidden"></audio>
+          <!-- Message Row with Unsend Option -->
+          <div class="flex items-center gap-2 max-w-[70%]" :class="msg.sender_id === authStore.user?.id ? 'flex-row-reverse' : 'flex-row'">
+            <!-- Message Bubble -->
+            <div
+              class="rounded-2xl px-4 py-3 shadow-xs text-sm leading-relaxed"
+              :class="
+                msg.sender_id === authStore.user?.id
+                  ? 'bg-(--color-primary) text-white rounded-tr-xs font-medium'
+                  : 'bg-(--color-surface) text-(--color-text) rounded-tl-xs border border-(--color-border)/40 font-medium'
+              "
+            >
+              <!-- Image / Audio Attachment -->
+              <div v-if="msg.attachment_url">
+                <!-- Audio Player -->
+                <div v-if="isAudioFile(msg.attachment_url)" class="mb-2 w-64 p-2 rounded-xl bg-black/5 dark:bg-white/5 border border-(--color-border)/30">
+                  <audio :src="getImageUrl(msg.attachment_url)" controls class="w-full h-8 outline-hidden"></audio>
+                </div>
+                <!-- Image view -->
+                <div v-else class="mb-2 max-w-sm overflow-hidden rounded-xl border border-black/5">
+                  <img
+                    :src="getImageUrl(msg.attachment_url)"
+                    alt="Attachment"
+                    class="w-full h-auto object-cover max-h-60"
+                  />
+                </div>
               </div>
-              <!-- Image view -->
-              <div v-else class="mb-2 max-w-sm overflow-hidden rounded-xl border border-black/5">
-                <img
-                  :src="getImageUrl(msg.attachment_url)"
-                  alt="Attachment"
-                  class="w-full h-auto object-cover max-h-60"
-                />
-              </div>
+              <!-- Message Body -->
+              <p v-if="msg.message_body" class="whitespace-pre-wrap break-words">{{ msg.message_body }}</p>
             </div>
-            <!-- Message Body -->
-            <p v-if="msg.message_body" class="whitespace-pre-wrap break-words">{{ msg.message_body }}</p>
+
+            <!-- Unsend Button (shown on hover, only for user's own messages) -->
+            <button
+              v-if="msg.sender_id === authStore.user?.id"
+              type="button"
+              @click="handleUnsend(msg.id)"
+              class="opacity-0 group-hover/msg:opacity-100 transition-opacity duration-150 p-1.5 rounded-full hover:bg-rose-500/10 text-rose-500 hover:text-rose-600 active:scale-90 border-none cursor-pointer flex items-center justify-center shrink-0"
+              title="Unsend Message"
+            >
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
           </div>
 
           <!-- Time and Read Status -->
