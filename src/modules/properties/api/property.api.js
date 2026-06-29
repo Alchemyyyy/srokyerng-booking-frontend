@@ -20,6 +20,7 @@ export const propertyApi = {
   getMyProperties(params) {
     return http.get(`/properties/my`, { params });
   },
+
   getMyPropertyById(propertyId) {
     return http.get(`/properties/my/${propertyId}`);
   },
@@ -45,25 +46,51 @@ export const propertyApi = {
   deletePropertyImage(propertyId, imageId) {
     return http.delete(`/properties/${propertyId}/images/${imageId}`);
   },
+
   getPropertyRooms(propertyId) {
     return http.get(`/properties/${propertyId}/rooms`);
   },
+
   getPropertyReviews(propertyId) {
     return http.get(`/properties/${propertyId}/reviews`);
   },
+
   getPropertyAmenities(propertyId) {
     return http.get(`/properties/${propertyId}/amenities`);
   },
 
-  // All reservations across every property this owner manages —
-  // used to compute bookings count + revenue per property.
   getOwnerReservations() {
     return http.get(`/owner/reservations`);
   },
 
-  // [{ id, province_id, name }] — used to resolve city_id/province_id
-  // from the city name picked in the location dropdown.
   getCities() {
     return http.get(`/properties/cities`);
+  },
+
+  // ── NEW: Pending Edit Request APIs ──────────────────────────────────────────
+
+  // Submit a pending edit request for an approved property
+  // POST /properties/:id/edit-requests
+  submitEditRequest(propertyId, payload) {
+    return http.post(`/properties/${propertyId}/edit-requests`, payload);
+  },
+
+  // Get the current pending edit request for a property (if any)
+  // GET /properties/:id/edit-requests/pending
+  getPendingEditRequest(propertyId) {
+    return http.get(`/properties/${propertyId}/edit-requests/pending`);
+  },
+
+  // Get all edit requests for a property (history)
+  // GET /properties/:id/edit-requests
+  getEditRequests(propertyId) {
+    return http.get(`/properties/${propertyId}/edit-requests`);
+  },
+  deactivateProperty(propertyId) {
+    return http.patch(`/owner/properties/${propertyId}/deactivate`);
+  },
+
+  activateProperty(propertyId) {
+    return http.patch(`/owner/properties/${propertyId}/activate`);
   },
 };

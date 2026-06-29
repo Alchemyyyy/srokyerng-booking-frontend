@@ -1340,13 +1340,13 @@
       "avgRating": "Avg Rating",
       "readyToReview": "Ready to Review"
     },
-      "ratingLabel": {
+    "ratingLabel": {
       "poor": "Poor",
       "fair": "Fair",
       "good": "Good",
       "veryGood": "Very Good",
       "excellent": "Excellent"
-      },
+    },
     "filter": {
       "searchPlaceholder": "Search reviews...",
       "sortRecent": "Most Recent",
