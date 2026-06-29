@@ -24,7 +24,6 @@ const normalizeImages = (item) => {
 };
 
 const normalizeProperty = (item, index) => {
-  // Build full image URLs from images array
   const allImages = Array.isArray(item.images)
     ? item.images
         .map((img) => {
@@ -38,7 +37,6 @@ const normalizeProperty = (item, index) => {
         .filter(Boolean)
     : [];
 
-  // Get cover image — prefer is_cover flag, fallback to first image
   const coverFromImages =
     item.images?.find((i) => i.is_cover === 1)?.image_url ||
     item.images?.[0]?.image_url;
@@ -50,14 +48,12 @@ const normalizeProperty = (item, index) => {
     coverFromImages ||
     allImages[0];
 
-  // null when there's no real image — component decides what to show
   const coverImage = rawCover
     ? rawCover.startsWith("http")
       ? rawCover
       : `${BASE_URL}${rawCover}`
     : null;
 
-  // Always provide 3 image slots (fill with cover/null if fewer than 3)
   const imagesArray =
     allImages.length > 0
       ? [
@@ -115,20 +111,15 @@ const normalizeProperty = (item, index) => {
     revenue: item.revenue ?? 0,
     floors: item.number_of_floors ?? item.floors ?? null,
     image: coverImage,
-    description:
-      item.description ||
-      item.short_description ||
-      item.address ||
-      "Approved property",
+    description: item.description || item.short_description || "",
     raw: item,
     images: imagesArray,
+    pendingEdit: false,
+    rejectedEdit: false,
+    rejectionReason: "",
   };
 };
 
-// Groups reservations by property_id and computes booking count + revenue.
-// - "cancelled" reservations are excluded from the bookings count entirely.
-// - Revenue only counts "confirmed" and "completed" reservations
-//   (pending bookings haven't been paid/confirmed yet).
 const buildReservationStats = (reservations) => {
   const stats = {};
 
@@ -159,14 +150,12 @@ export const usePropertyStore = defineStore("properties", () => {
   const property = ref(null);
   const myProperties = ref([]);
 
-  // ── Image state (used by Edit modal) ────────────────────────────────
-  const propertyImages = ref([]); // raw image objects from API: { id, image_url, is_cover, sort_order }
+  const propertyImages = ref([]);
   const imagesLoading = ref(false);
   const imagesError = ref("");
 
   const approvedProperties = computed(() => properties.value);
 
-  // Derive current cover id from propertyImages
   const coverId = computed(() => {
     const cover = propertyImages.value.find(
       (i) => i.is_cover === 1 || i.is_cover === true,
@@ -179,7 +168,6 @@ export const usePropertyStore = defineStore("properties", () => {
     loading.value = true;
     error.value = "";
     try {
-      // ✅ Remove default/empty values before sending to API
       const cleanParams = {};
       if (params?.search) cleanParams.search = params.search;
       if (params?.city && params.city !== "all") cleanParams.city = params.city;
@@ -232,13 +220,10 @@ export const usePropertyStore = defineStore("properties", () => {
       const response = await propertyApi.getMyProperties(params);
       const items = Array.isArray(response) ? response : response?.data || [];
 
-      // First pass: normalise without images (shows fallback instantly)
       myProperties.value = items.map((item, index) =>
         normalizeProperty(item, index),
       );
 
-      // Fetch all owner reservations ONCE (not per-property) and build
-      // a property_id -> { bookings, revenue } lookup
       let reservationStats = {};
       try {
         const resvRes = await propertyApi.getOwnerReservations();
@@ -247,15 +232,12 @@ export const usePropertyStore = defineStore("properties", () => {
           : (resvRes?.data ?? []);
         reservationStats = buildReservationStats(reservations);
       } catch {
-        // If this call fails, bookings/revenue just stay at 0 — don't
-        // block the rest of the property list from loading.
+        // silently ignore reservation fetch errors
       }
 
-      // Second pass: fetch real images AND room counts for each property in parallel
       await Promise.allSettled(
-        items.map(async (item, index) => {
+        myProperties.value.map(async (item, index) => {
           try {
-            // Fetch images and room count in parallel for each property
             const [imgRes, roomsRes] = await Promise.allSettled([
               propertyApi.getAllPropertyImages(item.id),
               propertyApi.getPropertyRooms(item.id),
@@ -304,9 +286,14 @@ export const usePropertyStore = defineStore("properties", () => {
                 ...myProperties.value[index],
                 rooms: Array.isArray(roomData) ? roomData.length : 0,
               };
+            } else {
+              myProperties.value[index] = {
+                ...myProperties.value[index],
+                rooms: 0,
+              };
             }
 
-            // ── Bookings & Revenue ────────────────────────────────────
+            // ── Bookings & Revenue ──────────────────────────────────
             const stat = reservationStats[item.id];
             if (stat) {
               myProperties.value[index] = {
@@ -337,7 +324,6 @@ export const usePropertyStore = defineStore("properties", () => {
     error.value = "";
     try {
       const response = await propertyApi.registerProperty(payload);
-      console.log("Raw register response:", JSON.stringify(response));
       const item = response?.data?.[0] || response?.data || response;
       if (item) {
         myProperties.value.unshift(normalizeProperty(item, 0));
@@ -352,6 +338,8 @@ export const usePropertyStore = defineStore("properties", () => {
   };
 
   // ── Owner: update property ───────────────────────────────────────────
+  // For approved properties the backend automatically creates a pending
+  // edit request instead of updating directly.
   const updateProperty = async (propertyId, payload) => {
     loading.value = true;
     error.value = "";
@@ -391,7 +379,6 @@ export const usePropertyStore = defineStore("properties", () => {
     propertyImages.value = [];
     try {
       const res = await propertyApi.getAllPropertyImages(propertyId);
-      // Normalise: API may return array directly or wrapped in .data
       const imgs = Array.isArray(res) ? res : (res?.data ?? []);
       propertyImages.value = imgs;
       return imgs;
@@ -404,7 +391,6 @@ export const usePropertyStore = defineStore("properties", () => {
   };
 
   // ── Owner: upload images ─────────────────────────────────────────────
-  // POST /properties/:id/images  (form-data key: "images")
   const uploadPropertyImages = async (propertyId, files) => {
     imagesLoading.value = true;
     imagesError.value = "";
@@ -412,9 +398,7 @@ export const usePropertyStore = defineStore("properties", () => {
       const formData = new FormData();
       files.forEach((f) => formData.append("images", f));
       await propertyApi.uploadPropertyImages(propertyId, formData);
-      // Reload images so the grid updates
       await fetchPropertyImages(propertyId);
-      // Refresh the property card so cover image is up to date
       await fetchMyProperties();
     } catch (err) {
       imagesError.value = err?.message || "Failed to upload images.";
@@ -425,15 +409,12 @@ export const usePropertyStore = defineStore("properties", () => {
   };
 
   // ── Owner: delete one image ──────────────────────────────────────────
-  // DELETE /properties/:propertyId/images/:imageId
   const deletePropertyImage = async (propertyId, imageId) => {
     try {
       await propertyApi.deletePropertyImage(propertyId, imageId);
-      // Remove from local state immediately (optimistic)
       propertyImages.value = propertyImages.value.filter(
         (i) => i.id !== imageId,
       );
-      // Refresh property list so card reflects new cover
       await fetchMyProperties();
     } catch (err) {
       imagesError.value = err?.message || "Failed to delete image.";
@@ -442,16 +423,13 @@ export const usePropertyStore = defineStore("properties", () => {
   };
 
   // ── Owner: set cover image ───────────────────────────────────────────
-  // PATCH /properties/:propertyId/images/:imageId/cover
   const setCoverImage = async (propertyId, imageId) => {
     try {
       await propertyApi.setCoverImage(propertyId, imageId);
-      // Update is_cover flag locally (optimistic)
       propertyImages.value = propertyImages.value.map((i) => ({
         ...i,
         is_cover: i.id === imageId ? 1 : 0,
       }));
-      // Refresh property list so card shows new cover
       await fetchMyProperties();
     } catch (err) {
       imagesError.value = err?.message || "Failed to set cover image.";
