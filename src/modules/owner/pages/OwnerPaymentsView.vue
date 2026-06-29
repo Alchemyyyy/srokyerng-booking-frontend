@@ -324,7 +324,7 @@ onMounted(paymentStore.loadData);
                     </template>
                 </AppTable>
 
-                <AppPagination v-model:currentPage="currentPage" :totalPages="totalPages"
+                <AppPagination v-model="currentPage" :totalPages="totalPages"
                     class="mt-12 border-t border-(--color-border)/40 pt-8" />
             </template>
         </section>

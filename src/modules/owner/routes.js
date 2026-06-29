@@ -10,6 +10,7 @@ import OwnerRoomDetailView from "../rooms/pages/OwnerRoomDetailView.vue";
 import BookingCalendarView from "../calendar/pages/BookingCalendarView.vue";
 import OwnerPaymentsView from "./pages/OwnerPaymentsView.vue";
 import OwnerPaymentDetailView from "./pages/OwnerPaymentDetailView.vue";
+import OwnerReviewsView from "./pages/OwnerReviewsView.vue"; // ← NEW
 
 export const ownerRoutes = [
   {
@@ -76,5 +77,12 @@ export const ownerRoutes = [
     path: "amenities/:id",
     name: "propertyAmenities",
     component: AmenityManagementView,
+  },
+  // ── Reviews ────────────────────────────────────────────────────────
+  {
+    path: "reviews",
+    name: "reviews",
+    component: OwnerReviewsView,
+    meta: { requiresAuth: true },
   },
 ];
