@@ -20,6 +20,14 @@ import {
   CalendarDaysIcon,
 } from "@heroicons/vue/24/outline";
 import PublicNavbar from "@/shared/components/PublicNavbar.vue";
+import PublicFooter from "@/shared/components/PublicFooter.vue";
+
+defineProps({
+  hideNavbarAndFooter: {
+    type: Boolean,
+    default: false,
+  },
+});
 
 const router = useRouter();
 const toast  = useToastStore();
@@ -28,7 +36,7 @@ const { t }  = useI18n();
 const loading      = ref(true);
 const error        = ref("");
 const bookings     = ref([]);
-const activeFilter = ref("all");
+const activeFilter = ref("upcoming");
 
 const cancelModalOpen = ref(false);
 const cancellingId    = ref(null);
@@ -225,110 +233,52 @@ onMounted(async () => {
 
 <template>
   <div>
-    <PublicNavbar />
-    <div class="min-h-screen bg-(--color-page) text-(--color-text) antialiased pb-24 font-sans">
-
-      <div class="absolute top-0 left-1/4 w-[500px] h-[300px] bg-gradient-to-tr from-(--color-primary-soft)/10 to-transparent blur-3xl pointer-events-none"></div>
-
-      <div class="mx-auto max-w-7xl px-4 pt-28 sm:px-6">
-        <section class="overflow-hidden rounded-[28px] border border-(--color-border) bg-(--color-surface)">
-          <div class="relative p-6 sm:p-8">
-            <div class="absolute right-0 top-0 h-full w-1/2 bg-gradient-to-l from-(--color-primary-soft)/30 to-transparent pointer-events-none"></div>
-            <div class="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-              <div class="max-w-3xl">
-                <div class="inline-flex items-center gap-2 rounded-full bg-(--color-primary-soft) px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-(--color-primary)">
-                  <CalendarDaysIcon class="h-4 w-4" />
-                  {{ t('bookingHistory.breadcrumb.title') }}
-                </div>
-                <h1 class="mt-5 text-4xl font-black tracking-tight text-(--color-text) sm:text-5xl">
-                  Manage your bookings
-                </h1>
-                <p class="mt-3 max-w-2xl text-base leading-7 text-(--color-muted)">
-                  Review upcoming stays, payment receipts, cancellation options, and completed reservations in one place.
-                </p>
-              </div>
-
-              <button class="inline-flex items-center justify-center gap-2 rounded-[var(--radius-lg)] border border-(--color-border) bg-(--color-surface-soft) px-4 py-3 text-sm font-bold text-(--color-text) transition hover:border-(--color-primary)/40 hover:text-(--color-primary)">
-                <ArrowDownTrayIcon class="h-4 w-4" />
-                <span>{{ t('bookingHistory.export') }}</span>
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <!-- Stats -->
-        <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-
-          <div class="relative overflow-hidden rounded-[22px] border border-(--color-border)/80 bg-(--color-surface) p-5 transition-all duration-300 hover:border-(--color-primary)/30">
-            <div class="absolute right-4 top-4 rounded-[var(--radius-md)] border border-(--color-border)/30 bg-(--color-surface-soft) p-2 text-(--color-primary)">
-              <BriefcaseIcon class="w-5 h-5" />
-            </div>
-            <p class="text-[10px] font-black uppercase text-(--color-muted) tracking-widest">{{ t('bookingHistory.stats.totalBookings') }}</p>
-            <p class="text-4xl font-black text-(--color-text) mt-3 tracking-tight">{{ stats.totalReservations }}</p>
-            <p class="text-[11px] text-(--color-muted) font-semibold mt-2">{{ t('bookingHistory.stats.acrossProperties') }}</p>
-          </div>
-
-          <div class="relative overflow-hidden rounded-[22px] border border-(--color-border)/80 bg-(--color-surface) p-5 transition-all duration-300 hover:border-indigo-500/30">
-            <div class="absolute right-4 top-4 rounded-[var(--radius-md)] border border-indigo-500/10 bg-indigo-500/5 p-2 text-indigo-500 dark:bg-indigo-500/10">
-              <MoonIcon class="w-5 h-5" />
-            </div>
-            <p class="text-[10px] font-black uppercase text-(--color-muted) tracking-widest">{{ t('bookingHistory.stats.totalNights') }}</p>
-            <p class="text-4xl font-black text-indigo-500 mt-3 tracking-tight">{{ stats.totalNights }}</p>
-            <p class="text-[11px] text-(--color-muted) font-semibold mt-2 inline-flex items-center gap-1">
-              <SparklesIcon class="w-3 h-3 text-amber-500" />
-              {{ t('bookingHistory.stats.tierStatus') }}: <span class="text-indigo-500 font-bold">{{ t('bookingHistory.stats.tierLabel') }}</span>
-            </p>
-          </div>
-
-          <div class="relative overflow-hidden rounded-[22px] border border-(--color-border)/80 bg-(--color-surface) p-5 transition-all duration-300 hover:border-emerald-500/30">
-            <div class="absolute right-4 top-4 rounded-[var(--radius-md)] border border-emerald-500/10 bg-emerald-500/5 p-2 text-emerald-500 dark:bg-emerald-500/10">
-              <BanknotesIcon class="w-5 h-5" />
-            </div>
-            <p class="text-[10px] font-black uppercase text-(--color-muted) tracking-widest">{{ t('bookingHistory.stats.capitalInvested') }}</p>
-            <p class="text-4xl font-black text-emerald-600 dark:text-emerald-400 mt-3 tracking-tight">${{ stats.totalSpent }}</p>
-            <p class="text-[11px] text-(--color-muted) font-semibold mt-2">{{ t('bookingHistory.stats.inclusive') }}</p>
-          </div>
-
-          <div class="relative overflow-hidden rounded-[22px] border border-transparent bg-gradient-to-br from-[#0f2942] to-[#1d4166] p-5 text-white dark:border-(--color-border)/50 dark:from-slate-950 dark:to-slate-900">
-            <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-500/10 via-transparent to-transparent"></div>
-            <p class="text-[10px] font-black uppercase text-slate-300 tracking-widest">{{ t('bookingHistory.stats.activeItinerary') }}</p>
-            <p class="text-4xl font-black mt-3 tracking-tight">{{ t('bookingHistory.stats.live', { count: stats.activeCount }) }}</p>
-            <p class="text-[11px] text-blue-300 font-semibold mt-2 flex items-center gap-1.5">
-              <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
-              {{ t('bookingHistory.stats.checkInActive') }}
-            </p>
-          </div>
-
-        </div>
-
-        <!-- Filter Bar -->
-        <div class="mt-8 mb-8 rounded-[24px] border border-(--color-border) bg-(--color-surface) p-4">
-          <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 class="text-2xl font-black text-(--color-text) tracking-tight">{{ t('bookingHistory.filters.title') }}</h2>
-            <p class="text-xs text-(--color-muted) font-semibold mt-0.5">{{ t('bookingHistory.filters.subtitle') }}</p>
-          </div>
-          <div class="flex flex-wrap gap-2 rounded-[var(--radius-lg)] bg-(--color-surface-soft) p-1 text-xs font-bold md:self-center">
+    <PublicNavbar v-if="!hideNavbarAndFooter" />
+    <div
+      :class="[
+        hideNavbarAndFooter
+          ? 'pb-12 font-sans'
+          : 'min-h-screen bg-(--color-page) text-(--color-text) antialiased pb-24 font-sans pt-32'
+      ]"
+    >
+      <div class="mx-auto max-w-4xl px-4 sm:px-6">
+        <!-- Airbnb Header -->
+        <div class="border-b border-(--color-border) pb-5 mb-8">
+          <h1 class="text-4xl font-black tracking-tight text-(--color-text)">
+            Trips
+          </h1>
+          
+          <!-- Airbnb Tab Switcher -->
+          <div class="flex gap-6 mt-6 text-sm font-bold">
             <button
-              v-for="option in filterOptions"
-              :key="option.value"
-              :class="activeFilter === option.value ? 'bg-(--color-surface) text-(--color-text) shadow-xs' : 'text-(--color-muted) hover:text-(--color-text)'"
-              class="inline-flex items-center gap-2 rounded-[var(--radius-md)] px-4 py-2.5 transition-all duration-200"
-              @click="activeFilter = option.value"
+              type="button"
+              class="pb-3 border-b-2 transition-all duration-200 cursor-pointer"
+              :class="activeFilter === 'upcoming' ? 'border-(--color-text) text-(--color-text)' : 'border-transparent text-(--color-muted) hover:text-(--color-text)'"
+              @click="activeFilter = 'upcoming'"
             >
-              <component :is="option.icon" class="h-4 w-4" />
-              <span>{{ option.label }}</span>
-              <span class="rounded-full bg-(--color-primary-soft) px-2 py-0.5 text-[10px] font-black text-(--color-primary)">
-                {{ option.count }}
-              </span>
+              Upcoming
+            </button>
+            <button
+              type="button"
+              class="pb-3 border-b-2 transition-all duration-200 cursor-pointer"
+              :class="activeFilter === 'completed' ? 'border-(--color-text) text-(--color-text)' : 'border-transparent text-(--color-muted) hover:text-(--color-text)'"
+              @click="activeFilter = 'completed'"
+            >
+              Past
+            </button>
+            <button
+              type="button"
+              class="pb-3 border-b-2 transition-all duration-200 cursor-pointer"
+              :class="activeFilter === 'all' ? 'border-b-2 border-blue-500 text-blue-600' : 'border-transparent text-(--color-muted) hover:text-(--color-text)'"
+              @click="activeFilter = 'all'"
+            >
+              All
             </button>
           </div>
-          </div>
         </div>
 
-        <!-- Booking List -->
+        <!-- Booking List Content -->
         <main>
-
           <div v-if="loading" class="text-center py-20 bg-(--color-surface) border border-(--color-border)/60 rounded-3xl shadow-xs">
             <div class="inline-block w-8 h-8 border-4 border-(--color-primary) border-t-transparent rounded-full animate-spin mb-3"></div>
             <p class="text-sm font-semibold text-(--color-muted)">{{ t('bookingHistory.state.loading') }}</p>
@@ -342,12 +292,25 @@ onMounted(async () => {
             </button>
           </div>
 
-          <div v-else-if="filteredBookings.length === 0" class="text-center py-20 text-(--color-muted) border-2 border-dashed border-(--color-border) rounded-[32px] text-sm font-semibold">
-            <BriefcaseIcon class="w-10 h-10 mx-auto mb-3 opacity-30 text-(--color-muted)" />
-            <p>{{ t('bookingHistory.state.empty') }}</p>
+          <!-- Empty State (Airbnb style) -->
+          <div v-else-if="filteredBookings.length === 0" class="py-16 text-left border border-(--color-border) bg-(--color-surface) rounded-[32px] p-8 max-w-xl shadow-xs">
+            <span class="text-4xl block mb-4">🧳</span>
+            <h2 class="text-2xl font-black text-(--color-text) tracking-tight">No trips booked... yet!</h2>
+            <p class="text-sm text-(--color-muted) leading-relaxed mt-2 max-w-md">
+              Time to dust off your bags and start planning your next adventure.
+            </p>
+            <RouterLink :to="{ name: 'public.properties' }">
+              <button
+                type="button"
+                class="mt-6 px-6 py-3 bg-(--color-primary) hover:opacity-90 text-white text-sm font-bold rounded-xl transition duration-200 active:scale-95 cursor-pointer"
+              >
+                Start searching
+              </button>
+            </RouterLink>
           </div>
 
-          <div v-else class="space-y-4">
+          <!-- Booking Cards Stack -->
+          <div v-else class="space-y-6">
             <BookingCard
               v-for="booking in filteredBookings"
               :key="booking.id"
@@ -358,11 +321,10 @@ onMounted(async () => {
               @receipt="goToReceipt($event)"
             />
           </div>
-
         </main>
       </div>
 
-      <!-- Cancel Modal -->
+      <!-- Cancel Reservation Modal -->
       <CancelReservationModal
         :open="cancelModalOpen"
         :eligible="true"
@@ -371,8 +333,8 @@ onMounted(async () => {
         @close="dismissCancel"
         @confirm="confirmCancel"
       />
-
     </div>
+    <PublicFooter v-if="!hideNavbarAndFooter" />
   </div>
 </template>
 

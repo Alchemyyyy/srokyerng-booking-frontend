@@ -60,7 +60,7 @@ const socialLinks = [
 </script>
 
 <template>
-  <footer class="border-t border-white/10 bg-(--color-surface)">
+  <footer class="border-t border-(--color-border) bg-(--color-page)">
     <!-- Main Footer -->
     <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <div class="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
@@ -88,7 +88,7 @@ const socialLinks = [
               :aria-label="social.label"
               target="_blank"
               rel="noopener noreferrer"
-              class="flex h-9 w-9 items-center justify-center rounded-full border border-(--color-border) text-(--color-muted) transition hover:border-(--color-primary) hover:text-(--color-primary)"
+              class="flex h-9 w-9 items-center justify-center rounded-full border border-(--color-border) text-(--color-muted) transition hover:border-blue-600 hover:text-blue-600 dark:hover:border-blue-500 dark:hover:text-blue-500"
               v-html="social.icon"
             />
           </div>
@@ -97,7 +97,7 @@ const socialLinks = [
         <!-- Quick Links -->
         <div>
           <h3
-            class="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-(--color-primary)"
+            class="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-500"
           >
             {{ t("footer.explore") }}
           </h3>
@@ -105,7 +105,7 @@ const socialLinks = [
             <li v-for="link in quickLinks" :key="link.label">
               <RouterLink
                 :to="link.to"
-                class="text-sm text-(--color-muted) transition hover:text-(--color-primary)"
+                class="text-sm text-(--color-muted) transition hover:text-blue-600 dark:hover:text-blue-500"
               >
                 {{ link.label }}
               </RouterLink>
@@ -116,7 +116,7 @@ const socialLinks = [
         <!-- Legal Links -->
         <div>
           <h3
-            class="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-(--color-primary)"
+            class="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-500"
           >
             {{ t("footer.legal") }}
           </h3>
@@ -124,7 +124,7 @@ const socialLinks = [
             <li v-for="link in legalLinks" :key="link.label">
               <RouterLink
                 :to="link.to"
-                class="text-sm text-(--color-muted) transition hover:text-(--color-primary)"
+                class="text-sm text-(--color-muted) transition hover:text-blue-600 dark:hover:text-blue-500"
               >
                 {{ link.label }}
               </RouterLink>
@@ -135,7 +135,7 @@ const socialLinks = [
         <!-- Contact Info -->
         <div>
           <h3
-            class="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-(--color-primary)"
+            class="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-500"
           >
             {{ t("footer.contact") }}
           </h3>
@@ -149,7 +149,7 @@ const socialLinks = [
               <a
                 v-if="item.href"
                 :href="item.href"
-                class="transition hover:text-(--color-primary)"
+                class="transition hover:text-blue-600 dark:hover:text-blue-500"
               >
                 {{ item.label }}
               </a>

@@ -24,6 +24,13 @@ const { t, locale } = useI18n({ useScope: "global" });
 const { currentTheme, resolvedTheme, isNavbarSolid, toggleTheme } =
   useNavbarAppearance(route);
 
+const isProfilePage = computed(() => route.name === "customer.profile");
+
+const handleDone = () => {
+  const targetRoute = getDashboardRouteByRole(authStore.user?.role) || { name: "public.home" };
+  router.push(targetRoute);
+};
+
 const navigationItems = computed(() => [
   { label: t("nav.home"), to: { name: "public.home" }, icon: "bi-house" },
   {
@@ -84,12 +91,7 @@ watch(
 
 <template>
   <header
-    :class="[
-      'fixed top-0 left-0 z-50 w-full pointer-events-auto transition-all duration-300 ease-in-out border-b',
-      isNavbarSolid
-        ? 'border-gray-200 dark:border-neutral-800/80 bg-white/95 dark:bg-neutral-900/95 py-3.5 shadow-[0_4px_20px_rgba(0,0,0,0.05)] backdrop-blur-xl'
-        : 'border-b border-white/10 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl py-4',
-    ]"
+    class="fixed top-0 left-0 z-50 w-full pointer-events-auto transition-all duration-300 ease-in-out border-b border-(--color-border) bg-(--color-page)/95 backdrop-blur-xl py-5 shadow-[0_4px_20px_rgba(0,0,0,0.05)]"
   >
     <!-- Inner Centered Wrapper -->
     <div
@@ -99,7 +101,7 @@ watch(
       <div class="flex shrink-0 items-center gap-3">
         <RouterLink
           :to="{ name: 'public.home' }"
-          class="flex shrink-0 items-center gap-2.5 text-gray-900 dark:text-white transition group"
+          class="flex shrink-0 items-center gap-2.5 text-(--color-text) transition group"
         >
           <img
             v-if="resolvedTheme === 'dark'"
@@ -114,7 +116,7 @@ watch(
             class="h-9 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
           />
           <span
-            class="font-kantumruy text-2xl font-black tracking-tight leading-none self-center text-[#FF385C] dark:text-[#FF385C]"
+            class="font-kantumruy text-2xl font-black tracking-tight leading-none self-center text-blue-600 dark:text-blue-500"
           >
             ស្រុកយើង
           </span>
@@ -123,178 +125,114 @@ watch(
 
       <!-- Middle Airbnb Pill Dock -->
       <nav
-        class="hidden lg:flex items-center rounded-full border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 py-1.5 px-2.5 shadow-xs hover:shadow-md transition-all duration-200"
+        v-if="!isProfilePage"
+        class="hidden lg:flex items-center rounded-full border border-(--color-border) bg-(--color-surface) py-1.5 px-2.5 shadow-xs hover:shadow-md transition-all duration-200"
       >
         <!-- Properties / Stays -->
         <RouterLink
           :to="{ name: 'public.properties' }"
-          class="px-5 py-2 text-sm font-bold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full transition-colors cursor-pointer"
-          :class="[isActiveRoute('public.properties') ? 'bg-gray-100 dark:bg-neutral-700' : '']"
+          class="flex items-center gap-2 px-5 py-2 text-sm font-bold text-(--color-text) hover:bg-(--color-surface-soft) rounded-full transition-colors cursor-pointer"
+          :class="[isActiveRoute('public.properties') ? 'bg-(--color-surface-soft) !text-blue-600 dark:!text-blue-500' : '']"
         >
-          {{ t("nav.properties") }}
+          <i class="bi bi-houses text-base transition-colors" :class="isActiveRoute('public.properties') ? 'text-blue-600 dark:text-blue-500' : 'text-(--color-muted)'"></i>
+          <span>{{ t("nav.properties") }}</span>
         </RouterLink>
 
-        <div class="h-4 w-px bg-gray-200 dark:bg-neutral-700 mx-1"></div>
+        <div class="h-4 w-px bg-(--color-border) mx-1"></div>
 
         <!-- About -->
         <RouterLink
           :to="{ name: 'public.about' }"
-          class="px-5 py-2 text-sm font-bold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full transition-colors cursor-pointer"
-          :class="[isActiveRoute('public.about') ? 'bg-gray-100 dark:bg-neutral-700' : '']"
+          class="flex items-center gap-2 px-5 py-2 text-sm font-bold text-(--color-text) hover:bg-(--color-surface-soft) rounded-full transition-colors cursor-pointer"
+          :class="[isActiveRoute('public.about') ? 'bg-(--color-surface-soft) !text-blue-600 dark:!text-blue-500' : '']"
         >
-          {{ t("nav.about") }}
+          <i class="bi bi-info-circle text-base transition-colors" :class="isActiveRoute('public.about') ? 'text-blue-600 dark:text-blue-500' : 'text-(--color-muted)'"></i>
+          <span>{{ t("nav.about") }}</span>
         </RouterLink>
 
-        <div class="h-4 w-px bg-gray-200 dark:bg-neutral-700 mx-1"></div>
+        <div class="h-4 w-px bg-(--color-border) mx-1"></div>
 
         <!-- Contact -->
         <RouterLink
           :to="{ name: 'public.contact' }"
-          class="px-5 py-2 text-sm font-bold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full transition-colors cursor-pointer"
-          :class="[isActiveRoute('public.contact') ? 'bg-gray-100 dark:bg-neutral-700' : '']"
+          class="flex items-center gap-2 px-5 py-2 text-sm font-bold text-(--color-text) hover:bg-(--color-surface-soft) rounded-full transition-colors cursor-pointer"
+          :class="[isActiveRoute('public.contact') ? 'bg-(--color-surface-soft) !text-blue-600 dark:!text-blue-500' : '']"
         >
-          {{ t("nav.contact") }}
+          <i class="bi bi-envelope text-base transition-colors" :class="isActiveRoute('public.contact') ? 'text-blue-600 dark:text-blue-500' : 'text-(--color-muted)'"></i>
+          <span>{{ t("nav.contact") }}</span>
         </RouterLink>
 
         <!-- Signature Airbnb Search Circular Button -->
         <RouterLink
           :to="{ name: 'public.properties' }"
-          class="h-9 w-9 bg-[#FF385C] hover:bg-[#E31C5F] text-white rounded-full flex items-center justify-center ml-2 shadow-md transition-all duration-200 active:scale-95 hover:scale-105 cursor-pointer"
+          class="h-9 w-9 bg-(--color-primary) hover:opacity-90 text-white rounded-full flex items-center justify-center ml-2 shadow-md transition-all duration-200 active:scale-95 hover:scale-105 cursor-pointer"
           title="Search properties"
         >
           <i class="bi bi-search text-sm font-bold"></i>
         </RouterLink>
       </nav>
 
-      <!-- Right Side Section (Host CTA + Toggles + Account Menu) -->
+      <!-- Right Side Section (Host CTA + Account Menu) -->
       <div class="hidden lg:flex shrink-0 items-center gap-2">
-        <!-- Become a Host CTA -->
-        <RouterLink
-          :to="{ name: 'public.listProperty' }"
-          class="text-sm font-bold px-4 py-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-900 dark:text-white transition-colors cursor-pointer whitespace-nowrap"
-        >
-          {{ t("nav.listProperty") }}
-        </RouterLink>
-
-        <!-- Inline Toggles -->
-        <div class="flex items-center gap-1">
+        <template v-if="isProfilePage">
           <button
             type="button"
-            @click="toggleTheme"
-            class="h-11 w-11 flex items-center justify-center rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-            aria-label="Toggle theme"
+            @click="handleDone"
+            class="px-6 py-2 rounded-full bg-(--color-surface-soft) text-(--color-text) border border-(--color-border) text-sm font-bold shadow-xs hover:opacity-90 transition-all duration-200 active:scale-95 cursor-pointer"
           >
-            <span>
-              <svg
-                v-if="currentTheme === 'light'"
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 3v1m0 16v1m8.66-9h-1M4.34 12h-1m15.07-6.07-.71.71M6.34 17.66l-.71.71m12.02 0-.71-.71M6.34 6.34l-.71-.71M12 7a5 5 0 100 10A5 5 0 0012 7z"
-                />
-              </svg>
-              <svg
-                v-else-if="currentTheme === 'dark'"
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
-                />
-              </svg>
-              <svg
-                v-else
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                />
-              </svg>
-            </span>
+            Done
           </button>
-          <LanguageToggle />
-        </div>
-
-        <!-- Customer Quick-Access Shortcuts -->
-        <template
-          v-if="
-            authStore.isAuthenticated && authStore.user?.role === 'customer'
-          "
-        >
-          <RouterLink
-            :to="{ name: 'customer.wishlist' }"
-            class="h-11 w-11 flex items-center justify-center rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-[#FF385C] transition-colors cursor-pointer"
-            title="Wishlist"
-          >
-            <i class="bi bi-heart text-lg"></i>
-          </RouterLink>
-          <RouterLink
-            :to="{ name: 'customer.chats' }"
-            class="h-11 w-11 flex items-center justify-center rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-[#FF385C] transition-colors cursor-pointer"
-            title="Messages"
-          >
-            <i class="bi bi-chat-dots text-lg"></i>
-          </RouterLink>
-          <RouterLink
-            :to="{ name: 'customer.booking-history' }"
-            class="h-11 w-11 flex items-center justify-center rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:text-[#FF385C] transition-colors cursor-pointer"
-            title="My Bookings"
-          >
-            <i class="bi bi-ticket-detailed text-lg"></i>
-          </RouterLink>
         </template>
-
-        <!-- CTAs / Session Actions -->
-        <template v-if="authStore.isAuthenticated">
-          <NotificationBell :solid="true" />
-          <NavbarAccountMenu :solid="true" />
-        </template>
-
         <template v-else>
-          <RouterLink :to="{ name: 'public.loginCustomer' }">
-            <button
-              type="button"
-              class="px-5 py-2.5 rounded-full border border-gray-200 dark:border-neutral-700 text-sm font-bold text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-            >
-              {{ t("nav.login") }}
-            </button>
+          <RouterLink
+            :to="{ name: 'public.listProperty' }"
+            class="text-sm font-bold px-4 py-2.5 rounded-full hover:bg-(--color-surface-soft) text-(--color-text) transition-colors cursor-pointer whitespace-nowrap flex items-center gap-2"
+          >
+            <i class="bi bi-house-add text-base text-(--color-primary)"></i>
+            <span>{{ t("nav.listProperty") }}</span>
           </RouterLink>
 
-          <RouterLink :to="{ name: 'public.registerCustomer' }">
-            <button
-              type="button"
-              class="px-5 py-2.5 rounded-full bg-[#FF385C] hover:bg-[#E31C5F] text-white text-sm font-bold shadow-md hover:shadow-lg transition-all duration-200 active:scale-95 cursor-pointer"
-            >
-              {{ t("nav.register") }}
-            </button>
-          </RouterLink>
+          <!-- CTAs / Session Actions -->
+          <template v-if="authStore.isAuthenticated">
+            <NavbarAccountMenu :solid="true" />
+          </template>
+
+          <template v-else>
+            <RouterLink :to="{ name: 'public.loginCustomer' }">
+              <button
+                type="button"
+                class="px-5 py-2.5 rounded-full border border-(--color-border) text-sm font-bold text-(--color-text) hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+              >
+                {{ t("nav.login") }}
+              </button>
+            </RouterLink>
+
+            <RouterLink :to="{ name: 'public.registerCustomer' }">
+              <button
+                type="button"
+                class="px-5 py-2.5 rounded-full bg-(--color-primary) hover:opacity-90 text-white text-sm font-bold shadow-md hover:shadow-lg transition-all duration-200 active:scale-95 cursor-pointer"
+              >
+                {{ t("nav.register") }}
+              </button>
+            </RouterLink>
+          </template>
         </template>
       </div>
 
-      <!-- Mobile Menu Trigger -->
+      <!-- Mobile Action Section (Done button or Menu Trigger) -->
+      <template v-if="isProfilePage">
+        <button
+          type="button"
+          @click="handleDone"
+          class="px-5 py-2 rounded-full bg-(--color-surface-soft) text-(--color-text) border border-(--color-border) text-sm font-bold shadow-xs hover:opacity-90 transition-all duration-200 active:scale-95 cursor-pointer lg:hidden"
+        >
+          Done
+        </button>
+      </template>
       <button
+        v-else
         type="button"
-        class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-gray-700 dark:text-gray-300 transition hover:border-[#FF385C] hover:text-[#FF385C] lg:hidden pointer-events-auto shadow-sm cursor-pointer"
+        class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-(--color-border) bg-(--color-surface-soft) text-(--color-text) transition hover:border-blue-600 hover:text-blue-600 dark:hover:border-blue-500 dark:hover:text-blue-500 lg:hidden pointer-events-auto shadow-sm cursor-pointer"
         :aria-expanded="mobileMenuOpen"
         aria-label="Toggle navigation menu"
         @click="toggleMobileMenu"
@@ -322,14 +260,14 @@ watch(
     <!-- Mobile Drawer Menu -->
     <div
       v-if="mobileMenuOpen"
-      class="absolute top-full left-0 w-full border-b border-gray-200 dark:border-neutral-800 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl lg:hidden p-6 shadow-2xl pointer-events-auto transition-all duration-300"
+      class="absolute top-full left-0 w-full border-b border-(--color-border) bg-(--color-page) backdrop-blur-xl lg:hidden p-6 shadow-2xl pointer-events-auto transition-all duration-300"
     >
       <div class="space-y-6">
         <!-- Settings & Toggles -->
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div class="flex items-center gap-3">
             <ThemeToggle />
-            <div class="h-4 w-px bg-gray-200 dark:bg-neutral-800"></div>
+            <div class="h-4 w-px bg-(--color-border)"></div>
             <LanguageToggle />
           </div>
 
@@ -337,7 +275,7 @@ watch(
           <RouterLink
             :to="{ name: 'public.properties' }"
             @click="closeMobileMenu"
-            class="flex items-center gap-2 bg-rose-50 dark:bg-neutral-800 border border-rose-500/30 px-4 py-2 rounded-full text-xs font-bold text-[#FF385C]"
+            class="flex items-center gap-2 bg-(--color-surface) border border-blue-500/30 px-4 py-2 rounded-full text-xs font-bold text-blue-600 dark:text-blue-500"
           >
             <i class="bi bi-search"></i>
             <span>{{ t("nav.searchPlaceholder") }}</span>
@@ -353,8 +291,8 @@ watch(
             class="flex items-center gap-4 rounded-2xl px-5 py-3.5 text-base font-semibold transition-colors cursor-pointer"
             :class="
               isActiveRoute(item.to.name)
-                ? 'bg-rose-50 dark:bg-neutral-800 text-[#FF385C] font-bold'
-                : 'bg-gray-50 dark:bg-neutral-800/50 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-neutral-800'
+                ? 'bg-(--color-surface-soft) text-blue-600 dark:text-blue-500 font-bold'
+                : 'bg-(--color-surface) text-(--color-text) hover:bg-(--color-surface-soft)'
             "
             @click="closeMobileMenu"
           >
@@ -368,12 +306,12 @@ watch(
           v-if="
             authStore.isAuthenticated && authStore.user?.role === 'customer'
           "
-          class="grid grid-cols-3 gap-3 border-t border-gray-100 dark:border-neutral-800 pt-6"
+          class="grid grid-cols-3 gap-3 border-t border-(--color-border) pt-6"
         >
           <RouterLink
             :to="{ name: 'customer.wishlist' }"
             @click="closeMobileMenu"
-            class="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-gray-50 dark:bg-neutral-800 text-gray-700 dark:text-gray-300 hover:text-[#FF385C] transition-colors text-xs font-semibold"
+            class="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-(--color-surface) text-(--color-text) hover:text-blue-600 dark:hover:text-blue-500 transition-colors text-xs font-semibold"
           >
             <i class="bi bi-heart text-xl"></i>
             <span>Wishlist</span>
@@ -381,7 +319,7 @@ watch(
           <RouterLink
             :to="{ name: 'customer.chats' }"
             @click="closeMobileMenu"
-            class="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-gray-50 dark:bg-neutral-800 text-gray-700 dark:text-gray-300 hover:text-[#FF385C] transition-colors text-xs font-semibold"
+            class="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-(--color-surface) text-(--color-text) hover:text-blue-600 dark:hover:text-blue-500 transition-colors text-xs font-semibold"
           >
             <i class="bi bi-chat-dots text-xl"></i>
             <span>Messages</span>
@@ -389,7 +327,7 @@ watch(
           <RouterLink
             :to="{ name: 'customer.booking-history' }"
             @click="closeMobileMenu"
-            class="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-gray-50 dark:bg-neutral-800 text-gray-700 dark:text-gray-300 hover:text-[#FF385C] transition-colors text-xs font-semibold"
+            class="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-(--color-surface) text-(--color-text) hover:text-blue-600 dark:hover:text-blue-500 transition-colors text-xs font-semibold"
           >
             <i class="bi bi-ticket-detailed text-xl"></i>
             <span>Bookings</span>
@@ -404,7 +342,7 @@ watch(
             <RouterLink
               v-if="dashboardRoute"
               :to="dashboardRoute"
-              class="flex-1 rounded-2xl border border-gray-200 dark:border-neutral-700 px-5 py-3.5 text-center text-base font-bold text-gray-900 dark:text-white transition hover:bg-gray-100 dark:hover:bg-neutral-800 cursor-pointer"
+              class="flex-1 rounded-2xl border border-(--color-border) px-5 py-3.5 text-center text-base font-bold text-(--color-text) transition hover:bg-(--color-surface-soft) cursor-pointer"
               @click="closeMobileMenu"
             >
               {{ t("nav.dashboard") }}
@@ -412,7 +350,7 @@ watch(
           </div>
 
           <div
-            class="flex items-center gap-4 rounded-2xl bg-gray-50 dark:bg-neutral-800 p-5 border border-gray-100 dark:border-neutral-700"
+            class="flex items-center gap-4 rounded-2xl bg-(--color-surface) p-5 border border-(--color-border)"
           >
             <UserAvatar
               :name="userLabel"
@@ -421,16 +359,16 @@ watch(
             />
             <div class="min-w-0">
               <p
-                class="text-xs font-bold uppercase tracking-[0.2em] text-gray-400"
+                class="text-xs font-bold uppercase tracking-[0.2em] text-(--color-muted)"
               >
                 {{ t("nav.signedInAs") }}
               </p>
               <p
-                class="mt-1 truncate text-lg font-bold text-gray-900 dark:text-white"
+                class="mt-1 truncate text-lg font-bold text-(--color-text)"
               >
                 {{ userLabel }}
               </p>
-              <p class="text-xs font-medium text-gray-500">
+              <p class="text-xs font-medium text-(--color-muted)">
                 {{ authStore.user?.role || "Member" }}
               </p>
             </div>
@@ -438,7 +376,7 @@ watch(
 
           <button
             type="button"
-            class="block w-full rounded-2xl bg-[#FF385C] hover:bg-[#E31C5F] px-5 py-3.5 text-base font-bold text-white transition shadow-md hover:shadow-lg active:scale-95 cursor-pointer"
+            class="block w-full rounded-2xl bg-(--color-primary) hover:opacity-90 px-5 py-3.5 text-base font-bold text-white transition shadow-md hover:shadow-lg active:scale-95 cursor-pointer"
             @click="handleLogout"
           >
             Logout
@@ -448,7 +386,7 @@ watch(
         <div v-else class="space-y-4">
           <RouterLink
             :to="{ name: 'public.listProperty' }"
-            class="block rounded-2xl border border-gray-200 dark:border-neutral-700 px-5 py-3.5 text-center text-base font-bold text-gray-900 dark:text-white transition hover:bg-gray-100 dark:hover:bg-neutral-800 cursor-pointer"
+            class="block rounded-2xl border border-(--color-border) px-5 py-3.5 text-center text-base font-bold text-(--color-text) transition hover:bg-(--color-surface-soft) cursor-pointer"
             @click="closeMobileMenu"
           >
             <i class="bi bi-house-add mr-2 text-lg"></i>
@@ -458,7 +396,7 @@ watch(
           <div class="grid gap-4 sm:grid-cols-2">
             <RouterLink
               :to="{ name: 'public.loginCustomer' }"
-              class="rounded-2xl border border-gray-200 dark:border-neutral-700 px-5 py-3.5 text-center text-base font-bold text-gray-900 dark:text-white transition hover:bg-gray-100 dark:hover:bg-neutral-800 cursor-pointer block"
+              class="rounded-2xl border border-(--color-border) px-5 py-3.5 text-center text-base font-bold text-(--color-text) transition hover:bg-(--color-surface-soft) cursor-pointer block"
               @click="closeMobileMenu"
             >
               {{ t("nav.login") }}
@@ -466,7 +404,7 @@ watch(
 
             <RouterLink
               :to="{ name: 'public.registerCustomer' }"
-              class="rounded-2xl bg-[#FF385C] hover:bg-[#E31C5F] px-5 py-3.5 text-center text-base font-bold text-white transition shadow-md hover:shadow-lg block active:scale-95 cursor-pointer"
+              class="rounded-2xl bg-(--color-primary) hover:opacity-90 px-5 py-3.5 text-center text-base font-bold text-white !text-white transition shadow-md hover:shadow-lg block active:scale-95 cursor-pointer"
               @click="closeMobileMenu"
             >
               {{ t("nav.register") }}
@@ -476,18 +414,18 @@ watch(
 
         <!-- Integrated Contacts at bottom of Mobile Drawer -->
         <div
-          class="border-t border-gray-100 dark:border-neutral-800 pt-6 mt-6 text-xs font-medium text-gray-500 space-y-2.5"
+          class="border-t border-(--color-border) pt-6 mt-6 text-xs font-medium text-(--color-muted) space-y-2.5"
         >
           <div class="flex items-center gap-3 px-2">
             <i
-              class="bi bi-geo-alt-fill text-[#FF385C] text-base"
+              class="bi bi-geo-alt-fill text-blue-600 dark:text-blue-500 text-base"
               aria-hidden="true"
             ></i>
             <span>Phnom Penh, Cambodia</span>
           </div>
           <div class="flex items-center gap-3 px-2">
             <i
-              class="bi bi-telephone-fill text-[#FF385C] text-base"
+              class="bi bi-telephone-fill text-blue-600 dark:text-blue-500 text-base"
               aria-hidden="true"
             ></i>
             <span>+855 12 345 678</span>

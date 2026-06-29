@@ -25,8 +25,6 @@ import LoadingSpinner from "@/shared/components/LoadingSpinner.vue";
 import ProfileSummaryCard from "@/modules/users/components/ProfileSummaryCard.vue";
 import ProfileCompletionCard from "@/modules/users/components/ProfileCompletionCard.vue";
 import ProfileDetailsForm from "@/modules/users/components/ProfileDetailsForm.vue";
-import PasswordChangeForm from "@/modules/users/components/PasswordChangeForm.vue";
-import SessionManagementCard from "@/modules/users/components/SessionManagementCard.vue";
 import UserAvatar from "@/shared/components/UserAvatar.vue";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { userService } from "@/modules/users/services/user.service";
@@ -34,6 +32,9 @@ import { useProfileImageUpload } from "@/modules/users/composables/useProfileIma
 import { useProfileValidation } from "@/modules/users/composables/useProfileValidation";
 import { getDashboardRouteByRole } from "@/shared/utils/roleRoutes";
 import { useToastStore } from "@/shared/store/toastStore";
+import PublicNavbar from "@/shared/components/PublicNavbar.vue";
+import PublicFooter from "@/shared/components/PublicFooter.vue";
+import BookingHistoryView from "@/modules/reservations/pages/BookingHistoryView.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -54,6 +55,44 @@ const leaveConfirmationOpen = ref(false);
 const pendingLeaveResolver = ref(null);
 const allowNextNavigation = ref(false);
 const activeAccountTab = ref("personal");
+
+// Social connections state and simulation logic
+const googleConnected = ref(localStorage.getItem("conn_google") === "true" || !!authStore.user?.google_id);
+const facebookConnected = ref(localStorage.getItem("conn_facebook") === "true");
+const connectingProvider = ref(null);
+const disconnectingProvider = ref(null);
+
+const handleConnect = (provider) => {
+  connectingProvider.value = provider;
+  setTimeout(() => {
+    if (provider === "google") {
+      googleConnected.value = true;
+      localStorage.setItem("conn_google", "true");
+    } else {
+      facebookConnected.value = true;
+      localStorage.setItem("conn_facebook", "true");
+    }
+    connectingProvider.value = null;
+    toastStore.success(`${provider.charAt(0).toUpperCase() + provider.slice(1)} account connected successfully!`);
+  }, 1200);
+};
+
+const triggerDisconnect = (provider) => {
+  disconnectingProvider.value = provider;
+};
+
+const confirmDisconnect = () => {
+  const provider = disconnectingProvider.value;
+  if (provider === "google") {
+    googleConnected.value = false;
+    localStorage.setItem("conn_google", "false");
+  } else {
+    facebookConnected.value = false;
+    localStorage.setItem("conn_facebook", "false");
+  }
+  disconnectingProvider.value = null;
+  toastStore.success(`${provider.charAt(0).toUpperCase() + provider.slice(1)} account disconnected.`);
+};
 const isEditing = ref(false);
 
 const {
@@ -231,32 +270,6 @@ const saveProfile = async () => {
   }
 };
 
-const changePassword = async () => {
-  savingPassword.value = true;
-  error.value = "";
-  success.value = "";
-
-  if (!validatePasswordForm()) {
-    savingPassword.value = false;
-    return;
-  }
-
-  try {
-    await userService.changePassword({
-      current_password: passwordForm.current_password,
-      new_password: passwordForm.new_password,
-    });
-
-    passwordForm.current_password = "";
-    passwordForm.new_password = "";
-    passwordForm.confirm_password = "";
-    toastStore.success(t("profile.toast.passwordChanged"));
-  } catch (requestError) {
-    toastStore.danger(requestError.message || t("profile.errors.changePassword"));
-  } finally {
-    savingPassword.value = false;
-  }
-};
 
 const resendVerificationEmail = async () => {
   resendingVerification.value = true;
@@ -393,7 +406,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <main class="min-h-screen bg-white dark:bg-neutral-950 px-4 py-16 text-gray-900 dark:text-white sm:px-6 lg:px-8 font-sans transition-colors duration-300">
+  <div class="min-h-screen bg-(--color-page) flex flex-col">
+    <PublicNavbar />
+    <main class="flex-1 min-h-screen pt-32 pb-16 px-4 text-(--color-text) sm:px-6 lg:px-8 font-sans transition-colors duration-300">
     <section class="mx-auto max-w-6xl">
       <AppAlert
         v-if="error"
@@ -417,7 +432,7 @@ onUnmounted(() => {
 
       <div
         v-if="loading"
-        class="rounded-3xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-12 text-center shadow-xl"
+        class="rounded-3xl border border-(--color-border) bg-(--color-surface) p-12 text-center shadow-xl"
       >
         <LoadingSpinner :label="t('profile.loading')" />
       </div>
@@ -425,8 +440,8 @@ onUnmounted(() => {
       <!-- Main Airbnb Split Layout -->
       <div v-else class="grid gap-12 lg:grid-cols-[280px_1fr] items-start">
         <!-- Left Navigation Sidebar -->
-        <aside class="lg:sticky lg:top-28 lg:self-start space-y-6 pr-4 lg:border-r border-gray-200 dark:border-neutral-800/80 lg:min-h-[60vh]">
-          <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-8">
+        <aside class="lg:sticky lg:top-28 lg:self-start space-y-6 pr-4 lg:border-r border-(--color-border) lg:min-h-[60vh]">
+          <h1 class="text-3xl font-bold tracking-tight text-(--color-text) mb-8">
             Profile
           </h1>
 
@@ -435,7 +450,7 @@ onUnmounted(() => {
             <button
               type="button"
               class="w-full flex items-center gap-4 rounded-2xl py-3 px-4 text-left transition-all duration-200 cursor-pointer"
-              :class="[activeAccountTab === 'personal' ? 'bg-gray-100 dark:bg-neutral-800 font-bold text-gray-900 dark:text-white' : 'hover:bg-gray-50 dark:hover:bg-neutral-800/50 font-semibold text-gray-700 dark:text-gray-200']"
+              :class="[activeAccountTab === 'personal' ? 'bg-(--color-surface-soft) font-bold text-(--color-text)' : 'hover:bg-(--color-surface-soft)/60 font-semibold text-(--color-muted)']"
               @click="activeAccountTab = 'personal'"
             >
               <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-pink-100 text-rose-600 font-bold text-sm shadow-xs">
@@ -445,39 +460,31 @@ onUnmounted(() => {
             </button>
 
             <!-- Past trips -->
-            <RouterLink
-              :to="{ name: 'customer.reservations' }"
-              class="w-full flex items-center gap-4 rounded-2xl py-3 px-4 text-left transition-all duration-200 hover:bg-gray-50 dark:hover:bg-neutral-800/50 font-semibold text-gray-700 dark:text-gray-200 group"
+            <button
+              type="button"
+              class="w-full flex items-center gap-4 rounded-2xl py-3 px-4 text-left transition-all duration-200 cursor-pointer group"
+              :class="[activeAccountTab === 'trips' ? 'bg-(--color-surface-soft) font-bold text-(--color-text)' : 'hover:bg-(--color-surface-soft)/60 font-semibold text-(--color-muted)']"
+              @click="activeAccountTab = 'trips'"
             >
-              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-50 dark:bg-neutral-800 text-amber-600 font-bold text-lg shadow-xs group-hover:scale-105 transition-transform">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-(--color-surface-soft) text-amber-600 font-bold text-lg shadow-xs group-hover:scale-105 transition-transform">
                 💼
               </span>
               <span>Past trips</span>
-            </RouterLink>
+            </button>
 
             <!-- Connections -->
-            <RouterLink
-              :to="{ name: 'customer.wishlist' }"
-              class="w-full flex items-center gap-4 rounded-2xl py-3 px-4 text-left transition-all duration-200 hover:bg-gray-50 dark:hover:bg-neutral-800/50 font-semibold text-gray-700 dark:text-gray-200 group"
+            <button
+              type="button"
+              class="w-full flex items-center gap-4 rounded-2xl py-3 px-4 text-left transition-all duration-200 cursor-pointer group"
+              :class="[activeAccountTab === 'connections' ? 'bg-(--color-surface-soft) font-bold text-(--color-text)' : 'hover:bg-(--color-surface-soft)/60 font-semibold text-(--color-muted)']"
+              @click="activeAccountTab = 'connections'"
             >
-              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 dark:bg-neutral-800 text-blue-600 font-bold text-lg shadow-xs group-hover:scale-105 transition-transform">
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-(--color-surface-soft) text-blue-600 font-bold text-lg shadow-xs group-hover:scale-105 transition-transform">
                 👥
               </span>
               <span>Connections</span>
-            </RouterLink>
-
-            <!-- Security & Preferences -->
-            <button
-              type="button"
-              class="w-full flex items-center gap-4 rounded-2xl py-3 px-4 text-left transition-all duration-200 cursor-pointer"
-              :class="[activeAccountTab === 'security' ? 'bg-gray-100 dark:bg-neutral-800 font-bold text-gray-900 dark:text-white' : 'hover:bg-gray-50 dark:hover:bg-neutral-800/50 font-semibold text-gray-700 dark:text-gray-200']"
-              @click="activeAccountTab = 'security'"
-            >
-              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 dark:bg-neutral-800 text-emerald-600 font-bold text-lg shadow-xs">
-                🔒
-              </span>
-              <span>Login & security</span>
             </button>
+
           </nav>
         </aside>
 
@@ -489,14 +496,14 @@ onUnmounted(() => {
           >
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div class="flex items-start gap-4">
-                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white dark:bg-neutral-900 text-amber-500 border border-amber-500/30 shadow-xs">
+                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-(--color-surface) text-amber-500 border border-amber-500/30 shadow-xs">
                   <ShieldCheckIcon class="h-6 w-6" />
                 </span>
                 <div>
-                  <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+                  <h2 class="text-lg font-bold text-(--color-text)">
                     {{ t("profile.emailVerification.title") }}
                   </h2>
-                  <p class="mt-1 text-xs leading-relaxed text-gray-600 dark:text-gray-400 font-medium">
+                  <p class="mt-1 text-xs leading-relaxed text-(--color-muted) font-medium">
                     {{ t("profile.emailVerification.description") }}
                   </p>
                 </div>
@@ -519,10 +526,10 @@ onUnmounted(() => {
           <!-- Personal / About me view -->
           <section v-if="activeAccountTab === 'personal'" id="personal-details">
             <div class="flex items-center gap-4 mb-10">
-              <h1 class="text-3xl font-bold text-gray-900 dark:text-white">About me</h1>
+              <h1 class="text-3xl font-bold text-(--color-text)">About me</h1>
               <button
                 type="button"
-                class="bg-gray-100 hover:bg-gray-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-gray-900 dark:text-white text-xs font-bold px-4 py-1.5 rounded-full transition-all duration-200 cursor-pointer"
+                class="bg-(--color-surface-soft) hover:opacity-90 text-(--color-text) text-xs font-bold px-4 py-1.5 rounded-full transition-all duration-200 cursor-pointer"
                 @click="isEditing = !isEditing"
               >
                 {{ isEditing ? 'Cancel' : 'Edit' }}
@@ -533,7 +540,7 @@ onUnmounted(() => {
               <!-- Airbnb Card & Callout Section -->
               <div class="flex flex-col lg:flex-row gap-12 items-start mb-12">
                 <!-- Profile Identity Card -->
-                <div class="bg-white dark:bg-neutral-900 rounded-[32px] p-8 shadow-[0_6px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_6px_20px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-neutral-800 flex flex-col items-center justify-center text-center w-full max-w-[320px] min-h-[240px] transition-all duration-300 hover:shadow-[0_12px_30px_rgba(0,0,0,0.12)] group">
+                <div class="bg-(--color-surface) rounded-[32px] p-8 shadow-[0_6px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_6px_20px_rgba(0,0,0,0.4)] border border-(--color-border) flex flex-col items-center justify-center text-center w-full max-w-[320px] min-h-[240px] transition-all duration-300 hover:shadow-[0_12px_30px_rgba(0,0,0,0.12)] group">
                   <div class="relative mb-5">
                     <button
                       type="button"
@@ -548,19 +555,19 @@ onUnmounted(() => {
                       />
                     </button>
                   </div>
-                  <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">{{ userLabel }}</h2>
-                  <p class="text-xs text-gray-500 font-normal">Guest</p>
+                  <h2 class="text-2xl font-bold text-(--color-text) mb-1">{{ userLabel }}</h2>
+                  <p class="text-xs text-(--color-muted) font-normal">Guest</p>
                 </div>
 
                 <!-- Complete your profile callout -->
                 <div class="flex-1 max-w-md py-4">
-                  <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">Complete your profile</h3>
-                  <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-6 font-normal">
+                  <h3 class="text-2xl font-bold text-(--color-text) mb-3">Complete your profile</h3>
+                  <p class="text-sm text-(--color-muted) leading-relaxed mb-6 font-normal">
                     Your Airbnb profile is an important part of every reservation. Complete yours to help other hosts and guests get to know you.
                   </p>
                   <button
                     type="button"
-                    class="bg-[#FF385C] hover:bg-[#E31C5F] text-white font-bold px-7 py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 active:scale-95 text-sm cursor-pointer"
+                    class="bg-(--color-primary) hover:opacity-90 text-white font-bold px-7 py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 active:scale-95 text-sm cursor-pointer"
                     @click="isEditing = true"
                   >
                     Get started
@@ -569,13 +576,16 @@ onUnmounted(() => {
               </div>
 
               <!-- Divider Line -->
-              <div class="border-b border-gray-200 dark:border-neutral-800 my-10 w-full"></div>
+              <div class="border-b border-(--color-border) my-10 w-full"></div>
 
               <!-- Reviews Row -->
-              <div class="flex items-center gap-4 text-base font-semibold text-gray-900 dark:text-white hover:underline cursor-pointer py-2 group">
-                <ChatBubbleLeftEllipsisIcon class="h-6 w-6 text-gray-700 dark:text-gray-300 group-hover:text-[#FF385C] transition-colors" />
+              <RouterLink
+                :to="{ name: 'customer.reviews' }"
+                class="flex items-center gap-4 text-base font-semibold text-(--color-text) hover:underline cursor-pointer py-2 group"
+              >
+                <ChatBubbleLeftEllipsisIcon class="h-6 w-6 text-(--color-muted) group-hover:text-[#FF385C] transition-colors" />
                 <span>Show reviews I've written</span>
-              </div>
+              </RouterLink>
             </div>
 
             <!-- Expandable Edit Form -->
@@ -585,28 +595,117 @@ onUnmounted(() => {
                 :errors="profileErrors"
                 :saving="savingProfile"
                 :has-changes="hasProfileChanges"
+                :user-name="userLabel"
+                :avatar-src="avatarPreviewUrl"
+                :has-custom-avatar="!!(user?.profile_image_url)"
+                :uploading-image="uploadingImage"
                 @submit="saveProfile"
+                @file-select="handleProfileImageSelect"
+                @delete-click="removeProfileImage"
               />
             </div>
           </section>
 
-          <!-- Security view -->
-          <section v-else-if="activeAccountTab === 'security'" id="security" class="space-y-8">
+
+          <!-- Trips view -->
+          <section v-else-if="activeAccountTab === 'trips'" id="trips" class="space-y-8 animate-fadeIn">
+            <BookingHistoryView :hideNavbarAndFooter="true" />
+          </section>
+
+          <!-- Connections view -->
+          <section v-else-if="activeAccountTab === 'connections'" id="connections" class="space-y-8 animate-fadeIn max-w-2xl">
             <div>
-              <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">{{ t("profile.securityTitle") }}</h2>
-              <p class="mt-2 max-w-3xl text-base leading-relaxed text-gray-600 dark:text-gray-400 font-medium">
-                {{ t("profile.securityDesc") }}
+              <h2 class="text-3xl font-black tracking-tight text-(--color-text)">Social Connections</h2>
+              <p class="mt-2 text-sm leading-relaxed text-(--color-muted) font-semibold">
+                Manage your connected accounts. Log in instantly and secure your Srok-Yerng Booking account.
               </p>
             </div>
 
-            <PasswordChangeForm
-              :form="passwordForm"
-              :errors="passwordErrors"
-              :saving="savingPassword"
-              @submit="changePassword"
-            />
+            <div class="border border-(--color-border) bg-(--color-surface) rounded-[28px] overflow-hidden divide-y divide-(--color-border)">
+              <!-- Google Account Card -->
+              <div class="p-6 flex items-start justify-between gap-6">
+                <div class="flex items-start gap-4">
+                  <div class="h-10 w-10 shrink-0 bg-red-500/5 dark:bg-red-500/10 rounded-full flex items-center justify-center border border-red-500/10">
+                    <svg class="h-5 w-5 text-red-500 fill-current" viewBox="0 0 24 24">
+                      <path d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.113-5.111 4.113-3.418 0-6.19-2.772-6.19-6.19 0-3.418 2.772-6.19 6.19-6.19 1.483 0 2.844.522 3.917 1.39l3.138-3.138C19.043 2.122 15.844 1 12.24 1 6.033 1 1 6.033 1 12.24s5.033 11.24 11.24 11.24c6.478 0 11.24-4.553 11.24-11.24 0-.79-.086-1.541-.24-2.24H12.24z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 class="text-base font-bold text-(--color-text)">Google Account</h3>
+                    <p class="text-xs text-(--color-muted) mt-1 font-semibold leading-relaxed">
+                      Allows one-tap login and registration. Safe and secure.
+                    </p>
+                    <div v-if="googleConnected" class="inline-flex items-center gap-1.5 mt-2 text-xs font-bold text-emerald-600 dark:text-emerald-500 bg-emerald-500/5 px-2.5 py-1 rounded-full border border-emerald-500/10">
+                      <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      Connected
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <button
+                    v-if="googleConnected"
+                    type="button"
+                    @click="triggerDisconnect('google')"
+                    class="px-4 py-2 border border-(--color-border) hover:bg-(--color-surface-soft) text-(--color-text) text-xs font-bold rounded-xl transition cursor-pointer"
+                  >
+                    Disconnect
+                  </button>
+                  <button
+                    v-else
+                    type="button"
+                    :disabled="connectingProvider === 'google'"
+                    @click="handleConnect('google')"
+                    class="px-5 py-2.5 bg-(--color-primary) hover:opacity-90 text-white text-xs font-bold rounded-xl shadow-xs transition active:scale-95 cursor-pointer flex items-center gap-1.5"
+                  >
+                    <span v-if="connectingProvider === 'google'" class="h-3 w-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    <span>{{ connectingProvider === 'google' ? 'Connecting...' : 'Connect' }}</span>
+                  </button>
+                </div>
+              </div>
 
-            <SessionManagementCard />
+              <!-- Facebook Account Card -->
+              <div class="p-6 flex items-start justify-between gap-6">
+                <div class="flex items-start gap-4">
+                  <div class="h-10 w-10 shrink-0 bg-blue-600/5 dark:bg-blue-600/10 rounded-full flex items-center justify-center border border-blue-600/10">
+                    <svg class="h-5 w-5 text-blue-600 fill-current" viewBox="0 0 24 24">
+                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 class="text-base font-bold text-(--color-text)">Facebook Account</h3>
+                    <p class="text-xs text-(--color-muted) mt-1 font-semibold leading-relaxed">
+                      Link your Facebook profile to instantly log into your bookings.
+                    </p>
+                    <div v-if="facebookConnected" class="inline-flex items-center gap-1.5 mt-2 text-xs font-bold text-emerald-600 dark:text-emerald-500 bg-emerald-500/5 px-2.5 py-1 rounded-full border border-emerald-500/10">
+                      <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      Connected
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <button
+                    v-if="facebookConnected"
+                    type="button"
+                    @click="triggerDisconnect('facebook')"
+                    class="px-4 py-2 border border-(--color-border) hover:bg-(--color-surface-soft) text-(--color-text) text-xs font-bold rounded-xl transition cursor-pointer"
+                  >
+                    Disconnect
+                  </button>
+                  <button
+                    v-else
+                    type="button"
+                    :disabled="connectingProvider === 'facebook'"
+                    @click="handleConnect('facebook')"
+                    class="px-5 py-2.5 bg-(--color-primary) hover:opacity-90 text-white text-xs font-bold rounded-xl shadow-xs transition active:scale-95 cursor-pointer flex items-center gap-1.5"
+                  >
+                    <span v-if="connectingProvider === 'facebook'" class="h-3 w-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    <span>{{ connectingProvider === 'facebook' ? 'Connecting...' : 'Connect' }}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </section>
         </div>
       </div>
@@ -615,10 +714,10 @@ onUnmounted(() => {
     <AppModal
       :open="leaveConfirmationOpen"
       :title="t('profile.leave.title')"
-      panel-class="!rounded-3xl border border-gray-200 dark:border-neutral-800 shadow-2xl backdrop-blur-2xl bg-white dark:bg-neutral-900"
+      panel-class="!rounded-3xl border border-(--color-border) shadow-2xl backdrop-blur-2xl bg-(--color-surface)"
       @close="resolveLeaveConfirmation(false)"
     >
-      <p class="text-base leading-relaxed text-gray-600 dark:text-gray-400 font-medium py-2">
+      <p class="text-base leading-relaxed text-(--color-muted) font-medium py-2">
         {{ t("profile.leave.message") }}
       </p>
 
@@ -645,11 +744,11 @@ onUnmounted(() => {
     <AppModal
       :open="cropModalOpen"
       :title="t('profile.summary.cropImage')"
-      panel-class="max-w-xl !rounded-3xl border border-gray-200 dark:border-neutral-800 shadow-[0_30px_100px_rgba(0,0,0,0.5)] backdrop-blur-2xl bg-white dark:bg-neutral-900 transition-all duration-300"
+      panel-class="max-w-xl !rounded-3xl border border-(--color-border) shadow-[0_30px_100px_rgba(0,0,0,0.5)] backdrop-blur-2xl bg-(--color-surface) transition-all duration-300"
       @close="closeCropModal"
     >
       <div class="space-y-6 py-2">
-        <p class="text-base leading-relaxed text-gray-600 dark:text-gray-400 font-medium">
+        <p class="text-base leading-relaxed text-(--color-muted) font-medium">
           {{ t("profile.summary.cropDescription") }}
         </p>
 
@@ -684,5 +783,38 @@ onUnmounted(() => {
         </AppButton>
       </template>
     </AppModal>
+
+    <!-- Disconnect Social Confirmation Modal -->
+    <AppModal
+      :open="!!disconnectingProvider"
+      title="Disconnect account?"
+      panel-class="!rounded-3xl border border-(--color-border) shadow-2xl backdrop-blur-2xl bg-(--color-surface) max-w-sm"
+      @close="disconnectingProvider = null"
+    >
+      <p class="text-base leading-relaxed text-(--color-muted) font-medium py-2">
+        Are you sure you want to disconnect your Srok-Yerng Booking account from this {{ disconnectingProvider }} account? You will no longer be able to log in using it.
+      </p>
+
+      <template #footer>
+        <AppButton
+          type="button"
+          variant="secondary"
+          class="!rounded-2xl font-bold px-6 py-3.5 shadow-xs hover:scale-105 active:scale-95 transition-all duration-200"
+          @click="disconnectingProvider = null"
+        >
+          Cancel
+        </AppButton>
+        <AppButton
+          type="button"
+          variant="danger"
+          class="!rounded-2xl font-bold px-6 py-3.5 shadow-md hover:scale-105 active:scale-95 transition-all duration-200 bg-[#FF385C] hover:bg-[#E31C5F] text-white"
+          @click="confirmDisconnect"
+        >
+          Disconnect
+        </AppButton>
+      </template>
+    </AppModal>
   </main>
+    <PublicFooter />
+  </div>
 </template>

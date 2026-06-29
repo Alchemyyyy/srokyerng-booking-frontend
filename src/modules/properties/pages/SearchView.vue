@@ -3,6 +3,7 @@ import { computed, onMounted, onBeforeUnmount, ref, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { propertyApi } from "@/modules/properties/api/property.api";
+import { formatPrice } from "@/shared/utils/currency";
 
 import { usePropertyStore } from "../store/propertyStore";
 import { useWishlistStore } from "@/modules/wishlists/store/wishlistStore";
@@ -553,7 +554,7 @@ onBeforeUnmount(() => {
 
                   <div class="text-right shrink-0">
                     <div class="flex items-baseline justify-end gap-1 group-hover:scale-105 transition-transform origin-right duration-200">
-                      <span class="text-xl font-black text-(--color-text)">${{ property.price }}</span>
+                      <span class="text-xl font-black text-(--color-text)">{{ formatPrice(property.price) }}</span>
                       <span class="text-xs font-bold text-(--color-muted)">/ {{ safeT("propertiesPage.night", "night") }}</span>
                     </div>
                   </div>
@@ -615,7 +616,7 @@ onBeforeUnmount(() => {
                   <p class="text-[11px] font-medium text-(--color-muted) truncate">{{ property.location || property.city }}</p>
                 </div>
                 <div class="flex items-center justify-between mt-1">
-                  <span class="text-xs font-bold text-(--color-text)">${{ property.price }}/night</span>
+                  <span class="text-xs font-bold text-(--color-text)">{{ formatPrice(property.price) }}/{{ safeT("propertiesPage.night", "night") }}</span>
                   <span class="inline-flex items-center gap-1 text-xs font-bold text-white bg-(--color-primary) px-1.5 py-0.5 rounded-sm" style="border-radius: var(--radius-sm);">
                     ★ {{ property.rating > 0 ? Number(property.rating).toFixed(1) : safeT("propertiesPage.new", "New") }}
                   </span>
@@ -651,7 +652,7 @@ onBeforeUnmount(() => {
                 @mouseleave="hoveredPropertyId = null"
                 @click="openProperty(property.id)"
               >
-                <span>${{ property.price }}</span>
+                <span>{{ formatPrice(property.price) }}</span>
               </button>
             </div>
           </div>

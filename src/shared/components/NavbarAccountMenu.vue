@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onUnmounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { RouterLink, useRoute, useRouter } from "vue-router";
 import {
@@ -17,8 +17,11 @@ import {
   GlobeAltIcon,
   ChatBubbleOvalLeftIcon,
   ArrowsRightLeftIcon,
+  MoonIcon,
+  SunIcon,
 } from "@heroicons/vue/24/outline";
 import { useAuthStore } from "@/modules/auth/store/authStore";
+import { useNotificationStore } from "@/modules/notifications/store/notificationStore";
 import {
   getDashboardRouteByRole,
   getNotificationRouteByRole,
@@ -26,6 +29,9 @@ import {
   getSettingsRouteByRole,
 } from "@/shared/utils/roleRoutes";
 import UserAvatar from "@/shared/components/UserAvatar.vue";
+import LanguageToggle from "@/shared/components/LanguageToggle.vue";
+import { useNavbarAppearance } from "@/shared/composables/useNavbarAppearance";
+import { setLocale } from "@/app/i18n";
 
 const isActiveRoute = (target) => {
   if (!target) return false;
@@ -44,9 +50,43 @@ defineProps({
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
-const { t } = useI18n({ useScope: "global" });
+const { t, locale } = useI18n({ useScope: "global" });
+const { currentTheme, toggleTheme } = useNavbarAppearance(route);
+const notificationStore = useNotificationStore();
+
+watch(
+  () => authStore.isAuthenticated,
+  (newVal) => {
+    if (newVal) {
+      notificationStore.fetchUnreadCount();
+    }
+  },
+  { immediate: true }
+);
+
+const toggleLanguage = () => {
+  setLocale(locale.value === "en" ? "km" : "en");
+};
 
 const menuOpen = ref(false);
+const menuRef = ref(null);
+
+const handleDocumentClick = (e) => {
+  if (menuOpen.value && menuRef.value && !menuRef.value.contains(e.target)) {
+    closeMenu();
+  }
+};
+
+onMounted(() => {
+  document.addEventListener("click", handleDocumentClick);
+  if (authStore.isAuthenticated) {
+    notificationStore.fetchUnreadCount();
+  }
+});
+
+onUnmounted(() => {
+  document.removeEventListener("click", handleDocumentClick);
+});
 
 const userLabel = computed(() => {
   return (
@@ -165,7 +205,7 @@ watch(
 </script>
 
 <template>
-  <div class="relative">
+  <div ref="menuRef" class="relative">
     <div class="flex items-center gap-3">
       <!-- Profile Avatar Circle Button -->
       <button
@@ -191,10 +231,10 @@ watch(
       <!-- Hamburger Menu Circle Button -->
       <button
         type="button"
-        class="group flex h-11 w-11 items-center justify-center rounded-full border transition-all duration-300 active:scale-95 hover:shadow-md cursor-pointer"
+        class="group relative flex h-11 w-11 items-center justify-center rounded-full border transition-all duration-300 active:scale-95 hover:shadow-md cursor-pointer"
         :class="
           solid
-            ? 'border-(--color-border)/60 bg-gray-100 dark:bg-neutral-800 text-(--color-text) hover:border-(--color-primary)/40 hover:bg-gray-200 dark:hover:bg-neutral-700 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]'
+            ? 'border-(--color-border)/60 bg-(--color-surface-soft) text-(--color-text) hover:border-(--color-primary)/40 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]'
             : 'border-white/20 bg-white/10 backdrop-blur-md text-white hover:bg-white/20 hover:border-white/30 hover:shadow-[0_4px_15px_rgba(255,255,255,0.1)]'
         "
         :aria-expanded="menuOpen"
@@ -205,15 +245,14 @@ watch(
           class="h-5 w-5 transition-transform duration-300 group-hover:scale-110"
           :class="menuOpen ? 'text-(--color-primary)' : 'text-(--color-text)'"
         />
+        <!-- Red Notification Dot Indicator -->
+        <span
+          v-if="notificationStore.unreadCount > 0"
+          class="absolute top-2 right-2 flex h-2.5 w-2.5 rounded-full bg-rose-500 ring-2 ring-(--color-surface)"
+        ></span>
       </button>
     </div>
 
-    <!-- Full screen invisible backdrop to close menu when clicking outside -->
-    <div
-      v-if="menuOpen"
-      class="fixed inset-0 z-40 bg-transparent"
-      @click="closeMenu"
-    ></div>
 
     <!-- Floating Airbnb Dropdown Menu -->
     <Transition
@@ -226,7 +265,7 @@ watch(
     >
       <div
         v-if="menuOpen"
-        class="absolute right-0 top-14 z-50 w-80 rounded-3xl bg-white dark:bg-neutral-900 py-3 shadow-[0_10px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-neutral-800 text-sm font-semibold text-gray-800 dark:text-gray-200"
+        class="absolute right-0 top-14 z-50 w-80 max-h-[80vh] overflow-y-auto rounded-3xl bg-(--color-surface) py-3 shadow-[0_10px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-(--color-border) text-sm font-semibold text-(--color-text)"
         role="menu"
         aria-orientation="vertical"
         aria-labelledby="user-menu-button"
@@ -235,126 +274,140 @@ watch(
         <RouterLink
           v-if="dashboardRoute"
           :to="dashboardRoute"
-          class="flex items-center gap-4 px-5 py-3 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+          class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
           @click="closeMenu"
         >
-          <ArrowsRightLeftIcon class="h-5 w-5 text-gray-700 dark:text-gray-300" />
+          <ArrowsRightLeftIcon class="h-5 w-5 text-(--color-text)" />
           <span>{{ isCustomer ? 'Switch to hosting' : 'Dashboard' }}</span>
         </RouterLink>
 
-        <div class="my-2 border-b border-gray-100 dark:border-neutral-800"></div>
+        <div v-if="dashboardRoute" class="my-2 border-b border-(--color-border)"></div>
 
         <!-- Trips & Interaction Section -->
         <RouterLink
           :to="{ name: 'customer.wishlist' }"
-          class="flex items-center gap-4 px-5 py-3 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+          class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
           @click="closeMenu"
         >
-          <HeartIcon class="h-5 w-5 text-gray-700 dark:text-gray-300" />
+          <HeartIcon class="h-5 w-5 text-(--color-text)" />
           <span>Wishlists</span>
         </RouterLink>
 
         <RouterLink
-          :to="{ name: 'customer.reservations' }"
-          class="flex items-center gap-4 px-5 py-3 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+          :to="{ name: 'customer.booking-history' }"
+          class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
           @click="closeMenu"
         >
-          <Squares2X2Icon class="h-5 w-5 text-gray-700 dark:text-gray-300" />
+          <Squares2X2Icon class="h-5 w-5 text-(--color-text)" />
           <span>Trips</span>
         </RouterLink>
 
-        <div
-          class="flex items-center gap-4 px-5 py-3 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+        <RouterLink
+          :to="{ name: 'customer.chats' }"
+          class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
           @click="closeMenu"
         >
-          <ChatBubbleOvalLeftIcon class="h-5 w-5 text-gray-700 dark:text-gray-300" />
+          <ChatBubbleOvalLeftIcon class="h-5 w-5 text-(--color-text)" />
           <span>Messages</span>
-        </div>
+        </RouterLink>
 
         <RouterLink
           v-if="profileRoute"
           :to="profileRoute"
-          class="flex items-center gap-4 px-5 py-3 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+          class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
           @click="closeMenu"
         >
-          <UserCircleIcon class="h-5 w-5 text-gray-700 dark:text-gray-300" />
+          <UserCircleIcon class="h-5 w-5 text-(--color-text)" />
           <span>Profile</span>
         </RouterLink>
 
-        <div class="my-2 border-b border-gray-100 dark:border-neutral-800"></div>
+        <div class="my-2 border-b border-(--color-border)"></div>
 
         <!-- Account & Preferences Section -->
         <RouterLink
           v-if="notificationRoute"
           :to="notificationRoute"
-          class="flex items-center gap-4 px-5 py-3 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+          class="flex items-center justify-between px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
           @click="closeMenu"
         >
-          <BellIcon class="h-5 w-5 text-gray-700 dark:text-gray-300" />
-          <span>Notifications</span>
+          <div class="flex items-center gap-4">
+            <BellIcon class="h-5 w-5 text-(--color-text)" />
+            <span>Notifications</span>
+          </div>
+          <!-- Dropdown Item Badge Unread Count -->
+          <span
+            v-if="notificationStore.unreadCount > 0"
+            class="min-w-5 h-5 px-1.5 flex items-center justify-center rounded-full bg-rose-500 text-white text-[10px] font-black"
+          >
+            {{ notificationStore.unreadCount }}
+          </span>
         </RouterLink>
 
         <RouterLink
           v-if="settingsRoute"
           :to="settingsRoute"
-          class="flex items-center gap-4 px-5 py-3 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+          class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
           @click="closeMenu"
         >
-          <Cog6ToothIcon class="h-5 w-5 text-gray-700 dark:text-gray-300" />
+          <Cog6ToothIcon class="h-5 w-5 text-(--color-text)" />
           <span>Account settings</span>
         </RouterLink>
 
+        <!-- Theme Switcher Row -->
         <div
-          class="flex items-center gap-4 px-5 py-3 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-          @click="closeMenu"
+          class="flex items-center justify-between px-5 py-2.5 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+          @click.stop="toggleTheme"
         >
-          <GlobeAltIcon class="h-5 w-5 text-gray-700 dark:text-gray-300" />
-          <span>Languages & currency</span>
+          <div class="flex items-center gap-4">
+            <MoonIcon v-if="currentTheme === 'dark'" class="h-5 w-5 text-(--color-text)" />
+            <SunIcon v-else class="h-5 w-5 text-(--color-text)" />
+            <span>Theme</span>
+          </div>
+          <span class="text-xs text-(--color-muted) capitalize font-medium">{{ currentTheme }}</span>
+        </div>
+
+        <!-- Language Switcher Row -->
+        <div
+          class="flex items-center justify-between px-5 py-2 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+          @click.stop="toggleLanguage"
+        >
+          <div class="flex items-center gap-4">
+            <GlobeAltIcon class="h-5 w-5 text-(--color-text)" />
+            <span>Language</span>
+          </div>
+          <LanguageToggle @click.stop />
         </div>
 
         <RouterLink
           :to="{ name: 'public.contact' }"
-          class="flex items-center gap-4 px-5 py-3 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+          class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
           @click="closeMenu"
         >
-          <QuestionMarkCircleIcon class="h-5 w-5 text-gray-700 dark:text-gray-300" />
+          <QuestionMarkCircleIcon class="h-5 w-5 text-(--color-text)" />
           <span>Help Center</span>
         </RouterLink>
 
-        <div class="my-2 border-b border-gray-100 dark:border-neutral-800"></div>
+        <div class="my-2 border-b border-(--color-border)"></div>
 
         <!-- Become a host callout -->
         <RouterLink
           :to="{ name: 'public.listProperty' }"
-          class="flex items-center justify-between px-5 py-3 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer group"
+          class="flex items-center justify-between px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer group"
           @click="closeMenu"
         >
           <div>
-            <div class="font-bold text-gray-900 dark:text-white">Become a host</div>
-            <div class="text-xs text-gray-500 font-normal mt-0.5">It's easy to start hosting and earn extra income.</div>
+            <div class="font-bold text-(--color-text)">Become a host</div>
+            <div class="text-xs text-(--color-muted) font-normal mt-0.5">It's easy to start hosting and earn extra income.</div>
           </div>
           <span class="text-2xl group-hover:scale-110 transition-transform">🏠</span>
         </RouterLink>
 
-        <div class="my-2 border-b border-gray-100 dark:border-neutral-800"></div>
 
-        <!-- Referral & Extra Links -->
-        <div class="px-5 py-2.5 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer font-normal" @click="closeMenu">
-          Refer a Host
-        </div>
-        <div class="px-5 py-2.5 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer font-normal" @click="closeMenu">
-          Find a co-host
-        </div>
-        <div class="px-5 py-2.5 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer font-normal" @click="closeMenu">
-          Gift cards
-        </div>
-
-        <div class="my-2 border-b border-gray-100 dark:border-neutral-800"></div>
 
         <!-- Log out -->
         <button
           type="button"
-          class="w-full text-left px-5 py-3 hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer font-normal text-gray-900 dark:text-white block"
+          class="w-full text-left px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer font-normal text-(--color-text) block"
           @click="handleLogout"
         >
           Log out
@@ -363,7 +416,6 @@ watch(
     </Transition>
   </div>
 </template>
-
 <style scoped>
 .account-drawer-fade-enter-active,
 .account-drawer-fade-leave-active {

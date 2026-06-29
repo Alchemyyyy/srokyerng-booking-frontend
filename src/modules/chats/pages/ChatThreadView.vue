@@ -1,7 +1,18 @@
-<template>
-  <ComingSoonView title="Chat thread" description="Message thread UI will be added here." />
-</template>
-
 <script setup>
-import ComingSoonView from "@/shared/components/ComingSoonView.vue";
+import { computed } from "vue";
+import { useRoute } from "vue-router";
+import PublicNavbar from "@/shared/components/PublicNavbar.vue";
+import ChatPane from "../components/ChatPane.vue";
+
+const route = useRoute();
+const conversationId = computed(() => route.params.conversationId);
 </script>
+
+<template>
+  <div class="h-screen bg-(--color-page) text-(--color-text) flex flex-col font-sans overflow-hidden">
+    <PublicNavbar />
+    <main class="flex-grow pt-24 overflow-hidden">
+      <ChatPane :conversation-id="conversationId" :show-back-button="true" />
+    </main>
+  </div>
+</template>

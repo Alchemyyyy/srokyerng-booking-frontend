@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
+import { formatPrice } from "@/shared/utils/currency";
 import {
   MapPinIcon,
   StarIcon,
@@ -33,6 +34,9 @@ import { usePropertyStore } from "../store/propertyStore";
 import { propertyApi } from "../api/property.api";
 import { useWishlistStore } from "@/modules/wishlists/store/wishlistStore";
 import { useToastStore } from "@/shared/store/toastStore";
+import { useAuthStore } from "@/modules/auth/store/authStore";
+import { chatService } from "@/modules/chats/services/chat.service";
+import { ChatBubbleOvalLeftIcon } from "@heroicons/vue/24/outline";
 import http from "@/app/api/http";
 
 const { t } = useI18n({ useScope: "global" });
@@ -41,6 +45,7 @@ const router = useRouter();
 const propertyStore = usePropertyStore();
 const wishlistStore = useWishlistStore();
 const toastStore = useToastStore();
+const authStore = useAuthStore();
 const rooms = ref([]);
 const amenities = ref([]);
 
@@ -117,6 +122,45 @@ const hostInitials = computed(() => {
   }
   return name.slice(0, 2).toUpperCase();
 });
+
+const contactHost = async () => {
+  if (!authStore.isAuthenticated) {
+    router.push({ name: "public.loginCustomer" });
+    return;
+  }
+
+  const p = property.value;
+  if (!p) return;
+
+  try {
+    const convoData = {
+      property_id: p.id,
+      initial_message: `Hi ${hostName.value}! I am interested in booking "${p.property_name}".`,
+    };
+    
+    const response = await chatService.createConversation(convoData);
+    const newConvo = response.data || response;
+    
+    router.push({ name: "customer.chat-detail", params: { conversationId: newConvo.id } });
+  } catch (err) {
+    if (err.status === 409 || err.message?.includes("exists")) {
+      try {
+        const response = await chatService.getConversations();
+        const convos = response.data || response || [];
+        const existing = convos.find(
+          (c) => c.property_id === Number(p.id)
+        );
+        if (existing) {
+          router.push({ name: "customer.chat-detail", params: { conversationId: existing.id } });
+          return;
+        }
+      } catch (innerErr) {
+        console.error("Failed to fallback search convo", innerErr);
+      }
+    }
+    toastStore.danger(err.message || "Failed to start conversation");
+  }
+};
 
 const roomFeatures = computed(() => {
   const r = selectedRoom.value;
@@ -439,7 +483,7 @@ const displayedAmenities = computed(() => amenities.value.slice(0, 6));
           <div class="hidden md:flex items-center gap-6 shrink-0 border-l border-(--color-border)/60 pl-6 pr-1">
             <div class="flex items-baseline gap-1.5 text-right">
               <span class="text-xs font-bold text-(--color-muted) uppercase tracking-wider">From</span>
-              <span class="text-2xl font-black text-(--color-text)">${{ selectedRoom.price }}</span>
+              <span class="text-2xl font-black text-(--color-text)">{{ formatPrice(selectedRoom.price) }}</span>
               <span class="text-xs font-extrabold text-(--color-muted)">/ night</span>
             </div>
             <button
@@ -484,6 +528,17 @@ const displayedAmenities = computed(() => amenities.value.slice(0, 6));
                     </div>
                   </div>
                 </div>
+
+                <!-- Contact Host Button -->
+                <button
+                  v-if="!authStore.isAuthenticated || authStore.user?.role === 'customer'"
+                  type="button"
+                  @click="contactHost"
+                  class="mt-4 px-5 py-2.5 rounded-full border border-(--color-border) hover:border-(--color-text) hover:bg-(--color-surface-soft) text-xs font-bold text-(--color-text) transition active:scale-95 cursor-pointer flex items-center justify-center gap-2 w-fit"
+                >
+                  <ChatBubbleOvalLeftIcon class="h-4.5 w-4.5 text-(--color-primary)" />
+                  <span>Contact Host</span>
+                </button>
               </div>  
 
               <!-- Refined Pill Specs -->
@@ -611,7 +666,7 @@ const displayedAmenities = computed(() => amenities.value.slice(0, 6));
                     <span class="text-xs font-bold text-(--color-muted)">Price per night</span>
                     <div class="text-right">
                       <span class="text-3xl font-black" style="color: var(--color-primary);">
-                        {{ room.price > 0 ? '$' + room.price : 'See Detail' }}
+                        {{ room.price > 0 ? formatPrice(room.price) : 'See Detail' }}
                       </span>
                       <span class="text-xs font-semibold text-(--color-muted)">
                         /{{ t("propertyDetail.night") }}
@@ -827,7 +882,7 @@ const displayedAmenities = computed(() => amenities.value.slice(0, 6));
                 <div>
                   <div class="flex items-baseline gap-1">
                     <span class="text-3xl font-black tracking-tight text-(--color-text)">
-                      ${{ selectedRoom.price }}
+                      {{ formatPrice(selectedRoom.price) }}
                     </span>
                     <span class="text-sm font-bold text-(--color-muted)">
                       / {{ t("propertyDetail.night") }}
@@ -909,16 +964,16 @@ const displayedAmenities = computed(() => amenities.value.slice(0, 6));
 
               <div class="mt-6 space-y-3.5 text-sm text-(--color-muted)">
                 <div class="flex items-center justify-between font-medium">
-                  <span class="hover:underline cursor-pointer">${{ selectedRoom.price }} x {{ stayNights }} {{ t("propertyDetail.night") }}</span>
-                  <span class="font-bold text-(--color-text)">${{ roomSubtotal }}</span>
+                  <span class="hover:underline cursor-pointer">{{ formatPrice(selectedRoom.price) }} x {{ stayNights }} {{ t("propertyDetail.night") }}</span>
+                  <span class="font-bold text-(--color-text)">{{ formatPrice(roomSubtotal) }}</span>
                 </div>
                 <div class="flex items-center justify-between font-medium">
                   <span class="hover:underline cursor-pointer">{{ t("propertyDetail.serviceFee") }}</span>
-                  <span class="font-bold text-(--color-text)">${{ serviceFee }}</span>
+                  <span class="font-bold text-(--color-text)">{{ formatPrice(serviceFee) }}</span>
                 </div>
                 <div class="flex items-center justify-between border-t border-(--color-border) pt-4 text-base font-black text-(--color-text)">
                   <span>{{ t("propertyDetail.total") }} before taxes</span>
-                  <span class="text-(--color-primary)">${{ totalPrice }}</span>
+                  <span class="text-(--color-primary)">{{ formatPrice(totalPrice) }}</span>
                 </div>
               </div>
             </div>

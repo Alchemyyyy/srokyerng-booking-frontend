@@ -5,7 +5,6 @@ import {
   ArrowLeftIcon,
   BellAlertIcon,
   CheckCircleIcon,
-  EnvelopeOpenIcon,
   CheckIcon,
   BellIcon,
   CalendarDaysIcon,
@@ -13,6 +12,7 @@ import {
   BuildingOffice2Icon,
   KeyIcon,
   Cog6ToothIcon,
+  EyeIcon,
 } from "@heroicons/vue/24/outline";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
@@ -24,6 +24,7 @@ import { useNotificationStore } from "@/modules/notifications/store/notification
 import { useToastStore } from "@/shared/store/toastStore";
 import { getDashboardRouteByRole } from "@/shared/utils/roleRoutes";
 import PublicNavbar from "@/shared/components/PublicNavbar.vue";
+import PublicFooter from "@/shared/components/PublicFooter.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -31,24 +32,19 @@ const notificationStore = useNotificationStore();
 const toastStore = useToastStore();
 const { t, te, locale } = useI18n({ useScope: "global" });
 
-const filters = computed(() => [
-  { label: t("notifications.filters.all", "All"), value: "all" },
-  { label: t("notifications.filters.unread", "Unread"), value: "unread" },
-  { label: t("notifications.filters.read", "Read"), value: "read" },
-  { label: t("notifications.filters.archived", "Archived"), value: "archived" },
-]);
+
 
 const notificationToneClass = {
-  reservation_created: "bg-(--color-info-soft) text-(--color-info) border-(--color-info)/20",
-  reservation_confirmed: "bg-(--color-success-soft) text-(--color-success) border-(--color-success)/20",
-  reservation_cancelled: "bg-(--color-danger-soft) text-(--color-danger) border-(--color-danger)/20",
-  payment_submitted: "bg-(--color-warning-soft) text-(--color-warning) border-(--color-warning)/20",
-  payment_verified: "bg-(--color-success-soft) text-(--color-success) border-(--color-success)/20",
-  payment_rejected: "bg-(--color-danger-soft) text-(--color-danger) border-(--color-danger)/20",
-  property_approved: "bg-(--color-success-soft) text-(--color-success) border-(--color-success)/20",
-  property_rejected: "bg-(--color-danger-soft) text-(--color-danger) border-(--color-danger)/20",
-  password_changed: "bg-(--color-warning-soft) text-(--color-warning) border-(--color-warning)/20",
-  system: "bg-(--color-primary-soft) text-(--color-primary) border-(--color-primary)/20",
+  reservation_created: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+  reservation_confirmed: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+  reservation_cancelled: "bg-rose-500/10 text-rose-600 border-rose-500/20",
+  payment_submitted: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+  payment_verified: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+  payment_rejected: "bg-rose-500/10 text-rose-600 border-rose-500/20",
+  property_approved: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+  property_rejected: "bg-rose-500/10 text-rose-600 border-rose-500/20",
+  password_changed: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
+  system: "bg-sky-500/10 text-sky-600 border-sky-500/20",
 };
 
 const getNotificationIcon = (type) => {
@@ -114,7 +110,7 @@ const getTypeLabel = (type) => {
   return te(key) ? t(key) : t("notifications.types.default");
 };
 const getToneClass = (type) =>
-  notificationToneClass[type] || "bg-(--color-info-soft) text-(--color-info) border-(--color-info)/20";
+  notificationToneClass[type] || "bg-sky-500/10 text-sky-600 border-sky-500/20";
 
 const goBack = async () => {
   if (window.history.length > 1) {
@@ -141,7 +137,6 @@ const markAsRead = async (notification) => {
 
   try {
     await notificationStore.markAsRead(notification.id);
-    toastStore.success(t("notifications.toast.markRead"));
   } catch (requestError) {
     toastStore.danger(requestError.message || t("notifications.errors.updateOne"));
   }
@@ -150,7 +145,6 @@ const markAsRead = async (notification) => {
 const markAllAsRead = async () => {
   try {
     await notificationStore.markAllAsRead();
-    toastStore.success(t("notifications.toast.markAllRead"));
   } catch (requestError) {
     toastStore.danger(requestError.message || t("notifications.errors.update"));
   }
@@ -178,212 +172,159 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-(--color-page) flex flex-col">
+  <div class="min-h-screen bg-(--color-page) text-(--color-text) flex flex-col font-sans">
     <PublicNavbar />
 
-    <main class="flex-1 px-4 py-8 sm:py-12 text-(--color-text) sm:px-6 lg:px-8">
-      <section class="mx-auto max-w-4xl">
-        <!-- ── Navigation Back Link ── -->
-        <button
-          type="button"
-          class="inline-flex items-center gap-2 text-xs font-bold text-(--color-muted) hover:text-(--color-primary) transition mb-6"
-          @click="goBack"
-        >
-          <ArrowLeftIcon class="h-4 w-4" />
-          {{ t("common.back") }}
-        </button>
-
-        <!-- ── Premium Header Section ── -->
-        <header class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-(--color-border)/60 pb-6">
-          <div class="flex items-center gap-3">
-            <div
-              class="flex items-center justify-center w-12 h-12 rounded-sm bg-(--color-primary-soft) border border-(--color-primary)/20 shadow-xs shrink-0"
-              style="border-radius: var(--radius-sm);"
-            >
-              <BellAlertIcon class="h-6 w-6 text-(--color-primary)" />
-            </div>
-            <div>
-              <p class="text-[10px] font-black uppercase tracking-[0.2em] text-(--color-primary)">
-                {{ t("notifications.inbox") }}
-              </p>
-              <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-(--color-text)">
-                {{ pageTitle }}
-              </h1>
-              <p class="text-xs text-(--color-muted) mt-0.5">
-                {{ t("notifications.pageSubtitle") }}
-              </p>
-            </div>
+    <main class="flex-1 min-h-screen pt-32 pb-12 px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto w-full flex flex-col">
+      <div class="max-w-3xl w-full mx-auto flex-1 flex flex-col">
+        <!-- Page Header Row -->
+        <div class="mb-6 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4">
+          <div>
+            <h1 class="text-3xl font-black tracking-tight text-(--color-text)">
+              {{ pageTitle }}
+            </h1>
+            <p class="text-xs text-(--color-muted) font-semibold mt-1.5">
+              {{ t("notifications.pageSubtitle") }}
+            </p>
           </div>
 
           <button
+            v-if="notificationStore.hasUnread"
             type="button"
-            class="inline-flex items-center gap-1.5 justify-center rounded-sm border border-(--color-border) bg-(--color-surface) px-4 py-2 text-xs font-bold text-(--color-muted) transition hover:border-(--color-primary) hover:text-(--color-primary) hover:shadow-xs disabled:cursor-not-allowed disabled:opacity-50 active:scale-95"
-            style="border-radius: var(--radius-sm);"
-            :disabled="notificationStore.actionLoading || !notificationStore.hasUnread"
+            :disabled="notificationStore.actionLoading"
             @click="markAllAsRead"
+            class="text-xs font-bold text-(--color-primary) hover:underline cursor-pointer disabled:opacity-50"
           >
-            <CheckIcon class="h-4 w-4" />
-            <span>{{ t("notifications.markAllAsRead") }}</span>
+            {{ t("notifications.markAllAsRead") }}
           </button>
-        </header>
-
-        <!-- ── Ultra-Sleek Filter Tabs Bar ── -->
-        <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div
-            class="inline-flex w-full border border-(--color-border)/60 bg-(--color-surface-soft) p-1 sm:w-auto shadow-inner gap-0.5"
-            style="border-radius: var(--radius-sm);"
-          >
-            <button
-              v-for="filter in filters"
-              :key="filter.value"
-              type="button"
-              class="flex-1 sm:flex-none px-3.5 py-1 text-xs transition-all duration-200 cursor-pointer text-center"
-              style="border-radius: var(--radius-sm);"
-              :class="
-                notificationStore.currentStatus === filter.value
-                  ? 'bg-(--color-primary) text-white font-bold shadow-xs'
-                  : 'text-(--color-muted) hover:text-(--color-text) hover:bg-(--color-surface)/50 font-semibold'
-              "
-              @click="loadNotifications(filter.value)"
-            >
-              {{ filter.label }}
-            </button>
-          </div>
-
-          <div class="flex items-center gap-2 text-xs font-bold text-(--color-muted)">
-            <span class="w-2 h-2 rounded-full bg-(--color-primary) animate-pulse"></span>
-            <span>
-              {{ t("notifications.totalUnread", {
-                total: notificationStore.pagination.total,
-                unread: notificationStore.unreadCount
-              }) }}
-            </span>
-          </div>
         </div>
 
-        <!-- ── Error State ── -->
-        <div
-          v-if="notificationStore.error"
-          class="mb-6 rounded-sm border border-(--color-danger) bg-(--color-danger-soft) px-4 py-3 text-xs font-bold text-(--color-danger) shadow-xs"
-          style="border-radius: var(--radius-sm);"
-        >
+        <!-- Alert / Loading / Empty Feed wrapper -->
+        <div v-if="notificationStore.error" class="bg-red-500/5 border border-red-500/10 rounded-2xl p-4 text-sm font-semibold text-red-600 mb-6">
           {{ notificationStore.error }}
         </div>
 
-        <!-- ── Loading State ── -->
-        <div
-          v-if="notificationStore.listLoading"
-          class="rounded-sm border border-(--color-border) bg-(--color-surface) p-12 text-center shadow-sm"
-          style="border-radius: var(--radius-sm);"
-        >
+        <!-- Loading State -->
+        <div v-if="notificationStore.listLoading" class="py-20 text-center">
           <LoadingSpinner :label="t('notifications.loading')" />
         </div>
 
-        <!-- ── Empty State ── -->
-        <div v-else-if="!notificationStore.hasNotifications" class="rounded-sm border border-(--color-border) bg-(--color-surface) p-12 shadow-sm text-center" style="border-radius: var(--radius-sm);">
-          <EmptyState
-            :title="emptyTitle"
-            :message="emptyMessage"
-          >
-            <template #icon>
-              <BellAlertIcon class="h-8 w-8 text-(--color-primary)" />
-            </template>
-          </EmptyState>
+        <!-- Empty State -->
+        <div v-else-if="!notificationStore.hasNotifications" class="py-20 text-center flex-1 flex flex-col justify-center">
+          <div class="max-w-md mx-auto flex flex-col items-center justify-center">
+            <div class="h-16 w-16 bg-(--color-surface-soft) border border-(--color-border) text-(--color-muted) rounded-full flex items-center justify-center mb-6">
+              <BellIcon class="h-8 w-8" />
+            </div>
+            <h3 class="text-xl font-extrabold text-(--color-text) mb-2">
+              {{ emptyTitle }}
+            </h3>
+            <p class="text-sm font-semibold text-(--color-muted) mb-8 leading-relaxed max-w-sm">
+              {{ emptyMessage }}
+            </p>
+            <RouterLink
+              :to="{ name: 'public.properties' }"
+              class="px-7 py-3 bg-(--color-primary) hover:opacity-90 text-white !text-white text-sm font-bold rounded-full shadow-md active:scale-95 transition cursor-pointer flex items-center justify-center"
+            >
+              <span class="text-white !text-white">Explore Properties</span>
+            </RouterLink>
+          </div>
         </div>
 
-        <!-- ── Breathtaking Notification Cards List ── -->
-        <div v-else class="space-y-4">
-          <article
-            v-for="notification in notificationStore.notifications"
-            :key="notification.id"
-            class="group rounded-sm border bg-(--color-surface) p-5 shadow-xs transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
-            style="border-radius: var(--radius-sm);"
-            :class="
-              notification.is_read
-                ? 'border-(--color-border)'
-                : 'border-(--color-primary)/80 bg-(--color-surface) ring-1 ring-(--color-primary)/10'
-            "
-          >
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <!-- Left Status Icon & Main Content -->
-              <div class="flex items-start gap-4 min-w-0 flex-1">
-                <div
-                  class="flex items-center justify-center w-10 h-10 rounded-sm border shrink-0 shadow-xs transition-transform group-hover:scale-105 duration-200"
-                  style="border-radius: var(--radius-sm);"
-                  :class="getToneClass(notification.type)"
-                >
-                  <component :is="getNotificationIcon(notification.type)" class="w-5 h-5" />
-                </div>
-
-                <div class="min-w-0 flex-1">
-                  <div class="mb-2 flex flex-wrap items-center gap-2">
-                    <span
-                      class="inline-flex items-center border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider"
-                      style="border-radius: var(--radius-sm);"
-                      :class="getToneClass(notification.type)"
-                    >
-                      {{ getTypeLabel(notification.type) }}
-                    </span>
-                    <span
-                      v-if="!notification.is_read"
-                      class="inline-flex items-center bg-(--color-primary) px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-white shadow-xs"
-                      style="border-radius: var(--radius-sm);"
-                    >
-                      {{ t("notifications.new") }}
-                    </span>
-                    <span class="text-xs font-bold text-(--color-muted)">
-                      • {{ formatDate(notification.created_at) }}
-                    </span>
-                  </div>
-
-                  <h2 class="text-base font-extrabold text-(--color-text) group-hover:text-(--color-primary) transition-colors duration-200 truncate">
-                    {{ notification.title }}
-                  </h2>
-                  <p class="mt-1 text-xs font-medium leading-relaxed text-(--color-muted)">
-                    {{ notification.message }}
-                  </p>
-                </div>
+        <!-- Active Notifications List (Airbnb style list layout) -->
+        <div v-else class="divide-y divide-(--color-border)/60">
+          <TransitionGroup name="list" tag="div" class="divide-y divide-(--color-border)/60">
+            <article
+              v-for="notification in notificationStore.notifications"
+              :key="notification.id"
+              class="relative flex items-start gap-4 py-6 transition duration-200 hover:bg-(--color-surface-soft)/30 px-4 -mx-4 rounded-2xl group"
+            >
+              <!-- Unread Status Dot -->
+              <div class="flex items-center justify-center w-2 h-12">
+                <span
+                  v-if="!notification.is_read"
+                  class="h-2 w-2 rounded-full bg-(--color-primary)"
+                ></span>
               </div>
 
-              <!-- Right Actions -->
-              <div class="flex shrink-0 items-center gap-1.5 sm:mt-0 mt-2 sm:pl-0 pl-14">
+              <!-- Left side Icon Circle -->
+              <div
+                class="flex items-center justify-center w-12 h-12 rounded-full border border-(--color-border)/40 shadow-inner shrink-0"
+                :class="getToneClass(notification.type)"
+              >
+                <component :is="getNotificationIcon(notification.type)" class="w-5.5 h-5.5" />
+              </div>
+
+              <!-- Middle Text Body -->
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-baseline gap-2 mb-1">
+                  <span
+                    class="text-[10px] font-black uppercase tracking-wider text-(--color-primary)"
+                  >
+                    {{ getTypeLabel(notification.type) }}
+                  </span>
+                  <span class="text-[10px] font-bold text-(--color-muted)">•</span>
+                  <span class="text-xs font-semibold text-(--color-muted)">
+                    {{ formatDate(notification.created_at) }}
+                  </span>
+                </div>
+
+                <h3 class="text-base font-extrabold text-(--color-text) group-hover:text-(--color-primary) transition-colors duration-200">
+                  {{ notification.title }}
+                </h3>
+                <p class="mt-1 text-sm font-semibold leading-relaxed text-(--color-muted)">
+                  {{ notification.message }}
+                </p>
+              </div>
+
+              <!-- Right side row Actions -->
+              <div class="flex items-center gap-1 shrink-0 self-center">
                 <button
                   v-if="!notification.is_read"
                   type="button"
-                  class="inline-flex h-8 w-8 items-center justify-center rounded-sm border border-(--color-border)/60 text-(--color-muted) bg-(--color-surface-soft) transition hover:border-emerald-500 hover:bg-emerald-500 hover:text-white active:scale-95 shadow-xs"
-                  style="border-radius: var(--radius-sm);"
-                  :title="t('notifications.markAsRead')"
                   :disabled="notificationStore.actionLoading"
                   @click="markAsRead(notification)"
+                  class="h-9 w-9 flex items-center justify-center rounded-full hover:bg-(--color-surface-soft) text-(--color-muted) hover:text-(--color-success) transition duration-200 active:scale-95 cursor-pointer disabled:opacity-50"
+                  title="Mark as read"
                 >
-                  <CheckCircleIcon class="h-4.5 w-4.5" />
+                  <CheckIcon class="h-5 w-5" />
                 </button>
 
                 <span
                   v-else
-                  class="inline-flex h-8 w-8 items-center justify-center rounded-sm bg-(--color-success-soft) text-(--color-success) border border-(--color-success)/20 shadow-xs"
-                  style="border-radius: var(--radius-sm);"
-                  :title="t('notifications.read')"
+                  class="h-9 w-9 flex items-center justify-center text-emerald-600/70"
+                  title="Read"
                 >
-                  <EnvelopeOpenIcon class="h-4.5 w-4.5" />
+                  <EyeIcon class="h-4.5 w-4.5" />
                 </span>
 
                 <button
                   v-if="notificationStore.currentStatus !== 'archived'"
                   type="button"
-                  class="inline-flex h-8 w-8 items-center justify-center rounded-sm border border-(--color-border)/60 text-(--color-muted) bg-(--color-surface-soft) transition hover:border-rose-500 hover:bg-rose-500 hover:text-white active:scale-95 shadow-xs"
-                  style="border-radius: var(--radius-sm);"
-                  :title="t('notifications.archive')"
                   :disabled="notificationStore.actionLoading"
                   @click="archiveNotification(notification)"
+                  class="h-9 w-9 flex items-center justify-center rounded-full hover:bg-(--color-surface-soft) text-(--color-muted) hover:text-(--color-danger) transition duration-200 active:scale-95 cursor-pointer disabled:opacity-50"
+                  title="Archive"
                 >
                   <ArchiveBoxIcon class="h-4.5 w-4.5" />
                 </button>
               </div>
-            </div>
-          </article>
+            </article>
+          </TransitionGroup>
         </div>
-      </section>
+      </div>
     </main>
+    <PublicFooter />
   </div>
 </template>
+
+<style scoped>
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(15px) scale(0.98);
+}
+</style>
