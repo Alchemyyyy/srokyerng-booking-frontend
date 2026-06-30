@@ -559,7 +559,7 @@ onMounted(async () => {
 
 <template>
   <main
-    class="mt-24 transition-all duration-300 min-h-screen bg-slate-50/50"
+    class="mt-24 transition-all duration-300 min-h-screen bg-(--color-background)"
     :class="isSidebarOpen ? 'ml-64' : 'ml-20'"
   >
     <div class="max-w-[1600px] mx-auto px-8 pb-16 pt-4">
@@ -567,10 +567,10 @@ onMounted(async () => {
         class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
       >
         <div>
-          <h1 class="text-[28px] font-black text-gray-900 tracking-tight">
+          <h1 class="text-[28px] font-black text-(--color-text) tracking-tight">
             My Properties
           </h1>
-          <p class="mt-1 text-sm font-medium text-gray-400">
+          <p class="mt-1 text-sm font-medium text-(--color-muted)">
             Monitor asset status, update information portfolios, and review live
             pipeline records.
           </p>
@@ -585,7 +585,7 @@ onMounted(async () => {
       </header>
 
       <div
-        class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 border-b border-gray-100 bg-white p-2 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.01)]"
+        class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 border-b border-(--color-border) bg-(--color-surface) p-2 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.01)]"
       >
         <div class="flex flex-wrap items-center gap-1">
           <button
@@ -594,16 +594,16 @@ onMounted(async () => {
             :class="
               ownerFilters.status === 'all'
                 ? 'bg-(--color-primary)/10 text-(--color-primary)'
-                : 'text-gray-500 hover:bg-gray-50'
+                : 'text-(--color-muted) hover:bg-(--color-surface-soft)'
             "
           >
-            All Real Estate
+            All Properties
             <span
               class="text-[11px] px-2 py-0.5 rounded-md font-black"
               :class="
                 ownerFilters.status === 'all'
                   ? 'bg-(--color-primary) text-white'
-                  : 'bg-gray-100 text-gray-600'
+                  : 'bg-(--color-border) text-(--color-muted)'
               "
             >
               {{ stats.total }}
@@ -616,7 +616,7 @@ onMounted(async () => {
             :class="
               ownerFilters.status === 'approved'
                 ? 'bg-emerald-50 text-emerald-700'
-                : 'text-gray-500 hover:bg-gray-50'
+                : 'text-(--color-muted) hover:bg-(--color-surface-soft)'
             "
           >
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -626,7 +626,7 @@ onMounted(async () => {
               :class="
                 ownerFilters.status === 'approved'
                   ? 'bg-emerald-600 text-white'
-                  : 'bg-gray-100 text-gray-600'
+                  : 'bg-(--color-border) text-(--color-muted)'
               "
             >
               {{ stats.approved }}
@@ -639,7 +639,7 @@ onMounted(async () => {
             :class="
               ownerFilters.status === 'pending_changes'
                 ? 'bg-orange-50 text-orange-700'
-                : 'text-gray-500 hover:bg-gray-50'
+                : 'text-(--color-muted) hover:bg-(--color-surface-soft)'
             "
           >
             <span class="w-1.5 h-1.5 rounded-full bg-orange-400" />
@@ -649,7 +649,7 @@ onMounted(async () => {
               :class="
                 ownerFilters.status === 'pending_changes'
                   ? 'bg-orange-500 text-white'
-                  : 'bg-gray-100 text-gray-600'
+                  : 'bg-(--color-border) text-(--color-muted)'
               "
             >
               {{ properties.filter((p) => p.pendingEdit).length }}
@@ -662,7 +662,7 @@ onMounted(async () => {
             :class="
               ownerFilters.status === 'pending'
                 ? 'bg-blue-50 text-blue-700'
-                : 'text-gray-500 hover:bg-gray-50'
+                : 'text-(--color-muted) hover:bg-(--color-surface-soft)'
             "
           >
             <span class="w-1.5 h-1.5 rounded-full bg-blue-400" />
@@ -672,7 +672,7 @@ onMounted(async () => {
               :class="
                 ownerFilters.status === 'pending'
                   ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-600'
+                  : 'bg-(--color-border) text-(--color-muted)'
               "
             >
               {{ stats.pending }}
@@ -685,7 +685,7 @@ onMounted(async () => {
             :class="
               ownerFilters.status === 'rejected'
                 ? 'bg-rose-50 text-rose-700'
-                : 'text-gray-500 hover:bg-gray-50'
+                : 'text-(--color-muted) hover:bg-(--color-surface-soft)'
             "
           >
             <span class="w-1.5 h-1.5 rounded-full bg-rose-500" />
@@ -695,7 +695,7 @@ onMounted(async () => {
               :class="
                 ownerFilters.status === 'rejected'
                   ? 'bg-rose-600 text-white'
-                  : 'bg-gray-100 text-gray-600'
+                  : 'bg-(--color-border) text-(--color-muted)'
               "
             >
               {{ stats.rejected }}
@@ -703,12 +703,12 @@ onMounted(async () => {
           </button>
         </div>
 
-        <div class="flex items-center gap-2 px-2 md:border-l border-gray-100">
+        <div class="flex items-center gap-2 px-2 md:border-l border-(--color-border)">
           <button
-            class="flex items-center gap-1.5 text-xs text-gray-500 font-bold tracking-wide uppercase bg-gray-50 hover:bg-gray-100 transition px-3.5 py-2 rounded-xl border border-gray-100"
+            class="flex items-center gap-1.5 text-xs text-(--color-muted) font-bold tracking-wide uppercase bg-(--color-surface-soft) hover:bg-(--color-border) transition px-3.5 py-2 rounded-xl border border-(--color-border)"
           >
             <FunnelIcon class="w-3.5 h-3.5" />
-            Sort Parameters
+            Sort
           </button>
         </div>
       </div>
@@ -716,20 +716,20 @@ onMounted(async () => {
       <div class="flex flex-col sm:flex-row items-center gap-3 mb-8">
         <div class="relative w-full sm:max-w-sm group">
           <MagnifyingGlassIcon
-            class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-(--color-primary) transition-colors"
+            class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-(--color-muted) group-focus-within:text-(--color-primary) transition-colors"
           />
           <input
             v-model="ownerFilters.search"
             type="text"
             placeholder="Search by name, tags, or region..."
-            class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-100 bg-white text-sm text-gray-800 placeholder-gray-400 outline-none focus:border-(--color-primary) focus:ring-4 focus:ring-(--color-primary)/5 shadow-[0_4px_18px_rgba(0,0,0,0.01)] transition-all"
+            class="w-full pl-11 pr-4 py-3 rounded-xl border border-(--color-border) bg-(--color-surface) text-sm text-(--color-text) placeholder-gray-400 outline-none focus:border-(--color-primary) focus:ring-4 focus:ring-(--color-primary)/5 shadow-[0_4px_18px_rgba(0,0,0,0.01)] transition-all"
           />
         </div>
 
         <div class="flex items-center gap-3 w-full sm:w-auto">
           <select
             v-model="ownerFilters.city"
-            class="w-full sm:w-auto rounded-xl border border-gray-100 bg-white px-4 py-3 text-sm font-semibold text-gray-600 outline-none focus:border-(--color-primary) shadow-[0_4px_18px_rgba(0,0,0,0.01)] transition"
+            class="w-full sm:w-auto rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-3 text-sm font-semibold text-(--color-muted) outline-none focus:border-(--color-primary) shadow-[0_4px_18px_rgba(0,0,0,0.01)] transition"
           >
             <option value="all">All Cities</option>
             <option v-for="c in cities" :key="c.id" :value="c.name">
@@ -739,9 +739,9 @@ onMounted(async () => {
 
           <select
             v-model="ownerFilters.category"
-            class="w-full sm:w-auto rounded-xl border border-gray-100 bg-white px-4 py-3 text-sm font-semibold text-gray-600 outline-none focus:border-(--color-primary) shadow-[0_4px_18px_rgba(0,0,0,0.01)] transition"
+            class="w-full sm:w-auto rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-3 text-sm font-semibold text-(--color-muted) outline-none focus:border-(--color-primary) shadow-[0_4px_18px_rgba(0,0,0,0.01)] transition"
           >
-            <option value="all">All Structural Types</option>
+            <option value="all">All Property Types</option>
             <option value="hotel">Hotel</option>
             <option value="villa">Villa</option>
             <option value="apartment">Apartment</option>
@@ -770,51 +770,49 @@ onMounted(async () => {
 
         <div
           v-else-if="properties.length === 0"
-          class="bg-white rounded-3xl border border-gray-100 p-20 text-center shadow-[0_10px_40px_rgba(0,0,0,0.02)] max-w-2xl mx-auto"
+          class="bg-(--color-surface) rounded-3xl border border-(--color-border) p-20 text-center shadow-[0_10px_40px_rgba(0,0,0,0.02)] max-w-2xl mx-auto"
         >
           <div
-            class="w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-5 text-gray-400"
+            class="w-16 h-16 rounded-2xl bg-(--color-surface-soft) flex items-center justify-center mx-auto mb-5 text-(--color-muted)"
           >
             <BuildingOffice2Icon class="w-8 h-8" />
           </div>
-          <h3 class="text-xl font-black text-gray-900 tracking-tight">
+          <h3 class="text-xl font-black text-(--color-text) tracking-tight">
             No registered properties
           </h3>
-          <p class="text-sm text-gray-400 max-w-sm mx-auto mt-2 mb-8">
-            Launch your real estate profile to instantly enable booking indexes
-            and system analytics channels.
+          <p class="text-sm text-(--color-muted) max-w-sm mx-auto mt-2 mb-8">
+            You haven't registered any properties yet. Add your first property to start receiving bookings.
           </p>
           <button
             @click="isAddModalOpen = true"
             class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-(--color-primary) text-white text-sm font-bold hover:opacity-90 transition"
           >
             <PlusIcon class="w-4 h-4 stroke-[2.5]" />
-            Register First Unit
+            Add First Property
           </button>
         </div>
 
         <div
           v-else-if="filteredProperties.length === 0"
-          class="bg-white rounded-3xl border border-gray-100 p-20 text-center shadow-[0_10px_40px_rgba(0,0,0,0.02)] max-w-2xl mx-auto"
+          class="bg-(--color-surface) rounded-3xl border border-(--color-border) p-20 text-center shadow-[0_10px_40px_rgba(0,0,0,0.02)] max-w-2xl mx-auto"
         >
           <div
-            class="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-5 text-gray-400"
+            class="w-16 h-16 rounded-2xl bg-(--color-background) flex items-center justify-center mx-auto mb-5 text-(--color-muted)"
           >
             <MagnifyingGlassIcon class="w-7 h-7" />
           </div>
-          <h3 class="text-xl font-black text-gray-900 tracking-tight">
-            No matching metrics found
+          <h3 class="text-xl font-black text-(--color-text) tracking-tight">
+            No properties found
           </h3>
-          <p class="text-sm text-gray-400 max-w-sm mx-auto mt-2 mb-8">
-            Your query didn't return any property parameters. Try softening
-            search criteria modifiers.
+          <p class="text-sm text-(--color-muted) max-w-sm mx-auto mt-2 mb-8">
+            We couldn't find any properties matching your current search criteria.
           </p>
           <button
             @click="resetOwnerFilters"
-            class="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-gray-200 text-gray-600 bg-white text-sm font-bold hover:bg-gray-50 transition"
+            class="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-(--color-border) text-(--color-muted) bg-(--color-surface) text-sm font-bold hover:bg-(--color-surface-soft) transition"
           >
             <XMarkIcon class="w-4 h-4" />
-            Wipe Parameter Filters
+            Clear Filters
           </button>
         </div>
 
@@ -835,12 +833,12 @@ onMounted(async () => {
 
       <footer
         v-if="totalPages > 1"
-        class="flex items-center justify-center gap-2 border-t border-gray-100 pt-8"
+        class="flex items-center justify-center gap-2 border-t border-(--color-border) pt-8"
       >
         <button
           :disabled="currentPage === 1"
           @click="currentPage--"
-          class="inline-flex items-center gap-1 px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-bold text-gray-600 hover:border-gray-300 disabled:opacity-40 disabled:pointer-events-none transition"
+          class="inline-flex items-center gap-1 px-4 py-2.5 rounded-xl border border-(--color-border) bg-(--color-surface) text-sm font-bold text-(--color-muted) hover:border-(--color-border) disabled:opacity-40 disabled:pointer-events-none transition"
         >
           <ArrowLeftIcon class="w-4 h-4 stroke-[2.5]" />
           Prev
@@ -854,7 +852,7 @@ onMounted(async () => {
             :class="
               currentPage === page
                 ? 'bg-(--color-primary) text-white shadow-md shadow-primary/20 scale-105'
-                : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                : 'bg-(--color-surface) border border-(--color-border) text-(--color-muted) hover:bg-(--color-surface-soft)'
             "
           >
             {{ page }}
@@ -863,7 +861,7 @@ onMounted(async () => {
         <button
           :disabled="currentPage === totalPages"
           @click="currentPage++"
-          class="inline-flex items-center gap-1 px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-bold text-gray-600 hover:border-gray-300 disabled:opacity-40 disabled:pointer-events-none transition"
+          class="inline-flex items-center gap-1 px-4 py-2.5 rounded-xl border border-(--color-border) bg-(--color-surface) text-sm font-bold text-(--color-muted) hover:border-(--color-border) disabled:opacity-40 disabled:pointer-events-none transition"
         >
           Next
           <ArrowRightIcon class="w-4 h-4 stroke-[2.5]" />
@@ -874,12 +872,12 @@ onMounted(async () => {
     <AppModal
       :open="isAddModalOpen"
       :title="
-        currentStep === 1 ? 'Configure Asset Scope' : 'Media Vault Intake'
+        currentStep === 1 ? 'Property Details' : 'Property Images'
       "
       @close="closeAddModal"
     >
       <div
-        class="flex items-center gap-3 bg-gray-50/80 p-3 rounded-xl border border-gray-100 mb-6"
+        class="flex items-center gap-3 bg-(--color-surface-soft) p-3 rounded-xl border border-(--color-border) mb-6"
       >
         <div class="flex items-center gap-2 px-2">
           <span
@@ -887,13 +885,13 @@ onMounted(async () => {
             :class="
               currentStep >= 1
                 ? 'bg-(--color-primary) text-white shadow-sm'
-                : 'bg-gray-200 text-gray-500'
+                : 'bg-gray-200 text-(--color-muted)'
             "
             >1</span
           >
           <span
             class="text-xs font-bold"
-            :class="currentStep >= 1 ? 'text-gray-900' : 'text-gray-400'"
+            :class="currentStep >= 1 ? 'text-(--color-text)' : 'text-(--color-muted)'"
             >Details</span
           >
         </div>
@@ -904,14 +902,14 @@ onMounted(async () => {
             :class="
               currentStep >= 2
                 ? 'bg-(--color-primary) text-white shadow-sm'
-                : 'bg-gray-200 text-gray-500'
+                : 'bg-gray-200 text-(--color-muted)'
             "
             >2</span
           >
           <span
             class="text-xs font-bold"
-            :class="currentStep >= 2 ? 'text-gray-900' : 'text-gray-400'"
-            >Media Drop</span
+            :class="currentStep >= 2 ? 'text-(--color-text)' : 'text-(--color-muted)'"
+            >Images</span
           >
         </div>
       </div>
@@ -925,7 +923,7 @@ onMounted(async () => {
         <div>
           <AppInput
             v-model="newProperty.name"
-            label="Property Title Portfolio *"
+            label="Property Name **"
             placeholder="e.g. Skyline Residency Tower"
           />
           <AppAlert v-if="addErrors.name" variant="danger" class="mt-1">{{
@@ -936,12 +934,12 @@ onMounted(async () => {
         <div class="grid grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5">
             <label
-              class="text-xs font-bold text-gray-500 tracking-wide uppercase"
-              >Category Type *</label
+              class="text-xs font-bold text-(--color-muted) tracking-wide uppercase"
+              >Property Type **</label
             >
             <select
               v-model="newProperty.type"
-              class="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-3 text-sm font-semibold text-gray-800 outline-none focus:border-(--color-primary) focus:ring-4 focus:ring-primary/5 transition"
+              class="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-3.5 py-3 text-sm font-semibold text-(--color-text) outline-none focus:border-(--color-primary) focus:ring-4 focus:ring-primary/5 transition"
             >
               <option>Hotel</option>
               <option>Villa</option>
@@ -952,12 +950,12 @@ onMounted(async () => {
           </div>
           <div class="flex flex-col gap-1.5">
             <label
-              class="text-xs font-bold text-gray-500 tracking-wide uppercase"
-              >Operational Hub *</label
+              class="text-xs font-bold text-(--color-muted) tracking-wide uppercase"
+              >City / Location **</label
             >
             <select
               v-model="newProperty.location"
-              class="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-3 text-sm font-semibold text-gray-800 outline-none focus:border-(--color-primary) focus:ring-4 focus:ring-primary/5 transition"
+              class="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-3.5 py-3 text-sm font-semibold text-(--color-text) outline-none focus:border-(--color-primary) focus:ring-4 focus:ring-primary/5 transition"
             >
               <option>Phnom Penh</option>
               <option>Siem Reap</option>
@@ -972,7 +970,7 @@ onMounted(async () => {
         <div>
           <AppInput
             v-model="newProperty.address"
-            label="Physical Street Address *"
+            label="Street Address **"
             placeholder="e.g. St. 210, Sangkat Boeung Keng Kang I"
           />
           <AppAlert v-if="addErrors.address" variant="danger" class="mt-1">{{
@@ -984,7 +982,7 @@ onMounted(async () => {
           <div>
             <AppInput
               v-model="newProperty.contact_phone"
-              label="Contact Phone Registry *"
+              label="Contact Phone **"
               placeholder="e.g. +855 12 345 678"
             />
             <AppAlert
@@ -997,7 +995,7 @@ onMounted(async () => {
           <div>
             <AppInput
               v-model="newProperty.contact_email"
-              label="Contact Business Email *"
+              label="Contact Email **"
               placeholder="e.g. desks@property.com"
             />
             <AppAlert
@@ -1015,7 +1013,7 @@ onMounted(async () => {
               v-model="newProperty.number_of_floors"
               type="number"
               min="1"
-              label="Floor Stack Height"
+              label="Number of Floors"
               placeholder="1"
             />
           </div>
@@ -1023,24 +1021,24 @@ onMounted(async () => {
 
         <div>
           <label
-            class="text-xs font-bold text-gray-500 tracking-wide uppercase block mb-1.5"
-            >Corporate Description Profile</label
+            class="text-xs font-bold text-(--color-muted) tracking-wide uppercase block mb-1.5"
+            >Property Description</label
           >
           <textarea
             v-model="newProperty.description"
             rows="3"
             placeholder="Elaborate on structural values, proximity configurations, luxury perks..."
-            class="w-full p-4 rounded-xl border border-gray-200 bg-white text-sm text-gray-800 outline-none focus:border-(--color-primary) focus:ring-4 focus:ring-primary/5 transition resize-none"
+            class="w-full p-4 rounded-xl border border-(--color-border) bg-(--color-surface) text-sm text-(--color-text) outline-none focus:border-(--color-primary) focus:ring-4 focus:ring-primary/5 transition resize-none"
           ></textarea>
         </div>
 
         <div
-          class="flex items-center justify-end gap-2 border-t border-gray-100 pt-4 mt-6"
+          class="flex items-center justify-end gap-2 border-t border-(--color-border) pt-4 mt-6"
         >
           <button
             type="button"
             @click="closeAddModal"
-            class="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition"
+            class="px-5 py-2.5 rounded-xl border border-(--color-border) text-sm font-bold text-(--color-muted) hover:bg-(--color-surface-soft) transition"
           >
             Cancel
           </button>
@@ -1055,7 +1053,7 @@ onMounted(async () => {
 
       <div v-else class="space-y-5">
         <div
-          class="relative group border-2 border-dashed border-gray-200 hover:border-(--color-primary) bg-slate-50 rounded-2xl p-8 text-center transition"
+          class="relative group border-2 border-dashed border-(--color-border) hover:border-(--color-primary) bg-(--color-background) rounded-2xl p-8 text-center transition"
         >
           <input
             type="file"
@@ -1065,14 +1063,14 @@ onMounted(async () => {
             @change="handleImageSelect"
           />
           <div
-            class="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-gray-400 mx-auto mb-3 group-hover:scale-110 transition duration-300"
+            class="w-12 h-12 bg-(--color-surface) rounded-xl shadow-sm flex items-center justify-center text-(--color-muted) mx-auto mb-3 group-hover:scale-110 transition duration-300"
           >
             <CloudArrowUpIcon class="w-6 h-6 text-(--color-primary)" />
           </div>
-          <p class="text-sm font-bold text-gray-800">
-            Drop asset images or click to traverse files
+          <p class="text-sm font-bold text-(--color-text)">
+            Drop property images here, or click to browse
           </p>
-          <p class="text-xs text-gray-400 mt-1 font-medium">
+          <p class="text-xs text-(--color-muted) mt-1 font-medium">
             Supports ultra-high-definition PNG, JPEG, WebP (Max 10MB per unit,
             Limit 10 items)
           </p>
@@ -1082,16 +1080,16 @@ onMounted(async () => {
 
         <div v-if="imagePreviewUrls.length > 0" class="space-y-2">
           <label
-            class="text-xs font-black text-gray-400 tracking-wider uppercase block"
+            class="text-xs font-black text-(--color-muted) tracking-wider uppercase block"
             >Staged Upload Runway ({{ imagePreviewUrls.length }})</label
           >
           <div
-            class="grid grid-cols-5 gap-3 bg-white border border-gray-100 p-3 rounded-2xl"
+            class="grid grid-cols-5 gap-3 bg-(--color-surface) border border-(--color-border) p-3 rounded-2xl"
           >
             <div
               v-for="(url, idx) in imagePreviewUrls"
               :key="idx"
-              class="relative aspect-square rounded-xl overflow-hidden group/thumb border border-gray-100"
+              class="relative aspect-square rounded-xl overflow-hidden group/thumb border border-(--color-border)"
             >
               <img :src="url" class="w-full h-full object-cover" />
               <div
@@ -1099,7 +1097,7 @@ onMounted(async () => {
               >
                 <button
                   @click="removeNewImage(idx)"
-                  class="w-7 h-7 bg-white rounded-full flex items-center justify-center text-rose-600 shadow transition transform hover:scale-110"
+                  class="w-7 h-7 bg-(--color-surface) rounded-full flex items-center justify-center text-rose-600 shadow transition transform hover:scale-110"
                 >
                   <XMarkIcon class="w-4 h-4 stroke-[3]" />
                 </button>
@@ -1114,12 +1112,12 @@ onMounted(async () => {
         </div>
 
         <div
-          class="flex items-center justify-end gap-2 border-t border-gray-100 pt-4"
+          class="flex items-center justify-end gap-2 border-t border-(--color-border) pt-4"
         >
           <button
             :disabled="uploadingImages"
             @click="closeAddModal"
-            class="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition disabled:opacity-50"
+            class="px-5 py-2.5 rounded-xl border border-(--color-border) text-sm font-bold text-(--color-muted) hover:bg-(--color-surface-soft) transition disabled:opacity-50"
           >
             Skip For Now
           </button>
@@ -1129,7 +1127,7 @@ onMounted(async () => {
             class="px-5 py-2.5 rounded-xl bg-(--color-primary) text-white text-sm font-bold hover:opacity-95 disabled:opacity-40 transition flex items-center gap-2 shadow-sm"
           >
             <ClockIcon v-if="uploadingImages" class="w-4 h-4 animate-spin" />
-            Launch Manifest Portfolio
+            Upload & Finish
           </button>
         </div>
       </div>
@@ -1137,7 +1135,7 @@ onMounted(async () => {
 
     <AppModal
       :open="isEditModalOpen"
-      title="Refine Structural Parameters"
+      title="Edit Property"
       @close="closeEditModal"
     >
       <div v-if="editingProperty" class="space-y-6">
@@ -1145,19 +1143,19 @@ onMounted(async () => {
           <div>
             <AppInput
               v-model="editingProperty.name"
-              label="Property Title Portfolio Name"
+              label="Property Name *Name"
             />
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1.5">
               <label
-                class="text-xs font-bold text-gray-500 tracking-wide uppercase"
-                >Category Structure Mapping</label
+                class="text-xs font-bold text-(--color-muted) tracking-wide uppercase"
+                >Property Type</label
               >
               <select
                 v-model="editingProperty.type"
-                class="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-3 text-sm font-semibold text-gray-800 outline-none focus:border-(--color-primary) transition"
+                class="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-3.5 py-3 text-sm font-semibold text-(--color-text) outline-none focus:border-(--color-primary) transition"
               >
                 <option>Hotel</option>
                 <option>Villa</option>
@@ -1168,12 +1166,12 @@ onMounted(async () => {
             </div>
             <div class="flex flex-col gap-1.5">
               <label
-                class="text-xs font-bold text-gray-500 tracking-wide uppercase"
-                >Operational Hub Sector</label
+                class="text-xs font-bold text-(--color-muted) tracking-wide uppercase"
+                >City / Location *Sector</label
               >
               <select
                 v-model="editingProperty.location"
-                class="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-3 text-sm font-semibold text-gray-800 outline-none focus:border-(--color-primary) transition"
+                class="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-3.5 py-3 text-sm font-semibold text-(--color-text) outline-none focus:border-(--color-primary) transition"
               >
                 <option>Phnom Penh</option>
                 <option>Siem Reap</option>
@@ -1188,18 +1186,18 @@ onMounted(async () => {
           <div>
             <AppInput
               v-model="editingProperty.address"
-              label="Physical Street Address Coordinates"
+              label="Street Address *Coordinates"
             />
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <AppInput
               v-model="editingProperty.contact_phone"
-              label="Registry Contact Phone"
+              label="Contact Phone"
             />
             <AppInput
               v-model="editingProperty.contact_email"
-              label="Registry Business Corporate Email"
+              label="Contact Email"
             />
           </div>
 
@@ -1207,45 +1205,45 @@ onMounted(async () => {
             <AppInput
               v-model="editingProperty.number_of_floors"
               type="number"
-              label="Floor Stack Height"
+              label="Number of Floors"
             />
           </div>
 
           <div>
             <label
-              class="text-xs font-bold text-gray-500 tracking-wide uppercase block mb-1.5"
-              >Corporate Description Profile</label
+              class="text-xs font-bold text-(--color-muted) tracking-wide uppercase block mb-1.5"
+              >Property Description</label
             >
             <textarea
               v-model="editingProperty.description"
               rows="3"
-              class="w-full p-4 rounded-xl border border-gray-200 bg-white text-sm text-gray-800 outline-none focus:border-(--color-primary) transition resize-none"
+              class="w-full p-4 rounded-xl border border-(--color-border) bg-(--color-surface) text-sm text-(--color-text) outline-none focus:border-(--color-primary) transition resize-none"
             ></textarea>
           </div>
         </div>
 
-        <div class="border-t border-gray-100 pt-5">
+        <div class="border-t border-(--color-border) pt-5">
           <h4
-            class="text-xs font-black text-gray-400 tracking-wider uppercase mb-3"
+            class="text-xs font-black text-(--color-muted) tracking-wider uppercase mb-3"
           >
-            Live Cloud Storage Vault
+            Uploaded Images
           </h4>
 
           <div
             v-if="editImagesLoading"
             class="flex items-center justify-center py-6"
           >
-            <ClockIcon class="w-6 h-6 text-gray-300 animate-spin" />
+            <ClockIcon class="w-6 h-6 text-(--color-muted) animate-spin" />
           </div>
 
           <div
             v-else
-            class="grid grid-cols-4 gap-3 bg-slate-50/80 p-3 rounded-2xl border border-gray-100"
+            class="grid grid-cols-4 gap-3 bg-(--color-background) p-3 rounded-2xl border border-(--color-border)"
           >
             <div
               v-for="img in editImages"
               :key="img.id"
-              class="relative aspect-square bg-white rounded-xl overflow-hidden border border-gray-200/60 group/media"
+              class="relative aspect-square bg-(--color-surface) rounded-xl overflow-hidden border border-(--color-border) group/media"
             >
               <img
                 :src="resolveAssetUrl(img.image_path || img.url)"
@@ -1265,15 +1263,15 @@ onMounted(async () => {
                 <button
                   v-if="editCoverId !== img.id"
                   @click="setCover(img.id)"
-                  class="p-1.5 bg-white text-gray-700 hover:text-emerald-600 hover:scale-105 rounded-lg shadow transition text-[10px] font-bold"
+                  class="p-1.5 bg-(--color-surface) text-(--color-text) hover:text-emerald-600 hover:scale-105 rounded-lg shadow transition text-[10px] font-bold"
                   title="Make Cover"
                 >
                   Set Cover
                 </button>
                 <button
                   @click="deleteEditImage(img.id)"
-                  class="p-1.5 bg-white text-rose-600 hover:bg-rose-50 hover:scale-105 rounded-lg shadow transition"
-                  title="Purge Image"
+                  class="p-1.5 bg-(--color-surface) text-rose-600 hover:bg-rose-50 hover:scale-105 rounded-lg shadow transition"
+                  title="Delete Image"
                 >
                   <TrashIcon class="w-3.5 h-3.5" />
                 </button>
@@ -1281,11 +1279,11 @@ onMounted(async () => {
             </div>
 
             <label
-              class="aspect-square border-2 border-dashed border-gray-200 hover:border-(--color-primary) bg-white rounded-xl flex flex-col items-center justify-center gap-1 cursor-pointer transition text-gray-400 hover:text-(--color-primary)"
+              class="aspect-square border-2 border-dashed border-(--color-border) hover:border-(--color-primary) bg-(--color-surface) rounded-xl flex flex-col items-center justify-center gap-1 cursor-pointer transition text-(--color-muted) hover:text-(--color-primary)"
             >
               <PhotoIcon class="w-5 h-5" />
               <span class="text-[10px] font-bold tracking-tight"
-                >Inject Photo</span
+                >Add Photo</span
               >
               <input
                 type="file"
@@ -1303,7 +1301,7 @@ onMounted(async () => {
             <div class="flex items-center justify-between">
               <span
                 class="text-[11px] font-bold text-orange-700 uppercase tracking-wider"
-                >Unsaved Structural Staging Queue ({{
+                >Unsaved Images ({{
                   editNewPreviews.length
                 }})</span
               >
@@ -1312,7 +1310,7 @@ onMounted(async () => {
                 @click="uploadStagedImages"
                 class="text-[11px] font-black text-white bg-orange-500 hover:bg-orange-600 px-3 py-1 rounded-lg transition disabled:opacity-50"
               >
-                Flush Queue to Cloud
+                Upload Images
               </button>
             </div>
             <div class="grid grid-cols-6 gap-2">
@@ -1324,7 +1322,7 @@ onMounted(async () => {
                 <img :src="url" class="w-full h-full object-cover" />
                 <button
                   @click="removeStagedFile(idx)"
-                  class="absolute top-1 right-1 w-5 h-5 bg-white/90 text-rose-600 rounded-full flex items-center justify-center hover:bg-white transition"
+                  class="absolute top-1 right-1 w-5 h-5 bg-white/90 text-rose-600 rounded-full flex items-center justify-center hover:bg-(--color-surface) transition"
                 >
                   <XMarkIcon class="w-3 h-3 stroke-[3]" />
                 </button>
@@ -1334,12 +1332,12 @@ onMounted(async () => {
         </div>
 
         <div
-          class="flex items-center justify-end gap-2 border-t border-gray-100 pt-4 mt-6"
+          class="flex items-center justify-end gap-2 border-t border-(--color-border) pt-4 mt-6"
         >
           <button
             type="button"
             @click="closeEditModal"
-            class="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition"
+            class="px-5 py-2.5 rounded-xl border border-(--color-border) text-sm font-bold text-(--color-muted) hover:bg-(--color-surface-soft) transition"
           >
             Close Panel
           </button>
@@ -1347,7 +1345,7 @@ onMounted(async () => {
             @click="handleEditProperty"
             class="px-5 py-2.5 rounded-xl bg-(--color-primary) text-white text-sm font-bold hover:opacity-95 transition shadow-sm"
           >
-            Commit Modified Index
+            Save Changes
           </button>
         </div>
       </div>
@@ -1355,7 +1353,7 @@ onMounted(async () => {
 
     <AppModal
       :open="isDeleteModalOpen"
-      title="Confirm Asset Decommission"
+      title="Delete Property"
       @close="closeDeleteModal"
     >
       <div class="p-1 text-center">
@@ -1364,20 +1362,18 @@ onMounted(async () => {
         >
           <TrashIcon class="w-6 h-6 stroke-[2.5]" />
         </div>
-        <h3 class="text-lg font-black text-gray-900 tracking-tight">
-          Decommission Real Estate Asset?
+        <h3 class="text-lg font-black text-(--color-text) tracking-tight">
+          Delete Property??
         </h3>
-        <p class="text-sm text-gray-400 mt-2 max-w-sm mx-auto font-medium">
-          This operation purges the core structural identifier entirely.
-          Operational histories and historical booking logs will be frozen
-          permanently.
+        <p class="text-sm text-(--color-muted) mt-2 max-w-sm mx-auto font-medium">
+          Are you sure you want to delete this property? This action is permanent and cannot be undone.
         </p>
         <div class="flex items-center justify-center gap-3 mt-8">
           <button
             @click="closeDeleteModal"
-            class="px-5 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-bold text-gray-500 hover:bg-gray-50 transition"
+            class="px-5 py-2.5 rounded-xl border border-(--color-border) bg-(--color-surface) text-sm font-bold text-(--color-muted) hover:bg-(--color-surface-soft) transition"
           >
-            Retain Assets
+            Cancel
           </button>
           <button
             @click="
@@ -1394,7 +1390,7 @@ onMounted(async () => {
             "
             class="px-5 py-2.5 rounded-xl bg-rose-600 text-white text-sm font-bold hover:bg-rose-700 hover:shadow-lg hover:shadow-rose-100 transition duration-150"
           >
-            Confirm Permanent Deletion
+            Delete Property
           </button>
         </div>
       </div>

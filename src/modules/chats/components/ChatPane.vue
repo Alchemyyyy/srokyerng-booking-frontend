@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import {
   ArrowLeftIcon,
@@ -11,6 +11,7 @@ import {
 } from "@heroicons/vue/24/outline";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useChatStore } from "../store/chatStore";
+import { socketService } from "../services/socket.service";
 import UserAvatar from "@/shared/components/UserAvatar.vue";
 
 const props = defineProps({
@@ -45,11 +46,55 @@ const scrollToBottom = () => {
   });
 };
 
+// Track active socket room
+let activeRoomId = null;
+
+const handleRealtimeNewMessage = (msg) => {
+  if (Number(msg.conversation_id) === Number(props.conversationId)) {
+    const exists = chatStore.messages.some((m) => m.id === msg.id);
+    if (!exists) {
+      chatStore.messages.push(msg);
+      
+      const convo = chatStore.conversations.find((c) => c.id === Number(props.conversationId));
+      if (convo) {
+        convo.last_message = msg.message_body || "Sent an image";
+        convo.last_message_at = msg.created_at;
+      }
+    }
+  }
+};
+
+const handleRealtimeMessageUnsent = ({ conversationId, messageId }) => {
+  if (Number(conversationId) === Number(props.conversationId)) {
+    chatStore.messages = chatStore.messages.filter((m) => m.id !== messageId);
+  }
+};
+
+onMounted(() => {
+  socketService.connect();
+  socketService.onNewMessage(handleRealtimeNewMessage);
+  socketService.onMessageUnsent(handleRealtimeMessageUnsent);
+});
+
+onUnmounted(() => {
+  if (activeRoomId) {
+    socketService.leaveConversation(activeRoomId);
+  }
+  socketService.offNewMessage(handleRealtimeNewMessage);
+  socketService.offMessageUnsent(handleRealtimeMessageUnsent);
+});
+
 // Watch for conversation changes and load messages
 watch(
   () => props.conversationId,
   async (newId) => {
     if (newId) {
+      if (activeRoomId) {
+        socketService.leaveConversation(activeRoomId);
+      }
+      activeRoomId = newId;
+      socketService.joinConversation(newId);
+
       await chatStore.fetchMessages(newId);
       scrollToBottom();
     }

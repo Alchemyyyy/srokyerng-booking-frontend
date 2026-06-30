@@ -10,10 +10,12 @@ import { useChatStore } from "../store/chatStore";
 import PublicNavbar from "@/shared/components/PublicNavbar.vue";
 import UserAvatar from "@/shared/components/UserAvatar.vue";
 import ChatPane from "../components/ChatPane.vue";
+import { useSidebar } from "@/shared/composables/useSidebar";
 
 const router = useRouter();
 const authStore = useAuthStore();
 const chatStore = useChatStore();
+const { isSidebarOpen } = useSidebar();
 
 const searchQuery = ref("");
 const activeTab = ref("all"); // 'all' or 'unread'
@@ -90,11 +92,14 @@ const formatDate = (isoString) => {
 </script>
 
 <template>
-  <div class="h-screen bg-(--color-page) text-(--color-text) flex flex-col font-sans overflow-hidden">
-    <PublicNavbar />
+  <div
+    class="bg-(--color-page) text-(--color-text) flex flex-col font-sans overflow-hidden transition-all duration-300"
+    :class="authStore.user?.role === 'owner' ? (isSidebarOpen ? 'fixed top-16 right-0 bottom-0 left-64' : 'fixed top-16 right-0 bottom-0 left-20') : 'h-screen'"
+  >
+    <PublicNavbar v-if="authStore.user?.role !== 'owner'" />
 
     <!-- Split view pane container -->
-    <main class="flex-grow pt-24 flex overflow-hidden">
+    <main class="flex-grow flex overflow-hidden" :class="authStore.user?.role !== 'owner' ? 'pt-24' : ''">
       <!-- Left pane: Conversations List -->
       <section
         class="w-full lg:w-[380px] shrink-0 border-r border-(--color-border) flex flex-col h-full bg-(--color-surface)"

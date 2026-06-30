@@ -5,6 +5,7 @@ import "v-calendar/style.css";
 // ⚠️ ADJUST PATH if Calendar.api.js doesn't actually live at ../api/Calendar.api
 // relative to this component — match wherever you placed the file you shared.
 import { calendarApi } from "../api/Calendar.api";
+import { useToastStore } from "@/shared/store/toastStore";
 
 const props = defineProps({
   roomId: { type: [Number, String], default: null },
@@ -13,6 +14,10 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["date-selected", "range-selected"]);
+const toast = useToastStore();
+
+const getBlockKey = () => `owner_blocked_dates_${props.propertyId || props.roomId || 'default'}`;
+const blockedDates = ref([]);
 
 const loading = ref(false);
 const error = ref(null);
@@ -120,6 +125,15 @@ const fetchCalendar = async () => {
 
       unavailableDates.value = [...new Set(unavailable)];
 
+      try {
+        const stored = localStorage.getItem(getBlockKey());
+        if (stored) blockedDates.value = JSON.parse(stored);
+      } catch (e) {
+        console.error(e);
+      }
+
+      unavailableDates.value = [...new Set([...unavailableDates.value, ...blockedDates.value])];
+
       const allDates = [];
       const cursor = new Date(startDate.value);
       const rangeEnd = new Date(endDate.value);
@@ -132,8 +146,16 @@ const fetchCalendar = async () => {
       );
     } else {
       reservations.value = [];
-      availableDates.value = data?.available_dates ?? [];
-      unavailableDates.value = data?.unavailable_dates ?? [];
+      try {
+        const stored = localStorage.getItem(getBlockKey());
+        if (stored) blockedDates.value = JSON.parse(stored);
+      } catch (e) {
+        console.error(e);
+      }
+      const unavail = data?.unavailable_dates ?? [];
+      unavailableDates.value = [...new Set([...unavail, ...blockedDates.value])];
+      const avail = data?.available_dates ?? [];
+      availableDates.value = avail.filter((d) => !unavailableDates.value.includes(d));
     }
   } catch (err) {
     const status = err?.response?.status;
@@ -265,14 +287,27 @@ const calendarAttributes = computed(() => {
     });
   }
 
-  // Booked days — solid red highlight on the day itself.
-  if (unavailableDates.value.length) {
+  // Booked days — solid red highlight on the day itself (exclude manual blocks).
+  const realBookings = unavailableDates.value.filter(d => !blockedDates.value.includes(d));
+  if (realBookings.length) {
     attrs.push({
       key: "unavailable",
       highlight: { color: "red", fillMode: "solid" },
-      dates: unavailableDates.value.map((d) => new Date(d)),
+      dates: realBookings.map((d) => new Date(d)),
       popover: {
         label: props.mode === "owner" ? "Booked — click for details" : "Booked",
+      },
+    });
+  }
+
+  // Manually blocked days — solid orange highlight.
+  if (blockedDates.value.length) {
+    attrs.push({
+      key: "blocked",
+      highlight: { color: "orange", fillMode: "solid" },
+      dates: blockedDates.value.map((d) => new Date(d)),
+      popover: {
+        label: props.mode === "owner" ? "Blocked by Owner — click to unblock" : "Unavailable",
       },
     });
   }
@@ -316,17 +351,33 @@ const disabledDates = computed(() =>
   props.mode === "owner" ? [] : unavailableDates.value.map((d) => new Date(d)),
 );
 
+const toggleBlockDate = () => {
+  if (!selectedBookingDate.value) return;
+  const dateStr = selectedBookingDate.value;
+  if (blockedDates.value.includes(dateStr)) {
+    blockedDates.value = blockedDates.value.filter(d => d !== dateStr);
+    toast.success("Date unblocked successfully");
+  } else {
+    blockedDates.value.push(dateStr);
+    toast.success("Date blocked successfully");
+  }
+  localStorage.setItem(getBlockKey(), JSON.stringify(blockedDates.value));
+  fetchCalendar();
+};
+
 const handleDayClick = (day) => {
+  if (props.mode === "owner") {
+    selectedBookingDate.value = day.id;
+    emit("date-selected", {
+      date: day.id,
+      bookings: reservationsByDate.value[day.id] ?? [],
+    });
+    return;
+  }
+
   const isBooked = unavailableDates.value.includes(day.id);
 
   if (isBooked) {
-    if (props.mode === "owner") {
-      selectedBookingDate.value = day.id;
-      emit("date-selected", {
-        date: day.id,
-        bookings: reservationsByDate.value[day.id] ?? [],
-      });
-    }
     // Booked days are never a valid start/end for a new range, in any mode.
     return;
   }
@@ -456,12 +507,14 @@ onMounted(fetchCalendar);
 
           <!-- Owner-only: details for a booked day that was clicked -->
           <div
-            v-if="mode === 'owner' && selectedBookings.length"
+            v-if="mode === 'owner' && selectedBookingDate"
             class="mt-4 rounded-xl border border-(--color-border) bg-(--color-surface-soft) px-4 py-3 text-sm"
           >
             <div class="flex items-center justify-between mb-2">
               <p class="font-bold text-(--color-text)">
-                Booking{{ selectedBookings.length > 1 ? "s" : "" }} —
+                <span v-if="selectedBookings.length">Booking{{ selectedBookings.length > 1 ? "s" : "" }} —</span>
+                <span v-else-if="blockedDates.includes(selectedBookingDate)">Blocked Date —</span>
+                <span v-else>Available Date —</span>
                 {{ selectedBookingDate }}
               </p>
               <button
@@ -473,62 +526,81 @@ onMounted(fetchCalendar);
               </button>
             </div>
 
-            <div
-              v-for="(booking, idx) in selectedBookings"
-              :key="booking.id ?? booking.reservation_id ?? idx"
-              :class="{ 'mt-3 pt-3 border-t border-(--color-border)': idx > 0 }"
-            >
-              <!-- ⚠️ Field names below are best-guess fallbacks (guest_name /
-                   customer_name / guestName). Confirm the real field names
-                   against what /owner/properties/:id/availability-calendar
-                   actually returns and trim the fallbacks once known. -->
-              <p class="font-semibold text-(--color-text)">
-                {{
-                  booking.guest_name ??
-                  booking.customer_name ??
-                  booking.guestName ??
-                  "Guest"
-                }}
-              </p>
+            <!-- Case 1: Guest Bookings -->
+            <div v-if="selectedBookings.length">
               <div
-                class="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-(--color-muted)"
+                v-for="(booking, idx) in selectedBookings"
+                :key="booking.id ?? booking.reservation_id ?? idx"
+                :class="{ 'mt-3 pt-3 border-t border-(--color-border)': idx > 0 }"
               >
-                <span>
-                  Check-in:
-                  <strong class="text-(--color-text)">
-                    {{ booking.check_in_date ?? booking.checkIn ?? "—" }}
-                  </strong>
-                </span>
-                <span>
-                  Check-out:
-                  <strong class="text-(--color-text)">
-                    {{ booking.check_out_date ?? booking.checkOut ?? "—" }}
-                  </strong>
-                </span>
-                <span v-if="booking.status ?? booking.reservation_status">
-                  Status:
-                  <strong class="text-(--color-text) capitalize">
-                    {{ booking.status ?? booking.reservation_status }}
-                  </strong>
-                </span>
+                <p class="font-semibold text-(--color-text)">
+                  {{
+                    booking.guest_name ??
+                    booking.customer_name ??
+                    booking.guestName ??
+                    "Guest"
+                  }}
+                </p>
+                <div
+                  class="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-(--color-muted)"
+                >
+                  <span>
+                    Check-in:
+                    <strong class="text-(--color-text)">
+                      {{ booking.check_in_date ?? booking.checkIn ?? "—" }}
+                    </strong>
+                  </span>
+                  <span>
+                    Check-out:
+                    <strong class="text-(--color-text)">
+                      {{ booking.check_out_date ?? booking.checkOut ?? "—" }}
+                    </strong>
+                  </span>
+                  <span v-if="booking.status ?? booking.reservation_status">
+                    Status:
+                    <strong class="text-(--color-text) capitalize">
+                      {{ booking.status ?? booking.reservation_status }}
+                    </strong>
+                  </span>
+                </div>
+                <RouterLink
+                  v-if="booking.id ?? booking.reservation_id"
+                  :to="{
+                    name: 'owner.reservation-detail',
+                    params: { id: booking.id ?? booking.reservation_id },
+                  }"
+                  class="inline-block mt-2 text-xs font-bold text-(--color-primary) hover:underline"
+                >
+                  View full reservation →
+                </RouterLink>
               </div>
-              <!-- ⚠️ Route name guessed — point this at your real owner
-                   reservation detail route. -->
-              <RouterLink
-                v-if="booking.id ?? booking.reservation_id"
-                :to="{
-                  name: 'owner.reservation-detail',
-                  params: { id: booking.id ?? booking.reservation_id },
-                }"
-                class="inline-block mt-2 text-xs font-bold text-(--color-primary) hover:underline"
+            </div>
+
+            <!-- Case 2: Blocked Date -->
+            <div v-else-if="blockedDates.includes(selectedBookingDate)" class="py-2 flex items-center justify-between">
+              <p class="text-xs text-amber-600 font-semibold">Blocked for Maintenance / External Booking</p>
+              <button
+                @click="toggleBlockDate"
+                class="px-3 py-1.5 rounded-xl bg-amber-500 text-white font-bold text-xs hover:bg-amber-600 transition"
               >
-                View full reservation →
-              </RouterLink>
+                Unblock Date
+              </button>
+            </div>
+
+            <!-- Case 3: Available Date -->
+            <div v-else class="py-2 flex items-center justify-between">
+              <p class="text-xs text-emerald-600 font-semibold">Date is available for guest bookings</p>
+              <button
+                @click="toggleBlockDate"
+                class="px-3 py-1.5 rounded-xl bg-rose-600 text-white font-bold text-xs hover:bg-rose-700 transition"
+              >
+                Block Date
+              </button>
             </div>
           </div>
 
           <div
-            v-if="selectedRange.start"
+            v-if="mode !== 'owner' && selectedRange.start"
             class="mt-4 rounded-xl border border-(--color-border) bg-(--color-surface-soft) px-4 py-3 text-sm"
           >
             <p class="font-bold text-(--color-text) mb-1">Selected Dates</p>
@@ -564,7 +636,11 @@ onMounted(fetchCalendar);
               <span class="w-2.5 h-2.5 rounded-full bg-rose-500" />
               Booked
             </div>
-            <div class="flex items-center gap-1.5">
+            <div v-if="mode === 'owner'" class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-orange-500" />
+              Blocked
+            </div>
+            <div v-if="mode !== 'owner'" class="flex items-center gap-1.5">
               <span class="w-2.5 h-2.5 rounded-full bg-blue-500" />
               Selected
             </div>

@@ -87,14 +87,14 @@ const badgeConfig = computed(() => {
   if (s === "SUSPENDED")
     return {
       label: "SUSPENDED",
-      bg: "bg-gray-500/10 border-gray-500/20",
-      text: "text-gray-600",
+      bg: "bg-(--color-surface-soft)0/10 border-gray-500/20",
+      text: "text-(--color-muted)",
     };
 
   return {
     label: s || "UNKNOWN",
-    bg: "bg-gray-500/10 border-gray-500/20",
-    text: "text-gray-700",
+    bg: "bg-(--color-surface-soft)0/10 border-gray-500/20",
+    text: "text-(--color-text)",
   };
 });
 
@@ -147,7 +147,7 @@ const handleActivate = (e) => {
 
 <template>
   <div
-    class="bg-white rounded-[24px] flex flex-col shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer group"
+    class="bg-(--color-surface) rounded-[24px] flex flex-col shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 ease-out cursor-pointer group"
     role="button"
     tabindex="0"
     @click="goToDetail"
@@ -156,7 +156,7 @@ const handleActivate = (e) => {
     <!-- ── Image block ──────────────────────────────────────────────────── -->
     <div class="relative w-full p-3 pb-0" style="height: 240px">
       <div
-        class="relative w-full h-full rounded-[18px] overflow-hidden bg-gray-100"
+        class="relative w-full h-full rounded-[18px] overflow-hidden bg-(--color-border)"
       >
         <img
           :src="property.image || placeholer"
@@ -172,7 +172,7 @@ const handleActivate = (e) => {
 
         <!-- Status badge -->
         <span
-          class="absolute top-3 left-3 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest backdrop-blur-md bg-white/80 border"
+          class="absolute top-3 left-3 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest backdrop-blur-md bg-(--color-surface)/80 border border-(--color-border)"
           :class="[badgeConfig.bg, badgeConfig.text]"
         >
           {{ badgeConfig.label }}
@@ -180,7 +180,7 @@ const handleActivate = (e) => {
 
         <!-- Heart Button -->
         <button
-          class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md border border-white/20 transition-all hover:bg-black/40 hover:scale-110"
+          class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md border border-(--color-border)/20 transition-all hover:bg-black/40 hover:scale-110"
           @click.stop
           title="Save"
         >
@@ -190,18 +190,18 @@ const handleActivate = (e) => {
         <!-- Pending Changes banner -->
         <div
           v-if="hasPendingEdit"
-          class="absolute bottom-3 left-3 right-3 bg-white/85 backdrop-blur-xl rounded-2xl p-3 flex items-start gap-3 border border-white shadow-sm transition-transform duration-300 group-hover:-translate-y-1"
+          class="absolute bottom-3 left-3 right-3 bg-(--color-surface)/85 backdrop-blur-xl rounded-2xl p-3 flex items-start gap-3 border border-(--color-border) shadow-sm transition-transform duration-300 group-hover:-translate-y-1"
         >
           <div class="bg-orange-100/80 p-1.5 rounded-full shrink-0 mt-0.5">
             <ClockIcon class="w-4 h-4 text-orange-600" />
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-[13px] font-bold text-gray-900 leading-tight">
+            <p class="text-[13px] font-bold text-(--color-text) leading-tight">
               Waiting for admin approval
             </p>
             <p
               v-if="property.submittedAt"
-              class="text-[11px] text-gray-500 mt-1 font-medium"
+              class="text-[11px] text-(--color-muted) mt-1 font-medium"
             >
               Submitted on {{ property.submittedAt }}
             </p>
@@ -211,42 +211,42 @@ const handleActivate = (e) => {
         <!-- Rejected edit banner -->
         <div
           v-else-if="hasRejectedEdit"
-          class="absolute bottom-3 left-3 right-3 bg-white/85 backdrop-blur-xl rounded-2xl p-3 flex items-start gap-3 border border-white shadow-sm transition-transform duration-300 group-hover:-translate-y-1"
+          class="absolute bottom-3 left-3 right-3 bg-(--color-surface)/85 backdrop-blur-xl rounded-2xl p-3 flex items-start gap-3 border border-(--color-border) shadow-sm transition-transform duration-300 group-hover:-translate-y-1"
         >
           <div class="bg-rose-100/80 p-1.5 rounded-full shrink-0 mt-0.5">
             <XCircleIcon class="w-4 h-4 text-rose-600" />
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-[13px] font-bold text-gray-900 leading-tight">
+            <p class="text-[13px] font-bold text-(--color-text) leading-tight">
               Rejected by admin
             </p>
             <p
               v-if="rejectionReason"
-              class="text-[11px] text-gray-500 mt-1 truncate font-medium"
+              class="text-[11px] text-(--color-muted) mt-1 truncate font-medium"
             >
               Reason: {{ rejectionReason }}
             </p>
           </div>
           <InformationCircleIcon
-            class="w-5 h-5 text-gray-400 mt-0.5 shrink-0"
+            class="w-5 h-5 text-(--color-muted) mt-0.5 shrink-0"
           />
         </div>
 
         <!-- Pending (new property) banner -->
         <div
           v-else-if="isPending"
-          class="absolute bottom-3 left-3 right-3 bg-white/85 backdrop-blur-xl rounded-2xl p-3 flex items-start gap-3 border border-white shadow-sm transition-transform duration-300 group-hover:-translate-y-1"
+          class="absolute bottom-3 left-3 right-3 bg-(--color-surface)/85 backdrop-blur-xl rounded-2xl p-3 flex items-start gap-3 border border-(--color-border) shadow-sm transition-transform duration-300 group-hover:-translate-y-1"
         >
           <div class="bg-blue-100/80 p-1.5 rounded-full shrink-0 mt-0.5">
             <ClockIcon class="w-4 h-4 text-blue-600" />
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-[13px] font-bold text-gray-900 leading-tight">
+            <p class="text-[13px] font-bold text-(--color-text) leading-tight">
               Under admin review
             </p>
             <p
               v-if="property.submittedAt"
-              class="text-[11px] text-gray-500 mt-1 font-medium"
+              class="text-[11px] text-(--color-muted) mt-1 font-medium"
             >
               Submitted on {{ property.submittedAt }}
             </p>
@@ -256,13 +256,13 @@ const handleActivate = (e) => {
         <!-- Suspended banner -->
         <div
           v-else-if="isSuspended"
-          class="absolute bottom-3 left-3 right-3 bg-white/85 backdrop-blur-xl rounded-2xl p-3 flex items-start gap-3 border border-white shadow-sm transition-transform duration-300 group-hover:-translate-y-1"
+          class="absolute bottom-3 left-3 right-3 bg-(--color-surface)/85 backdrop-blur-xl rounded-2xl p-3 flex items-start gap-3 border border-(--color-border) shadow-sm transition-transform duration-300 group-hover:-translate-y-1"
         >
           <div class="bg-gray-100/80 p-1.5 rounded-full shrink-0 mt-0.5">
-            <PauseCircleIcon class="w-4 h-4 text-gray-500" />
+            <PauseCircleIcon class="w-4 h-4 text-(--color-muted)" />
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-[13px] font-bold text-gray-900 leading-tight">
+            <p class="text-[13px] font-bold text-(--color-text) leading-tight">
               Deactivated — hidden from guests
             </p>
           </div>
@@ -276,61 +276,61 @@ const handleActivate = (e) => {
       <div class="flex justify-between items-start gap-4">
         <div>
           <h3
-            class="text-[17px] font-extrabold text-gray-900 tracking-tight leading-snug line-clamp-1"
+            class="text-[17px] font-extrabold text-(--color-text) tracking-tight leading-snug line-clamp-1"
           >
             {{ property.name }}
           </h3>
           <p
-            class="flex items-center gap-1 mt-1.5 text-[13px] font-medium text-gray-400"
+            class="flex items-center gap-1 mt-1.5 text-[13px] font-medium text-(--color-muted)"
           >
-            <MapPinIcon class="w-4 h-4 shrink-0 text-gray-400" />
+            <MapPinIcon class="w-4 h-4 shrink-0 text-(--color-muted)" />
             {{ property.location }}, Cambodia
           </p>
         </div>
 
         <div class="text-right shrink-0">
           <p
-            class="text-[11px] font-semibold text-gray-400 uppercase tracking-wide"
+            class="text-[11px] font-semibold text-(--color-muted) uppercase tracking-wide"
           >
             Revenue
           </p>
-          <p class="text-[16px] font-black text-gray-900 mt-0.5">
+          <p class="text-[16px] font-black text-(--color-text) mt-0.5">
             ${{ property.revenue?.toLocaleString() || 0 }}
           </p>
         </div>
       </div>
 
       <!-- Stats Row -->
-      <div class="flex items-center gap-4 py-3 border-y border-gray-100/80">
+      <div class="flex items-center gap-4 py-3 border-y border-(--color-border)">
         <div class="flex items-center gap-2">
-          <div class="bg-gray-50 p-1.5 rounded-lg text-gray-500">
+          <div class="bg-(--color-surface-soft) p-1.5 rounded-lg text-(--color-muted)">
             <BuildingOffice2Icon class="w-4 h-4" />
           </div>
           <div>
             <span
-              class="block text-[13px] font-bold text-gray-900 leading-none"
+              class="block text-[13px] font-bold text-(--color-text) leading-none"
               >{{ property.rooms || 0 }}</span
             >
             <span
-              class="block text-[11px] font-medium text-gray-400 mt-1 leading-none"
+              class="block text-[11px] font-medium text-(--color-muted) mt-1 leading-none"
               >Rooms</span
             >
           </div>
         </div>
 
-        <div class="w-[1px] h-6 bg-gray-100"></div>
+        <div class="w-[1px] h-6 bg-(--color-border)"></div>
 
         <div class="flex items-center gap-2">
-          <div class="bg-gray-50 p-1.5 rounded-lg text-gray-500">
+          <div class="bg-(--color-surface-soft) p-1.5 rounded-lg text-(--color-muted)">
             <CalendarDaysIcon class="w-4 h-4" />
           </div>
           <div>
             <span
-              class="block text-[13px] font-bold text-gray-900 leading-none"
+              class="block text-[13px] font-bold text-(--color-text) leading-none"
               >{{ property.bookings || 0 }}</span
             >
             <span
-              class="block text-[11px] font-medium text-gray-400 mt-1 leading-none"
+              class="block text-[11px] font-medium text-(--color-muted) mt-1 leading-none"
               >Bookings</span
             >
           </div>
@@ -342,7 +342,7 @@ const handleActivate = (e) => {
         <!-- Rooms -->
         <RouterLink
           :to="`/owner/rooms?propertyId=${property.id}`"
-          class="flex items-center justify-center gap-2 flex-1 py-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-800 text-[13px] font-bold transition-colors"
+          class="flex items-center justify-center gap-2 flex-1 py-2.5 rounded-xl bg-(--color-surface-soft) hover:bg-(--color-border) text-(--color-text) text-[13px] font-bold transition-colors"
           @click.stop
         >
           <BuildingOffice2Icon class="w-4 h-4" />
@@ -351,7 +351,7 @@ const handleActivate = (e) => {
 
         <!-- Edit -->
         <button
-          class="flex items-center justify-center gap-2 flex-1 py-2.5 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-800 text-[13px] font-bold transition-colors"
+          class="flex items-center justify-center gap-2 flex-1 py-2.5 rounded-xl bg-(--color-surface-soft) hover:bg-(--color-border) text-(--color-text) text-[13px] font-bold transition-colors"
           :class="hasPendingEdit ? 'opacity-50 cursor-not-allowed' : ''"
           :disabled="hasPendingEdit"
           @click.stop="emit('edit', property)"
@@ -367,7 +367,7 @@ const handleActivate = (e) => {
             :class="
               showMenu
                 ? 'bg-(--color-primary)/10 text-(--color-primary)'
-                : 'bg-gray-50 hover:bg-gray-100 text-gray-600'
+                : 'bg-(--color-surface-soft) hover:bg-(--color-border) text-(--color-muted)'
             "
             @click="openMenu"
             title="More options"
@@ -386,7 +386,7 @@ const handleActivate = (e) => {
           >
             <div
               v-if="showMenu"
-              class="absolute bottom-full right-0 mb-2 w-48 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 overflow-hidden z-50"
+              class="absolute bottom-full right-0 mb-2 w-48 bg-(--color-surface) rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-(--color-border) overflow-hidden z-50"
               @click.stop
             >
               <!-- Deactivate — only if approved (active) -->

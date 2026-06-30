@@ -10,11 +10,14 @@ import {
   ChartBarIcon,
   BuildingOffice2Icon,
   KeyIcon,
+  SparklesIcon,
   CalendarDaysIcon,
   CalendarIcon,
   CreditCardIcon,
   Cog6ToothIcon,
-  ChatBubbleLeftRightIcon, // Added for the reviews icon
+  ChatBubbleLeftRightIcon,
+  ChatBubbleOvalLeftEllipsisIcon,
+  BanknotesIcon,
 } from "@heroicons/vue/24/outline";
 
 const { t } = useI18n();
@@ -28,6 +31,11 @@ const menuItems = computed(() => [
   },
   { name: t("owner.sidebar.rooms"), path: "/owner/rooms", icon: KeyIcon },
   {
+    name: t("owner.sidebar.amenities"),
+    path: "/owner/amenities",
+    icon: SparklesIcon,
+  },
+  {
     name: t("owner.sidebar.bookingCalendar"),
     path: "/owner/booking-calendar",
     icon: CalendarIcon,
@@ -38,7 +46,17 @@ const menuItems = computed(() => [
     icon: CalendarDaysIcon,
   },
   {
-    name: t("owner.sidebar.reviews"), // Added Reviews entry
+    name: t("owner.sidebar.payments"),
+    path: "/owner/payments",
+    icon: BanknotesIcon,
+  },
+  {
+    name: t("owner.sidebar.messages"),
+    path: "/owner/chats",
+    icon: ChatBubbleOvalLeftEllipsisIcon,
+  },
+  {
+    name: t("owner.sidebar.reviews"),
     path: "/owner/reviews",
     icon: ChatBubbleLeftRightIcon,
   },

@@ -36,7 +36,7 @@ export const useRoomStore = defineStore("rooms", () => {
     if (!selectedPropertyId.value || selectedPropertyId.value === "all")
       return rooms.value;
     return rooms.value.filter(
-      (room) => room.property_id === selectedPropertyId.value,
+      (room) => String(room.property_id) === String(selectedPropertyId.value),
     );
   });
 
@@ -213,7 +213,9 @@ export const useRoomStore = defineStore("rooms", () => {
       }
 
       rooms.value = allRooms;
-      selectedPropertyId.value = "all";
+      if (!selectedPropertyId.value) {
+        selectedPropertyId.value = "all";
+      }
       if (allRooms.length > 0) {
         fetchAllRoomImages(allRooms);
       }

@@ -46,23 +46,18 @@ export const ownerRoutes = [
   {
     path: "reservations",
     name: "reservations",
+    component: OwnerReservationsView,
+  },
+  {
+    path: "payments",
+    name: "payments",
     component: OwnerPaymentsView,
   },
   {
-    path: "reservations/:id",
-    name: "reservation-payment-detail",
+    path: "payments/:id",
+    name: "payment-detail",
     component: OwnerPaymentDetailView,
   },
-  // {
-  //   path: "reservations",
-  //   name: "reservations",
-  //   component: OwnerReservationsView,
-  // },
-  // {
-  //   path: "/owner/payments",
-  //   name: "owner-payments",
-  //   component: () => import('./pages/OwnerPaymentsView.vue'),
-  // },
   {
     path: "payment-accounts",
     name: "paymentAccounts",

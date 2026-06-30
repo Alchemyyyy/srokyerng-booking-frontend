@@ -6,7 +6,7 @@ import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useToastStore } from "@/shared/store/toastStore";
 import { reservationApi } from "@/modules/reservations/api/reservation.api";
 
-export const useOwnerPaymentStore = defineStore("ownerPayment", () => {
+export const useOwnerPaymentStore = defineStore("owner-guest-payments", () => {
     const authStore = useAuthStore();
     const toastStore = useToastStore();
 

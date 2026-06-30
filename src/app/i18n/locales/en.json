@@ -1263,19 +1263,22 @@
       "dashboard": "Dashboard",
       "properties": "Properties",
       "rooms": "Rooms",
+      "amenities": "Amenities",
       "bookingCalendar": "Calendar",
       "reservations": "Reservations",
+      "payments": "Guest Payments & Refunds",
       "reviews": "Reviews",
+      "messages": "Messages",
       "paymentAccounts": "Payment Accounts",
       "settings": "Settings"
     },
     "analytics": {
       "loadingDashboard": "Loading owner dashboard...",
       "retry": "Retry",
-      "dashboardEyebrow": "overview data · Live data",
+      "dashboardEyebrow": "Overview · Live data",
       "dashboardTitle": "Analytics Dashboard",
-      "dashboardSubtitle": "Track revenue, booking traffic, and property performance by overview history.",
-      "year": "overview History",
+      "dashboardSubtitle": "Track revenue, booking traffic, and property performance over time.",
+      "year": "Select Year",
       "summaryMetrics": "Summary metrics",
       "quickActions": "Quick Actions",
       "quickActionsSubtitle": "Navigate to key sections instantly",
@@ -1316,7 +1319,7 @@
       "revenueBySegment": "Revenue by segment",
       "byPercent": "by %",
       "error": {
-        "failedToLoadDashboardData": "Failed to load dashboard data. Ensure data.json is present."
+        "failedToLoadDashboardData": "Failed to load dashboard data. Please check your connection and try again."
       },
       "summary": {
         "totalProperties": "Total Properties",

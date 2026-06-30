@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, watch } from "vue";
+import { useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
 
 import AppButton from "@/shared/components/AppButton.vue";
@@ -408,7 +409,14 @@ const handleDeleteRoom = async () => {
   }
 };
 
-onMounted(fetchRoomsData);
+const route = useRoute();
+
+onMounted(async () => {
+  if (route.query.propertyId) {
+    setSelectedPropertyId(route.query.propertyId);
+  }
+  await fetchRoomsData();
+});
 </script>
 
 <template>

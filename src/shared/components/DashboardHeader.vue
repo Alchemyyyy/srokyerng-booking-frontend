@@ -3,7 +3,7 @@ import { computed, ref, onMounted, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 
-import ThemeToggle from "./ThemeToggle1.vue";
+import ThemeToggle from "./ThemeToggle.vue";
 import LanguageToggle from "./LanguageToggle.vue";
 import NavbarAccountMenu from "./NavbarAccountMenu.vue";
 import NotificationBell from "@/modules/notifications/components/NotificationBell.vue";
@@ -39,7 +39,18 @@ const { t } = useI18n();
 const homeLabel = computed(() => t("nav.home"));
 
 const routeLabel = computed(() => {
-  return route.meta.title || t("nav.dashboard");
+  if (route.meta.title) return route.meta.title;
+  if (route.name) {
+    const nameWithoutPrefix = String(route.name).replace(/^(owner|customer|admin)\./, "");
+    const key = `owner.sidebar.${nameWithoutPrefix}`;
+    const translated = t(key);
+    if (translated !== key) return translated;
+    return nameWithoutPrefix
+      .split(/[-.]/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  }
+  return t("nav.dashboard");
 });
 
 const isScrolled = ref(false);
@@ -62,16 +73,22 @@ const { isSidebarOpen } = useSidebar();
 <template>
   <header
     class="fixed top-0 right-0 z-10 h-16 flex items-center gap-3 px-6 bg-(--color-surface) border-b border-(--color-border) transition-all duration-300"
-    :class="isSidebarOpen ? 'left-64' : 'left-20'"
+    :class="[
+      isSidebarOpen ? 'left-64' : 'left-20',
+      isScrolled ? 'shadow-md bg-opacity-95 backdrop-blur-md' : ''
+    ]"
   >
     <!-- Breadcrumb -->
     <nav
       class="flex items-center gap-1.5 text-sm flex-1 min-w-0"
       aria-label="Breadcrumb"
     >
-      <span class="text-(--color-muted) font-medium">
+      <router-link
+        to="/owner"
+        class="text-(--color-muted) hover:text-(--color-primary) font-medium transition-colors"
+      >
         {{ homeLabel }}
-      </span>
+      </router-link>
 
       <ChevronRightIcon class="w-3.5 h-3.5 text-(--color-muted) shrink-0" />
 

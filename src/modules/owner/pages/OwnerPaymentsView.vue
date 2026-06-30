@@ -11,9 +11,11 @@ import AppPagination from "../components/TablePagination.vue";
 import { useOwnerPaymentStore } from "../store/ownerPayment.store";
 import { ShieldCheckIcon, CheckIcon, XMarkIcon, CheckCircleIcon, XCircleIcon } from "@heroicons/vue/24/outline";
 import { useSidebar } from "@/shared/composables/useSidebar";
+import { useToastStore } from "@/shared/store/toastStore";
 
 const router = useRouter();
 const { isSidebarOpen } = useSidebar();
+const toast = useToastStore();
 
 // Connect Pinia Store Setup Engine
 const paymentStore = useOwnerPaymentStore();
@@ -72,11 +74,8 @@ const formatDate = (value) => {
 
 // បន្ថែមត្រឡប់មកវិញនូវមុខងារ Row Click ពេលអ្នកប្រើចុចលើ Row ណាមួយ
 const handleRowClick = (row) => {
-    if (activeModule.value === 'payments') {
-        router.push({ path: "reservations/" + (row.customerPaymentId || row.id) });
-    } else {
-        router.push({ path: "reservations/" + row.payment_id });
-    }
+    const id = activeModule.value === 'payments' ? (row.customerPaymentId || row.id) : row.payment_id;
+    router.push({ name: "owner.payment-detail", params: { id } });
 };
 
 /* --- APPROVAL FLOWS --- */
@@ -131,8 +130,7 @@ const handleConfirmApprove = async () => {
 
 const handleConfirmReject = async () => {
     if (!rejectNoteText.value || !rejectNoteText.value.trim()) {
-        paymentStore.actionLoading = true;
-        setTimeout(() => { paymentStore.actionLoading = false; }, 1500);
+        toast.error("Please provide a rejection or cancellation reason for the guest.");
         return;
     }
     let success = false;

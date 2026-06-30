@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { ownerPaymentApi } from '../api/ownerPayment.api';
 
-export const useOwnerPaymentStore = defineStore('ownerPayment', () => {
+export const useOwnerPaymentStore = defineStore('owner-payment-accounts', () => {
     const loading = ref(false);
     const error = ref(null);
     const paymentAccounts = ref([]);
