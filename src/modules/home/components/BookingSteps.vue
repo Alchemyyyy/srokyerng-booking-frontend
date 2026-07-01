@@ -33,7 +33,7 @@ const steps = computed(() => [
 
 <template>
   <section
-    class="py-20 px-4 transition-colors duration-300 bg-(--color-surface-soft)"
+    class="w-full bg-(--color-surface-soft) py-20 px-6 border-b border-(--color-border)/30"
     :class="{ 'font-kantumruy': locale === 'km' }"
   >
     <div class="max-w-6xl mx-auto text-center">

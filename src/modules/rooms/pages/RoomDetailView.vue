@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import {
@@ -8,6 +8,7 @@ import {
   Squares2X2Icon,
   PhotoIcon,
   ShieldCheckIcon,
+  XMarkIcon,
 } from "@heroicons/vue/24/outline";
 import http from "@/app/api/http";
 import AvailabilityCalendar from "@/modules/calendar/components/AvailabilityCalendar.vue";
@@ -32,6 +33,9 @@ const getFullImageUrl = (url) => {
   return url.startsWith("http") ? url : `${BASE_URL}${url}`;
 };
 
+const showMapModal = ref(false);
+let detailMapInstance = null;
+
 const fetchRoom = async () => {
   try {
     const res = await http.get(`/rooms/${route.params.id}`);
@@ -47,6 +51,56 @@ const fetchRoom = async () => {
 
     const coverImg = images.find((i) => i.is_cover === 1) || images[0];
 
+    // Fetch parent property coordinates for the dynamic map
+    let latitude = 11.5564;
+    let longitude = 104.9282;
+    try {
+      const propRes = await http.get(`/properties/${r.property_id}`);
+      const prop = propRes.data?.data || propRes.data;
+      if (prop) {
+        const cityCenters = {
+          "phnom-penh": { lat: 11.5564, lng: 104.9282 },
+          "siem-reap": { lat: 13.3633, lng: 103.8564 },
+          "sihanoukville": { lat: 10.6096, lng: 103.5292 },
+          "koh-rong": { lat: 10.6865, lng: 103.2662 },
+          "battambang": { lat: 13.0957, lng: 103.2022 },
+          "kampot": { lat: 10.6111, lng: 104.1794 },
+          "kep": { lat: 10.4829, lng: 104.3167 },
+        };
+        const propertyCityRaw = typeof prop.city === "string"
+          ? prop.city
+          : prop.city?.city_name || prop.city?.name || prop.city_name || prop.address || "";
+        const propertyCity = String(propertyCityRaw)
+          .trim()
+          .toLowerCase()
+          .replace(/\s+/g, "-");
+          
+        let latVal = prop.latitude !== null && prop.latitude !== undefined && !isNaN(Number(prop.latitude)) && Number(prop.latitude) !== 0
+          ? Number(prop.latitude)
+          : null;
+        let lngVal = prop.longitude !== null && prop.longitude !== undefined && !isNaN(Number(prop.longitude)) && Number(prop.longitude) !== 0
+          ? Number(prop.longitude)
+          : null;
+
+        if (latVal === null || lngVal === null) {
+          let center = cityCenters[propertyCity];
+          if (!center) {
+            const foundCityKey = Object.keys(cityCenters).find(key => propertyCity.includes(key));
+            center = foundCityKey ? cityCenters[foundCityKey] : { lat: 11.5564, lng: 104.9282 };
+          }
+          const seed = Number(prop.id ?? 1);
+          const offsetLat = (Math.sin(seed * 43758.5453) * 0.012);
+          const offsetLng = (Math.cos(seed * 12.9898) * 0.012);
+          latVal = center.lat + offsetLat;
+          lngVal = center.lng + offsetLng;
+        }
+        latitude = latVal;
+        longitude = lngVal;
+      }
+    } catch (propErr) {
+      console.warn("Could not load property details for coordinates:", propErr);
+    }
+
     room.value = {
       id: r.id,
       type: r.room_name,
@@ -58,6 +112,8 @@ const fetchRoom = async () => {
       amenities: r.amenities || [],
       images: images.map((i) => getFullImageUrl(i.image_url)),
       propertyId: r.property_id,
+      latitude,
+      longitude,
     };
   } catch (err) {
     console.error("Failed to load room:", err);
@@ -66,6 +122,57 @@ const fetchRoom = async () => {
     loading.value = false;
   }
 };
+
+const initDetailMap = () => {
+  const container = document.getElementById("detail-map");
+  if (!container || !room.value || !window.L) return;
+
+  const lat = Number(room.value.latitude || 11.5564);
+  const lng = Number(room.value.longitude || 104.9282);
+
+  detailMapInstance = window.L.map("detail-map", {
+    zoomControl: false
+  }).setView([lat, lng], 15);
+
+  const isDarkMode = document.documentElement.classList.contains("dark");
+  const tileUrl = isDarkMode
+    ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+    : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+
+  const attribution = isDarkMode
+    ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+    : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
+  window.L.tileLayer(tileUrl, {
+    attribution,
+    maxZoom: 19
+  }).addTo(detailMapInstance);
+
+  window.L.control.zoom({
+    position: 'topright'
+  }).addTo(detailMapInstance);
+
+  const icon = window.L.divIcon({
+    className: "custom-detail-pin",
+    html: `<div class="flex items-center gap-1.5 rounded-sm bg-[#FF385C] text-white font-black text-xs px-3 py-1.5 shadow-2xl border border-white" style="border-radius: var(--radius-sm); white-space: nowrap;"><span class="text-white text-[10px]">📍</span> ${room.value.propertyName}</div>`,
+    iconSize: [140, 30],
+    iconAnchor: [70, 15]
+  });
+
+  window.L.marker([lat, lng], { icon }).addTo(detailMapInstance);
+};
+
+watch(showMapModal, async (isOpen) => {
+  if (isOpen) {
+    await nextTick();
+    initDetailMap();
+  } else {
+    if (detailMapInstance) {
+      detailMapInstance.remove();
+      detailMapInstance = null;
+    }
+  }
+});
 
 // ── Auto-fill booking form when customer picks a date range ──────────────────
 const handleRangeSelected = ({ start, end }) => {
@@ -275,7 +382,10 @@ onMounted(fetchRoom);
                 <span class="w-1 h-1 bg-(--color-border) rounded-full"></span>
                 <span>{{ room.propertyName }}</span>
                 <span class="w-1 h-1 bg-(--color-border) rounded-full"></span>
-                <span class="text-(--color-primary) underline cursor-pointer">
+                <span
+                  class="text-(--color-primary) underline cursor-pointer"
+                  @click="showMapModal = true"
+                >
                   {{ t("roomDetail.showMap") }}
                 </span>
               </div>
@@ -563,5 +673,20 @@ onMounted(fetchRoom);
         </div>
       </div>
     </template>
+
+    <!-- ── Map Modal ── -->
+    <div v-if="showMapModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 sm:p-6 transition-all duration-300" @click.self="showMapModal = false">
+      <div class="flex max-h-[80vh] h-full w-full max-w-4xl overflow-hidden rounded-sm bg-(--color-page) text-(--color-text) shadow-2xl border border-(--color-border) animate-scaleUp flex-col" style="border-radius: var(--radius-sm);">
+        <div class="flex items-center justify-between p-4 border-b border-(--color-border) bg-(--color-surface)">
+          <h3 class="text-lg font-black text-(--color-text)">{{ room?.propertyName || t("roomDetail.showMap") }}</h3>
+          <button type="button" class="p-1.5 rounded-sm hover:bg-gray-100 dark:hover:bg-neutral-800 transition active:scale-95 cursor-pointer" style="border-radius: var(--radius-sm);" @click="showMapModal = false">
+            <XMarkIcon class="h-6 w-6 text-(--color-text)" />
+          </button>
+        </div>
+        <div class="flex-1 relative bg-sky-50 dark:bg-neutral-900">
+          <div id="detail-map" class="absolute inset-0 h-full w-full"></div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, onMounted, computed, watch, nextTick, onBeforeUnmount } from "vue";
 import PropertyCard from "../components/PropertyCard.vue";
 import AppModal from "@/shared/components/AppModal.vue";
 import AppButton from "@/shared/components/AppButton.vue";
@@ -184,6 +184,8 @@ const defaultForm = () => ({
   contact_phone: "",
   contact_email: "",
   number_of_floors: 1,
+  latitude: 11.5564,
+  longitude: 104.9282,
 });
 
 const newProperty = ref(defaultForm());
@@ -240,8 +242,8 @@ const handleAddProperty = async () => {
       city_id,
       province_id,
       country_id,
-      latitude: coords.lat,
-      longitude: coords.lng,
+      latitude: newProperty.value.latitude ?? coords.lat,
+      longitude: newProperty.value.longitude ?? coords.lng,
       contact_phone: newProperty.value.contact_phone,
       contact_email: newProperty.value.contact_email,
       number_of_floors: Number(newProperty.value.number_of_floors) || 1,
@@ -368,6 +370,8 @@ const openEditModal = async (property) => {
       contact_phone: full?.contact_phone || "",
       contact_email: full?.contact_email || "",
       number_of_floors: full?.number_of_floors ?? 1,
+      latitude: full?.latitude ? Number(full.latitude) : (property.latitude ? Number(property.latitude) : null),
+      longitude: full?.longitude ? Number(full.longitude) : (property.longitude ? Number(property.longitude) : null),
       raw: full,
     };
     editNewFiles.value = [];
@@ -485,12 +489,12 @@ const handleEditProperty = async () => {
     city_id,
     province_id,
     country_id,
-    latitude: (
+    latitude: editingProperty.value.latitude ?? (
       cityCoordinates[editingProperty.value.location] || {
         lat: editingProperty.value.raw?.latitude || 11.5564,
       }
     ).lat,
-    longitude: (
+    longitude: editingProperty.value.longitude ?? (
       cityCoordinates[editingProperty.value.location] || {
         lng: editingProperty.value.raw?.longitude || 104.9282,
       }
@@ -546,6 +550,192 @@ const handleToggleStatus = async ({ id, action }) => {
     toast.danger(`Failed to ${action} property. Please try again.`);
   }
 };
+
+// ── Leaflet.js Map Picker Integration ─────────────────────────────────────────
+let registerMapInstance = null;
+let registerMarker = null;
+let editMapInstance = null;
+let editMarker = null;
+
+const initRegisterMap = () => {
+  const container = document.getElementById("register-map");
+  if (!container || !window.L) return;
+
+  if (registerMapInstance) {
+    registerMapInstance.remove();
+    registerMapInstance = null;
+    registerMarker = null;
+  }
+
+  const lat = newProperty.value.latitude || 11.5564;
+  const lng = newProperty.value.longitude || 104.9282;
+
+  registerMapInstance = window.L.map("register-map", {
+    zoomControl: false
+  }).setView([lat, lng], 13);
+
+  const isDarkMode = document.documentElement.classList.contains("dark");
+  const tileUrl = isDarkMode
+    ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+    : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+
+  window.L.tileLayer(tileUrl, {
+    maxZoom: 19
+  }).addTo(registerMapInstance);
+
+  window.L.control.zoom({
+    position: 'topright'
+  }).addTo(registerMapInstance);
+
+  const icon = window.L.divIcon({
+    className: "custom-picker-pin",
+    html: `<div class="w-7 h-7 bg-[#FF385C] rounded-full border-2 border-white flex items-center justify-center shadow-xl animate-bounce"><span class="text-white text-xs">📍</span></div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 28]
+  });
+
+  registerMarker = window.L.marker([lat, lng], {
+    icon,
+    draggable: true
+  }).addTo(registerMapInstance);
+
+  registerMarker.on("dragend", (event) => {
+    const marker = event.target;
+    const position = marker.getLatLng();
+    newProperty.value.latitude = Number(position.lat.toFixed(6));
+    newProperty.value.longitude = Number(position.lng.toFixed(6));
+  });
+
+  registerMapInstance.on("click", (event) => {
+    const latlng = event.latlng;
+    registerMarker.setLatLng(latlng);
+    newProperty.value.latitude = Number(latlng.lat.toFixed(6));
+    newProperty.value.longitude = Number(latlng.lng.toFixed(6));
+  });
+};
+
+const initEditMap = () => {
+  const container = document.getElementById("edit-map");
+  if (!container || !editingProperty.value || !window.L) return;
+
+  if (editMapInstance) {
+    editMapInstance.remove();
+    editMapInstance = null;
+    editMarker = null;
+  }
+
+  const lat = editingProperty.value.latitude || 11.5564;
+  const lng = editingProperty.value.longitude || 104.9282;
+
+  editMapInstance = window.L.map("edit-map", {
+    zoomControl: false
+  }).setView([lat, lng], 13);
+
+  const isDarkMode = document.documentElement.classList.contains("dark");
+  const tileUrl = isDarkMode
+    ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+    : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+
+  window.L.tileLayer(tileUrl, {
+    maxZoom: 19
+  }).addTo(editMapInstance);
+
+  window.L.control.zoom({
+    position: 'topright'
+  }).addTo(editMapInstance);
+
+  const icon = window.L.divIcon({
+    className: "custom-picker-pin",
+    html: `<div class="w-7 h-7 bg-[#FF385C] rounded-full border-2 border-white flex items-center justify-center shadow-xl animate-bounce"><span class="text-white text-xs">📍</span></div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 28]
+  });
+
+  editMarker = window.L.marker([lat, lng], {
+    icon,
+    draggable: true
+  }).addTo(editMapInstance);
+
+  editMarker.on("dragend", (event) => {
+    const marker = event.target;
+    const position = marker.getLatLng();
+    editingProperty.value.latitude = Number(position.lat.toFixed(6));
+    editingProperty.value.longitude = Number(position.lng.toFixed(6));
+  });
+
+  editMapInstance.on("click", (event) => {
+    const latlng = event.latlng;
+    editMarker.setLatLng(latlng);
+    editingProperty.value.latitude = Number(latlng.lat.toFixed(6));
+    editingProperty.value.longitude = Number(latlng.lng.toFixed(6));
+  });
+};
+
+const handleRegisterMapLifecycle = async () => {
+  if (isAddModalOpen.value && currentStep.value === 1) {
+    await nextTick();
+    const initialCoords = cityCoordinates[newProperty.value.location] || { lat: 11.5564, lng: 104.9282 };
+    newProperty.value.latitude = newProperty.value.latitude || initialCoords.lat;
+    newProperty.value.longitude = newProperty.value.longitude || initialCoords.lng;
+    initRegisterMap();
+  } else {
+    if (registerMapInstance) {
+      registerMapInstance.remove();
+      registerMapInstance = null;
+      registerMarker = null;
+    }
+  }
+};
+
+watch([isAddModalOpen, currentStep], handleRegisterMapLifecycle);
+
+watch(() => newProperty.value.location, (newLocation) => {
+  const coords = cityCoordinates[newLocation];
+  if (coords && registerMapInstance && registerMarker) {
+    newProperty.value.latitude = coords.lat;
+    newProperty.value.longitude = coords.lng;
+    registerMarker.setLatLng([coords.lat, coords.lng]);
+    registerMapInstance.setView([coords.lat, coords.lng], 13);
+  }
+});
+
+watch(isEditModalOpen, async (isOpen) => {
+  if (isOpen && editingProperty.value) {
+    await nextTick();
+    const initialCoords = cityCoordinates[editingProperty.value.location] || { lat: 11.5564, lng: 104.9282 };
+    editingProperty.value.latitude = editingProperty.value.latitude || initialCoords.lat;
+    editingProperty.value.longitude = editingProperty.value.longitude || initialCoords.lng;
+    initEditMap();
+  } else {
+    if (editMapInstance) {
+      editMapInstance.remove();
+      editMapInstance = null;
+      editMarker = null;
+    }
+  }
+});
+
+watch(() => editingProperty.value?.location, (newLocation) => {
+  if (!newLocation || !editingProperty.value) return;
+  const coords = cityCoordinates[newLocation];
+  if (coords && editMapInstance && editMarker) {
+    editingProperty.value.latitude = coords.lat;
+    editingProperty.value.longitude = coords.lng;
+    editMarker.setLatLng([coords.lat, coords.lng]);
+    editMapInstance.setView([coords.lat, coords.lng], 13);
+  }
+});
+
+onBeforeUnmount(() => {
+  if (registerMapInstance) {
+    registerMapInstance.remove();
+    registerMapInstance = null;
+  }
+  if (editMapInstance) {
+    editMapInstance.remove();
+    editMapInstance = null;
+  }
+});
 
 onMounted(async () => {
   try {
@@ -1032,6 +1222,17 @@ onMounted(async () => {
           ></textarea>
         </div>
 
+        <div>
+          <label class="text-xs font-bold text-(--color-muted) tracking-wide uppercase block mb-1.5">
+            Pin Property Location on Map (Click or drag pin to position)
+          </label>
+          <div id="register-map" class="w-full h-64 border border-(--color-border) rounded-xl overflow-hidden relative z-10"></div>
+          <div class="flex gap-4 mt-2 text-xs text-(--color-muted) font-semibold">
+            <span>Latitude: <strong class="text-(--color-text)">{{ newProperty.latitude || 'Not set' }}</strong></span>
+            <span>Longitude: <strong class="text-(--color-text)">{{ newProperty.longitude || 'Not set' }}</strong></span>
+          </div>
+        </div>
+
         <div
           class="flex items-center justify-end gap-2 border-t border-(--color-border) pt-4 mt-6"
         >
@@ -1219,6 +1420,17 @@ onMounted(async () => {
               rows="3"
               class="w-full p-4 rounded-xl border border-(--color-border) bg-(--color-surface) text-sm text-(--color-text) outline-none focus:border-(--color-primary) transition resize-none"
             ></textarea>
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-(--color-muted) tracking-wide uppercase block mb-1.5">
+              Pin Property Location on Map (Click or drag pin to position)
+            </label>
+            <div id="edit-map" class="w-full h-64 border border-(--color-border) rounded-xl overflow-hidden relative z-10"></div>
+            <div class="flex gap-4 mt-2 text-xs text-(--color-muted) font-semibold">
+              <span>Latitude: <strong class="text-(--color-text)">{{ editingProperty.latitude || 'Not set' }}</strong></span>
+              <span>Longitude: <strong class="text-(--color-text)">{{ editingProperty.longitude || 'Not set' }}</strong></span>
+            </div>
           </div>
         </div>
 

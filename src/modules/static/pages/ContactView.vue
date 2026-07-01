@@ -306,7 +306,7 @@ const handleSubmit = () => {
       </div>
     </section>
 
-    <section class="px-4 pb-20 sm:px-6 lg:px-8">
+    <section class="w-full bg-(--color-surface-soft) py-20 px-4 sm:px-6 lg:px-8 border-t border-(--color-border)/20">
       <div
         class="mx-auto grid max-w-7xl gap-8 overflow-hidden rounded-3xl bg-gradient-to-r from-(--color-primary-strong) via-(--color-primary) to-(--color-secondary) p-8 text-white shadow-(--shadow-panel) lg:grid-cols-[1fr_auto] lg:items-center lg:p-10"
       >

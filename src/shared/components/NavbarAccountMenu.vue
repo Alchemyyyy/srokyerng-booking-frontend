@@ -127,6 +127,23 @@ const showListPropertyLink = computed(
   () => authStore.user?.role === "customer",
 );
 const isCustomer = computed(() => authStore.user?.role === "customer");
+const isHosting = computed(() => route.path.startsWith("/owner"));
+
+const switchLink = computed(() => {
+  if (!authStore.isAuthenticated || !authStore.user) return null;
+
+  const role = authStore.user.role;
+  if (role === "owner") {
+    return isHosting.value
+      ? { label: "Switch to traveling", to: "/" }
+      : { label: "Switch to hosting", to: "/owner" };
+  } else if (role === "customer") {
+    return { label: "Switch to hosting", to: { name: "public.listProperty" } };
+  } else if (role === "admin") {
+    return { label: "Admin Dashboard", to: { name: "admin.dashboard" } };
+  }
+  return null;
+});
 
 const toggleMenu = () => {
   menuOpen.value = !menuOpen.value;
@@ -272,16 +289,16 @@ watch(
       >
         <!-- Top Section -->
         <RouterLink
-          v-if="dashboardRoute"
-          :to="dashboardRoute"
+          v-if="switchLink"
+          :to="switchLink.to"
           class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
           @click="closeMenu"
         >
           <ArrowsRightLeftIcon class="h-5 w-5 text-(--color-text)" />
-          <span>{{ isCustomer ? 'Switch to hosting' : 'Dashboard' }}</span>
+          <span>{{ switchLink.label }}</span>
         </RouterLink>
 
-        <div v-if="dashboardRoute" class="my-2 border-b border-(--color-border)"></div>
+        <div v-if="switchLink" class="my-2 border-b border-(--color-border)"></div>
 
         <!-- Trips & Interaction Section -->
         <RouterLink

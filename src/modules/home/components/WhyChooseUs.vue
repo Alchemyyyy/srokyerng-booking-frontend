@@ -40,10 +40,10 @@ const features = computed(() => [
 
 <template>
   <section
-    class="max-w-7xl mx-auto px-4 py-20 lg:py-28"
+    class="w-full bg-(--color-surface) py-20 lg:py-28 border-b border-(--color-border)/30"
     :class="{ 'font-kantumruy': locale === 'km' }"
   >
-    <div class="grid grid-cols-1 gap-16 lg:grid-cols-2 lg:items-center">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 gap-16 lg:grid-cols-2 lg:items-center">
       <div>
         <span
           class="text-xs font-bold uppercase tracking-widest text-(--color-primary)"

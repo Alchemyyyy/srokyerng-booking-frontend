@@ -507,13 +507,13 @@
       "hostel": "Hostel"
     },
     "featured": {
-      "eyebrow": "Top Picks",
-      "title": "Featured Properties",
+      "eyebrow": "Recommended for you",
+      "title": "Recommended Stays for You",
       "viewAll": "View All",
       "perNight": "night",
       "reviews": "reviews",
-      "subtitle": "Handpicked by our team base on guest reviews and quality",
-      "exploreAll": "Explore all properties",
+      "subtitle": "Handpicked accommodations with the best reviews and top guest experiences",
+      "exploreAll": "Explore all stays",
       "badges": {
         "mostPopular": "Most Popular",
         "topRated": "Top Rated",
@@ -1101,7 +1101,20 @@
     "total": "Total",
     "checkIn": "Check-In",
     "checkOut": "Check-Out",
-    "description": "A stunning beachfront resort offering pristine white sand beaches, crystal-clear waters, and unforgettable sunset views."
+    "description": "A stunning beachfront resort offering pristine white sand beaches, crystal-clear waters, and unforgettable sunset views.",
+    "cleanliness": "Cleanliness",
+    "accuracy": "Accuracy",
+    "communication": "Communication",
+    "location": "Location",
+    "checkInSub": "Check-in",
+    "value": "Value",
+    "searchReviews": "Search reviews",
+    "showAllReviews": "Show all {count} reviews",
+    "showLess": "Show less",
+    "showMore": "Show more",
+    "guestFavorite": "Guest favorite",
+    "guestFavoriteDesc": "One of the most loved homes on Srok-Yerng, based on guest ratings, reviews, and reliability",
+    "noMatchingReviews": "No reviews match your search query."
   },
   "reviewCreate": {
     "breadcrumb": {

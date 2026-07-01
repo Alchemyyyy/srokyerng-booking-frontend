@@ -63,9 +63,49 @@ const normalizeProperty = (item, index) => {
         ]
       : [coverImage, coverImage, coverImage];
 
+  const cityCenters = {
+    "phnom-penh": { lat: 11.5564, lng: 104.9282 },
+    "siem-reap": { lat: 13.3633, lng: 103.8564 },
+    "sihanoukville": { lat: 10.6096, lng: 103.5292 },
+    "koh-rong": { lat: 10.6865, lng: 103.2662 },
+    "battambang": { lat: 13.0957, lng: 103.2022 },
+    "kampot": { lat: 10.6111, lng: 104.1794 },
+    "kep": { lat: 10.4829, lng: 104.3167 },
+  };
+
+  const propertyCityRaw = typeof item.city === "string"
+    ? item.city
+    : item.city?.city_name || item.city?.name || item.city_name || item.address || "";
+  const propertyCity = String(propertyCityRaw)
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-");
+
+  let latVal = item.latitude !== null && item.latitude !== undefined && !isNaN(Number(item.latitude)) && Number(item.latitude) !== 0
+    ? Number(item.latitude)
+    : null;
+  let lngVal = item.longitude !== null && item.longitude !== undefined && !isNaN(Number(item.longitude)) && Number(item.longitude) !== 0
+    ? Number(item.longitude)
+    : null;
+
+  if (latVal === null || lngVal === null) {
+    let center = cityCenters[propertyCity];
+    if (!center) {
+      const foundCityKey = Object.keys(cityCenters).find(key => propertyCity.includes(key));
+      center = foundCityKey ? cityCenters[foundCityKey] : { lat: 11.5564, lng: 104.9282 };
+    }
+    const seed = Number(item.id ?? index ?? 1);
+    const offsetLat = (Math.sin(seed * 43758.5453) * 0.012);
+    const offsetLng = (Math.cos(seed * 12.9898) * 0.012);
+    latVal = center.lat + offsetLat;
+    lngVal = center.lng + offsetLng;
+  }
+
   return {
     id: item.id ?? item.property_id ?? index + 1,
     name: item.property_name || item.name || `Property ${index + 1}`,
+    latitude: latVal,
+    longitude: lngVal,
     city: String(
       typeof item.city === "string"
         ? item.city

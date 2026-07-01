@@ -55,6 +55,9 @@ const status = computed(() =>
 const paymentStatus = computed(() => props.booking.paymentStatus ?? null);
 
 const paymentStatusColor = computed(() => {
+  if (status.value === "cancelled" || status.value === "completed") {
+    return "bg-gray-500/5 border-gray-500/10 text-(--color-muted)";
+  }
   switch (paymentStatus.value) {
     case "paid":
       return "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400";
@@ -142,7 +145,7 @@ onBeforeUnmount(()  => document.removeEventListener("click", handleOutsideClick)
             <HashtagIcon class="w-2.5 h-2.5" />
             RES-{{ booking.id }}
           </span>
-          <span class="text-(--color-muted)/40 text-xs">·</span>
+          <span class="w-1.5 h-1.5 bg-(--color-border) rounded-full shrink-0"></span>
           <BookingStatusBadge :status="status" />
         </div>
 
@@ -206,7 +209,7 @@ onBeforeUnmount(()  => document.removeEventListener("click", handleOutsideClick)
 
     <!-- Right Compartment -->
     <div
-      class="flex sm:flex-row lg:flex-col sm:items-center lg:items-end justify-between lg:justify-center gap-3 w-full lg:w-auto border-t lg:border-t-0 border-(--color-border)/60 pt-4 lg:pt-0 lg:min-w-[160px]"
+      class="flex sm:flex-row lg:flex-col sm:items-center lg:items-stretch justify-between lg:justify-center gap-3 w-full lg:w-auto border-t lg:border-t-0 border-(--color-border)/60 pt-4 lg:pt-0 lg:min-w-[160px]"
     >
       <!-- Price block -->
       <div class="lg:text-right">
@@ -231,9 +234,9 @@ onBeforeUnmount(()  => document.removeEventListener("click", handleOutsideClick)
       <button
         v-else-if="!canCancel"
         @click="router.push({ name: 'public.room-detail', params: { id: booking.roomId ?? booking.room_id } })"
-        class="w-full bg-(--color-primary) hover:opacity-90 text-white font-bold text-sm px-4 py-2.5 rounded-xl shadow-sm transition duration-200 cursor-pointer flex items-center justify-center gap-2"
+        class="w-full border border-(--color-border) bg-(--color-surface-soft) hover:bg-(--color-surface-soft)/80 text-(--color-text) font-bold text-sm px-4 py-2.5 rounded-xl shadow-xs transition duration-200 cursor-pointer flex items-center justify-center gap-2"
       >
-        <ArrowPathIcon class="w-4 h-4" />
+        <ArrowPathIcon class="w-4 h-4 text-(--color-muted)" />
         <span>Book Again</span>
       </button>
 

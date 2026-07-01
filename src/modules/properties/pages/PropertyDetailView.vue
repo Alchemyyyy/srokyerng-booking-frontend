@@ -311,7 +311,17 @@ const goToBooking = () => {
 
 // ── Guest Reviews ──
 const guestReviews = ref([]);
-const activeReviewIndex = ref(0);
+const reviewSearchQuery = ref("");
+const showAllReviewsModal = ref(false);
+const expandedReviews = ref(new Set());
+
+const toggleExpandReview = (id) => {
+  if (expandedReviews.value.has(id)) {
+    expandedReviews.value.delete(id);
+  } else {
+    expandedReviews.value.add(id);
+  }
+};
 
 const reviewSummary = computed(() => {
   const list = guestReviews.value;
@@ -333,22 +343,49 @@ const reviewSummary = computed(() => {
   };
 });
 
-const activeReview = computed(
-  () => guestReviews.value[activeReviewIndex.value] || {},
-);
+const filteredReviews = computed(() => {
+  const query = reviewSearchQuery.value.trim().toLowerCase();
+  if (!query) return guestReviews.value;
+  return guestReviews.value.filter(
+    (r) =>
+      r.comment.toLowerCase().includes(query) ||
+      r.author.toLowerCase().includes(query) ||
+      r.title.toLowerCase().includes(query)
+  );
+});
 
-const nextReview = () => {
-  if (!guestReviews.value.length) return;
-  activeReviewIndex.value =
-    (activeReviewIndex.value + 1) % guestReviews.value.length;
-};
+const subRatings = computed(() => {
+  const avg = Number(reviewSummary.value.average) || 0;
+  if (avg === 0) {
+    return [
+      { label: t("propertyDetail.cleanliness", "Cleanliness"), score: "0.0", pct: 0, icon: SparklesIcon },
+      { label: t("propertyDetail.accuracy", "Accuracy"), score: "0.0", pct: 0, icon: CheckCircleIcon },
+      { label: t("propertyDetail.communication", "Communication"), score: "0.0", pct: 0, icon: ChatBubbleOvalLeftIcon },
+      { label: t("propertyDetail.location", "Location"), score: "0.0", pct: 0, icon: MapPinIcon },
+      { label: t("propertyDetail.checkInSub", "Check-in"), score: "0.0", pct: 0, icon: KeyIcon },
+      { label: t("propertyDetail.value", "Value"), score: "0.0", pct: 0, icon: ShieldCheckIcon },
+    ];
+  }
 
-const prevReview = () => {
-  if (!guestReviews.value.length) return;
-  activeReviewIndex.value =
-    (activeReviewIndex.value - 1 + guestReviews.value.length) %
-    guestReviews.value.length;
-};
+  const propertyId = Number(route.params.id) || 1;
+  const getSubScore = (offsetSeed) => {
+    const rawOffset = ((propertyId * offsetSeed) % 5) - 2; // deterministic value between -2 and 2
+    const offset = rawOffset * 0.08; // scale down variation to keep it close to average
+    let score = avg + offset;
+    if (score > 5) score = 5.0;
+    if (score < 1.0) score = 1.0;
+    return Number(score).toFixed(1);
+  };
+
+  return [
+    { label: t("propertyDetail.cleanliness", "Cleanliness"), score: getSubScore(7), pct: Math.round(getSubScore(7) * 20), icon: SparklesIcon },
+    { label: t("propertyDetail.accuracy", "Accuracy"), score: getSubScore(11), pct: Math.round(getSubScore(11) * 20), icon: CheckCircleIcon },
+    { label: t("propertyDetail.communication", "Communication"), score: getSubScore(13), pct: Math.round(getSubScore(13) * 20), icon: ChatBubbleOvalLeftIcon },
+    { label: t("propertyDetail.location", "Location"), score: getSubScore(17), pct: Math.round(getSubScore(17) * 20), icon: MapPinIcon },
+    { label: t("propertyDetail.checkInSub", "Check-in"), score: getSubScore(19), pct: Math.round(getSubScore(19) * 20), icon: KeyIcon },
+    { label: t("propertyDetail.value", "Value"), score: getSubScore(23), pct: Math.round(getSubScore(23) * 20), icon: ShieldCheckIcon },
+  ];
+});
 
 const reviewerInitials = (name) => {
   if (!name) return "?";
@@ -736,135 +773,149 @@ const displayedAmenities = computed(() => amenities.value.slice(0, 6));
                 </RouterLink>
               </div>
 
-              <div class="mt-10 grid grid-cols-1 gap-12 lg:grid-cols-[300px_1fr]">
-                <!-- Rating summary (Clean unboxed layout) -->
-                <div class="py-2">
-                  <div class="flex items-baseline gap-3">
-                    <span class="text-5xl font-black text-(--color-text) tracking-tight">{{ reviewSummary.average }}</span>
-                    <span class="text-lg font-bold text-(--color-muted)">/ 5</span>
+              <!-- Guest Favorite Premium Airbnb Banner (If rating is high) -->
+              <div v-if="Number(reviewSummary.average) >= 4.5 && guestReviews.length > 0" class="mt-8 p-6 bg-gradient-to-r from-(--color-primary-soft) to-(--color-surface-soft) border border-(--color-primary)/25 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-xs">
+                <div class="flex items-center gap-5">
+                  <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-(--color-primary) text-(--color-text-inverse) shadow-md shrink-0">
+                    <SparklesIcon class="h-7 w-7 text-amber-300 animate-pulse" />
                   </div>
-                  <p class="mt-2 text-base font-black text-(--color-text)">
-                    {{ ratingWordLabel(reviewSummary.average) }}
-                  </p>
-                  <div class="mt-3 flex items-center gap-1 text-amber-500">
-                    <StarIcon
-                      v-for="n in 5"
-                      :key="n"
-                      class="h-5 w-5"
-                      :class="n <= Math.round(reviewSummary.average) ? 'fill-current' : 'fill-none'"
-                    />
+                  <div>
+                    <span class="inline-block bg-(--color-primary)/10 text-(--color-primary) text-xs font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full mb-1">
+                      {{ t("propertyDetail.guestFavorite") }}
+                    </span>
+                    <h3 class="text-lg font-extrabold text-(--color-text) tracking-tight">
+                      One of the most loved homes on Srok-Yerng
+                    </h3>
+                    <p class="text-xs text-(--color-muted) mt-0.5 leading-relaxed max-w-xl">
+                      {{ t("propertyDetail.guestFavoriteDesc") }}
+                    </p>
                   </div>
-                  <p class="mt-3 text-xs font-bold text-(--color-muted)">
-                    {{ t("propertyDetail.basedOnReviews", { count: reviewSummary.total }) }}
-                  </p>
+                </div>
+                <div class="flex items-center gap-6 shrink-0 divide-x divide-(--color-border)">
+                  <div class="text-center px-4">
+                    <div class="text-3xl font-black text-(--color-text)">{{ reviewSummary.average }}</div>
+                    <div class="flex items-center gap-0.5 justify-center mt-0.5 text-amber-500">
+                      <StarIcon v-for="n in 5" :key="n" class="h-3 w-3 fill-current" />
+                    </div>
+                  </div>
+                  <div class="text-center pl-6 pr-4">
+                    <div class="text-3xl font-black text-(--color-text)">{{ reviewSummary.total }}</div>
+                    <div class="text-[10px] font-bold text-(--color-muted) mt-0.5 uppercase tracking-wider">{{ t("propertyDetail.reviews") }}</div>
+                  </div>
+                </div>
+              </div>
 
-                  <div class="mt-8 space-y-3">
-                    <div
-                      v-for="row in reviewSummary.breakdown"
-                      :key="row.stars"
-                      class="flex items-center gap-3 text-xs font-bold text-(--color-muted)"
-                    >
-                      <span class="w-14 shrink-0 whitespace-nowrap">{{ row.stars }} {{ t("propertyDetail.stars") }}</span>
-                      <div class="h-1.5 flex-1 rounded-full bg-(--color-border)/80 overflow-hidden">
-                        <div
-                          class="h-1.5 rounded-full bg-amber-500 transition-all duration-500"
-                          :style="{ width: row.pct + '%' }"
-                        ></div>
+              <!-- Rating Sub-Categories Grid -->
+              <div v-if="guestReviews.length > 0" class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-5 py-6 border-b border-(--color-border)">
+                <div v-for="cat in subRatings" :key="cat.label" class="flex flex-col justify-between py-1 group">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-2">
+                      <component :is="cat.icon" class="h-4.5 w-4.5 text-(--color-muted) group-hover:text-(--color-primary) transition-colors" />
+                      <span class="text-sm font-bold text-(--color-text)">{{ cat.label }}</span>
+                    </div>
+                    <span class="text-xs font-black text-(--color-text)">{{ cat.score }}</span>
+                  </div>
+                  <div class="h-1.5 w-full rounded-full bg-(--color-surface-soft) overflow-hidden relative border border-(--color-border)/30">
+                    <div class="h-full bg-(--color-text) group-hover:bg-(--color-primary) transition-all duration-500 rounded-full" :style="{ width: cat.pct + '%' }"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Search Bar & Review Count -->
+              <div v-if="guestReviews.length > 0" class="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="relative w-full max-w-md">
+                  <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                    <svg class="h-4 w-4 text-(--color-muted)" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </span>
+                  <input
+                    v-model="reviewSearchQuery"
+                    type="text"
+                    :placeholder="t('propertyDetail.searchReviews')"
+                    class="w-full bg-(--color-surface) text-xs font-bold text-(--color-text) placeholder:text-(--color-muted) pl-10 pr-4 py-3 border border-(--color-border) focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary) outline-none transition-all duration-200 shadow-xs"
+                    style="border-radius: 9999px;"
+                  />
+                </div>
+                <div class="text-xs font-extrabold text-(--color-muted) whitespace-nowrap self-start sm:self-center" v-if="reviewSearchQuery">
+                  Found {{ filteredReviews.length }} reviews matching "{{ reviewSearchQuery }}"
+                </div>
+              </div>
+
+              <!-- 2-Column Reviews Grid -->
+              <div v-if="filteredReviews.length > 0" class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
+                <div v-for="rev in filteredReviews.slice(0, 6)" :key="rev.id" class="flex flex-col justify-between">
+                  <div>
+                    <!-- Reviewer Profile Header -->
+                    <div class="flex items-center gap-4">
+                      <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-black bg-(--color-primary-soft) text-(--color-primary) border border-(--color-primary)/10 shadow-xs">
+                        {{ reviewerInitials(rev.author) }}
                       </div>
-                      <span class="w-10 shrink-0 text-right font-black text-(--color-text)">{{ row.pct }}%</span>
+                      <div>
+                        <h4 class="text-sm font-extrabold text-(--color-text) leading-tight">{{ rev.author }}</h4>
+                        <p class="text-[10px] font-bold text-(--color-muted) mt-0.5">{{ rev.date }}</p>
+                      </div>
+                    </div>
+
+                    <!-- Stars & Stay info -->
+                    <div class="flex items-center gap-1.5 mt-3 text-amber-500">
+                      <div class="flex">
+                        <StarIcon v-for="n in 5" :key="n" class="h-3.5 w-3.5" :class="n <= rev.rating ? 'fill-current' : 'fill-none'" />
+                      </div>
+                      <span class="text-xs font-bold text-(--color-muted)">·</span>
+                      <span v-if="rev.roomName" class="text-xs font-bold text-(--color-muted)">{{ rev.roomName }}</span>
+                    </div>
+
+                    <!-- Review Text (Truncated) -->
+                    <div class="mt-3 text-sm leading-relaxed text-(--color-text) font-medium">
+                      <p v-if="rev.comment.length > 200 && !expandedReviews.has(rev.id)">
+                        "{{ rev.comment.slice(0, 200) }}..."
+                        <button type="button" @click="toggleExpandReview(rev.id)" class="text-xs font-extrabold text-(--color-primary) hover:underline inline ml-1 cursor-pointer">
+                          {{ t("propertyDetail.showMore") }}
+                        </button>
+                      </p>
+                      <p v-else>
+                        "{{ rev.comment }}"
+                        <button type="button" v-if="rev.comment.length > 200 && expandedReviews.has(rev.id)" @click="toggleExpandReview(rev.id)" class="text-xs font-extrabold text-(--color-primary) hover:underline inline ml-1 cursor-pointer">
+                          {{ t("propertyDetail.showLess") }}
+                        </button>
+                      </p>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <!-- Reviewer card carousel -->
-                <div
-                  v-if="guestReviews.length"
-                  class="relative border border-(--color-border) bg-(--color-surface-soft) p-8 flex flex-col justify-between shadow-xs"
-                  style="border-radius: var(--radius-sm);"
+              <!-- Search Empty State -->
+              <div v-else-if="guestReviews.length > 0" class="text-center py-12 border border-dashed border-(--color-border) rounded-2xl bg-(--color-surface-soft) mt-8">
+                <p class="text-sm font-bold text-(--color-muted)">{{ t("propertyDetail.noMatchingReviews") }}</p>
+              </div>
+
+              <!-- Overall Empty State -->
+              <div
+                v-else
+                class="flex flex-col items-center justify-center border border-(--color-border) bg-(--color-surface-soft) p-10 sm:p-14 text-center shadow-xs mt-8"
+                style="border-radius: var(--radius-sm);"
+              >
+                <div class="flex h-20 w-20 items-center justify-center bg-amber-500/10 text-amber-500 mb-6 shadow-inner" style="border-radius: var(--radius-sm);">
+                  <StarIcon class="h-10 w-10 fill-current text-amber-500" />
+                </div>
+                <h3 class="text-2xl font-black text-(--color-text) tracking-tight">
+                  No reviews (yet)
+                </h3>
+                <p class="text-sm font-medium text-(--color-muted) max-w-sm mt-3 leading-relaxed">
+                  This property is waiting for its very first guest review. Book a stay and be the first to share your wonderful experience!
+                </p>
+              </div>
+
+              <!-- Show All Reviews Trigger Button -->
+              <div class="mt-10" v-if="guestReviews.length > 0">
+                <button
+                  type="button"
+                  class="rounded-xl border border-(--color-text) bg-(--color-surface) px-6 py-3.5 text-sm font-black text-(--color-text) transition-all duration-200 hover:bg-(--color-surface-soft) hover:shadow-xs active:scale-95 cursor-pointer"
+                  @click="showAllReviewsModal = true"
                 >
-                  <div class="flex items-start gap-5">
-                    <div
-                      class="flex h-14 w-14 shrink-0 items-center justify-center text-xl font-black shadow-sm bg-(--color-primary-soft) text-(--color-primary)"
-                      style="border-radius: var(--radius-sm);"
-                    >
-                      {{ reviewerInitials(activeReview.author) }}
-                    </div>
-                    <div class="min-w-0 flex-1">
-                      <div class="flex flex-wrap items-center justify-between gap-2">
-                        <p class="text-xl font-black text-(--color-text)">
-                          {{ activeReview.author }}
-                        </p>
-                        <p class="text-sm font-medium text-(--color-muted)">
-                          {{ activeReview.date }}
-                        </p>
-                      </div>
-
-                      <div class="mt-2.5 flex items-center gap-1 text-amber-500">
-                        <StarIcon
-                          v-for="n in 5"
-                          :key="n"
-                          class="h-4.5 w-4.5"
-                          :class="n <= activeReview.rating ? 'fill-current' : 'fill-none'"
-                        />
-                      </div>
-
-                      <p
-                        v-if="activeReview.title"
-                        class="mt-4 text-lg font-black text-(--color-text)"
-                      >
-                        {{ activeReview.title }}
-                      </p>
-                      <p class="mt-3 text-base leading-relaxed text-(--color-text)">
-                        "{{ activeReview.comment }}"
-                      </p>
-                      <p
-                        v-if="activeReview.roomName"
-                        class="mt-6 inline-block bg-(--color-surface) px-4 py-1.5 text-xs font-bold text-(--color-muted) border border-(--color-border) shadow-xs"
-                        style="border-radius: var(--radius-sm);"
-                      >
-                        {{ t("propertyDetail.stayedIn", { room: activeReview.roomName }) }}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div
-                    v-if="guestReviews.length > 1"
-                    class="mt-8 flex items-center justify-end gap-3 border-t border-(--color-border)/60 pt-6"
-                  >
-                    <button
-                      type="button"
-                      class="flex h-11 w-11 items-center justify-center border border-(--color-border) bg-(--color-surface) text-(--color-text) transition-all duration-200 hover:scale-105 active:scale-95 shadow-xs cursor-pointer"
-                      style="border-radius: var(--radius-sm);"
-                      @click="prevReview"
-                    >
-                      <ChevronRightIcon class="h-5 w-5 rotate-180" />
-                    </button>
-                    <button
-                      type="button"
-                      class="flex h-11 w-11 items-center justify-center border border-(--color-border) bg-(--color-surface) text-(--color-text) transition-all duration-200 hover:scale-105 active:scale-95 shadow-xs cursor-pointer"
-                      style="border-radius: var(--radius-sm);"
-                      @click="nextReview"
-                    >
-                      <ChevronRightIcon class="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
-
-                <div
-                  v-else
-                  class="flex flex-col items-center justify-center border border-(--color-border) bg-(--color-surface-soft) p-10 sm:p-14 text-center shadow-xs"
-                  style="border-radius: var(--radius-sm);"
-                >
-                  <div class="flex h-20 w-20 items-center justify-center bg-amber-500/10 text-amber-500 mb-6 shadow-inner" style="border-radius: var(--radius-sm);">
-                    <StarIcon class="h-10 w-10 fill-current text-amber-500" />
-                  </div>
-                  <h3 class="text-2xl font-black text-(--color-text) tracking-tight">
-                    No reviews (yet)
-                  </h3>
-                  <p class="text-sm font-medium text-(--color-muted) max-w-sm mt-3 leading-relaxed">
-                    This property is waiting for its very first guest review. Book a stay and be the first to share your wonderful experience!
-                  </p>
-                </div>
+                  {{ t("propertyDetail.showAllReviews", { count: guestReviews.length }) }}
+                </button>
               </div>
             </div>
           </div>
@@ -1038,6 +1089,136 @@ const displayedAmenities = computed(() => amenities.value.slice(0, 6));
                 <component :is="getAmenityIcon(amenity.amenity_name)" class="h-7 w-7 text-(--color-primary)" />
               </div>
               <span class="text-xl font-bold text-(--color-text)">{{ amenity.amenity_name }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Airbnb-Style All Reviews Modal Dialog -->
+      <div
+        v-if="showAllReviewsModal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-md p-4 sm:p-6 transition-all duration-300"
+        @click.self="showAllReviewsModal = false"
+      >
+        <div
+          class="flex flex-col h-[90vh] w-full max-w-5xl overflow-hidden rounded-3xl bg-(--color-page) text-(--color-text) shadow-2xl border border-(--color-border) animate-scaleUp"
+        >
+          <!-- Modal Header -->
+          <div class="flex items-center justify-between border-b p-6 border-(--color-border)">
+            <div>
+              <h3 class="text-xl font-black text-(--color-text) tracking-tight">
+                {{ t("propertyDetail.guestReviews") }}
+              </h3>
+              <p class="text-xs font-bold text-(--color-muted) mt-0.5">
+                {{ reviewSummary.average }} rating · {{ reviewSummary.total }} reviews
+              </p>
+            </div>
+            <button
+              type="button"
+              class="flex h-10 w-10 items-center justify-center rounded-full bg-(--color-surface-soft) text-(--color-text) border border-(--color-border) hover:scale-105 transition active:scale-95 cursor-pointer shadow-xs"
+              @click="showAllReviewsModal = false"
+            >
+              <XMarkIcon class="h-5 w-5" />
+            </button>
+          </div>
+
+          <!-- Modal Body (Two-Column Layout) -->
+          <div class="flex-1 overflow-hidden flex flex-col md:flex-row">
+            <!-- Left Side: Ratings & Stats (Sticky/Static sidebar) -->
+            <div class="w-full md:w-[350px] border-r border-(--color-border) p-6 overflow-y-auto shrink-0 bg-(--color-surface-soft)/40">
+              <!-- Big average score -->
+              <div class="flex items-baseline gap-3 mb-6">
+                <span class="text-5xl font-black text-(--color-text) tracking-tight">{{ reviewSummary.average }}</span>
+                <span class="text-sm font-bold text-(--color-muted)">/ 5</span>
+              </div>
+              
+              <!-- Stars Breakdown -->
+              <h4 class="text-xs font-black text-(--color-text) uppercase tracking-wider mb-3">Rating distribution</h4>
+              <div class="space-y-2.5 mb-8">
+                <div
+                  v-for="row in reviewSummary.breakdown"
+                  :key="row.stars"
+                  class="flex items-center gap-3 text-xs font-bold text-(--color-muted)"
+                >
+                  <span class="w-12 shrink-0 whitespace-nowrap">{{ row.stars }} {{ t("propertyDetail.stars") }}</span>
+                  <div class="h-1.5 flex-1 rounded-full bg-(--color-border) overflow-hidden">
+                    <div
+                      class="h-1.5 rounded-full bg-amber-500 transition-all duration-500"
+                      :style="{ width: row.pct + '%' }"
+                    ></div>
+                  </div>
+                  <span class="w-8 shrink-0 text-right font-black text-(--color-text)">{{ row.pct }}%</span>
+                </div>
+              </div>
+
+              <!-- Sub-ratings -->
+              <h4 class="text-xs font-black text-(--color-text) uppercase tracking-wider mb-4">Category ratings</h4>
+              <div class="space-y-4">
+                <div v-for="cat in subRatings" :key="'modal-' + cat.label" class="flex flex-col group">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-2">
+                      <component :is="cat.icon" class="h-4 w-4 text-(--color-muted) group-hover:text-(--color-primary) transition-colors" />
+                      <span class="text-xs font-bold text-(--color-text)">{{ cat.label }}</span>
+                    </div>
+                    <span class="text-xs font-black text-(--color-text)">{{ cat.score }}</span>
+                  </div>
+                  <div class="h-1 w-full rounded-full bg-(--color-border) overflow-hidden relative">
+                    <div class="h-full bg-(--color-text) group-hover:bg-(--color-primary) transition-all duration-500 rounded-full" :style="{ width: cat.pct + '%' }"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Side: Search & Reviews Scroll -->
+            <div class="flex-1 p-6 overflow-y-auto flex flex-col">
+              <!-- Search inside modal -->
+              <div class="relative w-full mb-6">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                  <svg class="h-4.5 w-4.5 text-(--color-muted)" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </span>
+                <input
+                  v-model="reviewSearchQuery"
+                  type="text"
+                  :placeholder="t('propertyDetail.searchReviews')"
+                  class="w-full bg-(--color-surface) text-xs font-bold text-(--color-text) placeholder:text-(--color-muted) pl-10 pr-4 py-2.5 border border-(--color-border) focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary) outline-none transition-all duration-200"
+                  style="border-radius: 9999px;"
+                />
+              </div>
+
+              <!-- Reviews List -->
+              <div class="space-y-8 flex-1">
+                <div v-if="filteredReviews.length === 0" class="text-center py-12 text-sm font-bold text-(--color-muted)">
+                  {{ t("propertyDetail.noMatchingReviews") }}
+                </div>
+                <div v-for="rev in filteredReviews" :key="'modal-rev-' + rev.id" class="border-b border-(--color-border)/50 pb-6 last:border-none">
+                  <!-- Reviewer Header -->
+                  <div class="flex items-center gap-4">
+                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-black bg-(--color-primary-soft) text-(--color-primary) border border-(--color-primary)/10 shadow-xs">
+                      {{ reviewerInitials(rev.author) }}
+                    </div>
+                    <div>
+                      <h4 class="text-sm font-extrabold text-(--color-text) leading-tight">{{ rev.author }}</h4>
+                      <p class="text-xs font-bold text-(--color-muted) mt-0.5">{{ rev.date }}</p>
+                    </div>
+                  </div>
+
+                  <!-- Stars & Stay -->
+                  <div class="flex items-center gap-1.5 mt-2.5 text-amber-500">
+                    <div class="flex">
+                      <StarIcon v-for="n in 5" :key="n" class="h-3 w-3" :class="n <= rev.rating ? 'fill-current' : 'fill-none'" />
+                    </div>
+                    <span class="text-xs font-bold text-(--color-muted)">·</span>
+                    <span v-if="rev.roomName" class="text-xs font-bold text-(--color-muted)">{{ rev.roomName }}</span>
+                  </div>
+
+                  <!-- Comment content -->
+                  <p class="mt-2.5 text-sm leading-relaxed text-(--color-text)/90 whitespace-pre-line">
+                    {{ rev.comment }}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

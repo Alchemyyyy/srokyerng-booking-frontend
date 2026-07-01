@@ -77,11 +77,8 @@ export function isCancellable(status, checkInDate) {
   const checkIn = new Date(checkInDate)
   checkIn.setHours(0, 0, 0, 0)
 
-  // Deadline = 24h before check-in midnight
-  const deadlineMs = checkIn.getTime() - DEADLINE_HOURS * 60 * 60 * 1000
-
-  // Must be before the deadline AND check-in hasn't passed
-  return now.getTime() < deadlineMs
+  // Can cancel up until the day of check-in
+  return now.getTime() < checkIn.getTime()
 }
 
 /**

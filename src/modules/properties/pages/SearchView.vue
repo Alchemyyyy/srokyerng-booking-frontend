@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref, watch } from "vue";
+import { computed, onMounted, onBeforeUnmount, ref, watch, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { propertyApi } from "@/modules/properties/api/property.api";
@@ -101,18 +101,29 @@ const goToSlide = (index) => {
 const toggleSave = async (id, e) => {
   e.stopPropagation();
   if (!authStore.isAuthenticated) {
-    toastStore.showToast(safeT("wishlist.loginRequired", "Please login to save properties to your wishlist"), "error");
+    toastStore.warning(safeT("wishlist.loginRequired", "Please login to save properties to your wishlist"));
     return;
   }
+  
+  const property = propertyStore.approvedProperties.find((p) => p.id === id);
+  const propertyName = property ? property.name : "";
+
   const success = await wishlistStore.toggleWishlist(id);
   if (success) {
     const isNowSaved = wishlistStore.isPropertySaved(id);
-    toastStore.showToast(
-      isNowSaved ? safeT("wishlist.added", "Added to wishlist!") : safeT("wishlist.removed", "Removed from wishlist!"),
-      "success"
-    );
+    if (isNowSaved) {
+      toastStore.success(
+        propertyName ? `Added "${propertyName}" to your wishlist!` : safeT("wishlist.added", "Added to wishlist!")
+      );
+    } else {
+      toastStore.success(
+        propertyName ? `Removed "${propertyName}" from your wishlist!` : safeT("wishlist.removed", "Removed from wishlist!")
+      );
+    }
   } else {
-    toastStore.showToast(safeT("wishlist.failed", "Failed to update wishlist"), "error");
+    toastStore.danger(
+      propertyName ? `Failed to update wishlist for "${propertyName}"` : safeT("wishlist.failed", "Failed to update wishlist")
+    );
   }
 };
 
@@ -251,17 +262,143 @@ const openProperty = (propertyId) => {
   router.push({ name: "public.property-detail", params: { id: propertyId } });
 };
 
-const getMapPinPosition = (index) => {
-  const positions = [
-    { top: "42%", left: "48%" },
-    { top: "35%", left: "53%" },
-    { top: "48%", left: "45%" },
-    { top: "52%", left: "55%" },
-    { top: "30%", left: "42%" },
-    { top: "58%", left: "50%" },
-  ];
-  return positions[index % positions.length];
+// ── Leaflet.js Map Integration ────────────────────────────────────────────────
+let mapInstance = null;
+let markersMap = {};
+
+const initMap = () => {
+  const container = document.getElementById("search-map");
+  if (!container || !window.L) return;
+
+  let centerLat = 11.5564;
+  let centerLng = 104.9282;
+
+  const validProperties = paginatedProperties.value.filter(p => {
+    const lat = Number(p.latitude);
+    const lng = Number(p.longitude);
+    return !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0;
+  });
+
+  if (validProperties.length > 0) {
+    centerLat = Number(validProperties[0].latitude);
+    centerLng = Number(validProperties[0].longitude);
+  }
+
+  mapInstance = window.L.map("search-map", {
+    zoomControl: false
+  }).setView([centerLat, centerLng], 12);
+
+  const isDarkMode = document.documentElement.classList.contains("dark");
+  const tileUrl = isDarkMode
+    ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+    : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+
+  const attribution = isDarkMode
+    ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+    : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
+  window.L.tileLayer(tileUrl, {
+    attribution,
+    maxZoom: 19
+  }).addTo(mapInstance);
+
+  window.L.control.zoom({
+    position: 'topright'
+  }).addTo(mapInstance);
+
+  const coordinatesRegistry = {};
+
+  paginatedProperties.value.forEach((property) => {
+    let lat = Number(property.latitude);
+    let lng = Number(property.longitude);
+
+    if (isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0) return;
+
+    const roundTo5 = (num) => Math.round(num * 100000) / 100000;
+    const coordKey = `${roundTo5(lat)}_${roundTo5(lng)}`;
+    
+    if (coordinatesRegistry[coordKey] === undefined) {
+      coordinatesRegistry[coordKey] = 0;
+    } else {
+      coordinatesRegistry[coordKey]++;
+      const count = coordinatesRegistry[coordKey];
+      const angle = count * 1.25;
+      const radius = 0.003 * Math.ceil(count / 5); // Increased radius
+      lat += Math.sin(angle) * radius;
+      lng += Math.cos(angle) * radius;
+    }
+
+    const priceText = formatPrice(property.price);
+
+    const normalIcon = window.L.divIcon({
+      className: "custom-map-pin",
+      html: `<button type="button" class="flex items-center gap-1 rounded-sm px-2.5 py-1 text-xs font-black shadow-lg border bg-white text-gray-900 border-black/10 hover:scale-105 transition-all duration-150 select-none cursor-pointer" style="border-radius: var(--radius-sm); white-space: nowrap;">${priceText}</button>`,
+      iconSize: [60, 26],
+      iconAnchor: [30, 13]
+    });
+
+    const marker = window.L.marker([lat, lng], { icon: normalIcon })
+      .addTo(mapInstance)
+      .on("mouseover", () => {
+        hoveredPropertyId.value = property.id;
+      })
+      .on("mouseout", () => {
+        hoveredPropertyId.value = null;
+      })
+      .on("click", () => {
+        openProperty(property.id);
+      });
+
+    markersMap[property.id] = {
+      marker,
+      lat,
+      lng,
+      priceText
+    };
+  });
 };
+
+watch(showMapModal, async (isOpen) => {
+  if (isOpen) {
+    await nextTick();
+    initMap();
+  } else {
+    if (mapInstance) {
+      mapInstance.remove();
+      mapInstance = null;
+      markersMap = {};
+    }
+  }
+});
+
+watch(hoveredPropertyId, (newId, oldId) => {
+  if (!mapInstance) return;
+
+  if (oldId && markersMap[oldId]) {
+    const { marker, priceText } = markersMap[oldId];
+    const normalIcon = window.L.divIcon({
+      className: "custom-map-pin",
+      html: `<button type="button" class="flex items-center gap-1 rounded-sm px-2.5 py-1 text-xs font-black shadow-lg border bg-white text-gray-900 border-black/10 hover:scale-105 transition-all duration-150 select-none cursor-pointer" style="border-radius: var(--radius-sm); white-space: nowrap;">${priceText}</button>`,
+      iconSize: [60, 26],
+      iconAnchor: [30, 13]
+    });
+    marker.setIcon(normalIcon);
+    marker.setZIndexOffset(0);
+  }
+
+  if (newId && markersMap[newId]) {
+    const { marker, lat, lng, priceText } = markersMap[newId];
+    const activeIcon = window.L.divIcon({
+      className: "custom-map-pin-active",
+      html: `<button type="button" class="flex items-center gap-1 rounded-sm px-3 py-1.5 text-xs font-black shadow-2xl border bg-[#FF385C] text-white border-white scale-110 transition-all duration-150 select-none cursor-pointer" style="border-radius: var(--radius-sm); white-space: nowrap;">${priceText}</button>`,
+      iconSize: [66, 30],
+      iconAnchor: [33, 15]
+    });
+    marker.setIcon(activeIcon);
+    marker.setZIndexOffset(1000);
+    mapInstance.panTo([lat, lng], { animate: true, duration: 0.5 });
+  }
+});
 
 onMounted(async () => {
   startSlideTimer();
@@ -294,6 +431,11 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   if (slideInterval) clearInterval(slideInterval);
+  if (mapInstance) {
+    mapInstance.remove();
+    mapInstance = null;
+    markersMap = {};
+  }
 });
 </script>
 
@@ -589,34 +731,7 @@ onBeforeUnmount(() => {
 
         <!-- Right Embedded Live Map View -->
         <div class="flex-1 h-2/3 lg:h-full relative bg-sky-50 dark:bg-neutral-900">
-          <iframe
-            title="Interactive Live Map"
-            src="https://www.openstreetmap.org/export/embed.html?bbox=104.85,11.5,105.0,11.65&layer=mapnik"
-            class="absolute inset-0 h-full w-full border-none filter contrast-105 select-none"
-            style="pointer-events: auto;"
-          ></iframe>
-
-          <!-- Map Pin Overlays -->
-          <div class="absolute inset-0 pointer-events-none p-8">
-            <div
-              v-for="(property, index) in paginatedProperties"
-              :key="property.id"
-              class="absolute pointer-events-auto transition-all duration-300"
-              :style="getMapPinPosition(index)"
-            >
-              <button
-                type="button"
-                class="flex items-center gap-1 rounded-sm px-3 py-1.5 text-xs font-black shadow-xl transition-all duration-200 border"
-                style="border-radius: var(--radius-sm);"
-                :class="hoveredPropertyId === property.id ? 'bg-(--color-primary) text-white border-white scale-125 z-30 shadow-2xl' : 'bg-white text-gray-900 border-black/10 hover:scale-110 z-10'"
-                @mouseenter="hoveredPropertyId = property.id"
-                @mouseleave="hoveredPropertyId = null"
-                @click="openProperty(property.id)"
-              >
-                <span>{{ formatPrice(property.price) }}</span>
-              </button>
-            </div>
-          </div>
+          <div id="search-map" class="absolute inset-0 h-full w-full"></div>
         </div>
       </div>
     </div>
