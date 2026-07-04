@@ -702,30 +702,37 @@
       "eyebrow": "The People Behind SrokYerng",
       "title": "Meet Our Team",
       "subtitle": "A group of passionate Cambodians dedicated to creating a better travel experience.",
+      "defaultBio": "Focused on building reliable, user-friendly features for the team's shared codebase.",
       "members": {
         "leakhena": {
           "name": "Bou Leakhena",
-          "role": "Full-stack Developer"
+          "role": "Full-stack Developer",
+          "bio": "Builds and maintains features across the stack, from database logic to the interfaces travelers use every day."
         },
         "sambath": {
           "name": "Orn Sambath",
-          "role": "Frontend Developer"
+          "role": "Frontend Developer",
+          "bio": "Shapes the interfaces travelers interact with, focused on clarity and ease of use."
         },
         "meoun-chan-sambath": {
           "name": "Meoun Chan Sombath",
-          "role": "Team Lead & Full-stack Developer"
+          "role": "Team Lead & Full-stack Developer",
+          "bio": "Leads the team's technical direction while contributing across both frontend and backend work."
         },
         "ei-visal": {
           "name": "EI Visal",
-          "role": "Backend Developer"
+          "role": "Backend Developer",
+          "bio": "Builds the server-side systems that keep bookings, payments, and property data running reliably."
         },
         "houn-thanun": {
           "name": "Huon Thanun",
-          "role": "Frontend Developer"
+          "role": "Frontend Developer",
+          "bio": "Crafts responsive, accessible interfaces that make booking a stay feel effortless."
         },
         "an-menghour": {
           "name": "An Menghour",
-          "role": "Backend Developer"
+          "role": "Backend Developer",
+          "bio": "Works on the backend infrastructure that powers reservations and property data."
         }
       }
     },

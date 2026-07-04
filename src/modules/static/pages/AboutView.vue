@@ -81,6 +81,7 @@ const team = computed(() => [
   {
     name: t("about.team.members.leakhena.name"),
     role: t("about.team.members.leakhena.role"),
+    bio: t("about.team.members.leakhena.bio"),
     image: member1,
     links: {
       github: "https://github.com/leakhena-bou",
@@ -91,6 +92,7 @@ const team = computed(() => [
   {
     name: t("about.team.members.sambath.name"),
     role: t("about.team.members.sambath.role"),
+    bio: t("about.team.members.sambath.bio"),
     image: member2,
     links: {
       github: "https://github.com/sambath22",
@@ -101,6 +103,7 @@ const team = computed(() => [
   {
     name: t("about.team.members.meoun-chan-sambath.name"),
     role: t("about.team.members.meoun-chan-sambath.role"),
+    bio: t("about.team.members.meoun-chan-sambath.bio"),
     image: member3,
     links: {
       github: "https://github.com/Alchemyyyy",
@@ -111,6 +114,7 @@ const team = computed(() => [
   {
     name: t("about.team.members.ei-visal.name"),
     role: t("about.team.members.ei-visal.role"),
+    bio: t("about.team.members.ei-visal.bio"),
     image: member4,
     links: {
       github: "https://github.com/mrrvisal",
@@ -121,6 +125,7 @@ const team = computed(() => [
   {
     name: t("about.team.members.houn-thanun.name"),
     role: t("about.team.members.houn-thanun.role"),
+    bio: t("about.team.members.houn-thanun.bio"),
     image: member5,
     links: {
       github: "https://github.com/huon-thanun",
@@ -131,6 +136,7 @@ const team = computed(() => [
   {
     name: t("about.team.members.an-menghour.name"),
     role: t("about.team.members.an-menghour.role"),
+    bio: t("about.team.members.an-menghour.bio"),
     image: member6,
     links: {
       github: t("about.team.members.an-menghour.github"),
@@ -557,12 +563,9 @@ const team = computed(() => [
                 </p>
 
                 <p
-                  class="mt-6 text-[11px] leading-relaxed text-(--color-muted) font-light opacity-90 line-clamp-6"
+                  class="mt-4 text-sm leading-relaxed text-(--color-muted) font-light opacity-90 line-clamp-4"
                 >
-                  {{
-                    member.bio ||
-                    "Co-developing robust and scalable solutions, aligning project UI preferences with intuitive interface systems."
-                  }}
+                  {{ member.bio || t("about.team.defaultBio") }}
                 </p>
               </div>
 
@@ -696,17 +699,6 @@ const team = computed(() => [
 </template>
 
 <style scoped>
-/*
-  Many Khmer web fonts (including Kantumruy) don't ship a 900/"black"
-  weight. When an element uses font-black but the active font has no
-  matching weight file, the browser silently substitutes a generic
-  system font for just that text — which is why some Khmer headings
-  can look visually inconsistent with the rest of the page.
-  This caps heading weight at 700 (bold) whenever the Khmer font is
-  active, so every heading renders in the same branded typeface.
-  Adjust the 700 value if your Kantumruy font file supports a heavier
-  weight than Bold.
-*/
 .font-kantumruy .font-black {
   font-weight: 700;
 }
