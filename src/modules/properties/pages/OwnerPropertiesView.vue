@@ -893,7 +893,9 @@ onMounted(async () => {
           </button>
         </div>
 
-        <div class="flex items-center gap-2 px-2 md:border-l border-(--color-border)">
+        <div
+          class="flex items-center gap-2 px-2 md:border-l border-(--color-border)"
+        >
           <button
             class="flex items-center gap-1.5 text-xs text-(--color-muted) font-bold tracking-wide uppercase bg-(--color-surface-soft) hover:bg-(--color-border) transition px-3.5 py-2 rounded-xl border border-(--color-border)"
           >
@@ -971,7 +973,8 @@ onMounted(async () => {
             No registered properties
           </h3>
           <p class="text-sm text-(--color-muted) max-w-sm mx-auto mt-2 mb-8">
-            You haven't registered any properties yet. Add your first property to start receiving bookings.
+            You haven't registered any properties yet. Add your first property
+            to start receiving bookings.
           </p>
           <button
             @click="isAddModalOpen = true"
@@ -995,7 +998,8 @@ onMounted(async () => {
             No properties found
           </h3>
           <p class="text-sm text-(--color-muted) max-w-sm mx-auto mt-2 mb-8">
-            We couldn't find any properties matching your current search criteria.
+            We couldn't find any properties matching your current search
+            criteria.
           </p>
           <button
             @click="resetOwnerFilters"
@@ -1061,9 +1065,7 @@ onMounted(async () => {
 
     <AppModal
       :open="isAddModalOpen"
-      :title="
-        currentStep === 1 ? 'Property Details' : 'Property Images'
-      "
+      :title="currentStep === 1 ? 'Property Details' : 'Property Images'"
       @close="closeAddModal"
     >
       <div
@@ -1081,7 +1083,9 @@ onMounted(async () => {
           >
           <span
             class="text-xs font-bold"
-            :class="currentStep >= 1 ? 'text-(--color-text)' : 'text-(--color-muted)'"
+            :class="
+              currentStep >= 1 ? 'text-(--color-text)' : 'text-(--color-muted)'
+            "
             >Details</span
           >
         </div>
@@ -1098,7 +1102,9 @@ onMounted(async () => {
           >
           <span
             class="text-xs font-bold"
-            :class="currentStep >= 2 ? 'text-(--color-text)' : 'text-(--color-muted)'"
+            :class="
+              currentStep >= 2 ? 'text-(--color-text)' : 'text-(--color-muted)'
+            "
             >Images</span
           >
         </div>
@@ -1504,9 +1510,7 @@ onMounted(async () => {
             <div class="flex items-center justify-between">
               <span
                 class="text-[11px] font-bold text-orange-700 uppercase tracking-wider"
-                >Unsaved Images ({{
-                  editNewPreviews.length
-                }})</span
+                >Unsaved Images ({{ editNewPreviews.length }})</span
               >
               <button
                 :disabled="editImagesUploading"
@@ -1568,8 +1572,11 @@ onMounted(async () => {
         <h3 class="text-lg font-black text-(--color-text) tracking-tight">
           Delete Property??
         </h3>
-        <p class="text-sm text-(--color-muted) mt-2 max-w-sm mx-auto font-medium">
-          Are you sure you want to delete this property? This action is permanent and cannot be undone.
+        <p
+          class="text-sm text-(--color-muted) mt-2 max-w-sm mx-auto font-medium"
+        >
+          Are you sure you want to delete this property? This action is
+          permanent and cannot be undone.
         </p>
         <div class="flex items-center justify-center gap-3 mt-8">
           <button
