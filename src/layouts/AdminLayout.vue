@@ -7,6 +7,8 @@ import AdminSidebar from "@/modules/admin/components/layout/AdminSidebar.vue";
   <AdminSidebar />
 
   <main class="px-8">
-    <RouterView />
+    <RouterView v-slot="{ Component, route }">
+      <component :is="Component" :key="route.path" />
+    </RouterView>
   </main>
 </template>

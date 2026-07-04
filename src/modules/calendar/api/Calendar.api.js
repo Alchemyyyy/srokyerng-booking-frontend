@@ -44,4 +44,20 @@ export const calendarApi = {
       params: { start_date: startDate, end_date: endDate },
     });
   },
+
+  /**
+   * Block a single calendar day for a room (maintenance / manual hold).
+   * POST /owner/rooms/:roomId/availability-blocks
+   */
+  createRoomBlock(roomId, date, reason) {
+    return http.post(`/owner/rooms/${roomId}/availability-blocks`, { date, reason });
+  },
+
+  /**
+   * Remove a blocked day for a room.
+   * DELETE /owner/rooms/:roomId/availability-blocks/:date
+   */
+  deleteRoomBlock(roomId, date) {
+    return http.delete(`/owner/rooms/${roomId}/availability-blocks/${date}`);
+  },
 };

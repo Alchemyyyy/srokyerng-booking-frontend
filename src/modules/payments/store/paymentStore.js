@@ -152,7 +152,12 @@ export const usePaymentStore = defineStore("payment", () => {
    * @param {File} file
    * @returns {Promise<boolean>} true on success
    */
-  async function submitPaymentProof(paymentId, file, uploadType = "receipt") {
+  async function submitPaymentProof(
+    paymentId,
+    file,
+    uploadType = "receipt",
+    transactionReference = "",
+  ) {
     loadingSubmitProof.value = true;
     errorSubmitProof.value = null;
     try {
@@ -167,6 +172,7 @@ export const usePaymentStore = defineStore("payment", () => {
         currentStatus,
         file,
         uploadType,
+        transactionReference,
       );
 
       activePayment.value = updated;

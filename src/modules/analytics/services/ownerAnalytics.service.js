@@ -1,13 +1,34 @@
 // modules/analytics/services/ownerAnalytics.service.js
 
+// Percentage change vs. the same period last year. `previous` of 0 can't
+// produce a ratio, so it's reported as "New" rather than a bogus +Infinity%.
+const computeTrend = (current, previous) => {
+    if (!previous) {
+        return current > 0
+            ? { text: 'New vs last year', direction: 'up' }
+            : { text: '', direction: 'neutral' };
+    }
+
+    const pct = Math.round(((current - previous) / previous) * 100);
+    if (pct === 0) return { text: 'No change vs last year', direction: 'neutral' };
+
+    const sign = pct > 0 ? '+' : '';
+    return { text: `${sign}${pct}% vs last year`, direction: pct > 0 ? 'up' : 'down' };
+};
+
 export const ownerAnalyticsService = {
     /**
      * Axios interceptor already unwraps the outer response, so each param shape is:
      *   { success, message, data: { ... } }
      *
      * We normalise all 5 endpoints into the single dashboardData object the store consumes.
+     * prevSummary/prevRevenue/prevProperties are the same-shaped responses for the prior
+     * year, used only to compute the trend badges shown on the summary cards.
      */
-    processDashboardData({ summary, revenue, properties, rooms, reservations }) {
+    processDashboardData({
+        summary, revenue, properties, rooms, reservations,
+        prevSummary, prevRevenue, prevProperties,
+    }) {
         const mainSummary = summary?.data?.dashboard_summary || {};
         const revenueData = revenue?.data || {};
         const propertiesData = properties?.data || {};
@@ -15,6 +36,16 @@ export const ownerAnalyticsService = {
         const totalPropertiesCount = Number(propertiesData.count ?? propertyList.length);
         const roomList = rooms?.data?.top_rooms || [];
         const reservationData = reservations?.data || {};
+
+        // ── Prior-year comparisons (for trend badges) ────────────────────────
+        const prevMainSummary = prevSummary?.data?.dashboard_summary || {};
+        const prevRevenueData = prevRevenue?.data || {};
+        const prevPropertiesData = prevProperties?.data || {};
+        const prevPropertyList = prevPropertiesData.top_properties || [];
+        const prevTotalPropertiesCount = Number(prevPropertiesData.count ?? prevPropertyList.length);
+        const prevTotalReservations = Number(prevMainSummary.total_reservations || 0);
+        const prevTotalRevenue = Number(prevRevenueData.total_revenue || 0);
+        const prevPaidRevenue = Number(prevRevenueData.paid_revenue || 0);
 
         // ── Revenue ─────────────────────────────────────────────────────────
         const totalRevenue = Number(revenueData.total_revenue || 0);
@@ -77,8 +108,12 @@ export const ownerAnalyticsService = {
                 netRevenue,
                 totalProperties: totalPropertiesCount,
                 avgRating: Number(avgRating.toFixed(2)),
-                // no trend data from API
-                trends: { properties: '', bookings: '', revenue: '', rating: '' },
+                trends: {
+                    properties: computeTrend(totalPropertiesCount, prevTotalPropertiesCount),
+                    bookings: computeTrend(totalReservations, prevTotalReservations),
+                    revenue: computeTrend(totalRevenue, prevTotalRevenue),
+                    paidRevenue: computeTrend(paidRevenue, prevPaidRevenue),
+                },
             },
 
             analytics: {

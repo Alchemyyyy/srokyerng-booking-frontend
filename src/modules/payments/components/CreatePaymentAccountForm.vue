@@ -3,6 +3,7 @@ import { ref, watch } from 'vue';
 import { useOwnerPaymentStore } from '../store/ownerPayment.store';
 import { useToastStore } from '@/shared/store/toastStore';
 import AppModal from '@/shared/components/AppModal.vue';
+import { CameraIcon, CheckIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
     isOpen: { type: Boolean, default: false },
@@ -118,14 +119,14 @@ const submitForm = async () => {
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-(--color-text) mb-1">Account Name</label>
-                <input v-model="accountName" type="text" placeholder="e.g. SOK SAN"
+                <label for="paymentAccountName" class="block text-sm font-medium text-(--color-text) mb-1">Account Name</label>
+                <input id="paymentAccountName" v-model="accountName" type="text" placeholder="e.g. SOK SAN"
                     class="w-full border border-(--color-border) bg-(--color-input) text-(--color-text) p-2.5 rounded-xl outline-none focus:border-(--color-primary)" />
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-(--color-text) mb-1">Account Number</label>
-                <input v-model="accountNumber" type="text" placeholder="e.g. 000 111 222"
+                <label for="paymentAccountNumber" class="block text-sm font-medium text-(--color-text) mb-1">Account Number</label>
+                <input id="paymentAccountNumber" v-model="accountNumber" type="text" placeholder="e.g. 000 111 222"
                     class="w-full border border-(--color-border) bg-(--color-input) text-(--color-text) p-2.5 rounded-xl outline-none focus:border-(--color-primary)" />
             </div>
 
@@ -139,7 +140,7 @@ const submitForm = async () => {
 
                     <div v-if="!qrPreviewUrl" class="text-(--color-muted) py-4">
                         <div class="flex flex-col items-center gap-2">
-                            <span class="text-3xl">📸</span>
+                            <CameraIcon class="h-8 w-8 text-(--color-muted)" />
                             <span class="text-sm font-semibold text-(--color-text)">Click to upload images</span>
                             <span class="text-xs text-(--color-muted)">PNG, JPG up to 10MB (multiple allowed)</span>
                         </div>
@@ -149,8 +150,9 @@ const submitForm = async () => {
                         <img :src="qrPreviewUrl" alt="QR Preview"
                             class="w-32 h-32 object-contain border rounded-xl bg-white p-1 shadow-inner" />
                         <span
-                            class="text-xs text-(--color-primary) font-bold bg-(--color-primary)/10 px-2.5 py-1 rounded-lg">
-                            {{ qrFile ? 'New QR Selected ✓' : 'Click to Change QR Image' }}
+                            class="inline-flex items-center gap-1 text-xs text-(--color-primary) font-bold bg-(--color-primary)/10 px-2.5 py-1 rounded-lg">
+                            <CheckIcon v-if="qrFile" class="h-3.5 w-3.5" />
+                            {{ qrFile ? 'New QR Selected' : 'Click to Change QR Image' }}
                         </span>
                     </div>
                 </div>

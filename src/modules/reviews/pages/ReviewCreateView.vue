@@ -298,43 +298,35 @@ const accessDenied = ref(false)
 const accessError = ref('')
 
 // ── Verify reservation ownership & status before showing the form ──
-// onMounted(async () => {
-//   if (!reservationId.value) {
-//     router.replace({ path: '/customer/reviews' })
-//     return
-//   }
-//   try {
-//     const res = await http.get(`/reservations/${reservationId.value}`)
-//     const reservation = res?.data
-
-//     if (!reservation) {
-//       accessDenied.value = true
-//       accessError.value = 'Reservation not found.'
-//       return
-//     }
-//     if (reservation.reservation_status !== 'completed') {
-//       accessDenied.value = true
-//       accessError.value = 'You can only review completed stays.'
-//       return
-//     }
-//   } catch (err) {
-//     // 403 = not your reservation, 404 = doesn't exist
-//     accessDenied.value = true
-//     accessError.value =
-//       err?.response?.status === 403
-//         ? 'You do not have access to this reservation.'
-//         : 'Reservation not found.'
-//   } finally {
-//     pageReady.value = true
-//   }
-// })
-
-onMounted(() => {
+onMounted(async () => {
   if (!reservationId.value) {
     router.replace({ path: '/customer/reviews' })
     return
   }
-  pageReady.value = true
+  try {
+    const res = await http.get(`/reservations/${reservationId.value}`)
+    const reservation = res?.data
+
+    if (!reservation) {
+      accessDenied.value = true
+      accessError.value = 'Reservation not found.'
+      return
+    }
+    if (reservation.reservation_status !== 'completed') {
+      accessDenied.value = true
+      accessError.value = 'You can only review completed stays.'
+      return
+    }
+  } catch (err) {
+    // 403 = not your reservation, 404 = doesn't exist
+    accessDenied.value = true
+    accessError.value =
+      err?.response?.status === 403
+        ? 'You do not have access to this reservation.'
+        : 'Reservation not found.'
+  } finally {
+    pageReady.value = true
+  }
 })
 
 // ── Form state ──

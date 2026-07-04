@@ -8,6 +8,8 @@ import OwnerSidebar from '@/modules/owner/components/layout/OwnerSidebar.vue';
   <OwnerSidebar />
 
   <main class="px-8">
-    <RouterView />
+    <RouterView v-slot="{ Component, route }">
+      <component :is="Component" :key="route.path" />
+    </RouterView>
   </main>
 </template>

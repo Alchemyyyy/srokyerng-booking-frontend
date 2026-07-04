@@ -4,6 +4,7 @@ import { useToastStore } from '@/shared/store/toastStore'
 import { useSidebar } from '@/shared/composables/useSidebar'
 import reviewApi from '@/modules/reviews/api/review.api'
 import OwnerReviewCard from '../components/OwnerReviewCard.vue'
+import OwnerLoadingState from '../components/OwnerLoadingState.vue'
 import {
   ChatBubbleLeftRightIcon,
   CheckBadgeIcon,
@@ -261,10 +262,7 @@ onMounted(fetchReviews)
     </section>
 
     <!-- Loading -->
-    <section v-if="loading" class="flex flex-col items-center gap-3 py-20 rounded-2xl border border-(--color-border) bg-(--color-surface)">
-      <div class="w-8 h-8 border-3 border-(--color-primary) border-t-transparent rounded-full animate-spin" />
-      <p class="text-sm text-(--color-muted)">Loading reviews…</p>
-    </section>
+    <OwnerLoadingState v-if="loading" label="Loading reviews…" />
 
     <!-- Error -->
     <section v-else-if="error" class="flex flex-col items-center gap-3 py-16 rounded-2xl border border-rose-500/20 bg-rose-500/5 text-center">

@@ -301,12 +301,41 @@ const categoryIcons = {
 };
 
 const categoryColors = {
-  Connectivity: { bg: "#eff6ff", border: "#bfdbfe", color: "#3b82f6" },
-  Recreation: { bg: "#f0fdf4", border: "#bbf7d0", color: "#16a34a" },
-  Dining: { bg: "#fff7ed", border: "#fed7aa", color: "#ea580c" },
-  Transport: { bg: "#fdf4ff", border: "#e9d5ff", color: "#9333ea" },
-  Services: { bg: "#fdf2f8", border: "#fbcfe8", color: "#db2777" },
-  Other: { bg: "#f8fafc", border: "#e2e8f0", color: "#64748b" },
+  Connectivity: {
+    bg: "var(--color-primary-soft)",
+    border: "var(--color-primary)",
+    color: "var(--color-primary)",
+  },
+  Recreation: {
+    bg: "var(--color-success-soft)",
+    border: "var(--color-success)",
+    color: "var(--color-success)",
+  },
+  Dining: {
+    bg: "var(--color-accent-soft)",
+    border: "var(--color-accent)",
+    color: "var(--color-accent-strong)",
+  },
+  Transport: {
+    bg: "var(--color-secondary-soft)",
+    border: "var(--color-secondary)",
+    color: "var(--color-secondary)",
+  },
+  Services: {
+    bg: "var(--color-info-soft)",
+    border: "var(--color-info)",
+    color: "var(--color-info)",
+  },
+  "Views & Nature": {
+    bg: "var(--color-warning-soft)",
+    border: "var(--color-warning)",
+    color: "var(--color-warning)",
+  },
+  Other: {
+    bg: "var(--color-surface-soft)",
+    border: "var(--color-border)",
+    color: "var(--color-muted)",
+  },
 };
 
 const iconStyle = (category) => {
@@ -418,7 +447,7 @@ const clearAll = () => {
 .search-icon {
   position: absolute;
   left: 14px;
-  color: #9ca3af;
+  color: var(--color-muted);
   display: flex;
   align-items: center;
   pointer-events: none;
@@ -427,17 +456,17 @@ const clearAll = () => {
 .search-input {
   width: 100%;
   padding: 10px 14px 10px 42px;
-  border: 1.5px solid #e5e7eb;
+  border: 1.5px solid var(--color-border);
   border-radius: 12px;
   font-size: 14px;
   outline: none;
   transition: border-color 0.2s;
-  background: var(--color-surface, #fff);
-  color: var(--color-text, #111);
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
 .search-input:focus {
-  border-color: #0ea5e9;
+  border-color: var(--color-primary);
 }
 
 .clear-btn {
@@ -446,14 +475,14 @@ const clearAll = () => {
   background: none;
   border: none;
   cursor: pointer;
-  color: #9ca3af;
+  color: var(--color-muted);
   display: flex;
   align-items: center;
   padding: 0;
 }
 
 .clear-btn:hover {
-  color: #374151;
+  color: var(--color-text);
 }
 
 .filter-tabs {
@@ -467,10 +496,10 @@ const clearAll = () => {
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  border: 1.5px solid #e5e7eb;
+  border: 1.5px solid var(--color-border);
   border-radius: 12px;
-  background: var(--color-surface, #fff);
-  color: #374151;
+  background: var(--color-surface);
+  color: var(--color-muted);
   font-size: 13.5px;
   font-weight: 500;
   cursor: pointer;
@@ -479,15 +508,15 @@ const clearAll = () => {
 }
 
 .filter-tab:hover {
-  background: #f0f9ff;
-  border-color: #0ea5e9;
-  color: #0ea5e9;
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .filter-tab.active {
-  background: #0ea5e9;
-  border-color: #0ea5e9;
-  color: white;
+  background: var(--color-primary);
+  border-color: transparent;
+  color: #fff;
 }
 
 .tab-icon {
@@ -497,7 +526,8 @@ const clearAll = () => {
 }
 
 .tab-count {
-  background: rgba(0, 0, 0, 0.08);
+  background: var(--color-border);
+  color: var(--color-muted);
   border-radius: 999px;
   padding: 1px 7px;
   font-size: 12px;
@@ -505,12 +535,13 @@ const clearAll = () => {
 }
 
 .filter-tab.active .tab-count {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
 }
 
 .amenity-count {
   font-size: 13px;
-  color: #6b7280;
+  color: var(--color-muted);
   margin: 0;
 }
 
@@ -535,12 +566,12 @@ const clearAll = () => {
   width: 19px;
   height: 19px;
   flex-shrink: 0;
-  color: #6b7280;
+  color: var(--color-muted);
 }
 .category-title {
   font-size: 17px;
   font-weight: 700;
-  color: #111827;
+  color: var(--color-text);
 }
 
 .category-count {
@@ -568,8 +599,8 @@ const clearAll = () => {
   align-items: flex-start;
   gap: 0;
   padding: 20px;
-  border: 1.5px solid #e5e7eb;
-  background: #fff;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
   border-radius: 16px;
   cursor: pointer;
   text-align: left;
@@ -578,14 +609,14 @@ const clearAll = () => {
 }
 
 .amenity-card:hover {
-  border-color: #bae6fd;
-  box-shadow: 0 6px 24px rgba(14, 165, 233, 0.1);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-card);
   transform: translateY(-2px);
 }
 
 .amenity-card.selected {
-  border-color: #0ea5e9;
-  background: #f0f9ff;
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
 }
 
 .amenity-icon-wrap {
@@ -625,12 +656,12 @@ const clearAll = () => {
 .amenity-name {
   font-size: 15px;
   font-weight: 700;
-  color: #111827;
+  color: var(--color-text);
   line-height: 1.3;
 }
 .amenity-desc {
   font-size: 12.5px;
-  color: #6b7280;
+  color: var(--color-muted);
   line-height: 1.4;
 }
 
@@ -641,7 +672,7 @@ const clearAll = () => {
   width: 24px;
   height: 24px;
   border-radius: 999px;
-  background: #0ea5e9;
+  background: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -650,26 +681,26 @@ const clearAll = () => {
 .selection-footer {
   position: sticky;
   bottom: 20px;
-  background: #fff;
-  border: 1.5px solid #e5e7eb;
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
   border-radius: 16px;
   padding: 14px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-panel);
 }
 
 .selected-count {
   font-size: 14px;
   font-weight: 700;
-  color: #111827;
+  color: var(--color-text);
 }
 
 .clear-all-btn {
   border: none;
   background: transparent;
-  color: #ef4444;
+  color: var(--color-danger);
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
@@ -679,45 +710,12 @@ const clearAll = () => {
 .empty-state {
   padding: 80px 20px;
   text-align: center;
-  color: #9ca3af;
+  color: var(--color-muted);
 }
 .empty-icon {
   width: 38px;
   height: 38px;
   margin: 0 auto 10px;
-}
-
-[data-theme="dark"] .search-input {
-  background: var(--color-surface);
-  border-color: var(--color-border);
-  color: var(--color-text);
-}
-
-[data-theme="dark"] .filter-tab:hover {
-  background: rgba(14, 165, 233, 0.15);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-
-[data-theme="dark"] .amenity-card {
-  background: var(--color-surface);
-  border-color: var(--color-border);
-}
-
-[data-theme="dark"] .amenity-icon-wrap {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-[data-theme="dark"] .amenity-name {
-  color: var(--color-text);
-}
-[data-theme="dark"] .category-title {
-  color: var(--color-text);
-}
-[data-theme="dark"] .selection-footer {
-  background: var(--color-surface);
-  border-color: var(--color-border);
 }
 
 @media (max-width: 768px) {

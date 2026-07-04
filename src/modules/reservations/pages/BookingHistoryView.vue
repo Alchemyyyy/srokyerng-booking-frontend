@@ -4,9 +4,12 @@ import { reservationApi } from "../api/reservation.api";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import BookingCard from "../components/BookingCard.vue";
+import LoadingSpinner from "@/shared/components/LoadingSpinner.vue";
 import CancelReservationModal from "../components/CancelReservationModal.vue";
 import { useToastStore } from "@/shared/store/toastStore";
 import http from "@/app/api/http";
+import { resolveAssetUrl } from "@/shared/utils/assetUrl";
+import placeholer from "@/assets/images/properties/placeholder.png";
 import {
   BriefcaseIcon,
   MoonIcon,
@@ -14,9 +17,6 @@ import {
   SparklesIcon,
   ArrowDownTrayIcon,
   ExclamationTriangleIcon,
-  QueueListIcon,
-  ClockIcon,
-  CheckCircleIcon,
   CalendarDaysIcon,
 } from "@heroicons/vue/24/outline";
 import PublicNavbar from "@/shared/components/PublicNavbar.vue";
@@ -69,11 +69,13 @@ const confirmCancel = async (reason) => {
   cancelLoading.value = true;
   cancelError.value   = "";
   try {
-    await reservationApi.cancelReservation(cancellingId.value, reason);
+    const cancelResult = await reservationApi.cancelReservation(cancellingId.value, reason);
 
-    // If the booking had a verified payment, auto-create a refund request
+    // The backend already auto-creates a refund request when eligible (see
+    // cancelReservation's `refund_info`) — only fall back to a manual request
+    // here if that auto-creation didn't happen (e.g. it failed server-side).
     const booking = bookings.value.find(b => b.id === cancellingId.value);
-    if (booking?.refundEligible && booking?.paymentId) {
+    if (booking?.refundEligible && booking?.paymentId && !cancelResult?.data?.refund_info) {
       try {
         await http.post(`/reservations/${cancellingId.value}/refund-request`, {
           amount: booking.paymentAmount ?? booking.totalPrice,
@@ -115,29 +117,6 @@ const filteredBookings = computed(() => {
     );
   return bookings.value;
 });
-
-const filterOptions = computed(() => [
-  {
-    value: "all",
-    label: t("bookingHistory.filters.all"),
-    count: bookings.value.length,
-    icon: QueueListIcon,
-  },
-  {
-    value: "upcoming",
-    label: t("bookingHistory.filters.upcoming"),
-    count: stats.value.activeCount,
-    icon: ClockIcon,
-  },
-  {
-    value: "completed",
-    label: t("bookingHistory.filters.completed"),
-    count: bookings.value.filter(
-      (b) => String(b.status).toLowerCase() === "completed",
-    ).length,
-    icon: CheckCircleIcon,
-  },
-]);
 
 const stats = computed(() => ({
   totalReservations: bookings.value.length,
@@ -204,8 +183,7 @@ const normalizeBooking = (item, index) => {
   return {
     id: item.id || index + 1,
     roomName: item.room_name || item.room?.name || "Room",
-    roomImage:
-      "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=400&q=80",
+    roomImage: item.cover_image ? resolveAssetUrl(item.cover_image) : placeholer,
     location: item.property_name || item.property?.name || "Unknown",
     checkIn:  formatDate(checkIn),
     checkOut: formatDate(checkOut),
@@ -228,7 +206,6 @@ const fetchBookings = async () => {
   try {
     const response = await reservationApi.getMyReservations();
     const items = Array.isArray(response) ? response : response?.data || [];
-    console.log("First item:", JSON.stringify(items[0]));
 
     bookings.value = items.map(normalizeBooking);
 
@@ -312,7 +289,7 @@ onMounted(async () => {
             <button
               type="button"
               class="pb-3 border-b-2 transition-all duration-200 cursor-pointer"
-              :class="activeFilter === 'all' ? 'border-b-2 border-blue-500 text-blue-600' : 'border-transparent text-(--color-muted) hover:text-(--color-text)'"
+              :class="activeFilter === 'all' ? 'border-(--color-text) text-(--color-text)' : 'border-transparent text-(--color-muted) hover:text-(--color-text)'"
               @click="activeFilter = 'all'"
             >
               All
@@ -323,8 +300,7 @@ onMounted(async () => {
         <!-- Booking List Content -->
         <main>
           <div v-if="loading" class="text-center py-20 bg-(--color-surface) border border-(--color-border)/60 rounded-3xl shadow-xs">
-            <div class="inline-block w-8 h-8 border-4 border-(--color-primary) border-t-transparent rounded-full animate-spin mb-3"></div>
-            <p class="text-sm font-semibold text-(--color-muted)">{{ t('bookingHistory.state.loading') }}</p>
+            <LoadingSpinner :label="t('bookingHistory.state.loading')" class="justify-center" />
           </div>
 
           <div v-else-if="error" class="text-center py-16 bg-rose-500/5 border border-rose-500/10 rounded-3xl">
@@ -337,7 +313,7 @@ onMounted(async () => {
 
           <!-- Empty State (Airbnb style) -->
           <div v-else-if="filteredBookings.length === 0" class="py-16 text-left border border-(--color-border) bg-(--color-surface) rounded-[32px] p-8 max-w-xl shadow-xs">
-            <span class="text-4xl block mb-4">🧳</span>
+            <BriefcaseIcon class="h-10 w-10 text-(--color-muted) mb-4" />
             <h2 class="text-2xl font-black text-(--color-text) tracking-tight">No trips booked... yet!</h2>
             <p class="text-sm text-(--color-muted) leading-relaxed mt-2 max-w-md">
               Time to dust off your bags and start planning your next adventure.

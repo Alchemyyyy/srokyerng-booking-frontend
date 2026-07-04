@@ -63,6 +63,7 @@ const handleRowClick = (event, itemId) => {
 
 <template>
     <div class="table-wrapper">
+        <div class="table-scroll">
         <table class="approval-table">
             <thead>
                 <tr>
@@ -144,6 +145,7 @@ const handleRowClick = (event, itemId) => {
                 </tr>
             </tbody>
         </table>
+        </div>
     </div>
 </template>
 
@@ -154,6 +156,10 @@ const handleRowClick = (event, itemId) => {
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     box-shadow: var(--shadow-card);
+}
+
+.table-scroll {
+    overflow-x: auto;
 }
 
 .approval-table {

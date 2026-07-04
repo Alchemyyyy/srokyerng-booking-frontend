@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import AppTable from "../components/OwnerVerfivationTable.vue";
 import LoadingSpinner from "@/shared/components/LoadingSpinner.vue";
+import OwnerLoadingState from "../components/OwnerLoadingState.vue";
 import PaymentFilterBar from "@/modules/payments/components/PaymentFilterBar.vue";
 import AppModal from "@/shared/components/AppModal.vue";
 import AppPagination from "../components/TablePagination.vue";
@@ -224,8 +225,7 @@ onMounted(paymentStore.loadData);
             <div v-if="error"
                 class="rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-600">{{ error }}
             </div>
-            <div v-if="loading" class="rounded-xl px-5 py-10 text-center text-(--color-muted)">Loading comprehensive
-                data records...</div>
+            <OwnerLoadingState v-if="loading" label="Loading comprehensive data records..." />
             <div v-else-if="filteredItems.length === 0" class="rounded-xl px-5 py-10 text-center text-(--color-muted)">
                 No entries match the current selection filters.</div>
 
@@ -337,7 +337,7 @@ onMounted(paymentStore.loadData);
                 <div>
                     <h3 class="modal-title">
                         {{ targetStatus ? `Set Status to ${targetStatus}` : (activeModule === 'payments' ?
-                            'ConfirmPaymentSlip'
+                            'Confirm Payment Slip'
                             : 'Approve Refund') }}
                     </h3>
                     <p class="modal-desc mt-2">
@@ -361,18 +361,20 @@ onMounted(paymentStore.loadData);
         <AppModal
             :title="targetStatus ? 'Modify Status Reason' : (activeModule === 'payments' ? 'Reject Payment Slip' : 'Reject Refund')"
             :open="isRejectModalOpen" @close="closeRejectModal">
-            <div class="modal-surface-content">
-                <div class="flex items-center gap-2">
-                    <XCircleIcon class="modal-status-icon text-danger small-icon" />
-                    <h3 class="modal-title">Specify Log Justification</h3>
+            <div class="modal-surface-content text-center pt-2">
+                <div class="icon-wrapper confirmation-danger">
+                    <XCircleIcon class="modal-status-icon text-(--color-danger)" />
                 </div>
-                <p class="modal-desc">
-                    {{ targetStatus ? `Please provide a short reason for changing the reservation status to
-                    "${targetStatus}".`
-                        : 'Provide clear feedback to help the user understand the cancellation or rejection criteria.' }}
-                </p>
+                <div>
+                    <h3 class="modal-title">Specify Log Justification</h3>
+                    <p class="modal-desc mt-2">
+                        {{ targetStatus ? `Please provide a short reason for changing the reservation status to
+                        "${targetStatus}".`
+                            : 'Provide clear feedback to help the user understand the cancellation or rejection criteria.' }}
+                    </p>
+                </div>
 
-                <div class="input-container mt-3">
+                <div class="input-container mt-3 text-left">
                     <textarea v-model="rejectNoteText" rows="4" class="modal-textarea"
                         :class="{ 'input-error': !rejectNoteText.trim() && actionLoading }"
                         placeholder="Specify reasons..."></textarea>
@@ -381,7 +383,7 @@ onMounted(paymentStore.loadData);
                     </span>
                 </div>
 
-                <div class="modal-footer-actions mt-4">
+                <div class="modal-footer-actions justify-center mt-4">
                     <button type="button" @click="closeRejectModal" :disabled="actionLoading"
                         class="btn-cancel">Cancel</button>
                     <button type="button" @click="handleConfirmReject" :disabled="actionLoading"
@@ -432,14 +434,13 @@ onMounted(paymentStore.loadData);
     background-color: var(--color-success-soft);
 }
 
+.confirmation-danger {
+    background-color: var(--color-danger-soft);
+}
+
 .modal-status-icon {
     width: 3.5rem;
     height: 3.5rem;
-}
-
-.modal-status-icon.small-icon {
-    width: 1.5rem;
-    height: 1.5rem;
 }
 
 .modal-title {

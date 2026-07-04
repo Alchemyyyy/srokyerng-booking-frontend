@@ -113,7 +113,7 @@ onBeforeUnmount(() => {
             <div>
                 <p class="metric__label">{{ card.label }}</p>
                 <p class="metric__value">{{ displayedValues[index] || card.value }}</p>
-                <p class="metric__delta">{{ card.delta }}</p>
+                <p v-if="card.delta" class="metric__delta" :class="`metric__delta--${card.deltaDirection}`">{{ card.delta }}</p>
             </div>
         </article>
     </section>
@@ -184,8 +184,19 @@ onBeforeUnmount(() => {
 
 .metric__delta {
     margin: 0.15rem 0 0;
-    color: #1d9e75;
     font-size: 0.85rem;
+}
+
+.metric__delta--up {
+    color: var(--color-success);
+}
+
+.metric__delta--down {
+    color: var(--color-danger);
+}
+
+.metric__delta--neutral {
+    color: var(--color-muted);
 }
 
 @media (max-width: 1100px) {

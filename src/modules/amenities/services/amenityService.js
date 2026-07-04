@@ -1,12 +1,4 @@
-import axios from "axios";
-
-const API_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  (import.meta.env.PROD ? "https://api-srokyerng.devspace.linkpc.net/api" : "http://localhost:5001/api");
-
-const api = axios.create({
-  baseURL: API_URL,
-});
+import http from "@/app/api/http";
 
 // ==========================================
 // GET ALL AMENITIES
@@ -14,8 +6,8 @@ const api = axios.create({
 // ==========================================
 export const getAllAmenities = async () => {
   try {
-    const response = await api.get("/amenities");
-    return response.data.data || response.data || [];
+    const response = await http.get("/amenities");
+    return response?.data || response || [];
   } catch (error) {
     console.error("Error fetching amenities:", error);
     return [];
@@ -29,11 +21,11 @@ export const getAllAmenities = async () => {
 // ==========================================
 export const getPropertyAmenities = async (propertyId) => {
   try {
-    const response = await api.get(`/properties/${propertyId}/amenities`);
-    return response.data.data || response.data || [];
+    const response = await http.get(`/properties/${propertyId}/amenities`);
+    return response?.data || response || [];
   } catch (error) {
     // 404 = no amenities assigned yet, not a real error
-    if (error.response?.status === 404) return [];
+    if (error?.status === 404) return [];
     console.error("Error fetching property amenities:", error);
     return [];
   }
@@ -46,11 +38,11 @@ export const getPropertyAmenities = async (propertyId) => {
 // Sends empty array [] to clear all amenities
 // ==========================================
 export const updatePropertyAmenities = async (propertyId, amenityIds) => {
-  const response = await api.put(
+  const response = await http.put(
     `/properties/${propertyId}/amenities`,
     { amenity_ids: amenityIds ?? [] }
   );
-  return response.data;
+  return response;
 };
 
 // ==========================================
@@ -63,11 +55,7 @@ export const uploadPropertyImage = async (propertyId, file) => {
   formData.append("image", file);
   formData.append("_method", "PATCH");
 
-  const response = await api.post(
-    `/properties/${propertyId}`,
-    formData,
-    { headers: { "Content-Type": "multipart/form-data" } }
-  );
+  const response = await http.post(`/properties/${propertyId}`, formData);
 
-  return response.data?.image || response.data?.data?.image || null;
+  return response?.image || response?.data?.image || null;
 };

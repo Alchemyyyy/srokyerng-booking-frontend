@@ -10,7 +10,7 @@ import {
 } from '@heroicons/vue/24/outline';
 
 import '@/assets/styles/variables.css';
-// import ApprovalStatusPanel from '@/modules/analytics/components/ownerComponents/ApprovalStatusPanel.vue';
+import ApprovalStatusPanel from '@/modules/analytics/components/ownerComponents/ApprovalStatusPanel.vue';
 import QuickActionsPanel from '@/modules/analytics/components/ownerComponents/QuickActionsPanel.vue';
 import AnalyticsDashboardState from '@/modules/analytics/components/ownerComponents/AnalyticsDashboardState.vue';
 import AnalyticsDashboardSummaryCards from '@/modules/analytics/components/ownerComponents/AnalyticsDashboardSummaryCards.vue';
@@ -66,9 +66,7 @@ const revenuePeriodLabel = computed(() => {
 });
 
 // ── ApprovalStatusPanel ───────────────────────────────────────────────────────
-const propertyCount = computed(() =>
-  Math.max(dashboardData.value.properties?.length || 1, 1),
-);
+const propertyCount = computed(() => dashboardData.value.properties?.length || 0);
 
 const approvalStatuses = computed(() => {
   const properties = dashboardData.value.properties || [];
@@ -90,29 +88,13 @@ const quickLinks = computed(() => [
   { label: t('owner.sidebar.paymentAccounts'), href: '/owner/payment-accounts', icon: 'CreditCardIcon' },
 ]);
 
-const localizedActiveReservations = computed(() => {
-  return activeReservations.value.map(item => {
-    // 1. Safe capitalization or localization mapping for the text label
-    let statusLabel = item.status;
-    if (item.status === 'confirmed') statusLabel = t('owner.analytics.status.confirmed', 'Confirmed');
-    else if (item.status === 'pending') statusLabel = t('owner.analytics.status.pending', 'Pending');
-    else if (item.status === 'cancelled') statusLabel = t('owner.analytics.status.cancelled', 'Cancelled');
-    else if (item.status === 'completed') statusLabel = t('owner.analytics.status.completed', 'Completed');
-    else if (item.status === 'submitted') statusLabel = t('owner.analytics.status.submitted', 'Submitted');
-
-    // Force first letter uppercase if no translation is found
-    if (statusLabel === item.status) {
-      statusLabel = item.status.charAt(0).toUpperCase() + item.status.slice(1);
-    }
-
-    return {
-      ...item,
-      status: statusLabel // Send clean text wrapper to the badge
-    };
-  });
-});
-
 const iconMap = { BuildingOfficeIcon, HomeIcon, CalendarDaysIcon, CreditCardIcon };
+
+// ── Empty-state (new owner with no properties/reservations yet) ──────────────
+const isDashboardEmpty = computed(() => {
+  const s = dashboardData.value.summary || {};
+  return !s.totalProperties && !s.totalReservations;
+});
 
 // ── Animation seed ────────────────────────────────────────────────────────────
 const animationSeed = ref(0);
@@ -132,7 +114,18 @@ onActivated(bumpAnimationSeed);
 
       <AnalyticsDashboardSummaryCards :summary-cards="summaryCards" :animation-seed="animationSeed" />
 
-      <section class="grid gap-6">
+      <div v-if="isDashboardEmpty" class="empty-dashboard">
+        <BuildingOfficeIcon class="empty-dashboard__icon" />
+        <h3 class="empty-dashboard__title">{{ t('owner.analytics.empty.title', 'No data yet') }}</h3>
+        <p class="empty-dashboard__subtitle">
+          {{ t('owner.analytics.empty.subtitle', 'Add your first property to start receiving bookings — your analytics will show up here once you do.') }}
+        </p>
+        <RouterLink to="/owner/properties" class="empty-dashboard__cta">
+          {{ t('owner.sidebar.properties', 'Go to Properties') }}
+        </RouterLink>
+      </div>
+
+      <section v-else class="grid gap-6">
         <div class="grid gap-6 lg:grid-cols-3">
           <!-- Restored original Line chart — amounts by reservation status -->
           <ReservationOverviewChart :chart="allReservationsList" :year-label="selectedYearLabel"
@@ -147,6 +140,11 @@ onActivated(bumpAnimationSeed);
           <RecentReservationsPanel :reservations="recentBookingsList" :format-date="formatDate"
             :format-money="formatMoney" class="lg:col-span-2" />
         </div>
+
+        <div class="grid gap-6 lg:grid-cols-3">
+          <ApprovalStatusPanel :statuses="approvalStatuses" :property-count="propertyCount" :icon-map="iconMap"
+            class="lg:col-span-1" />
+        </div>
       </section>
     </template>
   </main>
@@ -158,5 +156,46 @@ onActivated(bumpAnimationSeed);
   flex-direction: column;
   gap: 1.25rem;
   color: var(--color-text);
+}
+
+.empty-dashboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+  padding: 3.5rem 1.5rem;
+  border: 1px dashed var(--color-border);
+  border-radius: 24px;
+  background: var(--color-surface);
+}
+
+.empty-dashboard__icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--color-muted);
+  margin-bottom: 0.5rem;
+}
+
+.empty-dashboard__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.empty-dashboard__subtitle {
+  max-width: 40ch;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.empty-dashboard__cta {
+  margin-top: 0.75rem;
+  padding: 0.6rem 1.4rem;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 700;
 }
 </style>

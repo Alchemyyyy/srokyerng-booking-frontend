@@ -9,7 +9,7 @@ import {
 } from 'chart.js';
 import { Doughnut } from 'vue-chartjs';
 
-import { useTheme } from '@/modules/owner/composables/useTheme';
+import { useTheme } from '@/shared/composables/useTheme';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 

@@ -17,7 +17,9 @@ const isPartnerPage = computed(() => route.name === "public.listProperty");
     <PartnerNavbar v-if="showNavbar && isPartnerPage" />
     <PublicNavbar v-else-if="showNavbar" />
     <main class="flex-1">
-      <RouterView />
+      <RouterView v-slot="{ Component, route: childRoute }">
+        <component :is="Component" :key="childRoute.path" />
+      </RouterView>
     </main>
     <PublicFooter v-if="showFooter" />
     <ToastContainer />

@@ -1,15 +1,20 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 
 import AppTable from "@/shared/components/AppTable.vue";
+import TablePagination from "@/modules/owner/components/TablePagination.vue";
 import LoadingSpinner from "@/shared/components/LoadingSpinner.vue";
+import OwnerLoadingState from "@/modules/owner/components/OwnerLoadingState.vue";
 import { reservationApi } from "../api/reservation.api";
-import { useAuthStore } from "@/modules/auth/store/authStore";
+
+const router = useRouter();
 
 const loading = ref(true);
 const error = ref("");
 const recentReservations = ref([]);
-const authStore = useAuthStore();
+const currentPage = ref(1);
+const itemsPerPage = 10;
 
 const reservationColumns = [
   { key: "id", label: "Booking ID" },
@@ -36,6 +41,15 @@ const stats = computed(() => {
     totalBookings: recentReservations.value.length,
     pendingCount,
   };
+});
+
+const totalPages = computed(() =>
+  Math.ceil(recentReservations.value.length / itemsPerPage) || 1,
+);
+
+const paginatedReservations = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage;
+  return recentReservations.value.slice(start, start + itemsPerPage);
 });
 
 const formatCurrency = (value) =>
@@ -71,16 +85,20 @@ const fetchReservations = async () => {
   loading.value = true;
   error.value = "";
   try {
-    await authStore.refreshSession(); // ← add this
     const response = await reservationApi.listOwnerReservations();
     const items = Array.isArray(response) ? response : response?.data || [];
     recentReservations.value = normalizeReservations(items);
+    currentPage.value = 1;
   } catch (requestError) {
     error.value = requestError?.message || "Failed to load reservations.";
     recentReservations.value = [];
   } finally {
     loading.value = false;
   }
+};
+
+const goToReservationDetail = (row) => {
+  router.push({ name: "owner.reservation-detail", params: { id: row.id } });
 };
 
 onMounted(fetchReservations);
@@ -156,12 +174,7 @@ onMounted(fetchReservations);
         {{ error }}
       </div>
 
-      <div
-        v-if="loading"
-        class="rounded-xl border border-(--color-border) bg-(--color-surface) px-5 py-10 text-center text-(--color-muted)"
-      >
-        Loading reservations...
-      </div>
+      <OwnerLoadingState v-if="loading" label="Loading reservations..." />
 
       <div
         v-else-if="recentReservations.length === 0"
@@ -170,7 +183,13 @@ onMounted(fetchReservations);
         No recent reservations found.
       </div>
 
-      <AppTable v-else :columns="reservationColumns" :rows="recentReservations">
+      <AppTable
+        v-else
+        :columns="reservationColumns"
+        :rows="paginatedReservations"
+        clickable
+        @row-click="goToReservationDetail"
+      >
         <template #cell-amount="{ value }">
           <span class="font-semibold">${{ formatCurrency(value) }}</span>
         </template>
@@ -180,16 +199,16 @@ onMounted(fetchReservations);
             class="inline-flex rounded-xl border px-3 py-1.5 text-[10px] font-black uppercase tracking-widest"
             :class="[
               String(value).toLowerCase() === 'confirmed'
-                ? 'border-emerald-100 bg-emerald-50 text-emerald-700'
+                ? 'border-(--color-success) bg-(--color-success-soft) text-(--color-success)'
                 : '',
               String(value).toLowerCase() === 'completed'
-                ? 'border-slate-200 bg-slate-100 text-slate-600'
+                ? 'border-(--color-border) bg-(--color-surface-soft) text-(--color-muted)'
                 : '',
               String(value).toLowerCase() === 'cancelled'
-                ? 'border-rose-100 bg-rose-50 text-rose-700'
+                ? 'border-(--color-danger) bg-(--color-danger-soft) text-(--color-danger)'
                 : '',
               String(value).toLowerCase() === 'pending'
-                ? 'border-amber-100 bg-amber-50 text-amber-700'
+                ? 'border-(--color-warning) bg-(--color-warning-soft) text-(--color-warning)'
                 : '',
             ]"
           >
@@ -206,6 +225,12 @@ onMounted(fetchReservations);
           </div>
         </template>
       </AppTable>
+
+      <TablePagination
+        v-if="recentReservations.length > 0"
+        v-model:currentPage="currentPage"
+        :totalPages="totalPages"
+      />
     </section>
   </main>
 </template>

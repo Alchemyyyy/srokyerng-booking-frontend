@@ -3,7 +3,7 @@ import { ref, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useSidebar } from "@/shared/composables/useSidebar";
-import { useTheme } from "@/modules/admin/composables/useTheme";
+import { useTheme } from "@/shared/composables/useTheme";
 import { useAuthStore } from "@/modules/auth/store/authStore"; // 🍍 ភ្ជាប់ AuthStore ពិតប្រាកដ
 import AppModal from "@/shared/components/AppModal.vue";
 import {
@@ -60,7 +60,39 @@ const displayUserInitials = computed(() => {
 // 👉 Sidebar state
 const { isSidebarOpen, toggleSidebar } = useSidebar();
 
-const isActive = (path) => route.path === path;
+// The item whose path best matches the current route: an exact match, or
+// the longest path that the route is nested under (e.g. /owner/properties/11
+// should highlight "Properties", not fall through to the root "Dashboard"
+// item just because every owner route starts with /owner).
+const activeItemPath = computed(() => {
+  const allPaths = [...(props.menuItems || []), ...(props.bottomItems || [])].map(
+    (item) => item.path,
+  );
+  const matches = allPaths.filter(
+    (path) => route.path === path || route.path.startsWith(`${path}/`),
+  );
+  if (matches.length === 0) return null;
+  return matches.reduce((longest, path) => (path.length > longest.length ? path : longest));
+});
+
+const isActive = (path) => path === activeItemPath.value;
+
+const groupedMenuItems = computed(() => {
+  const groups = [];
+
+  for (const item of props.menuItems || []) {
+    const category = item.category || null;
+    const currentGroup = groups[groups.length - 1];
+
+    if (currentGroup && currentGroup.category === category) {
+      currentGroup.items.push(item);
+    } else {
+      groups.push({ category, items: [item] });
+    }
+  }
+
+  return groups;
+});
 
 // 🚪 --- Logout Modals & Actions ---
 const logoutModalOpen = ref(false);
@@ -145,33 +177,43 @@ const executeLogout = async () => {
           {{ props.navigationLabel || t("owner.sidebar.navigation") }}
         </p>
 
-        <router-link
-          v-for="item in menuItems"
-          :key="item.path"
-          :to="item.path"
-          :class="[
-            'sidebar-item group relative flex items-center gap-2 w-full rounded-lg px-2 py-2 text-[15px]',
-            isActive(item.path) ? 'sidebar-item--active' : 'sidebar-item--idle',
-            !isSidebarOpen ? 'justify-center' : '',
-          ]"
-        >
-          <span
-            class="sidebar-item__icon p-2 rounded-lg flex items-center justify-center"
+        <template v-for="(group, groupIndex) in groupedMenuItems" :key="group.category || `group-${groupIndex}`">
+          <p
+            v-if="group.category && isSidebarOpen"
+            class="sidebar-category font-semibold uppercase tracking-[1.4px] px-2 pb-1 text-[10px]"
+            :class="groupIndex > 0 ? 'pt-3' : ''"
           >
-            <component :is="item.icon" class="w-4 h-4" />
-          </span>
+            {{ group.category }}
+          </p>
 
-          <span v-if="isSidebarOpen" class="truncate">
-            {{ item.name }}
-          </span>
-
-          <span
-            v-if="item.badge && isSidebarOpen"
-            class="ml-auto text-[10px] px-1.5 py-0.5 rounded-full badge-danger"
+          <router-link
+            v-for="item in group.items"
+            :key="item.path"
+            :to="item.path"
+            :class="[
+              'sidebar-item group relative flex items-center gap-2 w-full rounded-lg px-2 py-2 text-[15px]',
+              isActive(item.path) ? 'sidebar-item--active' : 'sidebar-item--idle',
+              !isSidebarOpen ? 'justify-center' : '',
+            ]"
           >
-            {{ item.badge }}
-          </span>
-        </router-link>
+            <span
+              class="sidebar-item__icon p-2 rounded-lg flex items-center justify-center"
+            >
+              <component :is="item.icon" class="w-4 h-4" />
+            </span>
+
+            <span v-if="isSidebarOpen" class="truncate">
+              {{ item.name }}
+            </span>
+
+            <span
+              v-if="item.badge && isSidebarOpen"
+              class="ml-auto text-[10px] px-1.5 py-0.5 rounded-full badge-danger"
+            >
+              {{ item.badge }}
+            </span>
+          </router-link>
+        </template>
       </div>
 
       <div class="px-2 py-2 border-t border-(--color-border)">
@@ -265,6 +307,10 @@ const executeLogout = async () => {
 </template>
 
 <style scoped>
+.sidebar-category {
+  color: var(--color-primary);
+}
+
 .sidebar-item {
   color: rgba(255, 255, 255, 0.8);
 }

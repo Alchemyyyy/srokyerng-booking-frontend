@@ -23,47 +23,65 @@ import {
 const { t } = useI18n();
 
 const menuItems = computed(() => [
-  { name: t("owner.sidebar.dashboard"), path: "/owner", icon: ChartBarIcon },
+  {
+    name: t("owner.sidebar.dashboard"),
+    path: "/owner",
+    icon: ChartBarIcon,
+    category: t("owner.sidebar.categories.overview"),
+  },
   {
     name: t("owner.sidebar.properties"),
     path: "/owner/properties",
     icon: BuildingOffice2Icon,
+    category: t("owner.sidebar.categories.listings"),
   },
-  { name: t("owner.sidebar.rooms"), path: "/owner/rooms", icon: KeyIcon },
+  {
+    name: t("owner.sidebar.rooms"),
+    path: "/owner/rooms",
+    icon: KeyIcon,
+    category: t("owner.sidebar.categories.listings"),
+  },
   {
     name: t("owner.sidebar.amenities"),
     path: "/owner/amenities",
     icon: SparklesIcon,
+    category: t("owner.sidebar.categories.listings"),
   },
   {
     name: t("owner.sidebar.bookingCalendar"),
     path: "/owner/booking-calendar",
     icon: CalendarIcon,
+    category: t("owner.sidebar.categories.bookings"),
   },
   {
     name: t("owner.sidebar.reservations"),
     path: "/owner/reservations",
     icon: CalendarDaysIcon,
+    category: t("owner.sidebar.categories.bookings"),
   },
   {
     name: t("owner.sidebar.payments"),
     path: "/owner/payments",
     icon: BanknotesIcon,
-  },
-  {
-    name: t("owner.sidebar.messages"),
-    path: "/owner/chats",
-    icon: ChatBubbleOvalLeftEllipsisIcon,
-  },
-  {
-    name: t("owner.sidebar.reviews"),
-    path: "/owner/reviews",
-    icon: ChatBubbleLeftRightIcon,
+    category: t("owner.sidebar.categories.finance"),
   },
   {
     name: t("owner.sidebar.paymentAccounts"),
     path: "/owner/payment-accounts",
     icon: CreditCardIcon,
+    category: t("owner.sidebar.categories.finance"),
+  },
+  {
+    name: t("owner.sidebar.messages"),
+    path: "/owner/chats",
+    icon: ChatBubbleOvalLeftEllipsisIcon,
+    category: t("owner.sidebar.categories.guestRelations"),
+  },
+  {
+    name: t("owner.sidebar.reviews"),
+    path: "/owner/reviews",
+    icon: ChatBubbleLeftRightIcon,
+    category: t("owner.sidebar.categories.guestRelations"),
   },
 ]);
 

@@ -1,8 +1,10 @@
 <script setup>
-import { reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 import { useRouter, RouterLink } from "vue-router";
 import { ChevronRightIcon } from "@heroicons/vue/24/outline";
 import { useToastStore } from "@/shared/store/toastStore";
+import { useAuthStore } from "@/modules/auth/store/authStore";
+import { useSidebar } from "@/shared/composables/useSidebar";
 import { userApi } from "../api/user.api";
 import PublicNavbar from "@/shared/components/PublicNavbar.vue";
 import PublicFooter from "@/shared/components/PublicFooter.vue";
@@ -10,6 +12,16 @@ import SessionManagementCard from "../components/SessionManagementCard.vue";
 
 const router = useRouter();
 const toastStore = useToastStore();
+const authStore = useAuthStore();
+const { isSidebarOpen } = useSidebar();
+
+const rolePrefix = computed(() => {
+  const role = authStore.user?.role;
+  if (role === "owner") return "owner";
+  if (role === "admin") return "admin";
+  return "customer";
+});
+const isDashboardRole = computed(() => ["owner", "admin"].includes(authStore.user?.role));
 
 const activeEdit = ref(false);
 const savingPassword = ref(false);
@@ -77,13 +89,19 @@ const handleSave = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-(--color-page) text-(--color-text) flex flex-col font-sans">
-    <PublicNavbar />
+  <div
+    class="min-h-screen bg-(--color-page) text-(--color-text) flex flex-col font-sans transition-all duration-300"
+    :class="isDashboardRole ? (isSidebarOpen ? 'ml-64' : 'ml-20') : ''"
+  >
+    <PublicNavbar v-if="!isDashboardRole" />
 
-    <main class="flex-1 min-h-screen pt-32 pb-24 px-6 max-w-5xl mx-auto w-full flex flex-col">
+    <main
+      class="flex-1 min-h-screen pb-24 px-6 max-w-5xl mx-auto w-full flex flex-col"
+      :class="isDashboardRole ? 'pt-25' : 'pt-32'"
+    >
       <!-- Breadcrumbs -->
       <nav class="flex items-center gap-1 text-xs font-bold text-(--color-text) mb-3">
-        <RouterLink :to="{ name: 'customer.settings' }" class="hover:underline">
+        <RouterLink :to="{ name: `${rolePrefix}.settings` }" class="hover:underline">
           Account
         </RouterLink>
         <ChevronRightIcon class="h-3.5 w-3.5 text-(--color-muted)" />
@@ -222,6 +240,6 @@ const handleSave = async () => {
       </div>
     </main>
 
-    <PublicFooter />
+    <PublicFooter v-if="!isDashboardRole" />
   </div>
 </template>

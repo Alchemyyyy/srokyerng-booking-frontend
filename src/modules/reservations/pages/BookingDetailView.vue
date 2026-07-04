@@ -201,10 +201,10 @@ const policy = computed(() => {
 
 const statusConfig = computed(() => {
   const map = {
-    pending:   { color: "#f59e0b", bg: "rgba(245,158,11,0.12)",  border: "rgba(245,158,11,0.3)",  dot: true  },
-    confirmed: { color: "#3b82f6", bg: "rgba(59,130,246,0.12)",  border: "rgba(59,130,246,0.3)",  dot: false },
-    cancelled: { color: "#ef4444", bg: "rgba(239,68,68,0.12)",   border: "rgba(239,68,68,0.3)",   dot: false },
-    completed: { color: "#10b981", bg: "rgba(16,185,129,0.12)",  border: "rgba(16,185,129,0.3)",  dot: false },
+    pending:   { color: "var(--color-warning)", bg: "var(--color-warning-soft)", border: "var(--color-warning)", dot: true  },
+    confirmed: { color: "var(--color-primary)", bg: "var(--color-primary-soft)", border: "var(--color-primary)", dot: false },
+    cancelled: { color: "var(--color-danger)",  bg: "var(--color-danger-soft)",  border: "var(--color-danger)",  dot: false },
+    completed: { color: "var(--color-success)", bg: "var(--color-success-soft)", border: "var(--color-success)", dot: false },
   };
   return map[status.value] ?? map.pending;
 });
@@ -219,12 +219,14 @@ async function handleCancel() {
   cancelling.value  = true;
   cancelError.value = "";
   try {
-    await cancelReservation(route.params.id, cancelReason.value.trim());
+    const cancelResult = await cancelReservation(route.params.id, cancelReason.value.trim());
 
-    // CONFIRMED + verified: auto-create refund request based on policy
+    // The backend already auto-creates a refund request when eligible (see
+    // cancelReservation's `refund_info`) — only fall back to a manual request
+    // here if that auto-creation didn't happen (e.g. it failed server-side).
     const resStatus = status.value;
     const pmtStatus = paymentStatusNorm.value; // normalized
-    if (resStatus === "confirmed" && pmtStatus === "verified") {
+    if (resStatus === "confirmed" && pmtStatus === "verified" && !cancelResult?.refund_info) {
       const amount = Number(reservation.value?.total_amount) || 0;
       // policy.refundAmount already accounts for deadline (full vs 50%)
       const refundAmount = policy.value?.refundAmount ?? amount;

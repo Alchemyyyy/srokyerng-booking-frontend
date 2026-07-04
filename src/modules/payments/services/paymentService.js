@@ -83,11 +83,13 @@ export async function createPayment(payload) {
  * Uses POST /payments/:id/receipt
  * @param {string|number} paymentId
  * @param {File} file
+ * @param {string} [transactionReference]
  * @returns {Promise<Payment>}
  */
-export async function uploadReceipt(paymentId, file) {
+export async function uploadReceipt(paymentId, file, transactionReference = "") {
   const formData = new FormData();
   formData.append("receipt", file);
+  if (transactionReference) formData.append("transaction_reference", transactionReference);
   const res = await paymentApi.uploadReceipt(paymentId, formData);
   return res?.data?.data ?? res?.data ?? res;
 }
@@ -98,11 +100,13 @@ export async function uploadReceipt(paymentId, file) {
  * e.g. screenshot, phone photo, other evidence
  * @param {string|number} paymentId
  * @param {File} file
+ * @param {string} [transactionReference]
  * @returns {Promise<Payment>}
  */
-export async function uploadProof(paymentId, file) {
+export async function uploadProof(paymentId, file, transactionReference = "") {
   const formData = new FormData();
   formData.append("receipt", file); // ✅ key is "receipt" per Postman
+  if (transactionReference) formData.append("transaction_reference", transactionReference);
   const res = await paymentApi.uploadProof(paymentId, formData);
   return res?.data?.data ?? res?.data ?? res;
 }
@@ -112,11 +116,13 @@ export async function uploadProof(paymentId, file) {
  * Uses PATCH /payments/:id/proof
  * @param {string|number} paymentId
  * @param {File} file
+ * @param {string} [transactionReference]
  * @returns {Promise<Payment>}
  */
-export async function replaceProof(paymentId, file) {
+export async function replaceProof(paymentId, file, transactionReference = "") {
   const formData = new FormData();
   formData.append("receipt", file); // ✅ key is "receipt" per Postman
+  if (transactionReference) formData.append("transaction_reference", transactionReference);
   const res = await paymentApi.replaceProof(paymentId, formData);
   return res?.data?.data ?? res?.data ?? res;
 }
@@ -139,18 +145,19 @@ export async function submitProof(
   currentStatus,
   file,
   uploadType = UPLOAD_TYPES.RECEIPT,
+  transactionReference = "",
 ) {
   // Re-upload after rejection — always use PATCH /proof
   if (canReplaceProof(currentStatus)) {
-    return replaceProof(paymentId, file);
+    return replaceProof(paymentId, file, transactionReference);
   }
 
   // First-time upload — pick endpoint based on what the customer has
   if (uploadType === UPLOAD_TYPES.PROOF) {
-    return uploadProof(paymentId, file); // POST /proof  (screenshot/photo)
+    return uploadProof(paymentId, file, transactionReference); // POST /proof  (screenshot/photo)
   }
 
-  return uploadReceipt(paymentId, file); // POST /receipt (official bank slip)
+  return uploadReceipt(paymentId, file, transactionReference); // POST /receipt (official bank slip)
 }
 
 /**

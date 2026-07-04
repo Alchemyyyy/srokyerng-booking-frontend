@@ -14,6 +14,17 @@ import NavbarAccountMenu from "@/shared/components/NavbarAccountMenu.vue";
 import UserAvatar from "@/shared/components/UserAvatar.vue";
 import { getDashboardRouteByRole } from "@/shared/utils/roleRoutes";
 import { useNavbarAppearance } from "@/shared/composables/useNavbarAppearance";
+import {
+  HomeIcon,
+  BuildingOffice2Icon,
+  InformationCircleIcon,
+  EnvelopeIcon,
+  MagnifyingGlassIcon,
+  HeartIcon,
+  ChatBubbleLeftRightIcon,
+  TicketIcon,
+} from "@heroicons/vue/24/outline";
+import { MapPinIcon, PhoneIcon } from "@heroicons/vue/24/solid";
 
 const route = useRoute();
 const router = useRouter();
@@ -32,21 +43,21 @@ const handleDone = () => {
 };
 
 const navigationItems = computed(() => [
-  { label: t("nav.home"), to: { name: "public.home" }, icon: "bi-house" },
+  { label: t("nav.home"), to: { name: "public.home" }, icon: HomeIcon },
   {
     label: t("nav.properties"),
     to: { name: "public.properties" },
-    icon: "bi-houses",
+    icon: BuildingOffice2Icon,
   },
   {
     label: t("nav.about"),
     to: { name: "public.about" },
-    icon: "bi-info-circle",
+    icon: InformationCircleIcon,
   },
   {
     label: t("nav.contact"),
     to: { name: "public.contact" },
-    icon: "bi-envelope",
+    icon: EnvelopeIcon,
   },
 ]);
 
@@ -134,7 +145,7 @@ watch(
           class="flex items-center gap-2 px-5 py-2 text-sm font-bold text-(--color-text) hover:bg-(--color-surface-soft) rounded-full transition-colors cursor-pointer"
           :class="[isActiveRoute('public.properties') ? 'bg-(--color-surface-soft) !text-(--color-primary)' : '']"
         >
-          <i class="bi bi-houses text-base transition-colors" :class="isActiveRoute('public.properties') ? 'text-(--color-primary)' : 'text-(--color-muted)'"></i>
+          <BuildingOffice2Icon class="h-4 w-4 transition-colors" :class="isActiveRoute('public.properties') ? 'text-(--color-primary)' : 'text-(--color-muted)'" />
           <span>{{ t("nav.properties") }}</span>
         </RouterLink>
 
@@ -146,7 +157,7 @@ watch(
           class="flex items-center gap-2 px-5 py-2 text-sm font-bold text-(--color-text) hover:bg-(--color-surface-soft) rounded-full transition-colors cursor-pointer"
           :class="[isActiveRoute('public.about') ? 'bg-(--color-surface-soft) !text-(--color-primary)' : '']"
         >
-          <i class="bi bi-info-circle text-base transition-colors" :class="isActiveRoute('public.about') ? 'text-(--color-primary)' : 'text-(--color-muted)'"></i>
+          <InformationCircleIcon class="h-4 w-4 transition-colors" :class="isActiveRoute('public.about') ? 'text-(--color-primary)' : 'text-(--color-muted)'" />
           <span>{{ t("nav.about") }}</span>
         </RouterLink>
 
@@ -158,17 +169,17 @@ watch(
           class="flex items-center gap-2 px-5 py-2 text-sm font-bold text-(--color-text) hover:bg-(--color-surface-soft) rounded-full transition-colors cursor-pointer"
           :class="[isActiveRoute('public.contact') ? 'bg-(--color-surface-soft) !text-(--color-primary)' : '']"
         >
-          <i class="bi bi-envelope text-base transition-colors" :class="isActiveRoute('public.contact') ? 'text-(--color-primary)' : 'text-(--color-muted)'"></i>
+          <EnvelopeIcon class="h-4 w-4 transition-colors" :class="isActiveRoute('public.contact') ? 'text-(--color-primary)' : 'text-(--color-muted)'" />
           <span>{{ t("nav.contact") }}</span>
         </RouterLink>
 
         <!-- Signature Airbnb Search Circular Button -->
         <RouterLink
           :to="{ name: 'public.properties' }"
-          class="h-9 w-9 bg-(--color-primary) hover:opacity-90 text-white rounded-full flex items-center justify-center ml-2 shadow-md transition-all duration-200 active:scale-95 hover:scale-105 cursor-pointer"
+          class="h-9 w-9 bg-(--color-primary) hover:opacity-90 text-white! rounded-full flex items-center justify-center ml-2 shadow-md transition-all duration-200 active:scale-95 hover:scale-105 cursor-pointer"
           title="Search properties"
         >
-          <i class="bi bi-search text-sm font-bold"></i>
+          <MagnifyingGlassIcon class="h-4 w-4" />
         </RouterLink>
       </nav>
 
@@ -188,7 +199,7 @@ watch(
             :to="{ name: 'public.listProperty' }"
             class="text-sm font-bold px-4 py-2.5 rounded-full hover:bg-(--color-surface-soft) text-(--color-text) transition-colors cursor-pointer whitespace-nowrap flex items-center gap-2"
           >
-            <i class="bi bi-house-add text-base text-(--color-primary)"></i>
+            <HomeIcon class="h-4 w-4 text-(--color-primary)" />
             <span>{{ t("nav.listProperty") }}</span>
           </RouterLink>
 
@@ -284,7 +295,7 @@ watch(
             @click="closeMobileMenu"
             class="flex items-center gap-2 bg-(--color-surface) border border-(--color-primary)/30 px-4 py-2 rounded-full text-xs font-bold text-(--color-primary)"
           >
-            <i class="bi bi-search"></i>
+            <MagnifyingGlassIcon class="h-4 w-4" />
             <span>{{ t("nav.searchPlaceholder") }}</span>
           </RouterLink>
         </div>
@@ -303,7 +314,7 @@ watch(
             "
             @click="closeMobileMenu"
           >
-            <i class="bi text-lg" :class="item.icon" aria-hidden="true"></i>
+            <component :is="item.icon" class="h-5 w-5" aria-hidden="true" />
             <span>{{ item.label }}</span>
           </RouterLink>
         </nav>
@@ -320,7 +331,7 @@ watch(
             @click="closeMobileMenu"
             class="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-(--color-surface) text-(--color-text) hover:text-(--color-primary) transition-colors text-xs font-semibold"
           >
-            <i class="bi bi-heart text-xl"></i>
+            <HeartIcon class="h-5 w-5" />
             <span>Wishlist</span>
           </RouterLink>
           <RouterLink
@@ -328,7 +339,7 @@ watch(
             @click="closeMobileMenu"
             class="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-(--color-surface) text-(--color-text) hover:text-(--color-primary) transition-colors text-xs font-semibold"
           >
-            <i class="bi bi-chat-dots text-xl"></i>
+            <ChatBubbleLeftRightIcon class="h-5 w-5" />
             <span>Messages</span>
           </RouterLink>
           <RouterLink
@@ -336,7 +347,7 @@ watch(
             @click="closeMobileMenu"
             class="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-(--color-surface) text-(--color-text) hover:text-(--color-primary) transition-colors text-xs font-semibold"
           >
-            <i class="bi bi-ticket-detailed text-xl"></i>
+            <TicketIcon class="h-5 w-5" />
             <span>Bookings</span>
           </RouterLink>
         </div>
@@ -396,7 +407,7 @@ watch(
             class="block rounded-2xl border border-(--color-border) px-5 py-3.5 text-center text-base font-bold text-(--color-text) transition hover:bg-(--color-surface-soft) cursor-pointer"
             @click="closeMobileMenu"
           >
-            <i class="bi bi-house-add mr-2 text-lg"></i>
+            <HomeIcon class="inline-block h-4 w-4 mr-2 -mt-0.5" />
             {{ t("nav.listProperty") }}
           </RouterLink>
 
@@ -424,17 +435,17 @@ watch(
           class="border-t border-(--color-border) pt-6 mt-6 text-xs font-medium text-(--color-muted) space-y-2.5"
         >
           <div class="flex items-center gap-3 px-2">
-            <i
-              class="bi bi-geo-alt-fill text-(--color-primary) text-base"
+            <MapPinIcon
+              class="h-4 w-4 text-(--color-primary)"
               aria-hidden="true"
-            ></i>
+            />
             <span>Phnom Penh, Cambodia</span>
           </div>
           <div class="flex items-center gap-3 px-2">
-            <i
-              class="bi bi-telephone-fill text-(--color-primary) text-base"
+            <PhoneIcon
+              class="h-4 w-4 text-(--color-primary)"
               aria-hidden="true"
-            ></i>
+            />
             <span>+855 12 345 678</span>
           </div>
         </div>

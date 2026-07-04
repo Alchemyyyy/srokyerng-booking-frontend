@@ -1284,7 +1284,14 @@
       "reviews": "មតិ",
       "messages": "សារ",
       "paymentAccounts": "គណនីទូទាត់",
-      "settings": "ការកំណត់"
+      "settings": "ការកំណត់",
+      "categories": {
+        "overview": "ទិដ្ឋភាពទូទៅ",
+        "listings": "អចលនទ្រព្យ",
+        "bookings": "ការកក់",
+        "finance": "ហិរញ្ញវត្ថុ",
+        "guestRelations": "ទំនាក់ទំនងភ្ញៀវ"
+      }
     },
     "analytics": {
       "loadingDashboard": "កំពុងផ្ទុកផ្ទាំងគ្រប់គ្រងម្ចាស់...",
@@ -1296,6 +1303,8 @@
       "summaryMetrics": "សូចនាករសរុប",
       "quickActions": "សកម្មភាពរហ័ស",
       "quickActionsSubtitle": "រុករកទៅផ្នែកសំខាន់ៗភ្លាមៗ",
+      "approvalTitle": "ស្ថានភាពអនុម័តអចលនទ្រព្យ",
+      "quickNavigation": "រុករករហ័ស",
       "noApprovalStatuses": "មិនមានស្ថានភាពអនុម័តទេ។",
       "noQuickLinks": "មិនមានតំណរហ័សទេ។",
       "totalProperties": "អចលនទ្រព្យសរុប",
@@ -1303,6 +1312,10 @@
         "activeListings": "បញ្ជីដែលបានអនុម័ត និងសកម្ម",
         "pendingAudits": "កំពុងរង់ចាំការត្រួតពិនិត្យ",
         "draftModeSuspended": "របៀបព្រាង / ផ្អាក"
+      },
+      "empty": {
+        "title": "មិនទាន់មានទិន្នន័យនៅឡើយទេ",
+        "subtitle": "បន្ថែមអចលនទ្រព្យដំបូងរបស់អ្នក ដើម្បីចាប់ផ្តើមទទួលការកក់— ទិន្នន័យវិភាគរបស់អ្នកនឹងបង្ហាញនៅទីនេះនៅពេលអ្នកធ្វើដូច្នេះ។"
       },
       "yearly": "ប្រចាំឆ្នាំ",
       "reservationOverviewTitle": "ទិដ្ឋភាពទូទៅនៃការកក់",

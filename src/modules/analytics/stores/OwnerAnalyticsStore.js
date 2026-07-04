@@ -92,11 +92,13 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
     // ── Summary Cards ────────────────────────────────────────────────────────
     const summaryCards = computed(() => {
         const s = dashboardData.value.summary || {};
+        const noTrend = { text: '', direction: 'neutral' };
         return [
             {
                 label: t('owner.analytics.summary.totalProperties'),
                 value: integerFormatter.format(s.totalProperties || 0),
-                delta: s.trends?.properties || '',
+                delta: (s.trends?.properties || noTrend).text,
+                deltaDirection: (s.trends?.properties || noTrend).direction,
                 tone: 'blue',
                 icon: BuildingOffice2Icon,
                 kind: 'number',
@@ -104,7 +106,8 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
             {
                 label: t('owner.analytics.summary.totalBookings'),
                 value: integerFormatter.format(s.totalReservations || 0),
-                delta: s.trends?.bookings || '',
+                delta: (s.trends?.bookings || noTrend).text,
+                deltaDirection: (s.trends?.bookings || noTrend).direction,
                 tone: 'teal',
                 icon: CalendarDaysIcon,
                 kind: 'number',
@@ -112,7 +115,8 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
             {
                 label: t('owner.analytics.summary.totalRevenue'),
                 value: formatMoney(s.totalRevenue || 0),
-                delta: s.trends?.revenue || '',
+                delta: (s.trends?.revenue || noTrend).text,
+                deltaDirection: (s.trends?.revenue || noTrend).direction,
                 tone: 'amber',
                 icon: CurrencyDollarIcon,
                 kind: 'currency',
@@ -120,7 +124,8 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
             {
                 label: t('owner.analytics.summary.paidRevenue'),
                 value: formatMoney(s.paidRevenue || 0),
-                delta: s.trends?.revenue || '',
+                delta: (s.trends?.paidRevenue || noTrend).text,
+                deltaDirection: (s.trends?.paidRevenue || noTrend).direction,
                 tone: 'amber',
                 icon: CurrencyDollarIcon,
                 kind: 'currency',
@@ -181,20 +186,31 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
             start_date: `${selectedYear.value}-01-01`,
             end_date: `${selectedYear.value}-12-31`
         };
+        const prevParams = {
+            start_date: `${selectedYear.value - 1}-01-01`,
+            end_date: `${selectedYear.value - 1}-12-31`
+        };
 
         try {
-            const [summary, revenue, properties, rooms, reservations, latestRes] = await Promise.all([
+            const [
+                summary, revenue, properties, rooms, reservations, latestRes,
+                prevSummary, prevRevenue, prevProperties,
+            ] = await Promise.all([
                 analyticsApi.getOwnerSummary(params),
                 analyticsApi.getOwnerRevenue(params),
                 analyticsApi.getOwnerProperties(params),
                 analyticsApi.getOwnerRooms(params),
                 analyticsApi.getOwnerReservations(params),
                 analyticsApi.getOwnerReservationLatest(params),
+                analyticsApi.getOwnerSummary(prevParams),
+                analyticsApi.getOwnerRevenue(prevParams),
+                analyticsApi.getOwnerProperties(prevParams),
             ]);
 
             // ១. ចម្បងទិន្នន័យស្ថិតិរួមសម្រាប់ Dashboard
             dashboardData.value = ownerAnalyticsService.processDashboardData({
-                summary, revenue, properties, rooms, reservations
+                summary, revenue, properties, rooms, reservations,
+                prevSummary, prevRevenue, prevProperties,
             });
 
             // ២. ចម្បងបញ្ជីទិន្នន័យនៃការកក់ថ្មីៗដែលទាញចេញពី Postman

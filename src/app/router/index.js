@@ -78,7 +78,16 @@ const router = createRouter({
         ...withNamePrefix(ownerRoutes, "owner"),
         ...withNamePrefix(ownerAnalyticsRoutes, "owner"),
         ...withNamePrefix(notificationRoutes, "owner"),
-        ...withNamePrefix(userRoutes, "owner"),
+        {
+          path: "profile",
+          name: "owner.profile",
+          component: () => import("@/modules/owner/pages/OwnerProfileView.vue"),
+          meta: { title: "Profile" },
+        },
+        ...withNamePrefix(
+          userRoutes.filter((route) => route.name !== "profile"),
+          "owner",
+        ),
         ...withNamePrefix(chatRoutes, "owner"),
         ...withNamePrefix(ownerReportRoutes, "owner"),
       ],

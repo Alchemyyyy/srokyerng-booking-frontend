@@ -36,10 +36,6 @@ const props = defineProps({
         type: String,
         default: '',
     },
-    emptyLinksText: {
-        type: String,
-        default: '',
-    },
 });
 
 const { t } = useI18n();
@@ -50,7 +46,6 @@ const hasQuickLinks = computed(() => props.quickLinks.length > 0);
 const displayTitle = computed(() => props.title || t('owner.analytics.approvalTitle'));
 const displayQuickLinksTitle = computed(() => props.quickLinksTitle || t('owner.analytics.quickNavigation'));
 const displayEmptyStatusesText = computed(() => props.emptyStatusesText || t('owner.analytics.noApprovalStatuses'));
-const displayEmptyLinksText = computed(() => props.emptyLinksText || t('owner.analytics.noQuickLinks'));
 
 const toneTokens = {
     success: {
@@ -75,6 +70,7 @@ function toneToken(tone) {
 }
 
 function approvalWidth(count) {
+    if (!props.propertyCount) return 4;
     return Math.max(4, Math.round((count / props.propertyCount) * 100));
 }
 </script>
@@ -110,22 +106,20 @@ function approvalWidth(count) {
             {{ displayEmptyStatusesText }}
         </p>
 
-        <hr class="my-5 border-(--color-border)" />
+        <template v-if="hasQuickLinks">
+            <hr class="my-5 border-(--color-border)" />
 
-        <h4 class="mb-3 text-xs font-bold uppercase tracking-wider text-(--color-muted)">{{ displayQuickLinksTitle }}
-        </h4>
-        <div v-if="hasQuickLinks" class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <a v-for="link in quickLinks" :key="link.label" :href="link.href"
-                class="flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-soft) p-2.5 text-xs font-medium text-(--color-text) transition hover:border-(--color-primary) hover:bg-(--color-primary-soft) hover:text-(--color-primary)">
-                <component :is="iconMap[link.icon]" class="h-4 w-4" />
-                {{ link.label }}
-            </a>
-        </div>
-
-        <p v-else
-            class="rounded-xl border border-dashed border-(--color-border) bg-(--color-surface-soft) px-4 py-3 text-sm text-(--color-muted)">
-            {{ displayEmptyLinksText }}
-        </p>
+            <h4 class="mb-3 text-xs font-bold uppercase tracking-wider text-(--color-muted)">
+                {{ displayQuickLinksTitle }}
+            </h4>
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <a v-for="link in quickLinks" :key="link.label" :href="link.href"
+                    class="flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-soft) p-2.5 text-xs font-medium text-(--color-text) transition hover:border-(--color-primary) hover:bg-(--color-primary-soft) hover:text-(--color-primary)">
+                    <component :is="iconMap[link.icon]" class="h-4 w-4" />
+                    {{ link.label }}
+                </a>
+            </div>
+        </template>
     </section>
 </template>
 

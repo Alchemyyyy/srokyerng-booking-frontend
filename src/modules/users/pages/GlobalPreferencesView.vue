@@ -10,6 +10,7 @@ import {
 } from "@heroicons/vue/24/outline";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useToastStore } from "@/shared/store/toastStore";
+import { useSidebar } from "@/shared/composables/useSidebar";
 import { setLocale } from "@/app/i18n";
 import { currentCurrency, updateCurrency } from "@/shared/utils/currency";
 import PublicNavbar from "@/shared/components/PublicNavbar.vue";
@@ -17,10 +18,17 @@ import PublicFooter from "@/shared/components/PublicFooter.vue";
 
 const authStore = useAuthStore();
 const toastStore = useToastStore();
+const { isSidebarOpen } = useSidebar();
 const { t, locale } = useI18n({ useScope: "global" });
 
 const saving = ref(false);
-const rolePrefix = computed(() => authStore.user?.role === "owner" ? "owner" : "customer");
+const rolePrefix = computed(() => {
+  const role = authStore.user?.role;
+  if (role === "owner") return "owner";
+  if (role === "admin") return "admin";
+  return "customer";
+});
+const isDashboardRole = computed(() => ["owner", "admin"].includes(authStore.user?.role));
 
 // Selection states
 const selectedLanguage = ref(locale.value);
@@ -77,10 +85,16 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-(--color-page) text-(--color-text) flex flex-col font-sans">
-    <PublicNavbar />
+  <div
+    class="min-h-screen bg-(--color-page) text-(--color-text) flex flex-col font-sans transition-all duration-300"
+    :class="isDashboardRole ? (isSidebarOpen ? 'ml-64' : 'ml-20') : ''"
+  >
+    <PublicNavbar v-if="!isDashboardRole" />
 
-    <main class="flex-1 min-h-screen pt-32 pb-24 px-6 max-w-5xl mx-auto w-full flex flex-col">
+    <main
+      class="flex-1 min-h-screen pb-24 px-6 max-w-5xl mx-auto w-full flex flex-col"
+      :class="isDashboardRole ? 'pt-25' : 'pt-32'"
+    >
       <!-- Breadcrumbs -->
       <nav class="flex items-center gap-1 text-xs font-bold text-(--color-text) mb-3">
         <RouterLink :to="{ name: `${rolePrefix}.settings` }" class="hover:underline">
@@ -194,6 +208,6 @@ onMounted(() => {
       </div>
     </main>
 
-    <PublicFooter />
+    <PublicFooter v-if="!isDashboardRole" />
   </div>
 </template>

@@ -21,6 +21,17 @@ export const registerRouteGuards = (router) => {
     const isOwnerRegistrationFromCustomerAccount =
       to.name === "public.registerOwner" && authStore.user?.role === ROLES.CUSTOMER;
 
+    if (authStore.isAuthenticated) {
+      const role = authStore.user?.role;
+      
+      // Admin and Owner can't view the public side. Redirection to their dashboard.
+      if ((role === ROLES.OWNER || role === ROLES.ADMIN) && to.name?.startsWith("public.")) {
+        return role === ROLES.OWNER
+          ? { name: "owner.dashboard" }
+          : { name: "admin.dashboard" };
+      }
+    }
+
     if (to.meta.publicOnly && authStore.isAuthenticated) {
       if (isOwnerRegistrationFromCustomerAccount) {
         return true;
@@ -34,6 +45,13 @@ export const registerRouteGuards = (router) => {
     }
 
     if (to.meta.roles?.length && !to.meta.roles.includes(authStore.user?.role)) {
+      const role = authStore.user?.role;
+      if (role === ROLES.OWNER) {
+        return { name: "owner.dashboard" };
+      }
+      if (role === ROLES.ADMIN) {
+        return { name: "admin.dashboard" };
+      }
       return { name: "public.properties" };
     }
 

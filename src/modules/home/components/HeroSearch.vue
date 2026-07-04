@@ -4,11 +4,11 @@ import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import {
   CalendarDaysIcon,
-  MagnifyingGlassIcon,
   MapPinIcon,
   SparklesIcon,
   UserGroupIcon,
 } from "@heroicons/vue/24/outline";
+import { MagnifyingGlassIcon } from "@heroicons/vue/24/solid";
 import AppButton from "@/shared/components/AppButton.vue";
 import HeroImg from "@/assets/images/home/hero/hero_banner.png";
 import { propertyApi } from "@/modules/properties/api/property.api";
@@ -209,7 +209,7 @@ onMounted(async () => {
             class="h-12 w-12 rounded-full bg-(--color-primary) hover:opacity-95 text-white flex items-center justify-center shrink-0 shadow-md active:scale-95 hover:scale-105 transition-all duration-200 cursor-pointer border-none"
             title="Search stays"
           >
-            <MagnifyingGlassIcon class="h-5.5 w-5.5 text-white stroke-2" />
+            <MagnifyingGlassIcon class="h-6 w-6 text-white" />
           </button>
         </div>
 

@@ -1,10 +1,10 @@
-//PropertyApprovalDetailView.vue
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useApprovalStore } from '../store/approval.store';
 import AppModal from '@/shared/components/AppModal.vue';
 import AppLoading from '@/shared/components/LoadingSpinner.vue';
+import PropertyLocationMap from '@/shared/components/PropertyLocationMap.vue';
 import { useSidebar } from '@/shared/composables/useSidebar';
 import { useToastStore } from '@/shared/store/toastStore';
 import { formatDate } from '../utils/formatters';
@@ -36,6 +36,10 @@ onMounted(async () => {
   await approvalStore.fetchPropertyDetail(propertyId);
   await approvalStore.fetchPropertyImages(propertyId);
   window.addEventListener('click', closeDropdown);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('click', closeDropdown);
 });
 
 const closeDropdown = () => { isActionDropdownOpen.value = false; };
@@ -199,6 +203,15 @@ const executeSetPending = async () => {
             <div class="val italic opacity-90 leading-relaxed">
               {{ approvalStore.currentProperty.description || 'No description added yet.' }}
             </div>
+          </div>
+
+          <div class="info-field sm:col-span-2">
+            <label>Location on Map</label>
+            <PropertyLocationMap
+              :latitude="approvalStore.currentProperty.latitude"
+              :longitude="approvalStore.currentProperty.longitude"
+              :label="approvalStore.currentProperty.property_name"
+            />
           </div>
         </div>
 

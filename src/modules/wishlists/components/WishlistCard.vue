@@ -45,10 +45,10 @@ const location = computed(() => {
       <button
         type="button"
         @click.stop="emit('remove', item.property_id)"
-        class="absolute top-3 right-3 h-8 w-8 flex items-center justify-center bg-(--color-surface) border border-(--color-border) hover:opacity-90 text-[#FF385C] rounded-full shadow-md transition-all duration-200 active:scale-90 hover:scale-105 z-10"
+        class="absolute top-3 right-3 h-8 w-8 flex items-center justify-center bg-(--color-surface) border border-(--color-border) hover:opacity-90 text-(--color-wishlist) rounded-full shadow-md transition-all duration-200 active:scale-90 hover:scale-105 z-10"
         title="Remove from wishlist"
       >
-        <HeartSolidIcon class="w-5 h-5 text-[#FF385C]" />
+        <HeartSolidIcon class="w-5 h-5 text-(--color-wishlist)" />
       </button>
     </div>
 

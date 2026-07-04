@@ -14,6 +14,12 @@ import NavbarAccountMenu from "@/shared/components/NavbarAccountMenu.vue";
 import UserAvatar from "@/shared/components/UserAvatar.vue";
 import { getDashboardRouteByRole } from "@/shared/utils/roleRoutes";
 import { useNavbarAppearance } from "@/shared/composables/useNavbarAppearance";
+import {
+  InformationCircleIcon,
+  ListBulletIcon,
+  QuestionMarkCircleIcon,
+  ArrowsRightLeftIcon,
+} from "@heroicons/vue/24/outline";
 
 const route = useRoute();
 const router = useRouter();
@@ -129,7 +135,7 @@ watch(
           class="flex items-center gap-1.5 rounded-sm px-3.5 h-8 text-sm font-semibold leading-none whitespace-nowrap transition-all border border-transparent !text-(--color-muted) hover:!text-(--color-primary) hover:bg-(--color-surface) hover:border-(--color-border)/30 hover:shadow-sm"
           :class="[locale === 'km' ? 'font-kantumruy text-sm' : 'font-sans']"
         >
-          <i class="bi bi-info-circle mr-0.5"></i>
+          <InformationCircleIcon class="h-4 w-4 mr-0.5" />
           <span>{{ t("ownerLanding.nav.whyHost") }}</span>
         </button>
 
@@ -139,7 +145,7 @@ watch(
           class="flex items-center gap-1.5 rounded-sm px-3.5 h-8 text-sm font-semibold leading-none whitespace-nowrap transition-all border border-transparent !text-(--color-muted) hover:!text-(--color-primary) hover:bg-(--color-surface) hover:border-(--color-border)/30 hover:shadow-sm"
           :class="[locale === 'km' ? 'font-kantumruy text-sm' : 'font-sans']"
         >
-          <i class="bi bi-activity mr-0.5"></i>
+          <ListBulletIcon class="h-4 w-4 mr-0.5" />
           <span>{{ t("ownerLanding.nav.howItWorks") }}</span>
         </button>
 
@@ -149,7 +155,7 @@ watch(
           class="flex items-center gap-1.5 rounded-sm px-3.5 h-8 text-sm font-semibold leading-none whitespace-nowrap transition-all border border-transparent !text-(--color-muted) hover:!text-(--color-primary) hover:bg-(--color-surface) hover:border-(--color-border)/30 hover:shadow-sm"
           :class="[locale === 'km' ? 'font-kantumruy text-sm' : 'font-sans']"
         >
-          <i class="bi bi-question-circle mr-0.5"></i>
+          <QuestionMarkCircleIcon class="h-4 w-4 mr-0.5" />
           <span>{{ t("ownerLanding.nav.faqs") }}</span>
         </button>
       </nav>
@@ -225,7 +231,7 @@ watch(
               class="!rounded-sm border border-(--color-primary)/30 text-(--color-primary) hover:bg-(--color-primary-soft)"
               @click="handleSwitchToHost"
             >
-              <i class="bi bi-arrow-left-right mr-1"></i>
+              <ArrowsRightLeftIcon class="h-4 w-4 mr-1" />
               {{ t("ownerLanding.nav.switchToHost") }}
             </AppButton>
             <div class="h-4 w-px bg-(--color-border)/30 mx-0.5"></div>
@@ -322,7 +328,7 @@ watch(
             @click="scrollToSection('benefits'); closeMobileMenu()"
             class="flex w-full items-center gap-2.5 rounded-md px-4 py-3 text-sm font-semibold transition bg-(--color-surface-soft) text-(--color-muted) hover:text-(--color-text)"
           >
-            <i class="bi bi-info-circle text-base"></i>
+            <InformationCircleIcon class="h-4 w-4" />
             <span>{{ t("ownerLanding.nav.whyHost") }}</span>
           </button>
 
@@ -331,7 +337,7 @@ watch(
             @click="scrollToSection('steps'); closeMobileMenu()"
             class="flex w-full items-center gap-2.5 rounded-md px-4 py-3 text-sm font-semibold transition bg-(--color-surface-soft) text-(--color-muted) hover:text-(--color-text)"
           >
-            <i class="bi bi-activity text-base"></i>
+            <ListBulletIcon class="h-4 w-4" />
             <span>{{ t("ownerLanding.nav.howItWorks") }}</span>
           </button>
 
@@ -340,7 +346,7 @@ watch(
             @click="scrollToSection('faqs'); closeMobileMenu()"
             class="flex w-full items-center gap-2.5 rounded-md px-4 py-3 text-sm font-semibold transition bg-(--color-surface-soft) text-(--color-muted) hover:text-(--color-text)"
           >
-            <i class="bi bi-question-circle text-base"></i>
+            <QuestionMarkCircleIcon class="h-4 w-4" />
             <span>{{ t("ownerLanding.nav.faqs") }}</span>
           </button>
         </nav>
@@ -354,7 +360,7 @@ watch(
                 class="block w-full rounded-md border border-(--color-primary) px-4 py-3 text-center text-sm font-semibold text-(--color-primary) transition hover:bg-(--color-primary-soft)"
                 @click="handleSwitchToHost"
               >
-                <i class="bi bi-arrow-left-right mr-1"></i>
+                <ArrowsRightLeftIcon class="h-4 w-4 mr-1" />
                 {{ t("ownerLanding.nav.switchToHost") }}
               </button>
             </template>

@@ -5,7 +5,7 @@ import AppButton from "@/shared/components/AppButton.vue";
 import AppModal from "@/shared/components/AppModal.vue";
 import AppInput from "@/shared/components/AppInput.vue";
 import { useToastStore } from "@/shared/store/toastStore";
-import { CameraIcon } from "@heroicons/vue/24/outline";
+import { CameraIcon, XMarkIcon } from "@heroicons/vue/24/outline";
 
 const toastStore = useToastStore();
 
@@ -127,7 +127,7 @@ const removeExistingImage = (index) => {
     >
       <!-- Property -->
       <label class="grid gap-2 text-sm font-semibold text-(--color-text)">
-        Property *
+        <span>Property <span class="text-(--color-danger)">*</span></span>
         <select
           v-model="props.modelValue.propertyId"
           class="w-full rounded-sm border border-(--color-border) bg-(--color-input) px-3.5 py-3 text-(--color-text) outline-none focus:border-(--color-primary)"
@@ -150,7 +150,7 @@ const removeExistingImage = (index) => {
       </label>
 
       <label class="grid gap-2 text-sm font-semibold text-(--color-text)">
-        Room Type *
+        <span>Room Type <span class="text-(--color-danger)">*</span></span>
         <select
           v-model="props.modelValue.type"
           class="w-full rounded-sm border border-(--color-border) bg-(--color-input) px-3.5 py-3 text-(--color-text) outline-none focus:border-(--color-primary)"
@@ -203,9 +203,10 @@ const removeExistingImage = (index) => {
             <button
               type="button"
               @click="removeExistingImage(index)"
-              class="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs hidden group-hover:flex items-center justify-center"
+              aria-label="Remove image"
+              class="absolute top-1 right-1 w-5 h-5 bg-(--color-danger) text-white rounded-full hidden group-hover:flex items-center justify-center"
             >
-              ✕
+              <XMarkIcon class="w-3 h-3" />
             </button>
           </div>
 
@@ -215,13 +216,14 @@ const removeExistingImage = (index) => {
             :key="'new-' + index"
             class="relative group"
           >
-            <img :src="preview" class="w-full h-20 object-cover rounded-lg" />
+            <img :src="preview" alt="New room photo preview" class="w-full h-20 object-cover rounded-lg" />
             <button
               type="button"
               @click="removeImage(index)"
-              class="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs hidden group-hover:flex items-center justify-center"
+              aria-label="Remove image"
+              class="absolute top-1 right-1 w-5 h-5 bg-(--color-danger) text-white rounded-full hidden group-hover:flex items-center justify-center"
             >
-              ✕
+              <XMarkIcon class="w-3 h-3" />
             </button>
           </div>
 
@@ -266,7 +268,8 @@ const removeExistingImage = (index) => {
       <div>
         <AppInput
           v-model="props.modelValue.roomName"
-          label="Room Name *"
+          label="Room Name"
+          required
           placeholder="e.g. Deluxe King Suite"
         />
         <span
@@ -282,7 +285,8 @@ const removeExistingImage = (index) => {
         <div>
           <AppInput
             v-model.number="props.modelValue.basePrice"
-            label="Price / Night ($) *"
+            label="Price / Night ($)"
+            required
             type="number"
             min="0"
           />

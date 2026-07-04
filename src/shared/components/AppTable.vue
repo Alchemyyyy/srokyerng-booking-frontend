@@ -12,7 +12,13 @@ defineProps({
     type: Array,
     default: () => [],
   },
+  clickable: {
+    type: Boolean,
+    default: false,
+  },
 });
+
+defineEmits(["row-click"]);
 </script>
 
 <template>
@@ -29,7 +35,12 @@ defineProps({
           </tr>
         </thead>
         <tbody class="divide-y divide-(--color-border)">
-          <tr v-for="(row, rowIndex) in rows" :key="row.id || rowIndex">
+          <tr
+            v-for="(row, rowIndex) in rows"
+            :key="row.id || rowIndex"
+            :class="clickable ? 'cursor-pointer transition hover:bg-(--color-surface-soft)' : ''"
+            @click="clickable && $emit('row-click', row)"
+          >
             <td v-for="column in columns" :key="column.key" class="px-5 py-4 text-(--color-text)">
               <slot :name="`cell-${column.key}`" :row="row" :value="row[column.key]">
                 {{ row[column.key] }}

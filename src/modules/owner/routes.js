@@ -1,9 +1,9 @@
-// import AnalyticsDashboardView from "@/modules/owner/pages/AnalyticsDashboardView.vue";
 import OwnerAnalyticsView from "@/modules/analytics/pages/OwnerAnalyticsView.vue";
 import OwnerPaymentAccountsView from "@/modules/payments/pages/OwnerPaymentAccountsView.vue";
 import MyPropertiesView from "@/modules/properties/pages/OwnerPropertiesView.vue";
 import OwnerPropertyDetailView from "@/modules/properties/pages/OwnerPropertyDetailView.vue";
 import OwnerReservationsView from "@/modules/reservations/pages/OwnerReservationsView.vue";
+import OwnerReservationDetailView from "@/modules/reservations/pages/OwnerReservationDetailView.vue";
 import ManageRoomsView from "@/modules/rooms/pages/ManageRoomsView.vue";
 import AmenityManagementView from "@/modules/amenities/pages/AmenityManagementView.vue";
 import OwnerRoomDetailView from "../rooms/pages/OwnerRoomDetailView.vue";
@@ -27,6 +27,7 @@ export const ownerRoutes = [
     path: "properties/:id",
     name: "property-detail",
     component: OwnerPropertyDetailView,
+    meta: { parent: { name: "owner.properties", label: "Properties" } },
   },
   {
     path: "rooms",
@@ -37,6 +38,7 @@ export const ownerRoutes = [
     path: "rooms/:id",
     name: "room-detail",
     component: OwnerRoomDetailView,
+    meta: { parent: { name: "owner.rooms", label: "Rooms" } },
   },
   {
     path: "booking-calendar",
@@ -49,6 +51,12 @@ export const ownerRoutes = [
     component: OwnerReservationsView,
   },
   {
+    path: "reservations/:id",
+    name: "reservation-detail",
+    component: OwnerReservationDetailView,
+    meta: { parent: { name: "owner.reservations", label: "Reservations" } },
+  },
+  {
     path: "payments",
     name: "payments",
     component: OwnerPaymentsView,
@@ -57,6 +65,7 @@ export const ownerRoutes = [
     path: "payments/:id",
     name: "payment-detail",
     component: OwnerPaymentDetailView,
+    meta: { parent: { name: "owner.payments", label: "Payments & Refunds" } },
   },
   {
     path: "payment-accounts",

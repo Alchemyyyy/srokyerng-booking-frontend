@@ -19,6 +19,8 @@ import {
   ArrowsRightLeftIcon,
   MoonIcon,
   SunIcon,
+  CalendarDaysIcon,
+  HomeIcon,
 } from "@heroicons/vue/24/outline";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useNotificationStore } from "@/modules/notifications/store/notificationStore";
@@ -287,148 +289,223 @@ watch(
         aria-orientation="vertical"
         aria-labelledby="user-menu-button"
       >
-        <!-- Top Section -->
-        <RouterLink
-          v-if="switchLink"
-          :to="switchLink.to"
-          class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
-          @click="closeMenu"
-        >
-          <ArrowsRightLeftIcon class="h-5 w-5 text-(--color-text)" />
-          <span>{{ switchLink.label }}</span>
-        </RouterLink>
-
-        <div v-if="switchLink" class="my-2 border-b border-(--color-border)"></div>
-
-        <!-- Trips & Interaction Section -->
-        <RouterLink
-          :to="{ name: 'customer.wishlist' }"
-          class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
-          @click="closeMenu"
-        >
-          <HeartIcon class="h-5 w-5 text-(--color-text)" />
-          <span>Wishlists</span>
-        </RouterLink>
-
-        <RouterLink
-          :to="{ name: 'customer.booking-history' }"
-          class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
-          @click="closeMenu"
-        >
-          <Squares2X2Icon class="h-5 w-5 text-(--color-text)" />
-          <span>Trips</span>
-        </RouterLink>
-
-        <RouterLink
-          :to="{ name: 'customer.chats' }"
-          class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
-          @click="closeMenu"
-        >
-          <ChatBubbleOvalLeftIcon class="h-5 w-5 text-(--color-text)" />
-          <span>Messages</span>
-        </RouterLink>
-
-        <RouterLink
-          v-if="profileRoute"
-          :to="profileRoute"
-          class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
-          @click="closeMenu"
-        >
-          <UserCircleIcon class="h-5 w-5 text-(--color-text)" />
-          <span>Profile</span>
-        </RouterLink>
-
-        <div class="my-2 border-b border-(--color-border)"></div>
-
-        <!-- Account & Preferences Section -->
-        <RouterLink
-          v-if="notificationRoute"
-          :to="notificationRoute"
-          class="flex items-center justify-between px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
-          @click="closeMenu"
-        >
-          <div class="flex items-center gap-4">
-            <BellIcon class="h-5 w-5 text-(--color-text)" />
-            <span>Notifications</span>
-          </div>
-          <!-- Dropdown Item Badge Unread Count -->
-          <span
-            v-if="notificationStore.unreadCount > 0"
-            class="min-w-5 h-5 px-1.5 flex items-center justify-center rounded-full bg-rose-500 text-white text-[10px] font-black"
+        <!-- ==================== OWNER / ADMIN DROPDOWN (Simplified) ==================== -->
+        <template v-if="authStore.user?.role === 'owner' || authStore.user?.role === 'admin'">
+          <!-- Switch View Link -->
+          <RouterLink
+            v-if="switchLink"
+            :to="switchLink.to"
+            class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+            @click="closeMenu"
           >
-            {{ notificationStore.unreadCount }}
-          </span>
-        </RouterLink>
+            <ArrowsRightLeftIcon class="h-5 w-5 text-(--color-text)" />
+            <span>{{ switchLink.label }}</span>
+          </RouterLink>
 
-        <RouterLink
-          v-if="settingsRoute"
-          :to="settingsRoute"
-          class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
-          @click="closeMenu"
-        >
-          <Cog6ToothIcon class="h-5 w-5 text-(--color-text)" />
-          <span>Account settings</span>
-        </RouterLink>
+          <div v-if="switchLink" class="my-2 border-b border-(--color-border)"></div>
 
-        <!-- Theme Switcher Row -->
-        <div
-          class="flex items-center justify-between px-5 py-2.5 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
-          @click.stop="toggleTheme"
-        >
-          <div class="flex items-center gap-4">
-            <MoonIcon v-if="currentTheme === 'dark'" class="h-5 w-5 text-(--color-text)" />
-            <SunIcon v-else class="h-5 w-5 text-(--color-text)" />
-            <span>Theme</span>
+          <!-- Owner Actions -->
+          <RouterLink
+            v-if="dashboardRoute"
+            :to="dashboardRoute"
+            class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+            @click="closeMenu"
+          >
+            <Squares2X2Icon class="h-5 w-5 text-(--color-text)" />
+            <span>Dashboard</span>
+          </RouterLink>
+
+          <RouterLink
+            :to="{ name: 'owner.properties' }"
+            class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+            @click="closeMenu"
+          >
+            <BuildingOffice2Icon class="h-5 w-5 text-(--color-text)" />
+            <span>My Properties</span>
+          </RouterLink>
+
+          <RouterLink
+            :to="{ name: 'owner.reservations' }"
+            class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+            @click="closeMenu"
+          >
+            <CalendarDaysIcon class="h-5 w-5 text-(--color-text)" />
+            <span>Reservations</span>
+          </RouterLink>
+          
+          <RouterLink
+            :to="{ name: 'owner.chats' }"
+            class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+            @click="closeMenu"
+          >
+            <ChatBubbleOvalLeftIcon class="h-5 w-5 text-(--color-text)" />
+            <span>Messages</span>
+          </RouterLink>
+
+          <RouterLink
+            v-if="profileRoute"
+            :to="profileRoute"
+            class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+            @click="closeMenu"
+          >
+            <UserCircleIcon class="h-5 w-5 text-(--color-text)" />
+            <span>Profile</span>
+          </RouterLink>
+
+          <div class="my-2 border-b border-(--color-border)"></div>
+
+          <!-- Log out -->
+          <button
+            type="button"
+            class="w-full text-left px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer font-normal text-(--color-text) block"
+            @click="handleLogout"
+          >
+            Log out
+          </button>
+        </template>
+
+        <!-- ==================== CUSTOMER / GUEST DROPDOWN (Normal) ==================== -->
+        <template v-else>
+          <!-- Switch View Link -->
+          <RouterLink
+            v-if="switchLink"
+            :to="switchLink.to"
+            class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+            @click="closeMenu"
+          >
+            <ArrowsRightLeftIcon class="h-5 w-5 text-(--color-text)" />
+            <span>{{ switchLink.label }}</span>
+          </RouterLink>
+
+          <div v-if="switchLink" class="my-2 border-b border-(--color-border)"></div>
+
+          <RouterLink
+            :to="{ name: 'customer.wishlist' }"
+            class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+            @click="closeMenu"
+          >
+            <HeartIcon class="h-5 w-5 text-(--color-text)" />
+            <span>Wishlists</span>
+          </RouterLink>
+
+          <RouterLink
+            :to="{ name: 'customer.booking-history' }"
+            class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+            @click="closeMenu"
+          >
+            <Squares2X2Icon class="h-5 w-5 text-(--color-text)" />
+            <span>Trips</span>
+          </RouterLink>
+
+          <RouterLink
+            :to="{ name: 'customer.chats' }"
+            class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+            @click="closeMenu"
+          >
+            <ChatBubbleOvalLeftIcon class="h-5 w-5 text-(--color-text)" />
+            <span>Messages</span>
+          </RouterLink>
+
+          <RouterLink
+            v-if="profileRoute"
+            :to="profileRoute"
+            class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+            @click="closeMenu"
+          >
+            <UserCircleIcon class="h-5 w-5 text-(--color-text)" />
+            <span>Profile</span>
+          </RouterLink>
+
+          <div class="my-2 border-b border-(--color-border)"></div>
+
+          <!-- Account & Preferences Section -->
+          <RouterLink
+            v-if="notificationRoute"
+            :to="notificationRoute"
+            class="flex items-center justify-between px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+            @click="closeMenu"
+          >
+            <div class="flex items-center gap-4">
+              <BellIcon class="h-5 w-5 text-(--color-text)" />
+              <span>Notifications</span>
+            </div>
+            <span
+              v-if="notificationStore.unreadCount > 0"
+              class="min-w-5 h-5 px-1.5 flex items-center justify-center rounded-full bg-rose-500 text-white text-[10px] font-black"
+            >
+              {{ notificationStore.unreadCount }}
+            </span>
+          </RouterLink>
+
+          <RouterLink
+            v-if="settingsRoute"
+            :to="settingsRoute"
+            class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+            @click="closeMenu"
+          >
+            <Cog6ToothIcon class="h-5 w-5 text-(--color-text)" />
+            <span>Account settings</span>
+          </RouterLink>
+
+          <!-- Theme Switcher Row -->
+          <div
+            class="flex items-center justify-between px-5 py-2.5 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+            @click.stop="toggleTheme"
+          >
+            <div class="flex items-center gap-4">
+              <MoonIcon v-if="currentTheme === 'dark'" class="h-5 w-5 text-(--color-text)" />
+              <SunIcon v-else class="h-5 w-5 text-(--color-text)" />
+              <span>Theme</span>
+            </div>
+            <span class="text-xs text-(--color-muted) capitalize font-medium">{{ currentTheme }}</span>
           </div>
-          <span class="text-xs text-(--color-muted) capitalize font-medium">{{ currentTheme }}</span>
-        </div>
 
-        <!-- Language Switcher Row -->
-        <div
-          class="flex items-center justify-between px-5 py-2 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
-          @click.stop="toggleLanguage"
-        >
-          <div class="flex items-center gap-4">
-            <GlobeAltIcon class="h-5 w-5 text-(--color-text)" />
-            <span>Language</span>
+          <!-- Language Switcher Row -->
+          <div
+            class="flex items-center justify-between px-5 py-2 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+            @click.stop="toggleLanguage"
+          >
+            <div class="flex items-center gap-4">
+              <GlobeAltIcon class="h-5 w-5 text-(--color-text)" />
+              <span>Language</span>
+            </div>
+            <LanguageToggle @click.stop />
           </div>
-          <LanguageToggle @click.stop />
-        </div>
 
-        <RouterLink
-          :to="{ name: 'public.contact' }"
-          class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
-          @click="closeMenu"
-        >
-          <QuestionMarkCircleIcon class="h-5 w-5 text-(--color-text)" />
-          <span>Help Center</span>
-        </RouterLink>
+          <RouterLink
+            :to="{ name: 'public.contact' }"
+            class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+            @click="closeMenu"
+          >
+            <QuestionMarkCircleIcon class="h-5 w-5 text-(--color-text)" />
+            <span>Help Center</span>
+          </RouterLink>
 
-        <div class="my-2 border-b border-(--color-border)"></div>
+          <div class="my-2 border-b border-(--color-border)"></div>
 
-        <!-- Become a host callout -->
-        <RouterLink
-          :to="{ name: 'public.listProperty' }"
-          class="flex items-center justify-between px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer group"
-          @click="closeMenu"
-        >
-          <div>
-            <div class="font-bold text-(--color-text)">Become a host</div>
-            <div class="text-xs text-(--color-muted) font-normal mt-0.5">It's easy to start hosting and earn extra income.</div>
-          </div>
-          <span class="text-2xl group-hover:scale-110 transition-transform">🏠</span>
-        </RouterLink>
+          <!-- Become a host callout -->
+          <RouterLink
+            v-if="authStore.isAuthenticated && authStore.user?.role === 'customer'"
+            :to="{ name: 'public.listProperty' }"
+            class="flex items-center justify-between px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer group"
+            @click="closeMenu"
+          >
+            <div>
+              <div class="font-bold text-(--color-text)">Become a host</div>
+              <div class="text-xs text-(--color-muted) font-normal mt-0.5">It's easy to start hosting and earn extra income.</div>
+            </div>
+            <HomeIcon class="h-6 w-6 text-(--color-primary) group-hover:scale-110 transition-transform" />
+          </RouterLink>
 
-
-
-        <!-- Log out -->
-        <button
-          type="button"
-          class="w-full text-left px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer font-normal text-(--color-text) block"
-          @click="handleLogout"
-        >
-          Log out
-        </button>
+          <!-- Log out -->
+          <button
+            type="button"
+            class="w-full text-left px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer font-normal text-(--color-text) block"
+            @click="handleLogout"
+          >
+            Log out
+          </button>
+        </template>
       </div>
     </Transition>
   </div>

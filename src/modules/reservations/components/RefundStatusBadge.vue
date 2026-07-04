@@ -54,9 +54,9 @@ const config = computed(() => STATUS_MAP[props.status] ?? { label: props.status,
 
 .rsb__icon { flex-shrink: 0; }
 
-.rsb--neutral  { background: var(--color-surface-soft, #f3f4f6); color: var(--color-muted, #6c757d); border-color: var(--color-border); }
-.rsb--warning  { background: rgba(239,159,39,0.12); color: #c97c0a; border-color: rgba(239,159,39,0.3); }
-.rsb--info     { background: rgba(55,138,221,0.1);  color: var(--color-primary,#378add); border-color: rgba(55,138,221,0.25); }
-.rsb--success  { background: rgba(29,158,117,0.1);  color: #1d9e75; border-color: rgba(29,158,117,0.25); }
-.rsb--danger   { background: rgba(220,53,69,0.1);   color: #dc3545; border-color: rgba(220,53,69,0.25); }
+.rsb--neutral  { background: var(--color-surface-soft); color: var(--color-muted); border-color: var(--color-border); }
+.rsb--warning  { background: var(--color-warning-soft); color: var(--color-warning); border-color: var(--color-warning); }
+.rsb--info     { background: var(--color-info-soft); color: var(--color-info); border-color: var(--color-info); }
+.rsb--success  { background: var(--color-success-soft); color: var(--color-success); border-color: var(--color-success); }
+.rsb--danger   { background: var(--color-danger-soft); color: var(--color-danger); border-color: var(--color-danger); }
 </style>

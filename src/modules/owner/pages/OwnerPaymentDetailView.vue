@@ -2,9 +2,9 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ownerPaymentApi } from "@/modules/payments/api/ownerPayment.api.js";
-import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useToastStore } from "@/shared/store/toastStore";
 import LoadingSpinner from "@/shared/components/LoadingSpinner.vue";
+import OwnerLoadingState from "@/modules/owner/components/OwnerLoadingState.vue";
 import defaultReceipt from "@/assets/images/default/default_receipt.png";
 import { useSidebar } from "@/shared/composables/useSidebar";
 import {
@@ -16,7 +16,6 @@ import {
 
 const route = useRoute();
 const router = useRouter();
-const authStore = useAuthStore();
 const toastStore = useToastStore();
 const { isSidebarOpen } = useSidebar();
 
@@ -99,8 +98,6 @@ const fetchPaymentDetails = async () => {
     loading.value = true;
     error.value = "";
     try {
-        await authStore.refreshSession();
-
         const paymentResponse = await ownerPaymentApi.getPaymentDetails(route.params.id);
         const paymentData = paymentResponse?.data?.data || paymentResponse?.data || paymentResponse;
 
@@ -258,10 +255,7 @@ onMounted(fetchPaymentDetails);
             </button>
         </header>
 
-        <div v-if="loading"
-            class="flex flex-col items-center justify-center py-20 bg-(--color-surface) rounded-2xl border border-(--color-border)">
-            <LoadingSpinner label="Loading transaction records..." class="text-sm font-semibold" />
-        </div>
+        <OwnerLoadingState v-if="loading" label="Loading transaction records..." />
 
         <div v-else-if="error"
             class="p-6 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-600 text-center font-bold text-sm">

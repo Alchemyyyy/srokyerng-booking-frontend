@@ -2,10 +2,12 @@
 import { ref, computed, watch, onMounted } from "vue";
 import { Calendar } from "v-calendar";
 import "v-calendar/style.css";
+import { XMarkIcon } from "@heroicons/vue/24/outline";
 // ⚠️ ADJUST PATH if Calendar.api.js doesn't actually live at ../api/Calendar.api
 // relative to this component — match wherever you placed the file you shared.
 import { calendarApi } from "../api/Calendar.api";
 import { useToastStore } from "@/shared/store/toastStore";
+import { useTheme } from "@/shared/composables/useTheme";
 
 const props = defineProps({
   roomId: { type: [Number, String], default: null },
@@ -15,9 +17,11 @@ const props = defineProps({
 
 const emit = defineEmits(["date-selected", "range-selected"]);
 const toast = useToastStore();
+const { resolvedTheme } = useTheme();
+const isDarkTheme = computed(() => resolvedTheme.value === "dark");
 
-const getBlockKey = () => `owner_blocked_dates_${props.propertyId || props.roomId || 'default'}`;
 const blockedDates = ref([]);
+const blockActionLoading = ref(false);
 
 const loading = ref(false);
 const error = ref(null);
@@ -106,11 +110,13 @@ const fetchCalendar = async () => {
 
     const data = res?.data?.data ?? res?.data ?? res;
 
-    if (Array.isArray(data)) {
-      reservations.value = data;
+    if (Array.isArray(data?.reservations)) {
+      // Property-level response: { reservations, blocked_dates }
+      reservations.value = data.reservations;
+      blockedDates.value = data.blocked_dates ?? [];
 
       const unavailable = [];
-      data.forEach((reservation) => {
+      data.reservations.forEach((reservation) => {
         const checkIn = reservation.check_in_date ?? reservation.checkIn;
         const checkOut = reservation.check_out_date ?? reservation.checkOut;
         if (!checkIn || !checkOut) return;
@@ -123,16 +129,7 @@ const fetchCalendar = async () => {
         }
       });
 
-      unavailableDates.value = [...new Set(unavailable)];
-
-      try {
-        const stored = localStorage.getItem(getBlockKey());
-        if (stored) blockedDates.value = JSON.parse(stored);
-      } catch (e) {
-        console.error(e);
-      }
-
-      unavailableDates.value = [...new Set([...unavailableDates.value, ...blockedDates.value])];
+      unavailableDates.value = [...new Set([...unavailable, ...blockedDates.value])];
 
       const allDates = [];
       const cursor = new Date(startDate.value);
@@ -145,17 +142,11 @@ const fetchCalendar = async () => {
         (d) => !unavailableDates.value.includes(d),
       );
     } else {
+      // Room-level response: { available_dates, unavailable_dates, blocked_dates }
       reservations.value = [];
-      try {
-        const stored = localStorage.getItem(getBlockKey());
-        if (stored) blockedDates.value = JSON.parse(stored);
-      } catch (e) {
-        console.error(e);
-      }
-      const unavail = data?.unavailable_dates ?? [];
-      unavailableDates.value = [...new Set([...unavail, ...blockedDates.value])];
-      const avail = data?.available_dates ?? [];
-      availableDates.value = avail.filter((d) => !unavailableDates.value.includes(d));
+      blockedDates.value = data?.blocked_dates ?? [];
+      unavailableDates.value = data?.unavailable_dates ?? [];
+      availableDates.value = data?.available_dates ?? [];
     }
   } catch (err) {
     const status = err?.response?.status;
@@ -351,18 +342,26 @@ const disabledDates = computed(() =>
   props.mode === "owner" ? [] : unavailableDates.value.map((d) => new Date(d)),
 );
 
-const toggleBlockDate = () => {
-  if (!selectedBookingDate.value) return;
+const toggleBlockDate = async () => {
+  if (!selectedBookingDate.value || !props.roomId) return;
   const dateStr = selectedBookingDate.value;
-  if (blockedDates.value.includes(dateStr)) {
-    blockedDates.value = blockedDates.value.filter(d => d !== dateStr);
-    toast.success("Date unblocked successfully");
-  } else {
-    blockedDates.value.push(dateStr);
-    toast.success("Date blocked successfully");
+  blockActionLoading.value = true;
+  try {
+    if (blockedDates.value.includes(dateStr)) {
+      await calendarApi.deleteRoomBlock(props.roomId, dateStr);
+      toast.success("Date unblocked successfully");
+    } else {
+      await calendarApi.createRoomBlock(props.roomId, dateStr);
+      toast.success("Date blocked successfully");
+    }
+    await fetchCalendar();
+  } catch (err) {
+    toast.danger(
+      err?.response?.data?.message || "Failed to update block status.",
+    );
+  } finally {
+    blockActionLoading.value = false;
   }
-  localStorage.setItem(getBlockKey(), JSON.stringify(blockedDates.value));
-  fetchCalendar();
 };
 
 const handleDayClick = (day) => {
@@ -438,12 +437,12 @@ onMounted(fetchCalendar);
 
     <div
       v-else-if="endpointNotReady"
-      class="rounded-xl bg-amber-500/5 border border-amber-500/20 px-4 py-6 text-center mb-4"
+      class="rounded-xl bg-(--color-warning-soft) border border-(--color-warning) px-4 py-6 text-center mb-4"
     >
-      <p class="text-sm font-bold text-amber-600 mb-1">
+      <p class="text-sm font-bold text-(--color-warning) mb-1">
         Availability calendar coming soon
       </p>
-      <p class="text-xs text-amber-500/80">
+      <p class="text-xs text-(--color-warning)">
         The availability endpoint is not ready yet. The calendar will show here
         once the backend is connected.
       </p>
@@ -451,7 +450,7 @@ onMounted(fetchCalendar);
 
     <div
       v-else-if="error"
-      class="rounded-xl bg-rose-500/5 border border-rose-500/20 px-4 py-3 text-sm font-medium text-rose-600 mb-4"
+      class="rounded-xl bg-(--color-danger-soft) border border-(--color-danger) px-4 py-3 text-sm font-medium text-(--color-danger) mb-4"
     >
       {{ error }}
     </div>
@@ -497,6 +496,7 @@ onMounted(fetchCalendar);
             :attributes="calendarAttributes"
             :disabled-dates="disabledDates"
             :min-date="new Date()"
+            :is-dark="isDarkTheme"
             :columns="1"
             :rows="1"
             expanded
@@ -519,10 +519,10 @@ onMounted(fetchCalendar);
               </p>
               <button
                 type="button"
-                class="text-xs font-semibold text-(--color-muted) hover:text-(--color-text)"
+                class="inline-flex items-center gap-1 text-xs font-semibold text-(--color-muted) hover:text-(--color-text)"
                 @click="selectedBookingDate = null"
               >
-                Close ✕
+                Close <XMarkIcon class="h-3.5 w-3.5" />
               </button>
             </div>
 
@@ -578,24 +578,31 @@ onMounted(fetchCalendar);
 
             <!-- Case 2: Blocked Date -->
             <div v-else-if="blockedDates.includes(selectedBookingDate)" class="py-2 flex items-center justify-between">
-              <p class="text-xs text-amber-600 font-semibold">Blocked for Maintenance / External Booking</p>
+              <p class="text-xs text-(--color-warning) font-semibold">Blocked for Maintenance / External Booking</p>
               <button
+                v-if="roomId"
                 @click="toggleBlockDate"
-                class="px-3 py-1.5 rounded-xl bg-amber-500 text-white font-bold text-xs hover:bg-amber-600 transition"
+                :disabled="blockActionLoading"
+                class="px-3 py-1.5 rounded-xl bg-(--color-warning) text-white font-bold text-xs hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Unblock Date
+                {{ blockActionLoading ? "…" : "Unblock Date" }}
               </button>
             </div>
 
             <!-- Case 3: Available Date -->
             <div v-else class="py-2 flex items-center justify-between">
-              <p class="text-xs text-emerald-600 font-semibold">Date is available for guest bookings</p>
+              <p class="text-xs text-(--color-success) font-semibold">Date is available for guest bookings</p>
               <button
+                v-if="roomId"
                 @click="toggleBlockDate"
-                class="px-3 py-1.5 rounded-xl bg-rose-600 text-white font-bold text-xs hover:bg-rose-700 transition"
+                :disabled="blockActionLoading"
+                class="px-3 py-1.5 rounded-xl bg-(--color-danger) text-white font-bold text-xs hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Block Date
+                {{ blockActionLoading ? "…" : "Block Date" }}
               </button>
+              <p v-else class="text-xs text-(--color-muted) italic">
+                Open a specific room's calendar to block dates
+              </p>
             </div>
           </div>
 
@@ -633,19 +640,19 @@ onMounted(fetchCalendar);
               Available
             </div>
             <div class="flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-full bg-rose-500" />
+              <span class="w-2.5 h-2.5 rounded-full bg-(--color-danger)" />
               Booked
             </div>
             <div v-if="mode === 'owner'" class="flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-full bg-orange-500" />
+              <span class="w-2.5 h-2.5 rounded-full bg-(--color-warning)" />
               Blocked
             </div>
             <div v-if="mode !== 'owner'" class="flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-full bg-blue-500" />
+              <span class="w-2.5 h-2.5 rounded-full bg-(--color-primary)" />
               Selected
             </div>
             <div class="flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-full border-2 border-gray-400" />
+              <span class="w-2.5 h-2.5 rounded-full border-2 border-(--color-muted)" />
               Today
             </div>
           </div>
@@ -668,7 +675,7 @@ onMounted(fetchCalendar);
             <div
               v-for="(stay, index) in upcomingStays"
               :key="index"
-              class="border-l-2 border-rose-500 pl-3"
+              class="border-l-2 border-(--color-danger) pl-3"
             >
               <p class="text-sm font-semibold text-(--color-text)">
                 {{ stay.label }}
@@ -732,5 +739,36 @@ onMounted(fetchCalendar);
   border-radius: 50%;
   border: 1.5px solid var(--color-border-secondary, #9ca3af);
   background-color: transparent !important;
+}
+
+/* v-calendar's day highlights are driven by its own preset color palette
+   (red/orange/blue/gray), which is unrelated to this app's design tokens
+   and doesn't adapt to the dark/light theme. Remap the shades each preset
+   actually renders with so the calendar's colors always match the rest
+   of the UI (--color-danger for booked, --color-warning for blocked,
+   --color-primary for selected, --color-muted for today). */
+.calendar-wrapper :deep(.vc-red) {
+  --vc-accent-500: var(--color-danger);
+  --vc-accent-600: var(--color-danger);
+  --vc-accent-700: var(--color-danger);
+  --vc-accent-900: var(--color-danger);
+}
+.calendar-wrapper :deep(.vc-orange) {
+  --vc-accent-500: var(--color-warning);
+  --vc-accent-600: var(--color-warning);
+  --vc-accent-700: var(--color-warning);
+  --vc-accent-900: var(--color-warning);
+}
+.calendar-wrapper :deep(.vc-blue) {
+  --vc-accent-500: var(--color-primary);
+  --vc-accent-600: var(--color-primary);
+  --vc-accent-700: var(--color-primary);
+  --vc-accent-900: var(--color-primary);
+}
+.calendar-wrapper :deep(.vc-gray) {
+  --vc-accent-300: var(--color-muted);
+  --vc-accent-500: var(--color-muted);
+  --vc-accent-600: var(--color-muted);
+  --vc-accent-700: var(--color-muted);
 }
 </style>

@@ -13,7 +13,7 @@ import {
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
 
-import { useTheme } from '@/modules/owner/composables/useTheme'
+import { useTheme } from '@/shared/composables/useTheme'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
 

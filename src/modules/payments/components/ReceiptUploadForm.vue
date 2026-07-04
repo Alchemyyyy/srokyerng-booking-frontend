@@ -66,9 +66,11 @@ function removeFile() {
   emit("clear");
 }
 
+const transactionReference = ref("");
+
 function handleSubmit() {
   if (selectedFile.value) {
-    emit("submit", selectedFile.value);
+    emit("submit", selectedFile.value, transactionReference.value.trim());
   }
 }
 
@@ -167,6 +169,21 @@ const fileSizeLabel = computed(() => {
     <p v-if="sizeError" class="upload-form__error" role="alert">
       {{ sizeError }}
     </p>
+
+    <!-- Transaction reference -->
+    <div v-if="selectedFile" class="upload-form__reference">
+      <label class="upload-form__reference-label" for="transaction-reference">
+        Transaction reference
+        <span class="upload-form__reference-optional">(optional)</span>
+      </label>
+      <input
+        id="transaction-reference"
+        v-model="transactionReference"
+        type="text"
+        class="upload-form__reference-input"
+        placeholder="e.g. the reference number from your bank app"
+      />
+    </div>
 
     <!-- Submit -->
     <AppButton
@@ -421,6 +438,40 @@ const fileSizeLabel = computed(() => {
   font-size: 0.83rem;
   color: var(--color-danger, #dc3545);
   padding: 0 0.5rem;
+}
+
+/* Transaction reference */
+.upload-form__reference {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.upload-form__reference-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.upload-form__reference-optional {
+  font-weight: 500;
+  color: var(--color-muted);
+}
+
+.upload-form__reference-input {
+  width: 100%;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-radius: 12px;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.upload-form__reference-input:focus {
+  border-color: var(--color-primary);
 }
 
 /* Submit */

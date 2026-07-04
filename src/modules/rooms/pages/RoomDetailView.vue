@@ -112,6 +112,7 @@ const fetchRoom = async () => {
       amenities: r.amenities || [],
       images: images.map((i) => getFullImageUrl(i.image_url)),
       propertyId: r.property_id,
+      floorNumber: r.floor_number ?? null,
       latitude,
       longitude,
     };
@@ -154,7 +155,7 @@ const initDetailMap = () => {
 
   const icon = window.L.divIcon({
     className: "custom-detail-pin",
-    html: `<div class="flex items-center gap-1.5 rounded-sm bg-[#FF385C] text-white font-black text-xs px-3 py-1.5 shadow-2xl border border-white" style="border-radius: var(--radius-sm); white-space: nowrap;"><span class="text-white text-[10px]">📍</span> ${room.value.propertyName}</div>`,
+    html: `<div class="flex items-center gap-1.5 rounded-sm bg-(--color-wishlist) text-white font-black text-xs px-3 py-1.5 shadow-2xl border border-white" style="border-radius: var(--radius-sm); white-space: nowrap;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" class="w-3 h-3 shrink-0"><path fill-rule="evenodd" d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" clip-rule="evenodd"/></svg> ${room.value.propertyName}</div>`,
     iconSize: [140, 30],
     iconAnchor: [70, 15]
   });
@@ -376,10 +377,6 @@ onMounted(fetchRoom);
               <div
                 class="flex items-center gap-3 text-xs text-(--color-muted) font-semibold pt-1"
               >
-                <span class="flex items-center gap-1 text-(--color-text)">
-                  <span class="text-amber-400 font-bold text-sm">★</span> 4.9
-                </span>
-                <span class="w-1 h-1 bg-(--color-border) rounded-full"></span>
                 <span>{{ room.propertyName }}</span>
                 <span class="w-1 h-1 bg-(--color-border) rounded-full"></span>
                 <span
@@ -441,6 +438,9 @@ onMounted(fetchRoom);
                     class="text-[10px] font-black uppercase text-(--color-muted) tracking-wider"
                   >
                     {{ t("roomDetail.floorDimension") }}
+                  </p>
+                  <p class="text-sm font-black text-(--color-text) mt-0.5">
+                    {{ room.floorNumber ? `Floor ${room.floorNumber}` : "Ground floor" }}
                   </p>
                 </div>
               </div>

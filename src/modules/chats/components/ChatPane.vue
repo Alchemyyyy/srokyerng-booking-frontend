@@ -82,6 +82,14 @@ onUnmounted(() => {
   }
   socketService.offNewMessage(handleRealtimeNewMessage);
   socketService.offMessageUnsent(handleRealtimeMessageUnsent);
+
+  // If the user navigates away mid-recording, stop the timer and release
+  // the microphone instead of leaving both running on a torn-down component.
+  clearInterval(durationInterval);
+  if (mediaRecorder.value && mediaRecorder.value.state !== "inactive") {
+    mediaRecorder.value.stop();
+  }
+  activeMediaStream?.getTracks().forEach((track) => track.stop());
 });
 
 // Watch for conversation changes and load messages
@@ -165,6 +173,7 @@ const mediaRecorder = ref(null);
 const audioChunks = ref([]);
 const recordingDuration = ref(0);
 let durationInterval = null;
+let activeMediaStream = null;
 
 const formatDuration = (secs) => {
   const m = Math.floor(secs / 60);
@@ -180,6 +189,7 @@ const isAudioFile = (url) => {
 const startRecording = async () => {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    activeMediaStream = stream;
     audioChunks.value = [];
     mediaRecorder.value = new MediaRecorder(stream);
     
@@ -200,7 +210,8 @@ const startRecording = async () => {
       
       // Release tracks
       stream.getTracks().forEach((track) => track.stop());
-      
+      activeMediaStream = null;
+
       // Automatically send voice note
       await handleSend();
     };

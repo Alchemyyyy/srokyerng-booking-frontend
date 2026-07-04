@@ -13,6 +13,7 @@ import PaymentAccountFilter from '../components/PaymentAccountFilter.vue';
 import PaymentAccountSkeleton from '../components/PaymentAccountSkeleton.vue';
 
 import { PencilIcon, ArrowsRightLeftIcon } from '@heroicons/vue/24/outline';
+import { getBankName, getBankLogo, getBankAccentClass } from '../utils/bankBranding';
 
 const paymentStore = useOwnerPaymentStore();
 const isModalOpen = ref(false);
@@ -83,31 +84,6 @@ const filteredAccounts = computed(() => {
     if (currentTab.value === 'deactive') return paymentStore.paymentAccounts.filter(acc => !acc.is_active);
     return paymentStore.paymentAccounts;
 });
-
-const getBankName = (methodId) => {
-    const id = Number(methodId);
-    if (id === 1) return 'ABA Bank';
-    if (id === 2) return 'Acleda Bank';
-    if (id === 3) return 'Wing Bank';
-    return 'Other Bank';
-};
-
-const getBankLogo = (methodId) => {
-    const id = Number(methodId);
-    if (id === 1) return 'https://i.pinimg.com/736x/e2/33/f5/e233f5b0c5a358449398f202b03f063a.jpg';
-    if (id === 2) return 'https://companieslogo.com/img/orig/ABC.KH-3aa8d94f.png?t=1659408615';
-    if (id === 3) return 'https://www.royalgroup.com.kh/img/business_division/WingBank_Logo.png';
-    return 'https://cdn-icons-png.flaticon.com/512/2830/2830284.png';
-};
-
-const getBankAccentClass = (methodId, isActive) => {
-    if (!isActive) return 'border-t-4 border-slate-300 opacity-75';
-    const id = Number(methodId);
-    if (id === 1) return 'border-t-4 border-[#005f9e]';
-    if (id === 2) return 'border-t-4 border-[#0b3366]';
-    if (id === 3) return 'border-t-4 border-[#8cc63f]';
-    return 'border-t-4 border-slate-400';
-};
 
 const openQrPreview = (account) => {
     selectedQrUrl.value = account.qr_image_url || defaultQR;

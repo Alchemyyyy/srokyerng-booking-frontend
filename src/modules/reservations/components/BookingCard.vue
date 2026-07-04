@@ -2,6 +2,7 @@
 import { computed, ref, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import BookingStatusBadge from "./BookingStatusBadge.vue";
+import placeholer from "@/assets/images/properties/placeholder.png";
 import {
   CalendarIcon,
   MapPinIcon,
@@ -124,12 +125,10 @@ onBeforeUnmount(()  => document.removeEventListener("click", handleOutsideClick)
         class="w-full sm:w-28 h-24 rounded-2xl overflow-hidden bg-(--color-surface-soft) flex-shrink-0 relative shadow-inner"
       >
         <img
-          :src="
-            booking.roomImage ||
-            'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=400&q=80'
-          "
+          :src="booking.roomImage || placeholer"
           class="w-full h-full object-cover scale-[1.01] group-hover:scale-105 transition-transform duration-500"
           :alt="booking.roomName"
+          @error="(e) => (e.target.src = placeholer)"
         />
       </div>
 

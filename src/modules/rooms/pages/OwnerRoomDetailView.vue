@@ -19,6 +19,7 @@ import AvailabilityCalendar from "@/modules/calendar/components/AvailabilityCale
 import RoomFormModal from "@/modules/rooms/components/RoomFormModal.vue";
 import { useRoomStore } from "@/modules/rooms/store/roomStore";
 import { useToastStore } from "@/shared/store/toastStore";
+import OwnerLoadingState from "@/modules/owner/components/OwnerLoadingState.vue";
 
 const roomStore = useRoomStore();
 
@@ -322,19 +323,10 @@ onMounted(async () => {
 
 <template>
   <div
-    class="min-h-screen bg-(--color-page) text-(--color-text) antialiased pb-24 ml-64 p-6 pt-10"
+    class="min-h-screen bg-(--color-page) text-(--color-text) antialiased pb-24 ml-64 px-6 mt-25"
   >
     <!-- Loading -->
-    <div v-if="loading" class="flex items-center justify-center min-h-[60vh]">
-      <div class="flex flex-col items-center gap-3">
-        <div
-          class="w-8 h-8 border-4 border-(--color-primary) border-t-transparent rounded-full animate-spin"
-        />
-        <p class="text-sm font-semibold text-(--color-muted)">
-          Loading room details...
-        </p>
-      </div>
-    </div>
+    <OwnerLoadingState v-if="loading" label="Loading room details..." />
 
     <!-- Error -->
     <div
@@ -399,13 +391,15 @@ onMounted(async () => {
         <!-- Cover Image -->
         <div class="lg:col-span-1">
           <div
-            class="rounded-[24px] overflow-hidden border border-(--color-border) bg-(--color-surface) aspect-[4/3]"
+            class="relative rounded-[24px] overflow-hidden border border-(--color-border) bg-(--color-surface) aspect-[4/3]"
+            :class="images.length > 0 ? 'cursor-pointer group' : ''"
+            @click="images.length > 0 && switchTab('images')"
           >
             <img
               v-if="coverImage"
               :src="coverImage"
               :alt="room.room_name"
-              class="w-full h-full object-cover"
+              class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
             <div
               v-else
@@ -413,6 +407,14 @@ onMounted(async () => {
             >
               <PhotoIcon class="w-12 h-12 text-(--color-border)" />
             </div>
+
+            <span
+              v-if="images.length > 1"
+              class="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-black/60 backdrop-blur-sm px-3 py-1.5 text-xs font-bold text-white shadow-md"
+            >
+              <PhotoIcon class="w-3.5 h-3.5" />
+              {{ images.length }} Photos
+            </span>
           </div>
         </div>
 
@@ -512,7 +514,7 @@ onMounted(async () => {
       </div>
 
       <!-- Tab: Availability Calendar -->
-      <div v-if="activeTab === 'calendar'">
+      <div v-show="activeTab === 'calendar'">
         <div
           class="bg-(--color-surface) border border-(--color-border) rounded-[24px] p-6"
         >
@@ -526,7 +528,7 @@ onMounted(async () => {
       </div>
 
       <!-- Tab: Bookings -->
-      <div v-else-if="activeTab === 'bookings'">
+      <div v-show="activeTab === 'bookings'">
         <!-- Loading -->
         <div v-if="bookingsLoading" class="text-center py-12">
           <div
@@ -613,7 +615,7 @@ onMounted(async () => {
       </div>
 
       <!-- Tab: Images -->
-      <div v-else-if="activeTab === 'images'">
+      <div v-show="activeTab === 'images'">
         <div class="space-y-6">
           <!-- Upload button -->
           <div class="flex items-center justify-between">

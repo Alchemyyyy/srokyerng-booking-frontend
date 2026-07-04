@@ -4,12 +4,14 @@ import { useRouter } from "vue-router";
 import {
   ChatBubbleOvalLeftIcon,
   MagnifyingGlassIcon,
+  ExclamationTriangleIcon,
 } from "@heroicons/vue/24/outline";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useChatStore } from "../store/chatStore";
 import PublicNavbar from "@/shared/components/PublicNavbar.vue";
 import UserAvatar from "@/shared/components/UserAvatar.vue";
 import ChatPane from "../components/ChatPane.vue";
+import LoadingSpinner from "@/shared/components/LoadingSpinner.vue";
 import { useSidebar } from "@/shared/composables/useSidebar";
 
 const router = useRouter();
@@ -151,8 +153,23 @@ const formatDate = (isoString) => {
         <!-- Scrollable conversation items list -->
         <div class="flex-1 overflow-y-auto divide-y divide-(--color-border)/50">
           <div v-if="chatStore.listLoading" class="flex flex-col items-center justify-center py-12">
-            <div class="h-6 w-6 animate-spin rounded-full border-2 border-(--color-primary) border-t-transparent"></div>
-            <p class="text-xs text-(--color-muted) mt-2 font-semibold">Loading conversations...</p>
+            <LoadingSpinner label="Loading conversations..." />
+          </div>
+
+          <div
+            v-else-if="chatStore.error"
+            class="p-8 text-center flex flex-col items-center justify-center h-48"
+          >
+            <ExclamationTriangleIcon class="h-10 w-10 text-(--color-danger) mb-3" />
+            <h3 class="text-sm font-bold text-(--color-text)">Couldn't load your messages</h3>
+            <p class="text-xs text-(--color-muted) mt-1 leading-relaxed max-w-[200px]">{{ chatStore.error }}</p>
+            <button
+              type="button"
+              class="mt-3 text-xs font-bold text-(--color-primary) hover:underline"
+              @click="chatStore.fetchConversations()"
+            >
+              Try again
+            </button>
           </div>
 
           <div

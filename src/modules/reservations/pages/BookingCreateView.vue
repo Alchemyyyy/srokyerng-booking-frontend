@@ -4,18 +4,17 @@ import { useRoute, useRouter } from "vue-router";
 import { reservationApi } from "../api/reservation.api";
 import { useToastStore } from "@/shared/store/toastStore";
 import http from "@/app/api/http";
+import { getPropertyPaymentAccounts } from "@/modules/payments/services/paymentService";
 import AppButton from "@/shared/components/AppButton.vue";
 import {
   ArrowLeftIcon,
   CalendarIcon,
-  UserGroupIcon,
+  MoonIcon,
   ShieldCheckIcon,
+  CheckCircleIcon,
 } from "@heroicons/vue/24/outline";
 import BookingForm from "../components/BookingForm.vue";
-import { useAuthStore } from "@/modules/auth/store/authStore";
 
-const authStore = useAuthStore();
-const formErrors = ref({});
 const route = useRoute();
 const router = useRouter();
 const toastStore = useToastStore();
@@ -26,73 +25,14 @@ const checkInDate = ref(route.query.checkIn || "");
 const checkOutDate = ref(route.query.checkOut || "");
 const guestCount = ref(Number(route.query.guests) || 2);
 
-const currentStep = ref(1);
 const room = ref(null);
 const property = ref(null);
 const isSubmitting = ref(false);
 
-const validateStep1 = () => {
-  const errors = {};
-  if (!form.value.firstName.trim())
-    errors.firstName = "First name is required.";
-  if (!form.value.lastName.trim()) errors.lastName = "Last name is required.";
-  if (!form.value.email.trim()) errors.email = "Email is required.";
-  else if (!/\S+@\S+\.\S+/.test(form.value.email))
-    errors.email = "Invalid email format.";
-  if (!checkInDate.value) errors.checkIn = "Check-in date is required.";
-  if (!checkOutDate.value) errors.checkOut = "Check-out date is required.";
-  if (
-    checkInDate.value &&
-    checkOutDate.value &&
-    checkInDate.value >= checkOutDate.value
-  ) {
-    errors.checkOut = "Check-out must be after check-in.";
-  }
-  formErrors.value = errors;
-  return Object.keys(errors).length === 0;
-};
-
-const goToStep2 = () => {
-  if (validateStep1()) currentStep.value = 2;
-};
-
-const form = ref({
-  firstName: "",
-  lastName: "",
-  email: "",
-  notes: "",
-  selectedAddons: [],
-});
-
-const availableAddons = ref([
-  {
-    id: "airport",
-    icon: "✈️",
-    name: "Airport Transfer",
-    description: "Private pickup via luxury vehicle",
-    price: 45,
-  },
-  {
-    id: "lounge",
-    icon: "🥂",
-    name: "VIP Lounge Access",
-    description: "All-day dining & open bar privileges",
-    price: 60,
-  },
-  {
-    id: "spa",
-    icon: "💆",
-    name: "Khmer Spa Massage",
-    description: "90-min aromatherapy session",
-    price: 35,
-  },
-]);
-
-const steps = [
-  { id: 1, label: "Guest Info" },
-  { id: 2, label: "Upgrades" },
-  { id: 3, label: "Payment" },
-];
+const paymentAccounts = ref([]);
+const loadingAccounts = ref(false);
+const selectedAccountId = ref(null);
+const dateErrors = ref({ checkIn: "", checkOut: "" });
 
 onMounted(async () => {
   try {
@@ -114,6 +54,18 @@ onMounted(async () => {
   } catch (err) {
     console.error("Failed to load booking data:", err);
   }
+
+  loadingAccounts.value = true;
+  try {
+    paymentAccounts.value = await getPropertyPaymentAccounts(propertyId);
+    if (paymentAccounts.value.length === 1) {
+      selectedAccountId.value = paymentAccounts.value[0].id;
+    }
+  } catch (err) {
+    console.error("Failed to load payment accounts:", err);
+  } finally {
+    loadingAccounts.value = false;
+  }
 });
 
 const stayNights = computed(() => {
@@ -124,22 +76,25 @@ const stayNights = computed(() => {
   return diff > 0 ? diff : 1;
 });
 
-const getAddonPrice = (id) =>
-  availableAddons.value.find((a) => a.id === id)?.price || 0;
-const getAddonName = (id) =>
-  availableAddons.value.find((a) => a.id === id)?.name || "";
-
 const roomCost = computed(() => (room.value?.price || 0) * stayNights.value);
-const addonsCost = computed(() =>
-  form.value.selectedAddons.reduce((acc, id) => acc + getAddonPrice(id), 0),
-);
-const calculatedTotal = computed(() => roomCost.value + addonsCost.value);
+const calculatedTotal = computed(() => roomCost.value);
 
 const handleSubmit = async (formData) => {
+  if (paymentAccounts.value.length > 0 && !selectedAccountId.value) {
+    toastStore.danger("Please select a payment method.");
+    return;
+  }
+  if (paymentAccounts.value.length === 0) {
+    toastStore.danger("This host hasn't set up a payment method yet. Please contact them before booking.");
+    return;
+  }
+
+  const selectedAccount = paymentAccounts.value.find(
+    (a) => a.id === selectedAccountId.value,
+  );
+
   isSubmitting.value = true;
   try {
-    await authStore.refreshSession();
-
     // ── Step 1: Create Reservation ──────────────────────────
     const reservation = await reservationApi.createReservation({
       room_id: Number(roomId),
@@ -152,10 +107,13 @@ const handleSubmit = async (formData) => {
     const reservationId = reservation.data?.id ?? reservation.id;
 
     // ── Step 2: Create Payment ──────────────────────────────
+    // transaction_reference is intentionally omitted here — the customer
+    // only knows the real reference after making the transfer, so it's
+    // collected on the upload step instead.
     const payment = await http.post("/payments", {
       reservation_id: reservationId,
-      payment_method_id: 2, // ← adjust as needed
-      transaction_reference: `TXN-${Date.now()}`,
+      payment_method_id: selectedAccount.payment_method_id,
+      owner_payment_account_id: selectedAccount.id,
     });
 
     const paymentId = payment.data?.id ?? payment.id;
@@ -191,9 +149,9 @@ const handleSubmit = async (formData) => {
     ></div>
 
     <div
-      class="max-w-6xl mx-auto px-4 pt-28 pb-24 sm:px-6 lg:px-8 relative z-10"
+      class="max-w-6xl mx-auto px-4 pt-6 pb-8 sm:px-6 lg:px-8 relative z-10"
     >
-      <div class="flex items-center justify-between mb-8">
+      <div class="flex items-center justify-between gap-4 mb-4">
         <AppButton
           variant="secondary"
           size="sm"
@@ -203,64 +161,37 @@ const handleSubmit = async (formData) => {
           <ArrowLeftIcon
             class="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-0.5"
           />
-          <span class="font-semibold text-xs tracking-wide"
-            >Back to Explorer</span
-          >
+          <span class="font-semibold text-xs tracking-wide">Back to Explorer</span>
         </AppButton>
 
-        <nav
-          class="hidden sm:flex items-center gap-2 bg-(--color-surface-soft) border border-(--color-border)/60 p-1 rounded-full backdrop-blur-md"
-        >
-          <div
-            v-for="(step, idx) in steps"
-            :key="step.id"
-            class="flex items-center"
-          >
-            <span
-              class="px-4 py-1.5 text-xs font-bold rounded-full transition-all duration-300 tracking-wide"
-              :class="
-                currentStep === step.id
-                  ? 'bg-(--color-primary) text-white shadow-sm'
-                  : 'text-(--color-muted)'
-              "
-            >
-              {{ step.label }}
-            </span>
-            <span
-              v-if="idx < steps.length - 1"
-              class="text-xs text-(--color-muted)/40 px-1"
-              >/</span
-            >
-          </div>
-        </nav>
-      </div>
-
-      <header class="mb-12">
         <div
-          class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-(--color-primary-soft) text-(--color-primary) mb-3"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-(--color-primary-soft) text-(--color-primary) shrink-0"
         >
           <ShieldCheckIcon class="w-3.5 h-3.5" />
           <span class="text-[10px] font-black uppercase tracking-[0.15em]"
-            >Bank-Grade Secure Checkout</span
+            >Secure Checkout</span
           >
         </div>
+      </div>
+
+      <header class="mb-5">
         <h1
-          class="text-4xl font-black text-(--color-text) tracking-tight sm:text-5xl"
+          class="text-2xl font-black text-(--color-text) tracking-tight sm:text-3xl"
         >
           Complete Your Booking
         </h1>
         <p
-          class="text-sm sm:text-base text-(--color-muted) mt-2 max-w-xl leading-relaxed"
+          class="text-xs sm:text-sm text-(--color-muted) mt-1 max-w-xl leading-relaxed"
         >
-          Review your itinerary data, personalize premium local upgrades, and
-          lock down your upcoming retreat experience.
+          Review your stay details and choose a payment method to confirm
+          your reservation.
         </p>
       </header>
 
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:items-start">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:items-start">
         <main class="lg:col-span-7 space-y-6">
           <div
-            class="bg-(--color-surface) border border-(--color-border) rounded-3xl p-6 sm:p-8 shadow-xs hover:shadow-sm transition duration-300"
+            class="bg-(--color-surface) border border-(--color-border) rounded-3xl p-5 sm:p-6 shadow-xs hover:shadow-sm transition duration-300"
           >
             <BookingForm
               :room="room"
@@ -269,8 +200,13 @@ const handleSubmit = async (formData) => {
               :guest-count="guestCount"
               :is-submitting="isSubmitting"
               :calculated-total="calculatedTotal"
+              :payment-accounts="paymentAccounts"
+              :loading-accounts="loadingAccounts"
+              :selected-account-id="selectedAccountId"
               @update:checkInDate="checkInDate = $event"
               @update:checkOutDate="checkOutDate = $event"
+              @update:selectedAccountId="selectedAccountId = $event"
+              @date-errors="dateErrors = $event"
               @submit="handleSubmit"
             />
           </div>
@@ -284,17 +220,17 @@ const handleSubmit = async (formData) => {
               class="h-1.5 w-full bg-gradient-to-r from-(--color-primary) via-sky-400 to-sky-500"
             ></div>
 
-            <div class="p-6 sm:p-8 space-y-6">
+            <div class="p-5 sm:p-6 space-y-4">
               <div>
                 <p
-                  class="text-[10px] font-black uppercase tracking-widest text-(--color-primary) mb-1.5"
+                  class="text-[10px] font-black uppercase tracking-widest text-(--color-primary) mb-1"
                 >
-                  Selected Sanctuary
+                  Your Stay
                 </p>
                 <h3
-                  class="text-2xl font-black text-(--color-text) tracking-tight leading-tight"
+                  class="text-xl font-black text-(--color-text) tracking-tight leading-tight"
                 >
-                  {{ room?.name || "Gathering Information..." }}
+                  {{ room?.name || "Loading room…" }}
                 </h3>
                 <p
                   class="text-sm font-semibold text-(--color-muted) mt-1 flex items-center gap-1"
@@ -302,7 +238,7 @@ const handleSubmit = async (formData) => {
                   <span
                     class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"
                   ></span>
-                  {{ property?.name || "Loading context..." }}
+                  {{ property?.name || "Loading property…" }}
                 </p>
               </div>
 
@@ -310,13 +246,14 @@ const handleSubmit = async (formData) => {
                 class="grid grid-cols-2 gap-3 p-1 bg-(--color-surface-soft) rounded-2xl border border-(--color-border)/40"
               >
                 <div
-                  class="p-3 bg-(--color-surface) rounded-[14px] shadow-xs group/date"
+                  class="p-2.5 bg-(--color-surface) rounded-[14px] shadow-xs group/date"
+                  :class="dateErrors.checkIn ? 'border border-rose-400' : ''"
                 >
                   <label
-                    class="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-(--color-muted) mb-1.5"
+                    class="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-(--color-muted) mb-1"
                   >
                     <CalendarIcon class="w-3 h-3 text-(--color-primary)" />
-                    Check-In
+                    Check-In <span class="text-rose-500">*</span>
                   </label>
                   <input
                     v-model="checkInDate"
@@ -326,13 +263,14 @@ const handleSubmit = async (formData) => {
                 </div>
 
                 <div
-                  class="p-3 bg-(--color-surface) rounded-[14px] shadow-xs group/date"
+                  class="p-2.5 bg-(--color-surface) rounded-[14px] shadow-xs group/date"
+                  :class="dateErrors.checkOut ? 'border border-rose-400' : ''"
                 >
                   <label
-                    class="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-(--color-muted) mb-1.5"
+                    class="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-(--color-muted) mb-1"
                   >
                     <CalendarIcon class="w-3 h-3 text-sky-400" />
-                    Check-Out
+                    Check-Out <span class="text-rose-500">*</span>
                   </label>
                   <input
                     v-model="checkOutDate"
@@ -342,14 +280,21 @@ const handleSubmit = async (formData) => {
                 </div>
               </div>
 
+              <p v-if="dateErrors.checkIn" class="text-xs text-rose-500 font-medium -mt-2">
+                {{ dateErrors.checkIn }}
+              </p>
+              <p v-if="dateErrors.checkOut" class="text-xs text-rose-500 font-medium -mt-2">
+                {{ dateErrors.checkOut }}
+              </p>
+
               <div
-                class="flex items-center justify-between p-4 bg-gradient-to-r from-(--color-primary-soft)/30 to-sky-500/5 rounded-2xl border border-(--color-primary-soft)/40"
+                class="flex items-center justify-between p-3 bg-gradient-to-r from-(--color-primary-soft)/30 to-sky-500/5 rounded-2xl border border-(--color-primary-soft)/40"
               >
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2.5">
                   <div
-                    class="w-9 h-9 rounded-xl bg-(--color-surface) shadow-xs flex items-center justify-center text-sm"
+                    class="w-8 h-8 rounded-xl bg-(--color-surface) shadow-xs flex items-center justify-center"
                   >
-                    🌙
+                    <MoonIcon class="w-4 h-4 text-(--color-primary)" />
                   </div>
                   <div>
                     <p
@@ -377,16 +322,16 @@ const handleSubmit = async (formData) => {
                 </div>
               </div>
 
-              <div class="space-y-3 pt-2">
+              <div class="space-y-2 pt-1">
                 <p
-                  class="text-[10px] font-black uppercase tracking-widest text-(--color-muted) border-b border-(--color-border)/40 pb-2"
+                  class="text-[10px] font-black uppercase tracking-widest text-(--color-muted) border-b border-(--color-border)/40 pb-1.5"
                 >
-                  Cost Statement
+                  Price Details
                 </p>
 
                 <div class="flex justify-between text-sm">
                   <span class="text-(--color-muted) font-medium"
-                    >Room Base Stay ({{ stayNights }} nights)</span
+                    >Room rate ({{ stayNights }} nights)</span
                   >
                   <span class="font-bold text-(--color-text)"
                     >${{ roomCost }}</span
@@ -394,37 +339,14 @@ const handleSubmit = async (formData) => {
                 </div>
 
                 <div
-                  v-for="addonId in form.selectedAddons"
-                  :key="addonId"
-                  class="flex justify-between text-sm animate-fadeIn"
+                  class="flex justify-between items-baseline pt-2.5 border-t border-(--color-border) mt-2.5"
                 >
                   <span
-                    class="text-(--color-muted) flex items-center gap-1.5 font-medium"
+                    class="font-black text-base text-(--color-text) tracking-tight"
+                    >Total Amount</span
                   >
-                    <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
-                    {{ getAddonName(addonId) }}
-                  </span>
-                  <span class="font-bold text-sky-500"
-                    >+${{ getAddonPrice(addonId) }}</span
-                  >
-                </div>
-
-                <div
-                  class="flex justify-between items-baseline pt-4 border-t border-(--color-border) mt-4"
-                >
-                  <div>
-                    <span
-                      class="font-black text-base text-(--color-text) tracking-tight"
-                      >Total Amount</span
-                    >
-                    <p
-                      class="text-[10px] text-(--color-muted) font-medium mt-0.5"
-                    >
-                      Includes local service levies
-                    </p>
-                  </div>
                   <span
-                    class="text-3xl font-black tracking-tight bg-gradient-to-r from-(--color-primary) to-sky-500 bg-clip-text text-transparent"
+                    class="text-2xl font-black tracking-tight bg-gradient-to-r from-(--color-primary) to-sky-500 bg-clip-text text-transparent"
                   >
                     ${{ calculatedTotal }}
                   </span>
@@ -432,9 +354,9 @@ const handleSubmit = async (formData) => {
               </div>
 
               <div
-                class="flex items-start gap-3 bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/10 rounded-2xl p-3.5 transition-colors duration-200"
+                class="flex items-start gap-2.5 bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/10 rounded-2xl p-3 transition-colors duration-200"
               >
-                <span class="text-emerald-500 text-sm mt-0.5">✓</span>
+                <CheckCircleIcon class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                 <div class="text-xs">
                   <p class="font-bold text-emerald-600 dark:text-emerald-400">
                     Flexible Cancellation Protect
@@ -452,34 +374,3 @@ const handleSubmit = async (formData) => {
     </div>
   </div>
 </template>
-
-<style scoped>
-/* High performance opacity and transform pipelines for dynamic additions */
-.animate-fadeIn {
-  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.slide-fade-enter-from {
-  opacity: 0;
-  transform: translateX(12px);
-}
-.slide-fade-leave-to {
-  opacity: 0;
-  transform: translateX(-12px);
-}
-</style>

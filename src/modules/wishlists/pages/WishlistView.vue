@@ -7,8 +7,11 @@ import WishlistCard from "../components/WishlistCard.vue";
 import EmptyState from "@/shared/components/EmptyState.vue";
 import AppButton from "@/shared/components/AppButton.vue";
 import { HeartIcon, MapIcon, ListBulletIcon, XMarkIcon } from "@heroicons/vue/24/outline";
+import { StarIcon as StarIconSolid } from "@heroicons/vue/24/solid";
 import PublicNavbar from "@/shared/components/PublicNavbar.vue";
 import PublicFooter from "@/shared/components/PublicFooter.vue";
+import { resolveAssetUrl } from "@/shared/utils/assetUrl";
+import placeholer from "@/assets/images/properties/placeholder.png";
 
 const router = useRouter();
 const wishlistStore = useWishlistStore();
@@ -104,7 +107,7 @@ const initWishlistMap = () => {
           <span class="font-black text-sm text-(--color-text)">$${item.price_per_night ?? 0}</span>
           <span class="text-[10px] text-(--color-muted)">/ night</span>
         </div>
-        <a href="/properties/${item.property_id}" class="mt-3 block text-center bg-[#1268b4] text-white font-bold text-xs py-1.5 rounded-lg shadow-sm hover:opacity-90 transition-opacity">View Details</a>
+        <a href="/properties/${item.property_id}" class="mt-3 block text-center bg-(--color-primary) text-white font-bold text-xs py-1.5 rounded-lg shadow-sm hover:opacity-90 transition-opacity">View Details</a>
       </div>
     `;
     marker.bindPopup(popupHtml, {
@@ -161,7 +164,7 @@ watch(hoveredPropertyId, (newId, oldId) => {
     const { marker, lat, lng, priceText } = markersMap[newId];
     const activeIcon = window.L.divIcon({
       className: "custom-price-pin-active",
-      html: `<div class="bg-[#FF385C] text-white border border-white text-[11px] font-black px-3 py-1.5 rounded-full shadow-lg scale-115 transition-all duration-150 flex items-center justify-center whitespace-nowrap">${priceText}</div>`,
+      html: `<div class="bg-(--color-wishlist) text-white border border-white text-[11px] font-black px-3 py-1.5 rounded-full shadow-lg scale-115 transition-all duration-150 flex items-center justify-center whitespace-nowrap">${priceText}</div>`,
       iconSize: [50, 28],
       iconAnchor: [25, 14]
     });
@@ -281,8 +284,7 @@ const goToSearch = () => {
       <button
         type="button"
         @click="toggleMap"
-        class="flex items-center gap-2 px-6 py-3 rounded-sm bg-gray-900 text-white dark:bg-white dark:text-gray-900 shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 font-bold text-sm border border-white/20 dark:border-black/20"
-        style="border-radius: var(--radius-sm);"
+        class="flex items-center gap-2 px-6 py-3 rounded-full bg-gray-900 text-white dark:bg-white dark:text-gray-900 shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 font-bold text-sm border border-white/20 dark:border-black/20"
       >
         <span v-if="showMap">Show list</span>
         <span v-else>Show map</span>
@@ -295,34 +297,34 @@ const goToSearch = () => {
     <div v-if="showMap" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 sm:p-6 transition-all duration-300" @click.self="toggleMap">
       <div class="flex max-h-[90vh] h-full w-full max-w-7xl overflow-hidden rounded-sm bg-(--color-page) text-(--color-text) shadow-2xl border border-(--color-border) animate-scaleUp flex-col lg:flex-row" style="border-radius: var(--radius-sm);">
         <!-- Left Property Side Panel -->
-        <div class="w-full lg:w-96 h-1/3 lg:h-full overflow-y-auto p-4 border-b lg:border-b-0 lg:border-r border-(--color-border) flex flex-col gap-4 bg-[#111111] dark:bg-[#111111]">
-          <div class="flex items-center justify-between border-b pb-3 border-white/10">
-            <h3 class="text-lg font-black text-white">Properties on Map</h3>
-            <button type="button" class="p-1.5 rounded-sm hover:bg-white/10 transition active:scale-95" style="border-radius: var(--radius-sm);" @click="toggleMap">
-              <XMarkIcon class="h-6 w-6 text-white" />
+        <div class="w-full lg:w-96 h-1/3 lg:h-full overflow-y-auto p-4 border-b lg:border-b-0 lg:border-r border-(--color-border) flex flex-col gap-4 bg-(--color-surface)">
+          <div class="flex items-center justify-between border-b pb-3 border-(--color-border)">
+            <h3 class="text-lg font-black text-(--color-text)">Properties on Map</h3>
+            <button type="button" class="p-1.5 rounded-sm hover:bg-gray-100 dark:hover:bg-neutral-800 transition active:scale-95" style="border-radius: var(--radius-sm);" @click="toggleMap">
+              <XMarkIcon class="h-6 w-6 text-(--color-text)" />
             </button>
           </div>
           <div class="space-y-3 overflow-y-auto pr-1 pb-16">
             <div
               v-for="item in items"
               :key="item.id"
-              class="flex gap-3 p-2.5 rounded-sm border border-white/5 bg-black/50 hover:bg-white/5 transition cursor-pointer"
+              class="flex gap-3 p-2.5 rounded-sm border border-(--color-border) bg-(--color-page) hover:shadow-md transition cursor-pointer"
               style="border-radius: var(--radius-sm);"
               :class="hoveredPropertyId === item.property_id ? 'border-(--color-primary) ring-1 ring-(--color-primary)' : ''"
               @mouseenter="hoveredPropertyId = item.property_id"
               @mouseleave="hoveredPropertyId = null"
-              @click="goToProperty(item)"
+              @click="goToProperty(item.property_id)"
             >
-              <img :src="item.cover_image ? (item.cover_image.startsWith('http') ? item.cover_image : 'http://localhost:3000' + item.cover_image) : 'https://placehold.co/400x300?text=No+Image'" class="h-20 w-20 object-cover rounded-sm shrink-0" style="border-radius: var(--radius-sm);" alt="thumb" />
+              <img :src="item.cover_image ? resolveAssetUrl(item.cover_image) : placeholer" class="h-20 w-20 object-cover rounded-sm shrink-0" style="border-radius: var(--radius-sm);" :alt="item.property_name || 'Property'" @error="(e) => (e.target.src = placeholer)" />
               <div class="flex flex-col justify-between min-w-0 flex-1">
                 <div>
-                  <h4 class="text-xs font-bold text-white truncate">{{ item.property_name || 'Property' }}</h4>
-                  <p class="text-[11px] font-medium text-gray-400 truncate">{{ item.city || item.province || 'Cambodia' }}</p>
+                  <h4 class="text-xs font-bold text-(--color-text) truncate">{{ item.property_name || 'Property' }}</h4>
+                  <p class="text-[11px] font-medium text-(--color-muted) truncate">{{ item.city || item.province || 'Cambodia' }}</p>
                 </div>
                 <div class="flex items-center justify-between mt-1">
-                  <span class="text-xs font-bold text-white">${{ item.price_per_night ?? 0 }}/night</span>
+                  <span class="text-xs font-bold text-(--color-text)">${{ item.price_per_night ?? 0 }}/night</span>
                   <span class="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-(--color-primary) px-1.5 py-0.5 rounded-sm" style="border-radius: var(--radius-sm);">
-                    ★ New
+                    <StarIconSolid class="h-2.5 w-2.5" /> New
                   </span>
                 </div>
               </div>
@@ -340,3 +342,15 @@ const goToSearch = () => {
     <PublicFooter v-if="!showMap || items.length === 0" />
   </div>
 </template>
+
+<style>
+/* Leaflet injects popup markup outside Vue's render tree (scoped styles can't
+   reach it), and its default popup chrome is hardcoded white — invisible
+   against the light-on-dark text colors this app uses in dark mode. */
+.wishlist-popup-panel .leaflet-popup-content-wrapper,
+.wishlist-popup-panel .leaflet-popup-tip {
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-panel);
+}
+</style>

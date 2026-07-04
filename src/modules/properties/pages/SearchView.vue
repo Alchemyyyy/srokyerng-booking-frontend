@@ -148,12 +148,19 @@ const filters = ref({
   city: initialCityQuery,
   type: route.query.type || "all",
   province: "all",
-  maxPrice: 220,
+  // Match PropertyFilter's slider bounds (minLimit/maxLimit) so the default
+  // view shows every approved listing instead of silently hiding anything
+  // priced outside an arbitrary starting range.
+  minPrice: 10,
+  maxPrice: 500,
   minRating: 0,
   checkIn: route.query.checkIn || "",
   checkOut: route.query.checkOut || "",
   guests: route.query.guests || 1,
+  amenities: [],
 });
+
+const showMobileFilters = ref(false);
 
 // ── Filter options ────────────────────────────────────────────────────────────
 const dynamicCities = ref([]);
@@ -187,8 +194,10 @@ const activeFilterCount = computed(() => {
   if (filters.value.query.trim()) count++;
   if (filters.value.city !== "all") count++;
   if (filters.value.type !== "all") count++;
-  if (filters.value.maxPrice < 220) count++;
+  if (filters.value.minPrice > 10) count++;
+  if (filters.value.maxPrice < 500) count++;
   if (filters.value.minRating > 0) count++;
+  if (filters.value.amenities.length > 0) count++;
   return count;
 });
 
@@ -208,9 +217,12 @@ const filteredProperties = computed(() => {
     const matchesCity =
       filters.value.city === "all" || property.city === filters.value.city;
     const matchesType =
-      filters.value.type === "all" || property.type === filters.value.type;
-    const matchesPrice = property.price <= filters.value.maxPrice;
+      filters.value.type === "all" || property.category_name?.toLowerCase() === filters.value.type;
+    const matchesPrice = property.price >= filters.value.minPrice && property.price <= filters.value.maxPrice;
     const matchesRating = property.rating >= filters.value.minRating;
+    
+    // Note: Amenities filtering requires backend support in the getAllApproved query to be fully functional locally.
+    
     return (
       matchesQuery &&
       matchesCity &&
@@ -250,11 +262,13 @@ const resetFilters = () => {
     city: "all",
     type: "all",
     province: "all",
-    maxPrice: 220,
+    minPrice: 10,
+    maxPrice: 500,
     minRating: 0,
     checkIn: "",
     checkOut: "",
     guests: 1,
+    amenities: [],
   };
 };
 
@@ -390,7 +404,7 @@ watch(hoveredPropertyId, (newId, oldId) => {
     const { marker, lat, lng, priceText } = markersMap[newId];
     const activeIcon = window.L.divIcon({
       className: "custom-map-pin-active",
-      html: `<button type="button" class="flex items-center gap-1 rounded-sm px-3 py-1.5 text-xs font-black shadow-2xl border bg-[#FF385C] text-white border-white scale-110 transition-all duration-150 select-none cursor-pointer" style="border-radius: var(--radius-sm); white-space: nowrap;">${priceText}</button>`,
+      html: `<button type="button" class="flex items-center gap-1 rounded-sm px-3 py-1.5 text-xs font-black shadow-2xl border bg-(--color-wishlist) text-white border-white scale-110 transition-all duration-150 select-none cursor-pointer" style="border-radius: var(--radius-sm); white-space: nowrap;">${priceText}</button>`,
       iconSize: [66, 30],
       iconAnchor: [33, 15]
     });
@@ -522,8 +536,8 @@ onBeforeUnmount(() => {
     <!-- ── Main Content Layout (Sidebar + Grid) ── -->
     <section class="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       <div class="grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] gap-8">
-        <!-- Left Sidebar: Compact Filters -->
-        <aside class="space-y-6 lg:sticky lg:top-28 lg:self-start">
+        <!-- Left Sidebar: Compact Filters (Desktop Only) -->
+        <aside class="hidden lg:block space-y-6 lg:sticky lg:top-28 lg:self-start">
           <PropertyFilter
             v-model="filters"
             :activeFilterCount="activeFilterCount"
@@ -533,6 +547,21 @@ onBeforeUnmount(() => {
             @reset="resetFilters"
           />
         </aside>
+
+        <!-- Mobile Filter Drawer (Slide-up) -->
+        <div v-if="showMobileFilters" class="fixed inset-0 z-50 flex lg:hidden bg-black/60 backdrop-blur-sm transition-opacity" @click.self="showMobileFilters = false">
+          <div class="absolute inset-x-0 bottom-0 top-16 bg-(--color-page) rounded-t-3xl overflow-hidden shadow-2xl flex flex-col animate-slideUp">
+            <PropertyFilter
+              v-model="filters"
+              :activeFilterCount="activeFilterCount"
+              :cityOptions="cityOptions"
+              :minimumRatings="minimumRatings"
+              :propertyCountByCity="propertyCountByCity"
+              @reset="resetFilters"
+              @close="showMobileFilters = false"
+            />
+          </div>
+        </div>
 
         <!-- Right: Sort Bar + Properties Grid -->
         <section class="min-w-0 space-y-6">
@@ -653,7 +682,7 @@ onBeforeUnmount(() => {
 
                   <!-- Specifications -->
                   <p class="text-xs font-semibold text-(--color-muted) mt-0.5 capitalize truncate">
-                    {{ property.type || 'Stay' }} • Free cancellation
+                    {{ property.category_name || property.type || 'Stay' }} • Free cancellation
                   </p>
                 </div>
 
@@ -677,12 +706,23 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
-    <!-- ── Floating "Show Map" Action Button (Fixed Bottom Center) ── -->
-    <div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 pointer-events-auto">
+    <!-- ── Floating Action Buttons (Fixed Bottom Center) ── -->
+    <div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-40 pointer-events-auto flex items-center gap-2">
+      <!-- Mobile Filters Button -->
+      <button
+        v-if="!showMobileFilters"
+        type="button"
+        class="lg:hidden flex items-center gap-2 px-6 py-3 rounded-full bg-gray-900 text-white dark:bg-white dark:text-gray-900 shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 font-bold text-sm border border-white/20 dark:border-black/20"
+        @click="showMobileFilters = true"
+      >
+        <span>{{ safeT("propertiesPage.filters.title", "Filters") }}</span>
+        <AdjustmentsHorizontalIcon class="h-5 w-5" />
+      </button>
+
+      <!-- Show Map Button -->
       <button
         type="button"
-        class="flex items-center gap-2 px-6 py-3 rounded-sm bg-gray-900 text-white dark:bg-white dark:text-gray-900 shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 font-bold text-sm border border-white/20 dark:border-black/20"
-        style="border-radius: var(--radius-sm);"
+        class="flex items-center gap-2 px-6 py-3 rounded-full bg-gray-900 text-white dark:bg-white dark:text-gray-900 shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 font-bold text-sm border border-white/20 dark:border-black/20"
         @click="showMapModal = true"
       >
         <span>{{ safeT("propertiesPage.showMap", "Show Map") }}</span>
@@ -721,7 +761,7 @@ onBeforeUnmount(() => {
                 <div class="flex items-center justify-between mt-1">
                   <span class="text-xs font-bold text-(--color-text)">{{ formatPrice(property.price) }}/{{ safeT("propertiesPage.night", "night") }}</span>
                   <span class="inline-flex items-center gap-1 text-xs font-bold text-white bg-(--color-primary) px-1.5 py-0.5 rounded-sm" style="border-radius: var(--radius-sm);">
-                    ★ {{ property.rating > 0 ? Number(property.rating).toFixed(1) : safeT("propertiesPage.new", "New") }}
+                    <StarIconSolid class="h-3 w-3" /> {{ property.rating > 0 ? Number(property.rating).toFixed(1) : safeT("propertiesPage.new", "New") }}
                   </span>
                 </div>
               </div>

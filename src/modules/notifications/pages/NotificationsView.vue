@@ -289,9 +289,12 @@ onMounted(async () => {
 
 <template>
   <div class="min-h-screen bg-(--color-page) text-(--color-text) flex flex-col font-sans">
-    <PublicNavbar />
+    <PublicNavbar v-if="authStore.user?.role !== 'owner' && authStore.user?.role !== 'admin'" />
 
-    <main class="flex-1 min-h-screen pt-32 pb-12 px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto w-full flex flex-col">
+    <main 
+      class="flex-1 min-h-screen pb-12 px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto w-full flex flex-col"
+      :class="[authStore.user?.role !== 'owner' && authStore.user?.role !== 'admin' ? 'pt-32' : 'pt-8']"
+    >
       <div class="max-w-3xl w-full mx-auto flex-1 flex flex-col">
         <!-- Page Header Row -->
         <div class="mb-6 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4">
@@ -430,7 +433,7 @@ onMounted(async () => {
         </div>
       </div>
     </main>
-    <PublicFooter />
+    <PublicFooter v-if="authStore.user?.role !== 'owner' && authStore.user?.role !== 'admin'" />
 
     <!-- Notification Detail Modal -->
     <Teleport to="body">

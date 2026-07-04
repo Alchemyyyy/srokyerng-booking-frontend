@@ -42,7 +42,7 @@
 
     <div
       v-else-if="propertiesError"
-      class="rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-600"
+      class="rounded-xl border border-(--color-danger) bg-(--color-danger-soft) px-4 py-3 text-sm text-(--color-danger)"
     >
       {{ propertiesError }}
       <button class="ml-2 underline font-bold" @click="fetchOwnerProperties">

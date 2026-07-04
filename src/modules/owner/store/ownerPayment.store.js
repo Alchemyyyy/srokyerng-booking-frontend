@@ -2,12 +2,10 @@
 import { defineStore } from "pinia";
 import { ref, computed, watch } from "vue";
 import { ownerPaymentApi } from "@/modules/payments/api/ownerPayment.api";
-import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useToastStore } from "@/shared/store/toastStore";
 import { reservationApi } from "@/modules/reservations/api/reservation.api";
 
 export const useOwnerPaymentStore = defineStore("owner-guest-payments", () => {
-    const authStore = useAuthStore();
     const toastStore = useToastStore();
 
     // Core States
@@ -126,7 +124,6 @@ export const useOwnerPaymentStore = defineStore("owner-guest-payments", () => {
         loading.value = true;
         error.value = "";
         try {
-            await authStore.refreshSession();
             const [paymentsRes, refundsRes] = await Promise.all([
                 ownerPaymentApi.listOwnerPayments(),
                 ownerPaymentApi.listRefundRequests()

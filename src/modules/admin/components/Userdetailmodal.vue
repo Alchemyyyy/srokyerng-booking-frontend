@@ -1,7 +1,6 @@
 <script setup>
 import { computed } from "vue";
 import {
-    XMarkIcon,
     EnvelopeIcon,
     PhoneIcon,
     MapPinIcon,
@@ -12,6 +11,7 @@ import {
     CheckBadgeIcon,
 } from "@heroicons/vue/24/outline";
 import { formatDate } from "../utils/formatters.js";
+import AppModal from "@/shared/components/AppModal.vue";
 
 const props = defineProps({
     user: { type: Object, default: null },
@@ -64,203 +64,126 @@ const ACTION_META = {
 </script>
 
 <template>
-    <Teleport to="body">
-        <Transition name="modal-fade">
-            <div v-if="open && user" class="modal-overlay" @click.self="emit('close')">
-                <div class="modal-box">
-                    <!-- Header -->
-                    <div class="modal-header">
-                        <h2 class="modal-title">User Profile</h2>
-                        <button class="close-btn" @click="emit('close')">
-                            <XMarkIcon class="w-5 h-5" />
-                        </button>
-                    </div>
+    <AppModal v-if="user" :open="open" title="User Profile" panel-class="max-w-xl" @close="emit('close')">
+        <!-- Avatar + identity -->
+        <div class="identity-section">
+            <div class="avatar-wrap">
+                <img v-if="profileImageUrl" :src="profileImageUrl" :alt="user.full_name" class="avatar-img"
+                    @error="(e) => (e.target.style.display = 'none')" />
+                <span v-else class="avatar-letter">{{ avatarLetter }}</span>
+            </div>
 
-                    <!-- Avatar + identity -->
-                    <div class="identity-section">
-                        <div class="avatar-wrap">
-                            <img v-if="profileImageUrl" :src="profileImageUrl" :alt="user.full_name" class="avatar-img"
-                                @error="(e) => (e.target.style.display = 'none')" />
-                            <span v-else class="avatar-letter">{{ avatarLetter }}</span>
-                        </div>
+            <div class="identity-info">
+                <h3 class="user-name">{{ user.full_name }}</h3>
+                <div class="badges-row">
+                    <span class="role-badge" :class="roleClass(user.role)">
+                        {{ user.role }}
+                    </span>
+                    <span class="status-badge" :class="statusClass(user.status)">
+                        {{ user.status }}
+                    </span>
+                </div>
+                <p class="user-id">ID #{{ user.id }}</p>
+            </div>
+        </div>
 
-                        <div class="identity-info">
-                            <h3 class="user-name">{{ user.full_name }}</h3>
-                            <div class="badges-row">
-                                <span class="role-badge" :class="roleClass(user.role)">
-                                    {{ user.role }}
-                                </span>
-                                <span class="status-badge" :class="statusClass(user.status)">
-                                    {{ user.status }}
-                                </span>
-                            </div>
-                            <p class="user-id">ID #{{ user.id }}</p>
-                        </div>
-                    </div>
+        <!-- Detail fields -->
+        <div class="detail-grid">
+            <!-- Email -->
+            <div class="detail-item">
+                <EnvelopeIcon class="detail-icon" />
+                <div>
+                    <p class="detail-label">Email</p>
+                    <p class="detail-value">{{ user.email }}</p>
+                </div>
+                <span v-if="user.email_verified_at" class="verified-badge" title="Email verified">
+                    <CheckBadgeIcon class="w-4 h-4" />
+                    Verified
+                </span>
+            </div>
 
-                    <!-- Detail fields -->
-                    <div class="detail-grid">
-                        <!-- Email -->
-                        <div class="detail-item">
-                            <EnvelopeIcon class="detail-icon" />
-                            <div>
-                                <p class="detail-label">Email</p>
-                                <p class="detail-value">{{ user.email }}</p>
-                            </div>
-                            <span v-if="user.email_verified_at" class="verified-badge" title="Email verified">
-                                <CheckBadgeIcon class="w-4 h-4" />
-                                Verified
-                            </span>
-                        </div>
-
-                        <!-- Phone -->
-                        <div class="detail-item">
-                            <PhoneIcon class="detail-icon" />
-                            <div>
-                                <p class="detail-label">Phone</p>
-                                <p class="detail-value">{{ user.phone || "—" }}</p>
-                            </div>
-                        </div>
-
-                        <!-- Gender -->
-                        <div class="detail-item">
-                            <UserCircleIcon class="detail-icon" />
-                            <div>
-                                <p class="detail-label">Gender</p>
-                                <p class="detail-value">
-                                    {{ user.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : "—" }}
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- Date of birth -->
-                        <div class="detail-item">
-                            <CalendarDaysIcon class="detail-icon" />
-                            <div>
-                                <p class="detail-label">Date of Birth</p>
-                                <p class="detail-value">
-                                    {{ user.date_of_birth ? formatDate(user.date_of_birth) : "—" }}
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- Address -->
-                        <div class="detail-item detail-item--full">
-                            <MapPinIcon class="detail-icon" />
-                            <div>
-                                <p class="detail-label">Address</p>
-                                <p class="detail-value">{{ user.address || "—" }}</p>
-                            </div>
-                        </div>
-
-                        <!-- Last login -->
-                        <div class="detail-item">
-                            <ClockIcon class="detail-icon" />
-                            <div>
-                                <p class="detail-label">Last Login</p>
-                                <p class="detail-value">
-                                    {{ user.last_login ? formatDate(user.last_login) : "Never" }}
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- Joined -->
-                        <div class="detail-item">
-                            <ShieldCheckIcon class="detail-icon" />
-                            <div>
-                                <p class="detail-label">Joined</p>
-                                <p class="detail-value">{{ formatDate(user.created_at) }}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Actions footer -->
-                    <div class="modal-footer">
-                        <button class="btn-cancel" @click="emit('close')">Close</button>
-                        <div class="action-group">
-                            <button v-for="action in availableActions" :key="action" class="action-btn"
-                                :class="ACTION_META[action].color" :disabled="processing"
-                                @click="emit('action', { user, action })">
-                                {{ ACTION_META[action].label }}
-                            </button>
-                        </div>
-                    </div>
+            <!-- Phone -->
+            <div class="detail-item">
+                <PhoneIcon class="detail-icon" />
+                <div>
+                    <p class="detail-label">Phone</p>
+                    <p class="detail-value">{{ user.phone || "—" }}</p>
                 </div>
             </div>
-        </Transition>
-    </Teleport>
+
+            <!-- Gender -->
+            <div class="detail-item">
+                <UserCircleIcon class="detail-icon" />
+                <div>
+                    <p class="detail-label">Gender</p>
+                    <p class="detail-value">
+                        {{ user.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : "—" }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Date of birth -->
+            <div class="detail-item">
+                <CalendarDaysIcon class="detail-icon" />
+                <div>
+                    <p class="detail-label">Date of Birth</p>
+                    <p class="detail-value">
+                        {{ user.date_of_birth ? formatDate(user.date_of_birth) : "—" }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Address -->
+            <div class="detail-item detail-item--full">
+                <MapPinIcon class="detail-icon" />
+                <div>
+                    <p class="detail-label">Address</p>
+                    <p class="detail-value">{{ user.address || "—" }}</p>
+                </div>
+            </div>
+
+            <!-- Last login -->
+            <div class="detail-item">
+                <ClockIcon class="detail-icon" />
+                <div>
+                    <p class="detail-label">Last Login</p>
+                    <p class="detail-value">
+                        {{ user.last_login ? formatDate(user.last_login) : "Never" }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Joined -->
+            <div class="detail-item">
+                <ShieldCheckIcon class="detail-icon" />
+                <div>
+                    <p class="detail-label">Joined</p>
+                    <p class="detail-value">{{ formatDate(user.created_at) }}</p>
+                </div>
+            </div>
+        </div>
+
+        <template #footer>
+            <button class="btn-cancel" @click="emit('close')">Close</button>
+            <div class="action-group">
+                <button v-for="action in availableActions" :key="action" class="action-btn"
+                    :class="ACTION_META[action].color" :disabled="processing"
+                    @click="emit('action', { user, action })">
+                    {{ ACTION_META[action].label }}
+                </button>
+            </div>
+        </template>
+    </AppModal>
 </template>
 
 <style scoped>
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 60;
-    background: rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(6px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-}
-
-.modal-box {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 24px;
-    /* width: 100%; */
-    width: auto;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.18);
-    display: flex;
-    flex-direction: column;
-}
-
-/* Header */
-.modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid var(--color-border);
-    flex-shrink: 0;
-}
-
-.modal-title {
-    font-size: 1rem;
-    font-weight: 800;
-    color: var(--color-text);
-    margin: 0;
-    letter-spacing: -0.01em;
-}
-
-.close-btn {
-    width: 2rem;
-    height: 2rem;
-    border-radius: 10px;
-    border: 1px solid var(--color-border);
-    background: var(--color-surface-soft);
-    color: var(--color-muted);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.15s;
-    flex-shrink: 0;
-}
-
-.close-btn:hover {
-    background: var(--color-border);
-    color: var(--color-text);
-}
-
 /* Identity section */
 .identity-section {
     display: flex;
     align-items: center;
     gap: 1.25rem;
-    padding: 1.5rem;
+    padding-bottom: 1.25rem;
+    margin-bottom: 0.5rem;
     border-bottom: 1px solid var(--color-border);
 }
 
@@ -300,7 +223,6 @@ const ACTION_META = {
     font-weight: 800;
     color: var(--color-text);
     margin: 0 0 0.4rem;
-    truncate: true;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -324,14 +246,13 @@ const ACTION_META = {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0;
-    padding: 0.5rem 0;
 }
 
 .detail-item {
     display: flex;
     align-items: flex-start;
     gap: 0.75rem;
-    padding: 0.85rem 1.5rem;
+    padding: 0.85rem 0;
     border-bottom: 1px solid var(--color-border);
     position: relative;
 }
@@ -341,7 +262,12 @@ const ACTION_META = {
 }
 
 .detail-item:nth-child(odd):not(.detail-item--full) {
+    padding-right: 1.5rem;
     border-right: 1px solid var(--color-border);
+}
+
+.detail-item:nth-child(even) {
+    padding-left: 1.5rem;
 }
 
 .detail-icon {
@@ -379,23 +305,12 @@ const ACTION_META = {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    background: rgba(29, 158, 117, 0.1);
-    color: #1d9e75;
-    border: 1px solid rgba(29, 158, 117, 0.25);
+    background: var(--color-success-soft);
+    color: var(--color-success);
+    border: 1px solid var(--color-success);
     margin-left: auto;
     white-space: nowrap;
     align-self: center;
-}
-
-/* Footer */
-.modal-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.25rem 1.5rem;
-    border-top: 1px solid var(--color-border);
-    gap: 0.75rem;
-    flex-shrink: 0;
 }
 
 .action-group {
@@ -449,21 +364,21 @@ const ACTION_META = {
 }
 
 .badge-active {
-    background: rgba(29, 158, 117, 0.1);
-    color: #1d9e75;
-    border-color: rgba(29, 158, 117, 0.25);
+    background: var(--color-success-soft);
+    color: var(--color-success);
+    border-color: var(--color-success);
 }
 
 .badge-suspended {
-    background: rgba(239, 159, 39, 0.1);
-    color: #c97c0a;
-    border-color: rgba(239, 159, 39, 0.25);
+    background: var(--color-warning-soft);
+    color: var(--color-warning);
+    border-color: var(--color-warning);
 }
 
 .badge-banned {
-    background: rgba(220, 53, 69, 0.1);
-    color: var(--color-danger, #dc3545);
-    border-color: rgba(220, 53, 69, 0.25);
+    background: var(--color-danger-soft);
+    color: var(--color-danger);
+    border-color: var(--color-danger);
 }
 
 .badge-default {
@@ -478,15 +393,15 @@ const ACTION_META = {
 }
 
 .role-owner {
-    background: rgba(55, 138, 221, 0.1);
+    background: var(--color-primary-soft);
     color: var(--color-primary);
-    border-color: rgba(55, 138, 221, 0.25);
+    border-color: var(--color-primary);
 }
 
 .role-customer {
-    background: rgba(29, 158, 117, 0.1);
-    color: #1d9e75;
-    border-color: rgba(29, 158, 117, 0.2);
+    background: var(--color-success-soft);
+    color: var(--color-success);
+    border-color: var(--color-success);
 }
 
 .role-default {
@@ -495,35 +410,24 @@ const ACTION_META = {
 }
 
 .btn-approve {
-    background: rgba(29, 158, 117, 0.1);
-    color: #1d9e75;
-    border-color: rgba(29, 158, 117, 0.3);
+    background: var(--color-success-soft);
+    color: var(--color-success);
+    border-color: var(--color-success);
 }
 
 .btn-approve:hover:not(:disabled) {
-    background: #1d9e75;
+    background: var(--color-success);
     color: white;
 }
 
 .btn-suspend {
-    background: rgba(239, 159, 39, 0.1);
-    color: #c97c0a;
-    border-color: rgba(239, 159, 39, 0.3);
+    background: var(--color-warning-soft);
+    color: var(--color-warning);
+    border-color: var(--color-warning);
 }
 
 .btn-suspend:hover:not(:disabled) {
-    background: #c97c0a;
+    background: var(--color-warning);
     color: white;
-}
-
-/* Transition */
-.modal-fade-enter-active,
-.modal-fade-leave-active {
-    transition: opacity 0.2s ease;
-}
-
-.modal-fade-enter-from,
-.modal-fade-leave-to {
-    opacity: 0;
 }
 </style>

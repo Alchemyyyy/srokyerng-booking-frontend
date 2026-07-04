@@ -47,9 +47,10 @@
 
       <!-- CATALOGUE -->
       <template v-if="viewMode === 'catalogue'">
-        <div v-if="loading">
-          {{ $t("amenityManagement.catalogue.loading") }}
-        </div>
+        <OwnerLoadingState
+          v-if="loading"
+          :label="$t('amenityManagement.catalogue.loading')"
+        />
         <template v-else>
           <AmenitySelector :amenities="amenities" v-model="selectedAmenities" />
         </template>
@@ -61,7 +62,10 @@
           <p class="myprops-subtitle">
             {{ $t("amenityManagement.myProperties.subtitle") }}
           </p>
-          <button class="btn-all-props">
+          <button
+            class="btn-all-props"
+            @click="router.push({ name: 'owner.properties' })"
+          >
             <svg
               width="16"
               height="16"
@@ -79,9 +83,10 @@
           </button>
         </div>
 
-        <div v-if="loadingProperties" class="loading-text">
-          {{ $t("amenityManagement.myProperties.loading") }}
-        </div>
+        <OwnerLoadingState
+          v-if="loadingProperties"
+          :label="$t('amenityManagement.myProperties.loading')"
+        />
 
         <div v-else-if="myProperties.length === 0" class="empty-state">
           <HomeIcon class="empty-icon" />
@@ -89,7 +94,7 @@
           <p>{{ $t("amenityManagement.myProperties.empty.description") }}</p>
           <button
             class="btn-primary"
-            @click="$router.push('/owner/properties/create')"
+            @click="router.push({ name: 'owner.properties' })"
           >
             {{ $t("amenityManagement.myProperties.empty.button") }}
           </button>
@@ -161,7 +166,7 @@
                     height="14"
                     viewBox="0 0 24 24"
                     fill="none"
-                    stroke="#22c55e"
+                    stroke="var(--color-success)"
                     stroke-width="2.5"
                     style="
                       display: inline;
@@ -313,13 +318,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
-import axios from "axios";
 import AmenitySelector from "../components/AmenitySelector.vue";
+import OwnerLoadingState from "@/modules/owner/components/OwnerLoadingState.vue";
 import { useSidebar } from "@/shared/composables/useSidebar";
 import { HomeIcon, XMarkIcon } from "@heroicons/vue/24/outline";
+import http from "@/app/api/http";
 
 import {
   getAllAmenities,
@@ -350,8 +356,12 @@ const loadingProperties = ref(false);
 const { isSidebarOpen } = useSidebar();
 
 const isMobile = ref(window.innerWidth < 768);
-window.addEventListener("resize", () => {
+const handleResize = () => {
   isMobile.value = window.innerWidth < 768;
+};
+window.addEventListener("resize", handleResize);
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", handleResize);
 });
 
 const editModal = ref({
@@ -415,13 +425,9 @@ const onImageSelected = async (event, property) => {
     formData.append("image", file);
     formData.append("_method", "PATCH");
 
-    const response = await axios.post(
-      `/api/properties/${property.id}`,
-      formData,
-      { headers: { "Content-Type": "multipart/form-data" } },
-    );
+    const response = await http.post(`/properties/${property.id}`, formData);
 
-    const savedUrl = response.data?.image || response.data?.data?.image;
+    const savedUrl = response?.image || response?.data?.image;
     if (savedUrl) property.image = savedUrl;
   } catch (err) {
     console.error("Image upload failed:", err);
@@ -618,14 +624,10 @@ const fetchMyProperties = async () => {
         try {
           const [amenities, imagesRes] = await Promise.all([
             getPropertyAmenities(property.id),
-            axios
-              .get(
-                `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api"}/properties/${property.id}/images`,
-              )
-              .catch(() => null),
+            http.get(`/properties/${property.id}/images`).catch(() => null),
           ]);
 
-          const images = imagesRes?.data?.data || imagesRes?.data || [];
+          const images = imagesRes?.data || imagesRes || [];
           const cover = images.find((img) => img.is_cover == 1) || images[0];
           const rawUrl = cover?.image_url || cover?.url || cover?.path || null;
           const image = rawUrl ? `${BASE_URL}${rawUrl}` : null;
@@ -691,8 +693,7 @@ watch(
 
 .page-header {
   width: 100%;
-  background: linear-gradient(135deg, #021b3a, #0a4d8c, #38bdf8);
-  padding: 34px 40px;
+  padding: 34px 40px 0;
   box-sizing: border-box;
 }
 
@@ -723,7 +724,7 @@ watch(
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--color-muted);
 }
 
 .bc-link {
@@ -731,23 +732,23 @@ watch(
   transition: color 0.2s;
 }
 .bc-link:hover {
-  color: white;
+  color: var(--color-primary);
 }
 .separator {
   opacity: 0.5;
 }
 
 .page-title {
-  font-size: 42px;
+  font-size: 34px;
   font-weight: 800;
-  color: white;
+  color: var(--color-text);
   letter-spacing: -1px;
   margin: 0;
 }
 
 .page-subtitle {
   font-size: 15px;
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--color-muted);
   margin: 0;
 }
 
@@ -760,25 +761,24 @@ watch(
 .header-btn {
   padding: 10px 20px;
   border-radius: 14px;
-  border: 1.5px solid rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-muted);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  backdrop-filter: blur(8px);
 }
 
 .header-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
+  border-color: var(--color-primary);
+  color: var(--color-text);
 }
 
 .header-btn.active {
-  background: white;
-  color: #0a4d8c;
-  border-color: white;
+  background: var(--color-primary);
+  color: #fff;
+  border-color: transparent;
 }
 
 .page-body {
@@ -980,8 +980,8 @@ watch(
 
 .chip-add {
   background: transparent;
-  border: 1.5px dashed #cbd5e1;
-  color: #64748b;
+  border: 1.5px dashed var(--color-border);
+  color: var(--color-muted);
   cursor: pointer;
 }
 

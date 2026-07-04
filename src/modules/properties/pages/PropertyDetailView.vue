@@ -82,7 +82,6 @@ const minDate = new Date().toISOString().split('T')[0];
 const checkInDate = ref("");
 const checkOutDate = ref("");
 const guestCount = ref(2);
-const serviceFee = 7;
 
 const availableGuestOptions = computed(() =>
   Array.from(
@@ -102,7 +101,7 @@ const stayNights = computed(() => {
 const roomSubtotal = computed(
   () => selectedRoom.value.price * stayNights.value,
 );
-const totalPrice = computed(() => roomSubtotal.value + serviceFee);
+const totalPrice = computed(() => roomSubtotal.value);
 
 const property = computed(() => propertyStore.property);
 const isSaved = computed(() => wishlistStore.isPropertySaved(property.value?.id));
@@ -198,9 +197,6 @@ const fetchProperty = async () => {
     wishlistStore.checkStatus(route.params.id);
   }
 
-  console.log("property.images:", propertyStore.property?.images);
-  console.log("property.image:", propertyStore.property?.image);
-
   try {
     const res = await propertyApi.getPropertyRooms(route.params.id);
     const rawRooms = res.data?.data || res.data || [];
@@ -209,35 +205,23 @@ const fetchProperty = async () => {
       name: r.room_name || r.name,
       capacity: r.max_guests || 2,
       price: Number(r.price_per_night) || 0,
+      floorNumber: r.floor_number ?? null,
       spec:
         r.description && r.description !== "-"
           ? r.description
           : "Available room",
     }));
-  } catch {
+  } catch (err) {
     rooms.value = [];
+    toastStore.danger(err?.message || "Failed to load rooms for this property.");
   }
 
   try {
     const resAmenity = await propertyApi.getPropertyAmenities(route.params.id);
-    const rawAmenities = resAmenity.data?.data || resAmenity.data || [];
-    amenities.value = rawAmenities.length ? rawAmenities : [
-      { id: 1, amenity_name: "High-speed WiFi" },
-      { id: 2, amenity_name: "Top city center location" },
-      { id: 3, amenity_name: "Dedicated family space" },
-      { id: 4, amenity_name: "Luggage dropoff allowed" },
-      { id: 5, amenity_name: "Flexible stay dates" },
-      { id: 6, amenity_name: "Premium verified bedding" },
-    ];
-  } catch {
-    amenities.value = [
-      { id: 1, amenity_name: "High-speed WiFi" },
-      { id: 2, amenity_name: "Top city center location" },
-      { id: 3, amenity_name: "Dedicated family space" },
-      { id: 4, amenity_name: "Luggage dropoff allowed" },
-      { id: 5, amenity_name: "Flexible stay dates" },
-      { id: 6, amenity_name: "Premium verified bedding" },
-    ];
+    amenities.value = resAmenity.data?.data || resAmenity.data || [];
+  } catch (err) {
+    amenities.value = [];
+    toastStore.danger(err?.message || "Failed to load amenities for this property.");
   }
 
   const firstRoom = rooms.value[0] || fallbackRoom;
@@ -697,6 +681,12 @@ const displayedAmenities = computed(() => amenities.value.slice(0, 6));
                       <span class="inline-block rounded-full bg-(--color-surface) px-3.5 py-1 text-xs font-bold text-(--color-muted) border border-(--color-border) shadow-xs">
                         Up to {{ room.capacity }} guests
                       </span>
+                      <span
+                        v-if="room.floorNumber"
+                        class="inline-block rounded-full bg-(--color-surface) px-3.5 py-1 text-xs font-bold text-(--color-muted) border border-(--color-border) shadow-xs"
+                      >
+                        Floor {{ room.floorNumber }}
+                      </span>
                     </div>
                   </div>
                   <div class="mt-8 pt-4 border-t border-(--color-border)/50 flex items-baseline justify-between w-full">
@@ -1018,12 +1008,8 @@ const displayedAmenities = computed(() => amenities.value.slice(0, 6));
                   <span class="hover:underline cursor-pointer">{{ formatPrice(selectedRoom.price) }} x {{ stayNights }} {{ t("propertyDetail.night") }}</span>
                   <span class="font-bold text-(--color-text)">{{ formatPrice(roomSubtotal) }}</span>
                 </div>
-                <div class="flex items-center justify-between font-medium">
-                  <span class="hover:underline cursor-pointer">{{ t("propertyDetail.serviceFee") }}</span>
-                  <span class="font-bold text-(--color-text)">{{ formatPrice(serviceFee) }}</span>
-                </div>
                 <div class="flex items-center justify-between border-t border-(--color-border) pt-4 text-base font-black text-(--color-text)">
-                  <span>{{ t("propertyDetail.total") }} before taxes</span>
+                  <span>{{ t("propertyDetail.total") }} amount</span>
                   <span class="text-(--color-primary)">{{ formatPrice(totalPrice) }}</span>
                 </div>
               </div>

@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import RatingStars from "../components/RatingStars.vue";
+import LoadingSpinner from "@/shared/components/LoadingSpinner.vue";
 import reviewService from "../services/reviewService.js";
 import http from "@/app/api/http";
 import { useToastStore } from "@/shared/store/toastStore";
@@ -233,8 +234,7 @@ const doDelete = async () => {
         <main>
           <!-- Loading State -->
           <div v-if="loading" class="text-center py-20 bg-(--color-surface) border border-(--color-border)/60 rounded-3xl shadow-xs">
-            <div class="inline-block w-8 h-8 border-4 border-(--color-primary) border-t-transparent rounded-full animate-spin mb-3"></div>
-            <p class="text-sm font-semibold text-(--color-muted)">{{ t('reviewManagement.state.loading') }}</p>
+            <LoadingSpinner :label="t('reviewManagement.state.loading')" class="justify-center" />
           </div>
 
           <!-- Error State -->

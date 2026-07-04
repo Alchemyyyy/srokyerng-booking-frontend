@@ -589,7 +589,7 @@ const initRegisterMap = () => {
 
   const icon = window.L.divIcon({
     className: "custom-picker-pin",
-    html: `<div class="w-7 h-7 bg-[#FF385C] rounded-full border-2 border-white flex items-center justify-center shadow-xl animate-bounce"><span class="text-white text-xs">📍</span></div>`,
+    html: `<div class="w-7 h-7 bg-(--color-wishlist) rounded-full border-2 border-white flex items-center justify-center shadow-xl animate-bounce"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" class="w-4 h-4"><path fill-rule="evenodd" d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" clip-rule="evenodd"/></svg></div>`,
     iconSize: [28, 28],
     iconAnchor: [14, 28]
   });
@@ -646,7 +646,7 @@ const initEditMap = () => {
 
   const icon = window.L.divIcon({
     className: "custom-picker-pin",
-    html: `<div class="w-7 h-7 bg-[#FF385C] rounded-full border-2 border-white flex items-center justify-center shadow-xl animate-bounce"><span class="text-white text-xs">📍</span></div>`,
+    html: `<div class="w-7 h-7 bg-(--color-wishlist) rounded-full border-2 border-white flex items-center justify-center shadow-xl animate-bounce"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" class="w-4 h-4"><path fill-rule="evenodd" d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" clip-rule="evenodd"/></svg></div>`,
     iconSize: [28, 28],
     iconAnchor: [14, 28]
   });
@@ -1113,19 +1113,18 @@ onMounted(async () => {
         <div>
           <AppInput
             v-model="newProperty.name"
-            label="Property Name **"
+            label="Property Name"
+            required
             placeholder="e.g. Skyline Residency Tower"
+            :error="addErrors.name"
           />
-          <AppAlert v-if="addErrors.name" variant="danger" class="mt-1">{{
-            addErrors.name
-          }}</AppAlert>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5">
             <label
               class="text-xs font-bold text-(--color-muted) tracking-wide uppercase"
-              >Property Type **</label
+              >Property Type <span class="text-(--color-danger)">*</span></label
             >
             <select
               v-model="newProperty.type"
@@ -1141,7 +1140,7 @@ onMounted(async () => {
           <div class="flex flex-col gap-1.5">
             <label
               class="text-xs font-bold text-(--color-muted) tracking-wide uppercase"
-              >City / Location **</label
+              >City / Location <span class="text-(--color-danger)">*</span></label
             >
             <select
               v-model="newProperty.location"
@@ -1160,53 +1159,43 @@ onMounted(async () => {
         <div>
           <AppInput
             v-model="newProperty.address"
-            label="Street Address **"
+            label="Street Address"
+            required
             placeholder="e.g. St. 210, Sangkat Boeung Keng Kang I"
+            :error="addErrors.address"
           />
-          <AppAlert v-if="addErrors.address" variant="danger" class="mt-1">{{
-            addErrors.address
-          }}</AppAlert>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
           <div>
             <AppInput
               v-model="newProperty.contact_phone"
-              label="Contact Phone **"
+              label="Contact Phone"
+              required
               placeholder="e.g. +855 12 345 678"
+              :error="addErrors.contact_phone"
             />
-            <AppAlert
-              v-if="addErrors.contact_phone"
-              variant="danger"
-              class="mt-1"
-              >{{ addErrors.contact_phone }}</AppAlert
-            >
           </div>
           <div>
             <AppInput
               v-model="newProperty.contact_email"
-              label="Contact Email **"
+              label="Contact Email"
+              required
               placeholder="e.g. desks@property.com"
+              :error="addErrors.contact_email"
             />
-            <AppAlert
-              v-if="addErrors.contact_email"
-              variant="danger"
-              class="mt-1"
-              >{{ addErrors.contact_email }}</AppAlert
-            >
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <AppInput
-              v-model="newProperty.number_of_floors"
-              type="number"
-              min="1"
-              label="Number of Floors"
-              placeholder="1"
-            />
-          </div>
+        <div>
+          <AppInput
+            v-model="newProperty.number_of_floors"
+            type="number"
+            min="1"
+            max="200"
+            label="Number of Floors"
+            placeholder="1"
+          />
         </div>
 
         <div>
@@ -1344,7 +1333,7 @@ onMounted(async () => {
           <div>
             <AppInput
               v-model="editingProperty.name"
-              label="Property Name *Name"
+              label="Property Name"
             />
           </div>
 
@@ -1368,7 +1357,7 @@ onMounted(async () => {
             <div class="flex flex-col gap-1.5">
               <label
                 class="text-xs font-bold text-(--color-muted) tracking-wide uppercase"
-                >City / Location *Sector</label
+                >City / Location</label
               >
               <select
                 v-model="editingProperty.location"
@@ -1387,7 +1376,7 @@ onMounted(async () => {
           <div>
             <AppInput
               v-model="editingProperty.address"
-              label="Street Address *Coordinates"
+              label="Street Address"
             />
           </div>
 
@@ -1402,10 +1391,12 @@ onMounted(async () => {
             />
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
+          <div>
             <AppInput
               v-model="editingProperty.number_of_floors"
               type="number"
+              min="1"
+              max="200"
               label="Number of Floors"
             />
           </div>
@@ -1458,7 +1449,7 @@ onMounted(async () => {
               class="relative aspect-square bg-(--color-surface) rounded-xl overflow-hidden border border-(--color-border) group/media"
             >
               <img
-                :src="resolveAssetUrl(img.image_path || img.url)"
+                :src="resolveAssetUrl(img.image_url)"
                 class="w-full h-full object-cover"
               />
 

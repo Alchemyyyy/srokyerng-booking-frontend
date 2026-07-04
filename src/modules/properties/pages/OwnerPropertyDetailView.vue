@@ -1,24 +1,25 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useAuthStore } from "@/modules/auth/store/authStore";
 import { propertyApi } from "../api/property.api";
 import AppModal from "@/shared/components/AppModal.vue";
 import AppInput from "@/shared/components/AppInput.vue";
 import AppButton from "@/shared/components/AppButton.vue";
+import PropertyLocationMap from "@/shared/components/PropertyLocationMap.vue";
 import AvailabilityCalendar from "@/modules/calendar/components/AvailabilityCalendar.vue";
 import { resolveAssetUrl } from "@/shared/utils/assetUrl";
 import { useToastStore } from "@/shared/store/toastStore";
+import OwnerLoadingState from "@/modules/owner/components/OwnerLoadingState.vue";
 import {
   ClockIcon,
   XCircleIcon,
   PencilSquareIcon,
   CheckCircleIcon,
+  XMarkIcon,
 } from "@heroicons/vue/24/outline";
 
 const route = useRoute();
 const router = useRouter();
-const authStore = useAuthStore();
 const toast = useToastStore();
 
 const loading = ref(true);
@@ -26,6 +27,16 @@ const error = ref("");
 const property = ref(null);
 const images = ref([]);
 const togglingStatus = ref(false);
+
+const previewImageUrl = ref(null);
+const openImagePreview = (url) => {
+  previewImageUrl.value = url;
+  document.body.style.overflow = "hidden";
+};
+const closeImagePreview = () => {
+  previewImageUrl.value = null;
+  document.body.style.overflow = "";
+};
 
 // 'pending' | 'rejected' | null
 const editRequestStatus = ref(null);
@@ -137,7 +148,6 @@ const fetchProperty = async () => {
   loading.value = true;
   error.value = "";
   try {
-    await authStore.refreshSession();
     const res = await propertyApi.getMyPropertyById(route.params.id);
     const data = Array.isArray(res) ? res[0] : res?.data || res;
     property.value = data;
@@ -338,9 +348,7 @@ onMounted(async () => {
 <template>
   <main class="ml-64 mt-25 min-h-screen px-6 pb-10 text-(--color-text)">
     <!-- Loading -->
-    <div v-if="loading" class="py-24 text-center text-(--color-muted) text-sm">
-      Loading property details...
-    </div>
+    <OwnerLoadingState v-if="loading" label="Loading property details..." />
 
     <!-- Error -->
     <div v-else-if="error" class="py-24 text-center text-rose-500 text-sm">
@@ -459,7 +467,8 @@ onMounted(async () => {
               <div
                 v-for="img in images"
                 :key="img.id"
-                class="relative aspect-[4/3] rounded-xl overflow-hidden bg-(--color-surface-soft) group"
+                class="relative aspect-[4/3] rounded-xl overflow-hidden bg-(--color-surface-soft) group cursor-pointer"
+                @click="openImagePreview(img.url)"
               >
                 <img
                   :src="img.url"
@@ -625,6 +634,11 @@ onMounted(async () => {
             >
               Location Coordinates
             </h2>
+            <PropertyLocationMap
+              :latitude="property.latitude"
+              :longitude="property.longitude"
+              :label="property.property_name"
+            />
             <div class="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span
@@ -978,4 +992,23 @@ onMounted(async () => {
       </div>
     </div>
   </AppModal>
+
+  <div
+    v-if="previewImageUrl"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+    @click="closeImagePreview"
+  >
+    <button
+      @click="closeImagePreview"
+      class="absolute top-6 right-6 text-white bg-white/10 p-2 rounded-full hover:bg-white/20 transition cursor-pointer z-50"
+    >
+      <XMarkIcon class="w-6 h-6" />
+    </button>
+    <img
+      :src="previewImageUrl"
+      alt="Property image"
+      class="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl cursor-zoom-out"
+      @click.stop
+    />
+  </div>
 </template>

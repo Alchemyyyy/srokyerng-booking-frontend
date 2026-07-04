@@ -12,6 +12,8 @@ import {
   EyeIcon,
   XMarkIcon,
   ExclamationTriangleIcon,
+  CreditCardIcon,
+  DocumentTextIcon,
 } from "@heroicons/vue/24/outline";
 
 const reservationStore = useReservationStore();
@@ -513,7 +515,7 @@ onMounted(() => {
                     v-if="!detailPanel.payment"
                     class="rounded-2xl border border-dashed border-(--color-border) p-14 text-center"
                   >
-                    <p class="text-3xl mb-3">💳</p>
+                    <CreditCardIcon class="h-8 w-8 mx-auto mb-3 text-(--color-muted)" />
                     <p class="text-sm font-semibold text-(--color-text)">
                       No payment record
                     </p>
@@ -647,7 +649,7 @@ onMounted(() => {
                     v-if="!detailPanel.payment?.receipt_image_url"
                     class="rounded-2xl border border-dashed border-(--color-border) p-14 text-center"
                   >
-                    <p class="text-3xl mb-3">📄</p>
+                    <DocumentTextIcon class="h-8 w-8 mx-auto mb-3 text-(--color-muted)" />
                     <p class="text-sm font-semibold text-(--color-text)">
                       No proof uploaded
                     </p>

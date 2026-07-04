@@ -57,8 +57,11 @@ const allowNextNavigation = ref(false);
 const activeAccountTab = ref("personal");
 
 // Social connections state and simulation logic
-const googleConnected = ref(localStorage.getItem("conn_google") === "true" || !!authStore.user?.google_id);
-const facebookConnected = ref(localStorage.getItem("conn_facebook") === "true");
+// Keys are scoped per-user (matching the pattern used by e.g. shared/utils/currency.js)
+// so one browser profile can't inherit another logged-in user's connected status.
+const connKey = (provider) => `conn_${provider}_${authStore.user?.id ?? "anon"}`;
+const googleConnected = ref(localStorage.getItem(connKey("google")) === "true" || !!authStore.user?.google_id);
+const facebookConnected = ref(localStorage.getItem(connKey("facebook")) === "true");
 const connectingProvider = ref(null);
 const disconnectingProvider = ref(null);
 
@@ -67,10 +70,10 @@ const handleConnect = (provider) => {
   setTimeout(() => {
     if (provider === "google") {
       googleConnected.value = true;
-      localStorage.setItem("conn_google", "true");
+      localStorage.setItem(connKey("google"), "true");
     } else {
       facebookConnected.value = true;
-      localStorage.setItem("conn_facebook", "true");
+      localStorage.setItem(connKey("facebook"), "true");
     }
     connectingProvider.value = null;
     toastStore.success(`${provider.charAt(0).toUpperCase() + provider.slice(1)} account connected successfully!`);
@@ -85,10 +88,10 @@ const confirmDisconnect = () => {
   const provider = disconnectingProvider.value;
   if (provider === "google") {
     googleConnected.value = false;
-    localStorage.setItem("conn_google", "false");
+    localStorage.setItem(connKey("google"), "false");
   } else {
     facebookConnected.value = false;
-    localStorage.setItem("conn_facebook", "false");
+    localStorage.setItem(connKey("facebook"), "false");
   }
   disconnectingProvider.value = null;
   toastStore.success(`${provider.charAt(0).toUpperCase() + provider.slice(1)} account disconnected.`);
@@ -147,6 +150,13 @@ const userInitial = computed(() => userLabel.value.charAt(0).toUpperCase());
 const roleLabel = computed(() => {
   const role = user.value?.role || "member";
   return t(`profile.roles.${role}`);
+});
+
+const reviewsRouteName = computed(() => {
+  const role = user.value?.role || authStore.user?.role;
+  if (role === "customer") return "customer.reviews";
+  if (role === "owner") return "owner.reviews";
+  return null;
 });
 
 const emailVerificationLabel = computed(() =>
@@ -407,8 +417,11 @@ onUnmounted(() => {
 
 <template>
   <div class="min-h-screen bg-(--color-page) flex flex-col">
-    <PublicNavbar />
-    <main class="flex-1 min-h-screen pt-32 pb-16 px-4 text-(--color-text) sm:px-6 lg:px-8 font-sans transition-colors duration-300">
+    <PublicNavbar v-if="authStore.user?.role !== 'owner' && authStore.user?.role !== 'admin'" />
+    <main 
+      class="flex-1 min-h-screen pb-16 px-4 text-(--color-text) sm:px-6 lg:px-8 font-sans transition-colors duration-300"
+      :class="[authStore.user?.role !== 'owner' && authStore.user?.role !== 'admin' ? 'pt-32' : 'pt-8']"
+    >
     <section class="mx-auto max-w-6xl">
       <AppAlert
         v-if="error"
@@ -461,13 +474,14 @@ onUnmounted(() => {
 
             <!-- Past trips -->
             <button
+              v-if="isCustomerAccount"
               type="button"
               class="w-full flex items-center gap-4 rounded-2xl py-3 px-4 text-left transition-all duration-200 cursor-pointer group"
               :class="[activeAccountTab === 'trips' ? 'bg-(--color-surface-soft) font-bold text-(--color-text)' : 'hover:bg-(--color-surface-soft)/60 font-semibold text-(--color-muted)']"
               @click="activeAccountTab = 'trips'"
             >
-              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-(--color-surface-soft) text-amber-600 font-bold text-lg shadow-xs group-hover:scale-105 transition-transform">
-                💼
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-(--color-warning-soft) text-(--color-warning) shadow-xs group-hover:scale-105 transition-transform">
+                <BriefcaseIcon class="h-4 w-4" />
               </span>
               <span>Past trips</span>
             </button>
@@ -479,8 +493,8 @@ onUnmounted(() => {
               :class="[activeAccountTab === 'connections' ? 'bg-(--color-surface-soft) font-bold text-(--color-text)' : 'hover:bg-(--color-surface-soft)/60 font-semibold text-(--color-muted)']"
               @click="activeAccountTab = 'connections'"
             >
-              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-(--color-surface-soft) text-blue-600 font-bold text-lg shadow-xs group-hover:scale-105 transition-transform">
-                👥
+              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-(--color-primary-soft) text-(--color-primary) shadow-xs group-hover:scale-105 transition-transform">
+                <UsersIcon class="h-4 w-4" />
               </span>
               <span>Connections</span>
             </button>
@@ -544,7 +558,7 @@ onUnmounted(() => {
                   <div class="relative mb-5">
                     <button
                       type="button"
-                      class="relative block rounded-full overflow-hidden focus:outline-none focus:ring-2 focus:ring-[#FF385C] group-hover:scale-105 transition-all duration-300 shadow-md"
+                      class="relative block rounded-full overflow-hidden focus:outline-none focus:ring-2 focus:ring-(--color-wishlist) group-hover:scale-105 transition-all duration-300 shadow-md"
                       @click="cropModalOpen = true"
                       title="Update photo"
                     >
@@ -556,7 +570,7 @@ onUnmounted(() => {
                     </button>
                   </div>
                   <h2 class="text-2xl font-bold text-(--color-text) mb-1">{{ userLabel }}</h2>
-                  <p class="text-xs text-(--color-muted) font-normal">Guest</p>
+                  <p class="text-xs text-(--color-muted) font-normal">{{ roleLabel }}</p>
                 </div>
 
                 <!-- Complete your profile callout -->
@@ -580,11 +594,12 @@ onUnmounted(() => {
 
               <!-- Reviews Row -->
               <RouterLink
-                :to="{ name: 'customer.reviews' }"
+                v-if="reviewsRouteName"
+                :to="{ name: reviewsRouteName }"
                 class="flex items-center gap-4 text-base font-semibold text-(--color-text) hover:underline cursor-pointer py-2 group"
               >
-                <ChatBubbleLeftEllipsisIcon class="h-6 w-6 text-(--color-muted) group-hover:text-[#FF385C] transition-colors" />
-                <span>Show reviews I've written</span>
+                <ChatBubbleLeftEllipsisIcon class="h-6 w-6 text-(--color-muted) group-hover:text-(--color-wishlist) transition-colors" />
+                <span>{{ isCustomerAccount ? "Show reviews I've written" : "Show reviews about my properties" }}</span>
               </RouterLink>
             </div>
 
@@ -733,7 +748,7 @@ onUnmounted(() => {
         <AppButton
           type="button"
           variant="danger"
-          class="!rounded-2xl font-bold px-6 py-3 shadow-md hover:scale-105 active:scale-95 transition-all duration-200 bg-[#FF385C] hover:bg-[#E31C5F]"
+          class="!rounded-2xl font-bold px-6 py-3 shadow-md hover:scale-105 active:scale-95 transition-all duration-200 bg-(--color-wishlist) hover:bg-(--color-wishlist-strong)"
           @click="resolveLeaveConfirmation(true)"
         >
           {{ t("profile.leave.confirm") }}
@@ -774,7 +789,7 @@ onUnmounted(() => {
         </AppButton>
         <AppButton
           type="button"
-          class="!rounded-2xl font-bold px-8 py-3.5 shadow-lg shadow-rose-500/30 hover:shadow-xl hover:shadow-rose-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 bg-[#FF385C] hover:bg-[#E31C5F] text-white"
+          class="!rounded-2xl font-bold px-8 py-3.5 shadow-lg shadow-rose-500/30 hover:shadow-xl hover:shadow-rose-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 bg-(--color-wishlist) hover:bg-(--color-wishlist-strong) text-white"
           :loading="uploadingImage"
           :disabled="uploadingImage"
           @click="applyCropAndUpload"
@@ -807,7 +822,7 @@ onUnmounted(() => {
         <AppButton
           type="button"
           variant="danger"
-          class="!rounded-2xl font-bold px-6 py-3.5 shadow-md hover:scale-105 active:scale-95 transition-all duration-200 bg-[#FF385C] hover:bg-[#E31C5F] text-white"
+          class="!rounded-2xl font-bold px-6 py-3.5 shadow-md hover:scale-105 active:scale-95 transition-all duration-200 bg-(--color-wishlist) hover:bg-(--color-wishlist-strong) text-white"
           @click="confirmDisconnect"
         >
           Disconnect
@@ -815,6 +830,6 @@ onUnmounted(() => {
       </template>
     </AppModal>
   </main>
-    <PublicFooter />
+    <PublicFooter v-if="authStore.user?.role !== 'owner' && authStore.user?.role !== 'admin'" />
   </div>
 </template>

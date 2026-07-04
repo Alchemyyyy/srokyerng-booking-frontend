@@ -207,6 +207,7 @@ onMounted(() => userStore.fetchUsers());
 
     <!-- Table -->
     <div v-else class="table-wrap">
+      <div class="table-scroll">
       <table class="user-table">
         <thead>
           <tr>
@@ -289,6 +290,7 @@ onMounted(() => userStore.fetchUsers());
           </tr>
         </tbody>
       </table>
+      </div>
 
       <!-- Pagination -->
       <div v-if="userStore.pagination.total_pages > 1" class="pagination-wrap">
@@ -498,6 +500,10 @@ onMounted(() => userStore.fetchUsers());
   border: 1px solid var(--color-border);
   border-radius: 20px;
   overflow: hidden;
+}
+
+.table-scroll {
+  overflow-x: auto;
 }
 
 .user-table {

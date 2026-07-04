@@ -1,24 +1,9 @@
 <script setup>
-import { computed, ref } from "vue";
-import { getStoredTheme, setTheme } from "@/shared/services/themeStorage";
+import { computed } from "vue";
+import { useTheme } from "@/shared/composables/useTheme";
 
-const themeState = ref(getStoredTheme());
-
-const isDark = computed(() => {
-  if (themeState.value === "system") {
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
-  }
-  return themeState.value === "dark";
-});
-
-const toggleTheme = () => {
-  const nextTheme = isDark.value ? "light" : "dark";
-  themeState.value = nextTheme;
-  setTheme(nextTheme);
-  
-  // Dispatch custom event to let components update instantly
-  window.dispatchEvent(new Event("theme-changed"));
-};
+const { resolvedTheme, toggleTheme } = useTheme();
+const isDark = computed(() => resolvedTheme.value === "dark");
 </script>
 
 <template>

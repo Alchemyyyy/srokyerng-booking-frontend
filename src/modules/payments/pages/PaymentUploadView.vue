@@ -23,8 +23,19 @@ const isUploading = computed(() => paymentStore.loadingSubmitProof);
 const uploadError = computed(() => paymentStore.errorSubmitProof);
 const uploadSuccess = ref(false);
 
-// The single KHQR account (first entry returned by the API)
-const khqrAccount = computed(() => paymentStore.paymentAccounts[0] ?? null);
+// The account actually selected for this payment at booking time
+// (joined onto the payment record itself — not guessed from the
+// property's account list, which could include unrelated accounts).
+const khqrAccount = computed(() =>
+  payment.value
+    ? {
+        account_name: payment.value.account_name,
+        account_number: payment.value.account_number,
+        qr_image_url: payment.value.qr_image_url,
+        method_name: payment.value.payment_method,
+      }
+    : null,
+);
 
 const assetBaseUrl = computed(() =>
   (import.meta.env.VITE_API_BASE_URL || "http://localhost:5001/api").replace(
@@ -49,11 +60,12 @@ const formattedAmount = computed(() => {
   }).format(payment.value.amount);
 });
 
-async function handleSubmit(file) {
+async function handleSubmit(file, transactionReference) {
   const ok = await paymentStore.submitPaymentProof(
     paymentId.value,
     file,
     uploadType.value,
+    transactionReference,
   );
   if (ok) {
     uploadSuccess.value = true;
@@ -68,9 +80,6 @@ async function handleSubmit(file) {
 }
 onMounted(async () => {
   await paymentStore.fetchPaymentById(paymentId.value);
-  if (payment.value?.property_id) {
-    await paymentStore.fetchPaymentAccounts(payment.value.property_id);
-  }
 });
 </script>
 
@@ -105,7 +114,9 @@ onMounted(async () => {
         <!-- Left: QR + instructions -->
         <div class="upload-page__left">
           <div class="upload-page__intro">
-            <h1 class="upload-page__heading">Pay via Bakong</h1>
+            <h1 class="upload-page__heading">
+              Pay via {{ khqrAccount?.method_name || "Bank Transfer" }}
+            </h1>
             <p class="upload-page__subheading">
               Scan the QR code with any Cambodian banking app, transfer the
               exact amount, then upload your receipt.
@@ -122,7 +133,7 @@ onMounted(async () => {
 
           <!-- QR card -->
           <div
-            v-if="paymentStore.loadingAccounts"
+            v-if="paymentStore.loadingDetail"
             class="upload-page__qr-loading"
           >
             <div class="loader" />
@@ -133,6 +144,8 @@ onMounted(async () => {
             :account-name="khqrAccount?.account_name ?? ''"
             :qr-image-url="qrImageUrl"
             :bakong-id="khqrAccount?.bakong_id ?? ''"
+            :method-name="khqrAccount?.method_name ?? ''"
+            :account-number="khqrAccount?.account_number ?? ''"
           />
 
           <!-- Security badge -->
@@ -146,7 +159,7 @@ onMounted(async () => {
 
         <!-- Right: upload form -->
         <div class="upload-page__right">
-          <p class="upload-page__step-label">Step 2 — Upload your receipt</p>
+          <p class="upload-page__step-label">Final step — Upload your receipt</p>
 
           <ReceiptUploadForm :loading="isUploading" @submit="handleSubmit" />
 
@@ -183,7 +196,7 @@ onMounted(async () => {
 
 .upload-page__progress-fill {
   height: 100%;
-  width: 66%;
+  width: 100%;
   background: var(--color-primary);
   transition: width 0.5s ease;
 }
@@ -299,15 +312,15 @@ onMounted(async () => {
   align-items: center;
   gap: 0.75rem;
   padding: 0.7rem 0.85rem;
-  background: rgba(29, 158, 117, 0.06);
-  border: 1px solid rgba(29, 158, 117, 0.15);
+  background: var(--color-success-soft);
+  border: 1px solid var(--color-success-soft);
   border-radius: 14px;
 }
 
 .upload-page__security-icon {
   width: 1.1rem;
   height: 1.1rem;
-  color: #1d9e75;
+  color: var(--color-success);
   flex-shrink: 0;
 }
 
@@ -315,7 +328,7 @@ onMounted(async () => {
   margin: 0;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #1d6b52;
+  color: var(--color-success);
 }
 
 /* Right */
@@ -337,10 +350,10 @@ onMounted(async () => {
 .upload-page__error {
   margin: 0;
   padding: 0.75rem 1rem;
-  background: rgba(220, 53, 69, 0.07);
-  border: 1px solid rgba(220, 53, 69, 0.2);
+  background: var(--color-danger-soft);
+  border: 1px solid var(--color-danger-soft);
   border-radius: 10px;
-  color: var(--color-danger, #dc3545);
+  color: var(--color-danger);
   font-size: 0.85rem;
 }
 
@@ -368,7 +381,7 @@ onMounted(async () => {
   width: 5rem;
   height: 5rem;
   border-radius: 50%;
-  background: rgba(29, 158, 117, 0.1);
+  background: var(--color-success-soft);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -378,7 +391,7 @@ onMounted(async () => {
 .success-state__icon {
   width: 2.5rem;
   height: 2.5rem;
-  color: #1d9e75;
+  color: var(--color-success);
 }
 .success-state__heading {
   font-size: 1.75rem;
@@ -404,7 +417,7 @@ onMounted(async () => {
   width: 2rem;
   height: 2rem;
   border-radius: 999px;
-  border: 3px solid rgba(55, 138, 221, 0.15);
+  border: 3px solid var(--color-border);
   border-top-color: var(--color-primary);
   animation: spin 0.8s linear infinite;
 }

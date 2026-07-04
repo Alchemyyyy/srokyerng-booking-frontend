@@ -5,9 +5,11 @@
  * No card/bank variant — QR Bakong only.
  *
  * Props:
- *   accountName  : string  — merchant name shown under QR
- *   qrImageUrl   : string  — URL of the QR image (null = placeholder)
- *   bakongId     : string  — Bakong ID e.g. "012345678@aclb"
+ *   accountName   : string  — merchant name shown under QR
+ *   qrImageUrl    : string  — URL of the QR image (null = placeholder)
+ *   bakongId      : string  — Bakong ID e.g. "012345678@aclb"
+ *   methodName    : string  — bank/method name, e.g. "ABA"
+ *   accountNumber : string  — manual-transfer fallback when no QR is set
  */
 import { QrCodeIcon } from "@heroicons/vue/24/outline";
 
@@ -15,6 +17,8 @@ defineProps({
   accountName: { type: String, default: "" },
   qrImageUrl: { type: String, default: null },
   bakongId: { type: String, default: "" },
+  methodName: { type: String, default: "" },
+  accountNumber: { type: String, default: "" },
 });
 </script>
 
@@ -27,7 +31,7 @@ defineProps({
       </div>
       <div>
         <p class="qr-card__label">Scan to Pay</p>
-        <p class="qr-card__sub">KHQR · Bakong</p>
+        <p class="qr-card__sub">{{ methodName ? `KHQR · ${methodName}` : "KHQR" }}</p>
       </div>
     </div>
 
@@ -47,9 +51,19 @@ defineProps({
 
     <!-- Account details -->
     <div class="qr-card__details">
+      <div class="qr-card__detail-row" v-if="methodName">
+        <span class="qr-card__detail-label">Bank</span>
+        <span class="qr-card__detail-value">{{ methodName }}</span>
+      </div>
       <div class="qr-card__detail-row" v-if="accountName">
         <span class="qr-card__detail-label">Merchant</span>
         <span class="qr-card__detail-value">{{ accountName }}</span>
+      </div>
+      <div class="qr-card__detail-row" v-if="accountNumber">
+        <span class="qr-card__detail-label">Account Number</span>
+        <span class="qr-card__detail-value qr-card__detail-value--mono">{{
+          accountNumber
+        }}</span>
       </div>
       <div class="qr-card__detail-row" v-if="bakongId">
         <span class="qr-card__detail-label">Bakong ID</span>
@@ -58,6 +72,11 @@ defineProps({
         }}</span>
       </div>
     </div>
+
+    <!-- Manual transfer fallback note -->
+    <p v-if="!qrImageUrl && accountNumber" class="qr-card__manual-hint">
+      No QR code yet? Transfer manually to the account number above.
+    </p>
 
     <!-- Instruction -->
     <p class="qr-card__hint">
@@ -88,7 +107,7 @@ defineProps({
   width: 2.25rem;
   height: 2.25rem;
   border-radius: 12px;
-  background: rgba(29, 158, 117, 0.1);
+  background: var(--color-success-soft);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -98,7 +117,7 @@ defineProps({
 .qr-card__icon {
   width: 1.25rem;
   height: 1.25rem;
-  color: #1d9e75;
+  color: var(--color-success);
 }
 
 .qr-card__label {
@@ -114,7 +133,7 @@ defineProps({
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #1d9e75;
+  color: var(--color-success);
 }
 
 /* QR area */
@@ -201,5 +220,14 @@ defineProps({
   color: var(--color-muted);
   text-align: center;
   line-height: 1.6;
+}
+
+.qr-card__manual-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-align: center;
+  line-height: 1.5;
 }
 </style>

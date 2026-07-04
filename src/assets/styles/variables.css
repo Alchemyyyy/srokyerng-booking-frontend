@@ -35,6 +35,9 @@
   --color-info: #4b628f;
   --color-info-soft: #eef3f6;
 
+  --color-wishlist: #ff385c;
+  --color-wishlist-strong: #e31c5f;
+
   --color-input: #ffffff;
 
   --color-overlay: rgba(18, 104, 180, 0.08);
@@ -95,6 +98,9 @@
   --color-info: #a9bdd1;
   --color-info-soft: rgba(169, 189, 209, 0.16);
 
+  --color-wishlist: #ff385c;
+  --color-wishlist-strong: #e31c5f;
+
   --color-input: oklch(20% 0 0);
 
   --color-overlay: rgba(255, 255, 255, 0.08);
@@ -135,6 +141,9 @@
 
     --color-info: #a9bdd1;
     --color-info-soft: rgba(169, 189, 209, 0.16);
+
+    --color-wishlist: #ff385c;
+    --color-wishlist-strong: #e31c5f;
 
     --color-input: oklch(20% 0 0);
     --color-overlay: rgba(255, 255, 255, 0.08);

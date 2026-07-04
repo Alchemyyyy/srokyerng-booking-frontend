@@ -38,19 +38,26 @@ export const useChatStore = defineStore("chat", {
     // Get message history for a conversation thread
     async fetchMessages(conversationId) {
       if (!conversationId) return;
-      this.activeConversationId = Number(conversationId);
+      const requestId = Number(conversationId);
+      this.activeConversationId = requestId;
       this.messagesLoading = true;
       this.error = null;
       try {
         const response = await chatService.getMessages(conversationId);
+        // If the user has since switched to a different conversation, this
+        // response is stale — discard it instead of overwriting newer messages.
+        if (this.activeConversationId !== requestId) return;
         this.messages = response.data || response || [];
 
         // Try marking as read on the backend
         await this.markConversationRead(conversationId);
       } catch (err) {
+        if (this.activeConversationId !== requestId) return;
         this.error = err.message || "Failed to load messages";
       } finally {
-        this.messagesLoading = false;
+        if (this.activeConversationId === requestId) {
+          this.messagesLoading = false;
+        }
       }
     },
 

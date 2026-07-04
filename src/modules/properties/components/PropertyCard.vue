@@ -10,7 +10,6 @@ import {
   BuildingOffice2Icon,
   CalendarDaysIcon,
   PencilSquareIcon,
-  HeartIcon,
   InformationCircleIcon,
   PauseCircleIcon,
   PlayCircleIcon,
@@ -177,15 +176,6 @@ const handleActivate = (e) => {
         >
           {{ badgeConfig.label }}
         </span>
-
-        <!-- Heart Button -->
-        <button
-          class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md border border-(--color-border)/20 transition-all hover:bg-black/40 hover:scale-110"
-          @click.stop
-          title="Save"
-        >
-          <HeartIcon class="w-4 h-4 text-white" />
-        </button>
 
         <!-- Pending Changes banner -->
         <div

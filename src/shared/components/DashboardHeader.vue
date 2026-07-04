@@ -38,6 +38,10 @@ const { t } = useI18n();
 
 const homeLabel = computed(() => t("nav.home"));
 
+// Optional intermediate crumb for detail pages nested under a list page
+// (e.g. Rooms > Room Detail), set via route meta: { parent: { name, label } }.
+const parentCrumb = computed(() => route.meta?.parent || null);
+
 const routeLabel = computed(() => {
   if (route.meta.title) return route.meta.title;
   if (route.name) {
@@ -91,6 +95,16 @@ const { isSidebarOpen } = useSidebar();
       </router-link>
 
       <ChevronRightIcon class="w-3.5 h-3.5 text-(--color-muted) shrink-0" />
+
+      <template v-if="parentCrumb">
+        <router-link
+          :to="{ name: parentCrumb.name }"
+          class="text-(--color-muted) hover:text-(--color-primary) font-medium transition-colors"
+        >
+          {{ parentCrumb.label }}
+        </router-link>
+        <ChevronRightIcon class="w-3.5 h-3.5 text-(--color-muted) shrink-0" />
+      </template>
 
       <span class="font-semibold text-(--color-text) truncate">
         {{ routeLabel }}

@@ -12,8 +12,6 @@ const showAppLoader = computed(() => authStore.restoringSession);
   <div v-if="showAppLoader" class="app-loading-screen">
     <LoadingSpinner />
   </div>
-  <RouterView v-else v-slot="{ Component, route }">
-    <component :is="Component" :key="route.path" />
-  </RouterView>
+  <RouterView v-else />
   <ToastContainer />
 </template>
