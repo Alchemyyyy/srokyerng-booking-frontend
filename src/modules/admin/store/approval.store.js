@@ -11,11 +11,14 @@ export const useApprovalStore = defineStore('admin-approval', () => {
     const processing = ref(false);
     const error = ref(null);
 
-    const fetchProperties = async (propertyId = {}) => {
+    const fetchProperties = async (params = {}) => {
         loading.value = true;
         error.value = null;
         try {
-            const response = await approvalService.getAllProperties(propertyId);
+            // The backend defaults to a 10-row page when no limit is given.
+            // This view does its own client-side filtering/sorting/pagination
+            // across the full queue, so it needs every row up front.
+            const response = await approvalService.getAllProperties({ limit: 1000, page: 1, ...params });
             if (Array.isArray(response)) {
                 properties.value = response?.data?.data || [];
             } else if (response && Array.isArray(response.data)) {

@@ -53,6 +53,9 @@ const isSuspended = computed(
 const isPending = computed(
   () => props.property.status?.toUpperCase() === "PENDING",
 );
+const isRejected = computed(
+  () => props.property.status?.toUpperCase() === "REJECTED",
+);
 
 // ── Badge config ──────────────────────────────────────────────────────────────
 const badgeConfig = computed(() => {
@@ -203,9 +206,9 @@ const handleActivate = (e) => {
           </div>
         </div>
 
-        <!-- Rejected edit banner -->
+        <!-- Rejected banner (either a rejected edit-request, or the original submission itself) -->
         <div
-          v-else-if="hasRejectedEdit"
+          v-else-if="hasRejectedEdit || isRejected"
           class="absolute bottom-3 left-3 right-3 bg-(--color-surface)/85 backdrop-blur-xl rounded-2xl p-3 flex items-start gap-3 border border-(--color-border) shadow-sm transition-transform duration-300 group-hover:-translate-y-1"
         >
           <div class="bg-rose-100/80 p-1.5 rounded-full shrink-0 mt-0.5">

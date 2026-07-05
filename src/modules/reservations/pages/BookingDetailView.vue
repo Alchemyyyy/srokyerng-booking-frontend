@@ -507,8 +507,8 @@ onMounted(fetchReservation);
           </div>
         </div>
 
-        <!-- ── Refund Request Card (already cancelled, payment was verified) ── -->
-        <div v-if="status === 'cancelled' && paymentStatusNorm === 'verified'" class="refund-request-card">
+        <!-- ── Refund Request Card (already cancelled, payment was verified, no auto-refund) ── -->
+        <div v-if="status === 'cancelled' && paymentStatusNorm === 'verified' && (!reservation.refund_status || reservation.refund_status === 'not_requested') && (policy?.refundAmount > 0)" class="refund-request-card">
           <div class="refund-request-header">
             <div class="refund-request-icon">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">

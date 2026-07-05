@@ -20,7 +20,6 @@ import RevenueBySegmentCard from '@/modules/analytics/components/ownerComponents
 import ReservationOverviewChart from '@/modules/analytics/components/ownerComponents/ReservationOverviewChart.vue';
 import { useAnalyticsDashboardStore } from '@/modules/analytics/stores/OwnerAnalyticsStore';
 
-import { useSidebar } from '@/shared/composables/useSidebar';
 
 const dashboardStore = useAnalyticsDashboardStore();
 const { t } = useI18n();
@@ -40,7 +39,6 @@ const {
 
 const { fetchDashboardData, formatMoney, formatDate } = dashboardStore;
 
-const { isSidebarOpen } = useSidebar();
 
 // ── ReservationOverviewChart: restored original Line shape { labels, data } ──
 // labels = status names (Cancelled, Confirmed, Pending)
@@ -104,8 +102,7 @@ onMounted(bumpAnimationSeed);
 onActivated(bumpAnimationSeed);
 </script>
 
-<template>
-  <main class="owner-dashboard my-25 transition-all duration-300" :class="isSidebarOpen ? 'ml-64' : 'ml-20'">
+<template> <div class="owner-dashboard ">
     <AnalyticsDashboardState v-if="loading" loading />
     <AnalyticsDashboardState v-else-if="error" :error="error" @retry="fetchDashboardData" />
 
@@ -147,7 +144,7 @@ onActivated(bumpAnimationSeed);
         </div>
       </section>
     </template>
-  </main>
+  </div>
 </template>
 
 <style scoped>

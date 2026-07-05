@@ -27,6 +27,7 @@ const approvalStore = useApprovalStore();
 
 const currentFilterStatus = ref(1); // បង្ហាញ Pending (status_id: 1) មុនគេពេលដំបូង
 const searchKeyword = ref('');
+const sortOrder = ref('newest'); // 'newest' | 'oldest'
 
 const filteredProperties = computed(() => {
     let list = approvalStore.properties || [];
@@ -53,6 +54,12 @@ const filteredProperties = computed(() => {
         });
     }
 
+    // 3. Sort by submission date
+    list = [...list].sort((a, b) => {
+        const diff = new Date(b.created_at) - new Date(a.created_at);
+        return sortOrder.value === 'oldest' ? -diff : diff;
+    });
+
     return list;
 });
 
@@ -69,7 +76,7 @@ const pagedProperties = computed(() => {
     return filteredProperties.value.slice(start, start + PAGE_SIZE);
 });
 
-watch([searchKeyword, currentFilterStatus], () => {
+watch([searchKeyword, currentFilterStatus, sortOrder], () => {
     currentPage.value = 1;
 });
 
@@ -96,6 +103,11 @@ const emptyStateContent = computed(() => {
             return {
                 title: t('admin.propertyApprovalPage.emptyState.noRejectedTitle'),
                 desc: t('admin.propertyApprovalPage.emptyState.noRejectedDesc')
+            };
+        case 4:
+            return {
+                title: t('admin.propertyApprovalPage.emptyState.noSuspendedTitle'),
+                desc: t('admin.propertyApprovalPage.emptyState.noSuspendedDesc')
             };
         default:
             return {
@@ -231,7 +243,13 @@ const submitSetPending = async () => {
         <div class="table-actions-bar">
             <ApprovalFilter :model-value="currentFilterStatus" :all-properties="approvalStore.properties"
                 @update:model-value="handleFilterUpdate" />
-            <ApprovalSearch v-model="searchKeyword" />
+            <div class="search-sort-group">
+                <ApprovalSearch v-model="searchKeyword" />
+                <select v-model="sortOrder" class="sort-select">
+                    <option value="newest">{{ t('admin.propertyApprovalPage.sort.newest') }}</option>
+                    <option value="oldest">{{ t('admin.propertyApprovalPage.sort.oldest') }}</option>
+                </select>
+            </div>
         </div>
 
         <div v-if="approvalStore.error" class="state-card error-card">
@@ -255,7 +273,7 @@ const submitSetPending = async () => {
             <TablePagination v-if="filteredProperties.length > 0 && totalPages > 1" :current-page="currentPage"
                 :total-pages="totalPages" @update:current-page="currentPage = $event" />
 
-            <div v-else class="state-card empty-card">
+            <div v-if="filteredProperties.length === 0" class="state-card empty-card">
                 <InboxIcon class="state-icon text-muted" />
                 <h3 class="state-title">{{ emptyStateContent.title }}</h3>
                 <p class="state-desc">{{ emptyStateContent.desc }}</p>
@@ -573,10 +591,38 @@ button:disabled {
     width: 100%;
 }
 
+.search-sort-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.sort-select {
+    padding: 0.55rem 0.9rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    outline: none;
+}
+
+.sort-select:focus {
+    border-color: var(--color-primary);
+}
+
 @media (max-width: 768px) {
     .table-actions-bar {
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    .search-sort-group {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
     }
 }
 </style>

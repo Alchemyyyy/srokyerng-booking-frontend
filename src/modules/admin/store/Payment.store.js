@@ -11,12 +11,12 @@ export const usePaymentStore = defineStore("admin-payments", () => {
   const payments = ref([]);
   const currentPayment = ref(null);
   const loading = ref(false);
-  const processing = ref(false);
   const error = ref(null);
 
   // ── Filters ───────────────────────────────────────────────────────────────
   const statusFilter = ref("all");
   const searchQuery = ref("");
+  const sortOrder = ref("newest"); // 'newest' | 'oldest'
 
   // ── Client-side pagination ────────────────────────────────────────────────
   const PAGE_SIZE = 10;
@@ -46,6 +46,11 @@ export const usePaymentStore = defineStore("admin-payments", () => {
           .some((field) => field.toLowerCase().includes(q)),
       );
     }
+
+    result = [...result].sort((a, b) => {
+      const diff = new Date(b.created_at) - new Date(a.created_at);
+      return sortOrder.value === "oldest" ? -diff : diff;
+    });
 
     return result;
   });
@@ -188,57 +193,6 @@ export const usePaymentStore = defineStore("admin-payments", () => {
     }
   };
 
-  /**
-   * Verify a payment
-   * PATCH /admin/payments/:id/verify
-   */
-  const verifyPayment = async (id) => {
-    processing.value = true;
-    error.value = null;
-    try {
-      const response = await paymentService.verifyPayment(id);
-      const updated = response?.data?.data ?? response?.data ?? null;
-      _patchPaymentInList(id, updated ?? { payment_status: "verified" });
-      return true;
-    } catch (err) {
-      error.value =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Failed to verify payment.";
-      console.error("[paymentStore] verifyPayment:", err);
-      return false;
-    } finally {
-      processing.value = false;
-    }
-  };
-
-  /**
-   * Reject a payment with a reason
-   * PATCH /admin/payments/:id/reject
-   */
-  const rejectPayment = async (id, reason) => {
-    processing.value = true;
-    error.value = null;
-    try {
-      const response = await paymentService.rejectPayment(id, reason);
-      const updated = response?.data?.data ?? response?.data ?? null;
-      _patchPaymentInList(
-        id,
-        updated ?? { payment_status: "rejected", rejection_reason: reason },
-      );
-      return true;
-    } catch (err) {
-      error.value =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Failed to reject payment.";
-      console.error("[paymentStore] rejectPayment:", err);
-      return false;
-    } finally {
-      processing.value = false;
-    }
-  };
-
   // ── Filter helpers ────────────────────────────────────────────────────────
   const setStatusFilter = (status) => {
     statusFilter.value = status;
@@ -248,19 +202,12 @@ export const usePaymentStore = defineStore("admin-payments", () => {
     searchQuery.value = query;
     currentPage.value = 1;
   };
+  const setSortOrder = (order) => {
+    sortOrder.value = order;
+    currentPage.value = 1;
+  };
   const setPage = (page) => {
     currentPage.value = page;
-  };
-
-  // ── Internal helpers ──────────────────────────────────────────────────────
-  const _patchPaymentInList = (id, patch) => {
-    const index = payments.value.findIndex((p) => p.id === id);
-    if (index !== -1) {
-      payments.value[index] = { ...payments.value[index], ...patch };
-    }
-    if (currentPayment.value?.id === id) {
-      currentPayment.value = { ...currentPayment.value, ...patch };
-    }
   };
 
   return {
@@ -268,12 +215,12 @@ export const usePaymentStore = defineStore("admin-payments", () => {
     payments,
     currentPayment,
     loading,
-    processing,
     error,
 
     // Filters
     statusFilter,
     searchQuery,
+    sortOrder,
 
     // Computed
     filteredPayments,
@@ -287,10 +234,9 @@ export const usePaymentStore = defineStore("admin-payments", () => {
     fetchPendingPayments,
     fetchPaymentById,
     fetchPaymentProof,
-    verifyPayment,
-    rejectPayment,
     setStatusFilter,
     setSearchQuery,
+    setSortOrder,
     setPage,
   };
 });

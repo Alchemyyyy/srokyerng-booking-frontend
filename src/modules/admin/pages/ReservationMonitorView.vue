@@ -11,6 +11,7 @@ import {
   statusBadgeClass,
   getImageUrl,
 } from "../utils/formatters";
+import { getBankName, getBankLogo } from "@/modules/payments/utils/bankBranding";
 import {
   EyeIcon,
   XMarkIcon,
@@ -46,8 +47,6 @@ const STATUS_TABS = computed(() => [
   },
 ]);
 
-const STATUS_OPTIONS = ["pending", "confirmed", "cancelled", "completed"];
-
 const DETAIL_TABS = computed(() => [
   { key: "reservation", label: t("admin.reservationMonitorPage.detailTabs.reservation") },
   { key: "payment", label: t("admin.reservationMonitorPage.detailTabs.payment") },
@@ -62,6 +61,13 @@ const detailPanel = ref({
   loading: false,
 });
 const activeTab = ref("reservation"); // "reservation" | "payment" | "proof"
+
+// ── Bank logo fallback — hide the image and fall back to the emoji icon if a
+// hotlinked bank logo fails to load (see bankBranding.js) ─────────────────────
+const failedLogoIds = ref(new Set());
+const handleLogoError = (methodId) => {
+  failedLogoIds.value = new Set(failedLogoIds.value).add(methodId);
+};
 
 // ── Open detail panel — fetch matching payment ────────────────────────────────
 const openDetail = async (reservation) => {
@@ -89,20 +95,6 @@ const closeDetail = () => {
     payment: null,
     loading: false,
   };
-};
-
-// ── Status change (called from inside detail panel only) ──────────────────────
-const handleStatusChange = async (reservation, newStatus) => {
-  if (newStatus === reservation.reservation_status) return;
-  await reservationStore.updateStatus(reservation.id, newStatus);
-
-  // Keep panel in sync if it's open
-  if (detailPanel.value.reservation?.id === reservation.id) {
-    detailPanel.value.reservation = {
-      ...detailPanel.value.reservation,
-      reservation_status: newStatus,
-    };
-  }
 };
 
 // ── Date formatter ────────────────────────────────────────────────────────────
@@ -159,7 +151,7 @@ onMounted(() => {
           :key="tab.key"
           @click="reservationStore.setStatusFilter(tab.key)"
           :class="[
-            'px-4 py-2 text-sm font-medium rounded-xl border transition-all duration-200 flex items-center gap-2',
+            'px-3 py-1.5 text-xs font-medium rounded-lg border transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap',
             reservationStore.statusFilter === tab.key
               ? 'bg-(--color-primary-soft) border-(--color-primary) text-(--color-primary-strong)'
               : 'bg-(--color-surface) border-(--color-border) text-(--color-muted) hover:text-(--color-text)',
@@ -168,9 +160,9 @@ onMounted(() => {
           {{ tab.label }}
           <span
             :class="[
-              'text-xs px-1.5 py-0.5 rounded-full font-bold',
+              'rounded-full px-1.5 py-0.5 text-[10px] font-bold',
               reservationStore.statusFilter === tab.key
-                ? 'bg-(--color-primary) text-white'
+                ? 'bg-(--color-primary) text-(--color-text-inverse)'
                 : 'bg-(--color-surface-soft) text-(--color-muted)',
             ]"
           >
@@ -179,13 +171,23 @@ onMounted(() => {
         </button>
       </nav>
 
-      <input
-        type="text"
-        :placeholder="t('admin.reservationMonitorPage.filters.searchPlaceholder')"
-        :value="reservationStore.searchQuery"
-        @input="reservationStore.setSearchQuery($event.target.value)"
-        class="w-full sm:w-64 px-4 py-2 text-sm rounded-xl border border-(--color-border) bg-(--color-surface) placeholder:text-(--color-muted) focus:outline-none focus:ring-2 focus:ring-(--color-primary)/30"
-      />
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <input
+          type="text"
+          :placeholder="t('admin.reservationMonitorPage.filters.searchPlaceholder')"
+          :value="reservationStore.searchQuery"
+          @input="reservationStore.setSearchQuery($event.target.value)"
+          class="w-full sm:w-64 px-4 py-2 text-sm rounded-xl border border-(--color-border) bg-(--color-surface) placeholder:text-(--color-muted) focus:outline-none focus:ring-2 focus:ring-(--color-primary)/30"
+        />
+        <select
+          :value="reservationStore.sortOrder"
+          @change="reservationStore.setSortOrder($event.target.value)"
+          class="px-3 py-2 text-sm rounded-xl border border-(--color-border) bg-(--color-surface) text-(--color-text) cursor-pointer focus:outline-none focus:ring-2 focus:ring-(--color-primary)/30"
+        >
+          <option value="newest">{{ t('admin.reservationMonitorPage.sort.newest') }}</option>
+          <option value="oldest">{{ t('admin.reservationMonitorPage.sort.oldest') }}</option>
+        </select>
+      </div>
     </div>
 
     <!-- Loading -->
@@ -224,7 +226,6 @@ onMounted(() => {
               <th class="table-th">{{ t("admin.reservationMonitorPage.columns.dates") }}</th>
               <th class="table-th">{{ t("admin.reservationMonitorPage.columns.amount") }}</th>
               <th class="table-th">{{ t("admin.reservationMonitorPage.columns.status") }}</th>
-              <th class="table-th text-center">{{ t("admin.reservationMonitorPage.columns.action") }}</th>
             </tr>
           </thead>
           <tbody>
@@ -285,16 +286,6 @@ onMounted(() => {
                 <span :class="statusBadgeClass(reservation.reservation_status)">
                   {{ statusLabel(reservation.reservation_status) }}
                 </span>
-              </td>
-
-              <!-- Action -->
-              <td class="px-4 py-3 text-center relative" @click.stop>
-                <button
-                  @click="openDetail(reservation)"
-                  class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-(--color-primary) text-(--color-primary) hover:bg-(--color-primary-soft) transition"
-                >
-                  {{ t("admin.reservationMonitorPage.viewDetail") }}
-                </button>
               </td>
             </tr>
           </tbody>
@@ -480,8 +471,16 @@ onMounted(() => {
                   <div class="info-card">
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-3">
+                        <img
+                          v-if="detailPanel.payment && !failedLogoIds.has(detailPanel.payment.payment_method_id)"
+                          :src="getBankLogo(detailPanel.payment.payment_method_id)"
+                          :alt="getBankName(detailPanel.payment.payment_method_id)"
+                          class="w-10 h-10 rounded-xl object-contain bg-white border border-(--color-border) shrink-0"
+                          @error="handleLogoError(detailPanel.payment.payment_method_id)"
+                        />
                         <div
-                          class="w-10 h-10 rounded-xl flex items-center justify-center text-lg"
+                          v-else
+                          class="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0"
                           :class="
                             detailPanel.payment
                               ? 'bg-emerald-500/10'
@@ -515,30 +514,6 @@ onMounted(() => {
                     </div>
                   </div>
 
-                  <!-- Change Status -->
-                  <div class="info-card">
-                    <p class="info-section-title mb-3">
-                      {{ t("admin.reservationMonitorPage.modal.changeStatus") }}
-                    </p>
-                    <div class="flex flex-wrap gap-2">
-                      <button
-                        v-for="status in STATUS_OPTIONS"
-                        :key="status"
-                        @click="
-                          handleStatusChange(detailPanel.reservation, status)
-                        "
-                        :disabled="reservationStore.processing"
-                        :class="[
-                          'px-3 py-1.5 text-xs font-semibold rounded-lg border capitalize transition',
-                          status === detailPanel.reservation?.reservation_status
-                            ? 'bg-(--color-primary-soft) border-(--color-primary) text-(--color-primary-strong)'
-                            : 'border-(--color-border) text-(--color-muted) hover:bg-(--color-surface-soft) hover:text-(--color-text)',
-                        ]"
-                      >
-                        {{ statusLabel(status) }}
-                      </button>
-                    </div>
-                  </div>
                 </div>
 
                 <!-- ── TAB: PAYMENT ───────────────────────────────────────── -->
@@ -719,7 +694,7 @@ onMounted(() => {
                         "
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="text-xs px-3 py-1.5 bg-(--color-primary) text-white rounded-lg font-semibold hover:opacity-90 transition"
+                        class="text-xs px-3 py-1.5 bg-(--color-primary) !text-white rounded-lg font-semibold hover:opacity-90 transition"
                       >
                         {{ t("admin.reservationMonitorPage.modal.openArrow") }}
                       </a>
@@ -765,7 +740,6 @@ onMounted(() => {
   inset: 0;
   z-index: 50;
   background: var(--color-overlay);
-  backdrop-filter: blur(3px);
   display: flex;
   justify-content: flex-end;
 }

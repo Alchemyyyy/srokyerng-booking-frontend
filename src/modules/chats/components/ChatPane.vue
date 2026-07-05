@@ -256,10 +256,13 @@ const cancelRecording = () => {
   stopRecording(false);
 };
 
-// Formats absolute URLs dynamically for chats
+// Formats absolute URLs dynamically for chats.
+// Anchored to the end — a plain .replace("/api", "") mangles hostnames that
+// contain "/api" earlier in the string, e.g. "https://api-example.com/api"
+// (the "//api" right after the scheme matches before the intended suffix).
 const getImageUrl = (path) => {
   if (!path) return "";
-  const base = import.meta.env.VITE_API_BASE_URL?.replace("/api", "") || "http://localhost:5000";
+  const base = import.meta.env.VITE_API_BASE_URL?.replace(/\/api\/?$/, "") || "http://localhost:5000";
   return path.startsWith("http") ? path : `${base}${path}`;
 };
 

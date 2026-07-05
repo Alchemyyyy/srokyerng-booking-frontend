@@ -1,8 +1,4 @@
-<template>
-  <main
-    class="owner-booking-calendar mt-25 min-h-screen px-6 pb-10 text-(--color-text) transition-all duration-300"
-    :class="isSidebarOpen ? 'ml-64' : 'ml-20'"
-  >
+<template> <div class="owner-booking-calendar text-(--color-text) ">
     <header
       class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
     >
@@ -68,7 +64,7 @@
         mode="owner"
       />
     </section>
-  </main>
+  </div>
 </template>
 
 <script setup>
@@ -76,10 +72,8 @@ import { ref, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import http from "@/app/api/http";
 import AvailabilityCalendar from "../components/AvailabilityCalendar.vue";
-import { useSidebar } from "@/shared/composables/useSidebar";
 
 const { t } = useI18n({ useScope: "global" });
-const { isSidebarOpen } = useSidebar();
 
 const properties = ref([]);
 const propertiesLoading = ref(false);

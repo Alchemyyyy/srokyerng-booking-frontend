@@ -527,7 +527,14 @@
     "becomePartner": "Become a partner",
     "becomePartnerDesc": "Become a partner and host your accommodation.",
     "verifiedProfile": "Verified Profile",
-    "helpSupport": "Help & Support"
+    "helpSupport": "Help & Support",
+    "wishlists": "Wishlists",
+    "trips": "Trips",
+    "messages": "Messages",
+    "language": "Language",
+    "theme": "Theme",
+    "becomeHost": "Become a host",
+    "startHosting": "It's easy to start hosting and earn extra income."
   },
   "ownerLanding": {
     "nav": {
@@ -2164,7 +2171,9 @@
         "rejectedTitle": "Your property changes were rejected",
         "reasonLabel": "Reason",
         "rejectedMessage": "Your original property is still live and unchanged. You can edit and resubmit your changes below.",
-        "editAndResubmit": "Edit & Resubmit"
+        "editAndResubmit": "Edit & Resubmit",
+        "propertyRejectedTitle": "Your property was rejected",
+        "propertyRejectedMessage": "Please review the reason below, make the necessary changes, and resubmit for approval."
       },
       "actions": {
         "editProperty": "Edit Property",
@@ -2618,6 +2627,10 @@
       "subtitle": "Review and manage platform host listings requests."
     },
     "propertyApprovalPage": {
+      "sort": {
+        "newest": "Newest first",
+        "oldest": "Oldest first"
+      },
       "errors": {
         "dataFetchingTitle": "Data Fetching Interrupted",
         "retryButton": "Try Reconnecting"
@@ -2634,6 +2647,8 @@
         "noApprovedDesc": "No property submissions have been approved in this cycle yet.",
         "noRejectedTitle": "No Rejected Properties",
         "noRejectedDesc": "Clean record! No property listing requests have been sent to the rejection archive.",
+        "noSuspendedTitle": "No Suspended Properties",
+        "noSuspendedDesc": "No property listings are currently suspended.",
         "emptyQueueTitle": "Queue Completely Empty",
         "emptyQueueDesc": "The management matrix is clear. There are no property listing records found."
       },
@@ -2702,6 +2717,21 @@
         "description": "Detailed Presentation Description",
         "descriptionFallback": "No description added yet.",
         "locationOnMap": "Location on Map"
+      },
+      "rooms": {
+        "title": "Rooms",
+        "noRooms": "No rooms have been added yet.",
+        "pricePerNight": "price / night",
+        "maxGuests": "guests",
+        "totalRooms": "units"
+      },
+      "amenities": {
+        "title": "Amenities",
+        "noAmenities": "No amenities selected."
+      },
+      "previousRejection": {
+        "title": "Previously Rejected",
+        "reasonLabel": "Reason given"
       },
       "contact": {
         "title": "Operation Contact Info",
@@ -2772,6 +2802,10 @@
     "paymentMonitorPage": {
       "title": "Payment Monitoring",
       "subtitle": "Review payment slips submitted by customers.",
+      "sort": {
+        "newest": "Newest first",
+        "oldest": "Oldest first"
+      },
       "tabs": {
         "all": "All",
         "pendingVerification": "Pending Verification",
@@ -2907,8 +2941,11 @@
       "subtitle": "Monitor and manage all reservations across the platform.",
       "loading": "Loading reservations...",
       "emptyState": "No reservations match this filter.",
-      "viewDetail": "View detail",
       "nightsCount": "{count} night(s)",
+      "sort": {
+        "newest": "Newest first",
+        "oldest": "Oldest first"
+      },
       "tabs": {
         "all": "All",
         "pending": "Pending",
@@ -2931,8 +2968,7 @@
         "owner": "Owner",
         "dates": "Dates",
         "amount": "Amount",
-        "status": "Status",
-        "action": "Action"
+        "status": "Status"
       },
       "aria": {
         "closePanel": "Close panel"
@@ -2953,7 +2989,6 @@
         "submittedOn": "Submitted {date}",
         "paymentNotReceived": "Payment not received",
         "viewDetailsArrow": "View details →",
-        "changeStatus": "Change Reservation Status",
         "noPaymentRecord": "No payment record",
         "noPaymentRecordHint": "The guest has not submitted any payment yet.",
         "paymentVerified": "Payment Verified",
@@ -3219,8 +3254,6 @@
           "description": "Updates about your booking activity, check-in information, and host notifications.",
           "emailTitle": "Email notifications",
           "emailDescription": "Receive booking receipts and check-in details.",
-          "smsTitle": "SMS text messages",
-          "smsDescription": "Get instant texts when checking in.",
           "pushTitle": "Mobile push alerts",
           "pushDescription": "Alerts on stay updates, host reminders, and check-outs."
         },
@@ -3242,7 +3275,7 @@
       },
       "sidebar": {
         "title": "Custom preferences",
-        "description": "Toggles save automatically when changed. You can return to modify email, SMS, and device notifications preferences at any time."
+        "description": "Toggles save automatically when changed. You can return to modify email and device notifications preferences at any time."
       },
       "toasts": {
         "updated": "Notification preferences updated successfully."

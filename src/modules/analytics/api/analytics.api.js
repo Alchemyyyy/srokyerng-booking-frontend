@@ -23,6 +23,11 @@ export const analyticsApi = {
     getAdminActivity(params) {
         return http.get('/admin/analytics/activity', { params });
     },
+    // Real per-property rows (not just aggregate counts) — used to populate
+    // the dashboard's pending-properties pipeline table.
+    getAdminPendingPropertiesList(params) {
+        return http.get('/admin/properties', { params: { status_id: 1, limit: 5, page: 1, ...params } });
+    },
 
     //owner
     getOwnerRevenue(params) {

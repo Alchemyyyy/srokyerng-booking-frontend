@@ -11,12 +11,10 @@ import AppPagination from "../components/TablePagination.vue";
 
 import { useOwnerPaymentStore } from "../store/ownerPayment.store";
 import { ShieldCheckIcon, CheckIcon, XMarkIcon, CheckCircleIcon, XCircleIcon } from "@heroicons/vue/24/outline";
-import { useSidebar } from "@/shared/composables/useSidebar";
 import { useToastStore } from "@/shared/store/toastStore";
 import { useI18n } from "vue-i18n";
 
 const router = useRouter();
-const { isSidebarOpen } = useSidebar();
 const toast = useToastStore();
 const { t, te } = useI18n({ useScope: "global" });
 const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
@@ -195,8 +193,7 @@ const rejectModalDesc = computed(() =>
 );
 </script>
 
-<template>
-    <main class="owner-payments space-y-6 my-25" :class="isSidebarOpen ? 'ml-64' : 'ml-20'">
+<template> <div class="owner-payments ">
         <header class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h1 class="text-3xl font-bold tracking-tight text-(--color-text)">{{ t("owner.paymentsPage.title") }}</h1>
@@ -409,7 +406,7 @@ const rejectModalDesc = computed(() =>
                 </div>
             </div>
         </AppModal>
-    </main>
+    </div>
 </template>
 
 <style scoped>

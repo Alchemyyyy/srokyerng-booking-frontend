@@ -10,6 +10,7 @@ import {
   statusBadgeClass,
   getImageUrl,
 } from "../utils/formatters";
+import { getBankName, getBankLogo } from "@/modules/payments/utils/bankBranding";
 import {
   MagnifyingGlassIcon,
   ExclamationTriangleIcon,
@@ -24,6 +25,13 @@ const statusLabel = (value) =>
 
 const store = usePaymentStore();
 const { isSidebarOpen } = useSidebar();
+
+// ── Bank logo fallback — hide the image and fall back to plain text if a
+// hotlinked bank logo fails to load (see bankBranding.js) ─────────────────────
+const failedLogoIds = ref(new Set());
+const handleLogoError = (methodId) => {
+  failedLogoIds.value = new Set(failedLogoIds.value).add(methodId);
+};
 
 // ── Status tabs ───────────────────────────────────────────────────────────────
 const STATUS_TABS = computed(() => [
@@ -87,7 +95,7 @@ onMounted(() => {
           :key="tab.key"
           @click="store.setStatusFilter(tab.key)"
           :class="[
-            'px-4 py-2 text-sm font-medium rounded-xl border transition-all duration-200 flex items-center gap-2',
+            'px-3 py-1.5 text-xs font-medium rounded-lg border transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap',
             store.statusFilter === tab.key
               ? 'bg-(--color-primary-soft) border-(--color-primary) text-(--color-primary-strong)'
               : 'bg-(--color-surface) border-(--color-border) text-(--color-muted) hover:text-(--color-text)',
@@ -96,7 +104,7 @@ onMounted(() => {
           {{ tab.label }}
           <span
             :class="[
-              'text-xs px-1.5 py-0.5 rounded-full font-bold',
+              'rounded-full px-1.5 py-0.5 text-[10px] font-bold',
               store.statusFilter === tab.key
                 ? 'bg-(--color-primary) text-white'
                 : 'bg-(--color-surface-soft) text-(--color-muted)',
@@ -107,18 +115,28 @@ onMounted(() => {
         </button>
       </nav>
 
-      <!-- Search -->
-      <div class="relative flex items-center">
-        <MagnifyingGlassIcon
-          class="absolute left-3 w-4 h-4 text-(--color-muted) pointer-events-none"
-        />
-        <input
-          type="text"
-          :placeholder="t('admin.paymentMonitorPage.searchPlaceholder')"
-          :value="store.searchQuery"
-          @input="store.setSearchQuery($event.target.value)"
-          class="pl-9 pr-4 py-2 text-sm rounded-xl border border-(--color-border) bg-(--color-surface) text-(--color-text) placeholder:text-(--color-muted) focus:outline-none focus:ring-2 focus:ring-(--color-primary)/30 w-full sm:w-72"
-        />
+      <!-- Search + Sort -->
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <div class="relative flex items-center w-full sm:w-72">
+          <MagnifyingGlassIcon
+            class="absolute left-3 w-4 h-4 text-(--color-muted) pointer-events-none"
+          />
+          <input
+            type="text"
+            :placeholder="t('admin.paymentMonitorPage.searchPlaceholder')"
+            :value="store.searchQuery"
+            @input="store.setSearchQuery($event.target.value)"
+            class="pl-9 pr-4 py-2 text-sm rounded-xl border border-(--color-border) bg-(--color-surface) text-(--color-text) placeholder:text-(--color-muted) focus:outline-none focus:ring-2 focus:ring-(--color-primary)/30 w-full"
+          />
+        </div>
+        <select
+          :value="store.sortOrder"
+          @change="store.setSortOrder($event.target.value)"
+          class="px-3 py-2 text-sm rounded-xl border border-(--color-border) bg-(--color-surface) text-(--color-text) cursor-pointer focus:outline-none focus:ring-2 focus:ring-(--color-primary)/30"
+        >
+          <option value="newest">{{ t('admin.paymentMonitorPage.sort.newest') }}</option>
+          <option value="oldest">{{ t('admin.paymentMonitorPage.sort.oldest') }}</option>
+        </select>
       </div>
     </div>
 
@@ -190,7 +208,16 @@ onMounted(() => {
               </td>
 
               <td class="px-4 py-3 font-medium">
-                {{ payment.payment_method || "-" }}
+                <div class="flex items-center gap-2">
+                  <img
+                    v-if="payment.payment_method_id && !failedLogoIds.has(payment.payment_method_id)"
+                    :src="getBankLogo(payment.payment_method_id)"
+                    :alt="getBankName(payment.payment_method_id)"
+                    class="w-6 h-6 rounded-full object-contain bg-white border border-(--color-border) shrink-0"
+                    @error="handleLogoError(payment.payment_method_id)"
+                  />
+                  {{ payment.payment_method || "-" }}
+                </div>
               </td>
 
               <td class="px-4 py-3 font-mono text-xs text-(--color-muted)">
@@ -301,7 +328,6 @@ onMounted(() => {
   inset: 0;
   z-index: 60;
   background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;

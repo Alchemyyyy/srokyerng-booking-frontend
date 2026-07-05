@@ -23,9 +23,7 @@ const menuItems = [
     { name: 'Users', path: '/admin/users', icon: UsersIcon, badge: null },
 ];
 
-const bottomItems = [
-    { name: 'Settings', path: '/admin/settings', icon: Cog6ToothIcon },
-];
+
 
 const userName = 'Admin Name';
 
@@ -37,6 +35,6 @@ const user = {
 </script>
 
 <template>
-    <AppSidebar :menuItems="menuItems" :bottomItems="bottomItems" :logo="logoDark" title="ស្រុកយើង" :user="user"
+    <AppSidebar :menuItems="menuItems" :logo="logoDark" title="ស្រុកយើង" :user="user"
         navigationLabel="Navigation" />
 </template>

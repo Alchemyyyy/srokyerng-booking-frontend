@@ -33,6 +33,7 @@ const {
 
     <div class="auth-social-grid" aria-label="Social login options">
       <div ref="googleButtonRef" class="auth-google-button"></div>
+      <!-- Facebook login is currently disabled
       <button
         class="auth-facebook-icon-button"
         type="button"
@@ -42,6 +43,7 @@ const {
       >
         <i class="bi bi-facebook" aria-hidden="true"></i>
       </button>
+      -->
     </div>
 
     <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>

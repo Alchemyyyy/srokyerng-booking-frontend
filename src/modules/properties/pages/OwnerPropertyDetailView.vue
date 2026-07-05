@@ -11,7 +11,6 @@ import AvailabilityCalendar from "@/modules/calendar/components/AvailabilityCale
 import { resolveAssetUrl } from "@/shared/utils/assetUrl";
 import { useToastStore } from "@/shared/store/toastStore";
 import OwnerLoadingState from "@/modules/owner/components/OwnerLoadingState.vue";
-import { useSidebar } from "@/shared/composables/useSidebar";
 import {
   ClockIcon,
   XCircleIcon,
@@ -28,7 +27,6 @@ const statusLabel = (value) =>
 const route = useRoute();
 const router = useRouter();
 const toast = useToastStore();
-const { isSidebarOpen } = useSidebar();
 
 const loading = ref(true);
 const error = ref("");
@@ -365,11 +363,7 @@ onMounted(async () => {
 });
 </script>
 
-<template>
-  <main
-    class="mt-25 min-h-screen px-6 pb-10 text-(--color-text) transition-all duration-300"
-    :class="isSidebarOpen ? 'ml-64' : 'ml-20'"
-  >
+<template> <div class=" text-(--color-text) ">
     <!-- Loading -->
     <OwnerLoadingState
       v-if="loading"
@@ -467,6 +461,35 @@ onMounted(async () => {
           </p>
           <p class="text-[13px] mt-1 opacity-80">
             {{ t("owner.propertyDetailPage.banners.rejectedMessage") }}
+          </p>
+          <button
+            @click="openEditModal"
+            class="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 text-white text-xs font-bold hover:bg-rose-700 transition"
+          >
+            <PencilSquareIcon class="w-3.5 h-3.5" />
+            {{ t("owner.propertyDetailPage.banners.editAndResubmit") }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Property rejected banner (the original submission itself, not an edit request) -->
+      <div
+        v-else-if="statusName === 'rejected'"
+        class="flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-rose-700"
+      >
+        <XCircleIcon class="w-5 h-5 shrink-0 mt-0.5" />
+        <div class="flex-1">
+          <p class="font-bold text-sm">
+            {{ t("owner.propertyDetailPage.banners.propertyRejectedTitle") }}
+          </p>
+          <p v-if="property.rejection_reason" class="text-[13px] mt-1">
+            <span class="font-semibold"
+              >{{ t("owner.propertyDetailPage.banners.reasonLabel") }}:</span
+            >
+            {{ property.rejection_reason }}
+          </p>
+          <p class="text-[13px] mt-1 opacity-80">
+            {{ t("owner.propertyDetailPage.banners.propertyRejectedMessage") }}
           </p>
           <button
             @click="openEditModal"
@@ -858,7 +881,7 @@ onMounted(async () => {
         <!-- End right column -->
       </div>
     </div>
-  </main>
+  </div>
 
   <!-- ── Edit Property Modal ─────────────────────────────────────────────────── -->
   <AppModal

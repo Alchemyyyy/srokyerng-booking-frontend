@@ -148,6 +148,20 @@ const executeSetPending = async () => {
       </div>
     </div>
 
+    <div
+      v-if="approvalStore.currentProperty?.rejection_reason"
+      class="previous-rejection-card mb-6"
+    >
+      <XCircleIcon class="w-5 h-5 shrink-0" />
+      <div>
+        <p class="font-bold text-sm">{{ t('admin.propertyReviewDetailPage.previousRejection.title') }}</p>
+        <p class="text-[13px] mt-1">
+          <span class="font-semibold">{{ t('admin.propertyReviewDetailPage.previousRejection.reasonLabel') }}:</span>
+          {{ approvalStore.currentProperty.rejection_reason }}
+        </p>
+      </div>
+    </div>
+
     <div v-if="approvalStore.error" class="status-error-card p-6 rounded-xl mb-6">{{ approvalStore.error }}</div>
 
     <div v-if="approvalStore.loading" class="flex justify-center items-center py-24">
@@ -217,6 +231,42 @@ const executeSetPending = async () => {
               :label="approvalStore.currentProperty.property_name"
             />
           </div>
+        </div>
+
+        <div class="custom-card">
+          <h3 class="section-title">{{ t('admin.propertyReviewDetailPage.rooms.title') }}</h3>
+          <div v-if="approvalStore.currentProperty.rooms?.length > 0" class="flex flex-col gap-3">
+            <div
+              v-for="room in approvalStore.currentProperty.rooms"
+              :key="room.id"
+              class="room-row"
+            >
+              <div>
+                <div class="font-bold text-(--color-text)">{{ room.room_name }}</div>
+                <div class="text-xs text-(--color-muted) mt-0.5">
+                  {{ room.room_type }} · {{ room.max_guests }} {{ t('admin.propertyReviewDetailPage.rooms.maxGuests') }} · {{ room.total_rooms }} {{ t('admin.propertyReviewDetailPage.rooms.totalRooms') }}
+                </div>
+              </div>
+              <div class="font-bold text-(--color-primary) whitespace-nowrap">
+                ${{ room.price_per_night }} <span class="text-[10px] text-(--color-muted) font-normal">{{ t('admin.propertyReviewDetailPage.rooms.pricePerNight') }}</span>
+              </div>
+            </div>
+          </div>
+          <p v-else class="text-sm text-(--color-muted)">{{ t('admin.propertyReviewDetailPage.rooms.noRooms') }}</p>
+        </div>
+
+        <div class="custom-card">
+          <h3 class="section-title">{{ t('admin.propertyReviewDetailPage.amenities.title') }}</h3>
+          <div v-if="approvalStore.currentProperty.amenities?.length > 0" class="flex flex-wrap gap-2">
+            <span
+              v-for="amenity in approvalStore.currentProperty.amenities"
+              :key="amenity.id"
+              class="amenity-pill"
+            >
+              {{ amenity.amenity_name }}
+            </span>
+          </div>
+          <p v-else class="text-sm text-(--color-muted)">{{ t('admin.propertyReviewDetailPage.amenities.noAmenities') }}</p>
         </div>
 
         <div class="custom-card grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -742,5 +792,39 @@ button:disabled {
   background-color: var(--color-danger-soft);
   color: var(--color-danger);
   border: 1px solid var(--color-danger);
+}
+
+.previous-rejection-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-md);
+  background-color: var(--color-danger-soft);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+}
+
+.room-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface-soft);
+}
+
+.amenity-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text);
+  background-color: var(--color-surface-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 9999px;
 }
 </style>

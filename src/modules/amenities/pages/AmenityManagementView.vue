@@ -1,9 +1,4 @@
-<template>
-  <div
-    class="amenity-page my-25"
-    :class="isSidebarOpen ? 'ml-64' : 'ml-20'"
-    :style="{ marginLeft: isMobile ? '0' : undefined }"
-  >
+<template> <div class="amenity-page " :style="{ marginLeft: isMobile ? '0' : undefined }">
     <!-- HEADER -->
     <div class="page-header">
       <div class="header-inner">
@@ -367,7 +362,6 @@ import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import AmenitySelector from "../components/AmenitySelector.vue";
 import OwnerLoadingState from "@/modules/owner/components/OwnerLoadingState.vue";
-import { useSidebar } from "@/shared/composables/useSidebar";
 import { HomeIcon, XMarkIcon } from "@heroicons/vue/24/outline";
 import http from "@/app/api/http";
 
@@ -402,7 +396,6 @@ const loadingProperties = ref(false);
 // from a dropdown populated from the owner's own properties.
 const selectedPropertyId = ref(route.params.id ? Number(route.params.id) : null);
 const loadingCatalogueAmenities = ref(false);
-const { isSidebarOpen } = useSidebar();
 
 const isMobile = ref(window.innerWidth < 768);
 const handleResize = () => {

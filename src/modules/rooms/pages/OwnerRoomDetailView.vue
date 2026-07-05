@@ -21,14 +21,12 @@ import RoomFormModal from "@/modules/rooms/components/RoomFormModal.vue";
 import { useRoomStore } from "@/modules/rooms/store/roomStore";
 import { useToastStore } from "@/shared/store/toastStore";
 import OwnerLoadingState from "@/modules/owner/components/OwnerLoadingState.vue";
-import { useSidebar } from "@/shared/composables/useSidebar";
 
 const roomStore = useRoomStore();
 
 const route = useRoute();
 const router = useRouter();
 const toast = useToastStore();
-const { isSidebarOpen } = useSidebar();
 const { t, te } = useI18n({ useScope: "global" });
 const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
 const statusLabel = (value) => safeT(`common.status.${String(value || "").toLowerCase()}`, value);
@@ -327,11 +325,7 @@ onMounted(async () => {
 });
 </script>
 
-<template>
-  <div
-    class="min-h-screen bg-(--color-page) text-(--color-text) antialiased pb-24 px-6 mt-25 transition-all duration-300"
-    :class="isSidebarOpen ? 'ml-64' : 'ml-20'"
-  >
+<template> <div class=" bg-(--color-page) text-(--color-text) ">
     <!-- Loading -->
     <OwnerLoadingState v-if="loading" :label="t('owner.roomDetailPage.loading')" />
 

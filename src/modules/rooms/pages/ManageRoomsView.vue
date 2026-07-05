@@ -12,7 +12,6 @@ import RoomCardSkeleton from "../components/RoomCardSkeleton.vue";
 import RoomFormModal from "../components/RoomFormModal.vue";
 import RoomDeleteModal from "../components/RoomDeleteModal.vue";
 import { useToastStore } from "@/shared/store/toastStore";
-import { useSidebar } from "@/shared/composables/useSidebar";
 
 import {
   PlusIcon,
@@ -22,7 +21,6 @@ import {
 
 const { t } = useI18n({ useScope: "global" });
 const toastStore = useToastStore();
-const { isSidebarOpen } = useSidebar();
 
 const roomStore = useRoomStore();
 const {
@@ -423,11 +421,7 @@ onMounted(async () => {
 });
 </script>
 
-<template>
-  <div
-    class="my-25 space-y-6 min-h-screen text-(--color-text) transition-colors duration-300 owner-dashboard p-6"
-    :class="isSidebarOpen ? 'ml-64' : 'ml-20'"
-  >
+<template> <div class=" text-(--color-text) owner-dashboard ">
     <header
       class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
     >

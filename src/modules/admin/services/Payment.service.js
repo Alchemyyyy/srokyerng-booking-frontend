@@ -22,14 +22,4 @@ export const paymentService = {
   async getPaymentProof(id) {
     return await adminApi.get(`/admin/payments/${id}/proof`);
   },
-
-  async verifyPayment(id) {
-    return await adminApi.patch(`/admin/payments/${id}/verify`);
-  },
-
-  async rejectPayment(id, reason) {
-    return await adminApi.patch(`/admin/payments/${id}/reject`, {
-      rejection_reason: reason,
-    });
-  },
 };

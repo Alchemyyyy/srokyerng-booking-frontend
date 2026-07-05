@@ -3,7 +3,7 @@ export const adminAnalyticsService = {
     /**
      * បំប្លែងទិន្នន័យពី API ឱ្យត្រូវតាម JSON ជាក់ស្តែងរបស់ Backend (តាម Postman)
      */
-    processDashboardData({ summary, users, properties, reservations, payments, reviews, activity }) {
+    processDashboardData({ summary, users, properties, reservations, payments, reviews, activity, pendingProperties }) {
 
         // ចាប់យក Object ផ្ទាល់ពីផ្លូវដើរក្នុង Postman
         const platformSummary = summary?.platform_summary || {};
@@ -61,8 +61,15 @@ export const adminAnalyticsService = {
             };
         });
 
-        // ៤. Pipeline Table (បង្កើត Mock structures ខ្លះៗ ឬទុកទទេតាម UI)
-        const propertiesPipeline = [];
+        // ៤. Pipeline Table — real pending properties awaiting approval
+        const propertiesPipeline = (pendingProperties || []).map((p) => ({
+            name: p.property_name,
+            location: p.city?.city_name || p.address || '',
+            rooms: p.room_count || 0,
+            valuation: Number(p.price_per_night || 0),
+            status: 'Pending',
+            statusClass: 'bg-amber-500/10 text-amber-600',
+        }));
 
         // ៥. Timeline សម្រាប់ Growth Line Chart
         const overviewTimeline = adminAnalyticsService.generateGrowthTimeline(stats.properties, stats.users);

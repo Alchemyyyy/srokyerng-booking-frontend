@@ -32,8 +32,6 @@ export const getProfileRouteByRole = (role) => {
       return { name: "customer.profile" };
     case ROLES.OWNER:
       return { name: "owner.profile" };
-    case ROLES.ADMIN:
-      return { name: "admin.profile" };
     default:
       return null;
   }

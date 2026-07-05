@@ -460,7 +460,7 @@ watch(
             @click="closeMenu"
           >
             <HeartIcon class="h-5 w-5 text-(--color-text)" />
-            <span>Wishlists</span>
+            <span>{{ t('nav.wishlists') }}</span>
           </RouterLink>
 
           <RouterLink
@@ -469,7 +469,7 @@ watch(
             @click="closeMenu"
           >
             <Squares2X2Icon class="h-5 w-5 text-(--color-text)" />
-            <span>Trips</span>
+            <span>{{ t('nav.trips') }}</span>
           </RouterLink>
 
           <RouterLink
@@ -478,7 +478,7 @@ watch(
             @click="closeMenu"
           >
             <ChatBubbleOvalLeftIcon class="h-5 w-5 text-(--color-text)" />
-            <span>Messages</span>
+            <span>{{ t('nav.messages') }}</span>
           </RouterLink>
 
           <RouterLink
@@ -488,7 +488,7 @@ watch(
             @click="closeMenu"
           >
             <UserCircleIcon class="h-5 w-5 text-(--color-text)" />
-            <span>Profile</span>
+            <span>{{ t('nav.profile') }}</span>
           </RouterLink>
 
           <div class="my-2 border-b border-(--color-border)"></div>
@@ -502,7 +502,7 @@ watch(
           >
             <div class="flex items-center gap-4">
               <BellIcon class="h-5 w-5 text-(--color-text)" />
-              <span>Notifications</span>
+              <span>{{ t('nav.notifications') }}</span>
             </div>
             <span
               v-if="notificationStore.unreadCount > 0"
@@ -519,7 +519,7 @@ watch(
             @click="closeMenu"
           >
             <Cog6ToothIcon class="h-5 w-5 text-(--color-text)" />
-            <span>Account settings</span>
+            <span>{{ t('nav.settings') }}</span>
           </RouterLink>
 
           <!-- Theme Switcher Row -->
@@ -530,7 +530,7 @@ watch(
             <div class="flex items-center gap-4">
               <MoonIcon v-if="currentTheme === 'dark'" class="h-5 w-5 text-(--color-text)" />
               <SunIcon v-else class="h-5 w-5 text-(--color-text)" />
-              <span>Theme</span>
+              <span>{{ t('nav.theme') }}</span>
             </div>
             <span class="text-xs text-(--color-muted) capitalize font-medium">{{ currentTheme }}</span>
           </div>
@@ -542,7 +542,7 @@ watch(
           >
             <div class="flex items-center gap-4">
               <GlobeAltIcon class="h-5 w-5 text-(--color-text)" />
-              <span>Language</span>
+              <span>{{ t('nav.language') }}</span>
             </div>
             <LanguageToggle @click.stop />
           </div>
@@ -553,7 +553,7 @@ watch(
             @click="closeMenu"
           >
             <QuestionMarkCircleIcon class="h-5 w-5 text-(--color-text)" />
-            <span>Help Center</span>
+            <span>{{ t('nav.helpSupport') }}</span>
           </RouterLink>
 
           <div class="my-2 border-b border-(--color-border)"></div>
@@ -566,8 +566,8 @@ watch(
             @click="closeMenu"
           >
             <div>
-              <div class="font-bold text-(--color-text)">Become a host</div>
-              <div class="text-xs text-(--color-muted) font-normal mt-0.5">It's easy to start hosting and earn extra income.</div>
+              <div class="font-bold text-(--color-text)">{{ t('nav.becomeHost') }}</div>
+              <div class="text-xs text-(--color-muted) font-normal mt-0.5">{{ t('nav.startHosting') }}</div>
             </div>
             <HomeIcon class="h-6 w-6 text-(--color-primary) group-hover:scale-110 transition-transform" />
           </RouterLink>
@@ -578,7 +578,7 @@ watch(
             class="w-full text-left px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer font-normal text-(--color-text) block"
             @click="handleLogout"
           >
-            Log out
+            {{ t('nav.logout') }}
           </button>
         </template>
       </div>

@@ -1,7 +1,6 @@
 // ApprovalTable.vue
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import { useRouter, } from 'vue-router';
 import { CheckIcon, XMarkIcon, ChevronDownIcon } from '@heroicons/vue/24/solid';
 import { useI18n } from 'vue-i18n';
 
@@ -15,19 +14,6 @@ defineProps({
 });
 
 const emit = defineEmits(['approve', 'reject', 'row-click', 'change-status-click']);
-const router = useRouter();
-
-// const navigateToReview = (id) => {
-//     if (id === undefined || id === null) {
-//         console.error("Property ID is missing or undefined!");
-//         return;
-//     }
-
-//     router.push({
-//         name: 'admin.properties.review',
-//         params: { id: String(id) }
-//     });
-// };
 
 const activeDropdownId = ref(null);
 const isDropup = ref(false);
@@ -56,7 +42,6 @@ onUnmounted(() => window.removeEventListener('click', closeAllDropdowns));
 
 const handleRowClick = (event, itemId) => {
     if (event.target.closest('.action-buttons-container') || event.target.closest('.dropdown-menu-wrapper')) {
-        console.log("Clicked on action elements, preventing row navigation.");
         return;
     }
 

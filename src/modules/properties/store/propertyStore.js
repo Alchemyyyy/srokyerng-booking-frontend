@@ -156,7 +156,7 @@ const normalizeProperty = (item, index) => {
     images: imagesArray,
     pendingEdit: false,
     rejectedEdit: false,
-    rejectionReason: "",
+    rejectionReason: item.rejection_reason || "",
   };
 };
 

@@ -1,6 +1,5 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { useSidebar } from '@/shared/composables/useSidebar';
 import { useOwnerPaymentStore } from '../store/ownerPayment.store';
 import CreatePaymentAccountForm from '../components/CreatePaymentAccountForm.vue';
 import AppModal from '@/shared/components/AppModal.vue';
@@ -18,7 +17,6 @@ import { useI18n } from 'vue-i18n';
 
 const paymentStore = useOwnerPaymentStore();
 const isModalOpen = ref(false);
-const { isSidebarOpen } = useSidebar();
 const { t } = useI18n({ useScope: "global" });
 
 const isQrModalOpen = ref(false);
@@ -113,8 +111,7 @@ const handleToggleActive = async (account) => {
 };
 </script>
 
-<template>
-    <div class="payment-account-container space-y-6 my-25" :class="isSidebarOpen ? 'ml-64' : 'ml-20'">
+<template> <div class="payment-account-container ">
 
         <div class="page-header">
             <DashboardHero :eyebrow="t('owner.paymentAccountsPage.eyebrow')" :title="t('owner.paymentAccountsPage.title')"

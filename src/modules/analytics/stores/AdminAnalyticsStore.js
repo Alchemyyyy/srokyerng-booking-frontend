@@ -94,7 +94,7 @@ export const useAdminAnalyticsStore = defineStore('adminAnalytics', () => {
         }
 
         try {
-            // ហៅប្រើប្រាស់ API Endpoints ទាំង ៧ ស្របពេលគ្នា
+            // ហៅប្រើប្រាស់ API Endpoints ទាំង ៨ ស្របពេលគ្នា
             const results = await Promise.allSettled([
                 analyticsApi.getAdminSummary(params),
                 analyticsApi.getAdminUsers(params),
@@ -102,7 +102,8 @@ export const useAdminAnalyticsStore = defineStore('adminAnalytics', () => {
                 analyticsApi.getAdminReservations(params),
                 analyticsApi.getAdminPayments(params),
                 analyticsApi.getAdminReviews(params),
-                analyticsApi.getAdminActivity({ ...params, limit: 20 })
+                analyticsApi.getAdminActivity({ ...params, limit: 20 }),
+                analyticsApi.getAdminPendingPropertiesList()
             ]);
 
             // ទាញយកលទ្ធផល .data ចេញពី Axios Response
@@ -113,10 +114,14 @@ export const useAdminAnalyticsStore = defineStore('adminAnalytics', () => {
             const payments = results[4].status === 'fulfilled' ? results[4].value.data : null
             const reviews = results[5].status === 'fulfilled' ? results[5].value.data : null
             const activity = results[6].status === 'fulfilled' ? results[6].value.data : null
+            const pendingPropertiesRaw = results[7].status === 'fulfilled' ? results[7].value.data : null;
+            const pendingProperties = Array.isArray(pendingPropertiesRaw)
+                ? pendingPropertiesRaw
+                : (pendingPropertiesRaw?.data || []);
 
             // ដំណើរការកែច្នៃទិន្នន័យតាមរយៈ Service
             const processed = adminAnalyticsService.processDashboardData({
-                summary, users, properties, reservations, payments, reviews, activity
+                summary, users, properties, reservations, payments, reviews, activity, pendingProperties
             });
 
             // រុញទិន្នន័យចូលទៅក្នុង States

@@ -6,7 +6,6 @@ import { useToastStore } from "@/shared/store/toastStore";
 import LoadingSpinner from "@/shared/components/LoadingSpinner.vue";
 import OwnerLoadingState from "@/modules/owner/components/OwnerLoadingState.vue";
 import defaultReceipt from "@/assets/images/default/default_receipt.png";
-import { useSidebar } from "@/shared/composables/useSidebar";
 import {
     ArrowLeftIcon,
     CheckIcon,
@@ -18,7 +17,6 @@ import { useI18n } from "vue-i18n";
 const route = useRoute();
 const router = useRouter();
 const toastStore = useToastStore();
-const { isSidebarOpen } = useSidebar();
 const { t, te } = useI18n({ useScope: "global" });
 const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
 const statusLabel = (value) => safeT(`common.status.${String(value || "").toLowerCase()}`, value);
@@ -249,8 +247,7 @@ const getStatusBadgeClass = (status) => {
 onMounted(fetchPaymentDetails);
 </script>
 
-<template>
-    <main class="owner-payment-details space-y-6 my-25" :class="isSidebarOpen ? 'ml-64' : 'ml-20'">
+<template> <div class="owner-payment-details ">
         <header class="mb-6 flex items-center pb-4">
             <button @click="router.back()"
                 class="inline-flex items-center gap-2 px-4 py-2 bg-(--color-surface) border border-(--color-border) rounded-xl text-xs font-bold text-(--color-text) hover:bg-(--color-surface-soft) transition cursor-pointer shadow-sm">
@@ -559,7 +556,7 @@ onMounted(fetchPaymentDetails);
                 </div>
             </template>
         </section>
-    </main>
+    </div>
 </template>
 
 <style scoped>

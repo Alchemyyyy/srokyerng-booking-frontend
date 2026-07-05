@@ -46,9 +46,7 @@ const menuItems = computed(() => [
   { name: t("admin.sidebar.users"), path: "/admin/users", icon: UsersIcon, badge: null },
 ]);
 
-const bottomItems = computed(() => [
-  { name: t("admin.sidebar.settings"), path: "/admin/settings", icon: Cog6ToothIcon },
-]);
+
 
 const userName = computed(() => t("admin.profile.name"));
 
@@ -65,7 +63,6 @@ const navigationLabel = computed(() => t("admin.sidebar.navigation"));
 <template>
   <AppSidebar
     :menuItems="menuItems"
-    :bottomItems="bottomItems"
     :logo="logoDark"
     :title="title"
     :user="user"

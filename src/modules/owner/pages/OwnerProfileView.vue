@@ -21,11 +21,9 @@ import { userService } from "@/modules/users/services/user.service";
 import { useProfileImageUpload } from "@/modules/users/composables/useProfileImageUpload";
 import { useProfileValidation } from "@/modules/users/composables/useProfileValidation";
 import { useToastStore } from "@/shared/store/toastStore";
-import { useSidebar } from "@/shared/composables/useSidebar";
 
 const authStore = useAuthStore();
 const toastStore = useToastStore();
-const { isSidebarOpen } = useSidebar();
 const { t } = useI18n({ useScope: "global" });
 
 const loading = ref(false);
@@ -328,11 +326,7 @@ onUnmounted(() => {
 });
 </script>
 
-<template>
-  <main
-    class="owner-profile transition-all duration-300 my-25 space-y-6"
-    :class="isSidebarOpen ? 'ml-64' : 'ml-20'"
-  >
+<template> <div class="owner-profile ">
     <!-- Header -->
     <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-2">
       <div>
@@ -616,7 +610,7 @@ onUnmounted(() => {
         </AppButton>
       </template>
     </AppModal>
-  </main>
+  </div>
 </template>
 
 <style scoped>

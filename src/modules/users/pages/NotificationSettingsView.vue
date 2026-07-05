@@ -32,13 +32,10 @@ const preferences = reactive({
   offers_email: true,
   offers_push: false,
   security_email: true,
-  security_sms: true,
   security_push: true,
   booking_email: true,
-  booking_sms: true,
   booking_push: true,
   messages_email: true,
-  messages_sms: false,
   messages_push: true,
 });
 
@@ -115,18 +112,6 @@ onMounted(() => {
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer select-none">
                   <input type="checkbox" v-model="preferences.booking_email" @change="handleSave" class="sr-only peer" />
-                  <div class="w-11 h-6 bg-zinc-300 dark:bg-zinc-700 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-(--color-primary)"></div>
-                </label>
-              </div>
-
-              <!-- SMS Toggle -->
-              <div class="flex items-center justify-between py-2">
-                <div>
-                  <h4 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.notifications.sections.stays.smsTitle") }}</h4>
-                  <p class="text-xs text-(--color-muted) font-medium mt-0.5">{{ t("settingsPage.notifications.sections.stays.smsDescription") }}</p>
-                </div>
-                <label class="relative inline-flex items-center cursor-pointer select-none">
-                  <input type="checkbox" v-model="preferences.booking_sms" @change="handleSave" class="sr-only peer" />
                   <div class="w-11 h-6 bg-zinc-300 dark:bg-zinc-700 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-(--color-primary)"></div>
                 </label>
               </div>

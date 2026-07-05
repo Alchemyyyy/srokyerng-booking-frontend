@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useToastStore } from '@/shared/store/toastStore'
-import { useSidebar } from '@/shared/composables/useSidebar'
 import reviewApi from '@/modules/reviews/api/review.api'
 import OwnerReviewCard from '../components/OwnerReviewCard.vue'
 import OwnerLoadingState from '../components/OwnerLoadingState.vue'
@@ -17,7 +16,6 @@ import { StarIcon as StarSolid } from '@heroicons/vue/24/solid'
 import { useI18n } from 'vue-i18n'
 
 const toast              = useToastStore()
-const { isSidebarOpen } = useSidebar()
 const { t } = useI18n({ useScope: "global" })
 
 const loading      = ref(true)
@@ -134,11 +132,7 @@ const handleDeleteReply = async (reviewId) => {
 onMounted(fetchReviews)
 </script>
 
-<template>
-  <main
-    class="owner-reviews transition-all duration-300 my-25 space-y-6"
-    :class="isSidebarOpen ? 'ml-64' : 'ml-20'"
-  >
+<template> <div class="owner-reviews ">
 
     <!-- Header -->
     <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-2">
@@ -297,7 +291,7 @@ onMounted(fetchReviews)
       />
     </section>
 
-  </main>
+  </div>
 </template>
 
 <style scoped>

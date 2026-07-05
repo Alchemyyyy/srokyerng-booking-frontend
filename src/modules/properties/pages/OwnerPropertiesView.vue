@@ -7,7 +7,6 @@ import AppInput from "@/shared/components/AppInput.vue";
 import AppAlert from "@/shared/components/AppAlert.vue";
 import EmptyState from "@/shared/components/EmptyState.vue";
 import PropertyCardSkeleton from "../components/PropertyCardSkeleton.vue";
-import { useSidebar } from "@/shared/composables/useSidebar";
 import { usePropertyStore } from "@/modules/properties/store/propertyStore";
 import { useToastStore } from "@/shared/store/toastStore";
 import { propertyApi } from "@/modules/properties/api/property.api";
@@ -36,7 +35,6 @@ import { StarIcon as StarIconSolid } from "@heroicons/vue/24/solid";
 
 const propertyStore = usePropertyStore();
 const toast = useToastStore();
-const { isSidebarOpen } = useSidebar();
 const { t, te } = useI18n({ useScope: "global" });
 const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
 const statusLabel = (value) =>
@@ -773,11 +771,7 @@ onMounted(async () => {
 });
 </script>
 
-<template>
-  <main
-    class="mt-24 transition-all duration-300 min-h-screen bg-(--color-background)"
-    :class="isSidebarOpen ? 'ml-64' : 'ml-20'"
-  >
+<template> <div class=" bg-(--color-background)">
     <div class="max-w-[1600px] mx-auto px-8 pb-16 pt-4">
       <header
         class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
@@ -1628,5 +1622,5 @@ onMounted(async () => {
         </div>
       </div>
     </AppModal>
-  </main>
+  </div>
 </template>

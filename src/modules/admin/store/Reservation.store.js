@@ -7,11 +7,11 @@ const STATUS_OPTIONS = ["pending", "confirmed", "cancelled", "completed"];
 export const useReservationStore = defineStore("admin-reservations", () => {
   const reservations = ref([]);
   const loading = ref(false);
-  const processing = ref(false);
   const error = ref(null);
 
   const statusFilter = ref("all");
   const searchQuery = ref("");
+  const sortOrder = ref("newest"); // 'newest' | 'oldest'
 
   // ── Client-side pagination ────────────────────────────────────────────────
   const PAGE_SIZE = 10;
@@ -41,6 +41,11 @@ export const useReservationStore = defineStore("admin-reservations", () => {
           .some((field) => field.toLowerCase().includes(q)),
       );
     }
+
+    result = [...result].sort((a, b) => {
+      const diff = new Date(b.created_at) - new Date(a.created_at);
+      return sortOrder.value === "oldest" ? -diff : diff;
+    });
 
     return result;
   });
@@ -92,36 +97,6 @@ export const useReservationStore = defineStore("admin-reservations", () => {
     }
   };
 
-  const updateStatus = async (id, status) => {
-    processing.value = true;
-    error.value = null;
-    try {
-      const response = await reservationService.updateReservationStatus(
-        id,
-        status,
-      );
-      const updated = response?.data?.data ?? response?.data ?? response;
-
-      const index = reservations.value.findIndex((r) => r.id === id);
-      if (index !== -1 && updated) {
-        reservations.value[index] = {
-          ...reservations.value[index],
-          ...updated,
-        };
-      }
-      return true;
-    } catch (err) {
-      error.value =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Failed to update reservation status.";
-      console.error("Update reservation status error:", err);
-      return false;
-    } finally {
-      processing.value = false;
-    }
-  };
-
   const setStatusFilter = (status) => {
     statusFilter.value = status;
     currentPage.value = 1;
@@ -132,6 +107,11 @@ export const useReservationStore = defineStore("admin-reservations", () => {
     currentPage.value = 1;
   };
 
+  const setSortOrder = (order) => {
+    sortOrder.value = order;
+    currentPage.value = 1;
+  };
+
   const setPage = (page) => {
     currentPage.value = page;
   };
@@ -139,18 +119,18 @@ export const useReservationStore = defineStore("admin-reservations", () => {
   return {
     reservations,
     loading,
-    processing,
     error,
     statusFilter,
     searchQuery,
+    sortOrder,
     filteredReservations,
     pagedReservations,
     pagination,
     statusCounts,
     fetchReservations,
-    updateStatus,
     setStatusFilter,
     setSearchQuery,
+    setSortOrder,
     setPage,
   };
 });

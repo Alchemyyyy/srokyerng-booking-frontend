@@ -3,14 +3,12 @@ import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { reservationApi } from "../api/reservation.api";
-import { useSidebar } from "@/shared/composables/useSidebar";
 import LoadingSpinner from "@/shared/components/LoadingSpinner.vue";
 import OwnerLoadingState from "@/modules/owner/components/OwnerLoadingState.vue";
 import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 
 const route = useRoute();
 const router = useRouter();
-const { isSidebarOpen } = useSidebar();
 const { t, te } = useI18n({ useScope: "global" });
 const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
 const statusLabel = (value) => safeT(`common.status.${String(value || "").toLowerCase()}`, value);
@@ -83,11 +81,7 @@ const fetchReservation = async () => {
 onMounted(fetchReservation);
 </script>
 
-<template>
-  <main
-    class="owner-reservation-detail space-y-6 my-25"
-    :class="isSidebarOpen ? 'ml-64' : 'ml-20'"
-  >
+<template> <div class="owner-reservation-detail ">
     <header class="mb-6 flex items-center pb-4">
       <button
         @click="router.back()"
@@ -244,7 +238,7 @@ onMounted(fetchReservation);
         </router-link>
       </div>
     </div>
-  </main>
+  </div>
 </template>
 
 <style scoped>

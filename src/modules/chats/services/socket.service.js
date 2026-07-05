@@ -1,6 +1,9 @@
 import { io } from "socket.io-client";
 
-const base = import.meta.env.VITE_API_BASE_URL?.replace("/api", "") || "http://localhost:5000";
+// Anchored to the end — a plain .replace("/api", "") mangles hostnames that
+// contain "/api" earlier in the string, e.g. "https://api-example.com/api"
+// (the "//api" right after the scheme matches before the intended suffix).
+const base = import.meta.env.VITE_API_BASE_URL?.replace(/\/api\/?$/, "") || "http://localhost:5000";
 
 let socket = null;
 
