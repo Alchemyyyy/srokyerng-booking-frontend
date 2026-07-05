@@ -26,12 +26,14 @@ import { useToastStore } from "@/shared/store/toastStore";
 import { getDashboardRouteByRole } from "@/shared/utils/roleRoutes";
 import PublicNavbar from "@/shared/components/PublicNavbar.vue";
 import PublicFooter from "@/shared/components/PublicFooter.vue";
+import { useSidebar } from "@/shared/composables/useSidebar";
 
 const router = useRouter();
 const authStore = useAuthStore();
 const notificationStore = useNotificationStore();
 const toastStore = useToastStore();
 const { t, te, locale } = useI18n({ useScope: "global" });
+const { isSidebarOpen } = useSidebar();
 
 
 
@@ -291,9 +293,13 @@ onMounted(async () => {
   <div class="min-h-screen bg-(--color-page) text-(--color-text) flex flex-col font-sans">
     <PublicNavbar v-if="authStore.user?.role !== 'owner' && authStore.user?.role !== 'admin'" />
 
-    <main 
-      class="flex-1 min-h-screen pb-12 px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto w-full flex flex-col"
-      :class="[authStore.user?.role !== 'owner' && authStore.user?.role !== 'admin' ? 'pt-32' : 'pt-8']"
+    <main
+      class="flex-1 min-h-screen pb-12 flex flex-col transition-all duration-300"
+      :class="
+        authStore.user?.role !== 'owner' && authStore.user?.role !== 'admin'
+          ? 'pt-32 px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto w-full'
+          : ['pt-25 px-6 sm:px-10 lg:px-16', isSidebarOpen ? 'ml-64' : 'ml-20']
+      "
     >
       <div class="max-w-3xl w-full mx-auto flex-1 flex flex-col">
         <!-- Page Header Row -->

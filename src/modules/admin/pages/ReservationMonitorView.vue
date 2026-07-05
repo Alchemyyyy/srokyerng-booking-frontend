@@ -4,6 +4,7 @@ import { useI18n } from "vue-i18n";
 import { useReservationStore } from "../store/Reservation.store";
 import { usePaymentStore } from "../store/Payment.store";
 import TablePagination from "../components/TablePagination.vue";
+import { useSidebar } from "@/shared/composables/useSidebar";
 import {
   formatMoney,
   formatDate,
@@ -25,6 +26,7 @@ const statusLabel = (value) =>
 
 const reservationStore = useReservationStore();
 const paymentStore = usePaymentStore();
+const { isSidebarOpen } = useSidebar();
 
 // ── Status tabs (reservation) ─────────────────────────────────────────────────
 const STATUS_TABS = computed(() => [
@@ -124,7 +126,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="ml-64 mt-25 min-h-screen px-6 pb-10 text-(--color-text)">
+  <div
+    class="mt-25 min-h-screen px-6 pb-10 text-(--color-text) transition-all duration-300"
+    :class="isSidebarOpen ? 'ml-64' : 'ml-20'"
+  >
     <!-- Header -->
     <header class="mb-6">
       <h1 class="text-3xl font-bold tracking-tight">

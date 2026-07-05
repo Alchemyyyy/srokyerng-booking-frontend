@@ -11,6 +11,7 @@ import AvailabilityCalendar from "@/modules/calendar/components/AvailabilityCale
 import { resolveAssetUrl } from "@/shared/utils/assetUrl";
 import { useToastStore } from "@/shared/store/toastStore";
 import OwnerLoadingState from "@/modules/owner/components/OwnerLoadingState.vue";
+import { useSidebar } from "@/shared/composables/useSidebar";
 import {
   ClockIcon,
   XCircleIcon,
@@ -27,6 +28,7 @@ const statusLabel = (value) =>
 const route = useRoute();
 const router = useRouter();
 const toast = useToastStore();
+const { isSidebarOpen } = useSidebar();
 
 const loading = ref(true);
 const error = ref("");
@@ -364,7 +366,10 @@ onMounted(async () => {
 </script>
 
 <template>
-  <main class="ml-64 mt-25 min-h-screen px-6 pb-10 text-(--color-text)">
+  <main
+    class="mt-25 min-h-screen px-6 pb-10 text-(--color-text) transition-all duration-300"
+    :class="isSidebarOpen ? 'ml-64' : 'ml-20'"
+  >
     <!-- Loading -->
     <OwnerLoadingState
       v-if="loading"

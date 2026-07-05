@@ -22,12 +22,12 @@ const currentSort = computed({
   set: (val) => emit("update:modelValue", val),
 });
 
-const sortOptions = [
-  { value: "newest", label: "Newest Added" },
-  { value: "price-asc", label: "Price: Low to High" },
-  { value: "price-desc", label: "Price: High to Low" },
-  { value: "rating-desc", label: "Highest Rated" },
-];
+const sortOptions = computed(() => [
+  { value: "newest", label: t("propertiesPage.sort.options.newest") },
+  { value: "price-asc", label: t("propertiesPage.sort.options.priceAsc") },
+  { value: "price-desc", label: t("propertiesPage.sort.options.priceDesc") },
+  { value: "rating-desc", label: t("propertiesPage.sort.options.ratingDesc") },
+]);
 </script>
 
 <template>
@@ -78,7 +78,7 @@ const sortOptions = [
             ? 'bg-(--color-surface) shadow-sm text-(--color-primary) border border-(--color-border)'
             : 'text-(--color-muted) hover:text-(--color-text)'
         "
-        :aria-label="`Switch to ${mode} view`"
+        :aria-label="mode === 'grid' ? t('propertiesPage.sort.switchToGrid') : t('propertiesPage.sort.switchToList')"
       >
         <component
           :is="mode === 'grid' ? Squares2X2Icon : ListBulletIcon"

@@ -8,11 +8,13 @@ import TablePagination from "@/modules/owner/components/TablePagination.vue";
 import LoadingSpinner from "@/shared/components/LoadingSpinner.vue";
 import OwnerLoadingState from "@/modules/owner/components/OwnerLoadingState.vue";
 import { reservationApi } from "../api/reservation.api";
+import { useSidebar } from "@/shared/composables/useSidebar";
 
 const router = useRouter();
 const { t, te } = useI18n({ useScope: "global" });
 const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
 const statusLabel = (value) => safeT(`common.status.${String(value).toLowerCase()}`, value);
+const { isSidebarOpen } = useSidebar();
 
 const loading = ref(true);
 const error = ref("");
@@ -110,7 +112,8 @@ onMounted(fetchReservations);
 
 <template>
   <main
-    class="owner-reservations ml-64 mt-25 min-h-screen px-6 pb-10 text-(--color-text)"
+    class="owner-reservations mt-25 min-h-screen px-6 pb-10 text-(--color-text) transition-all duration-300"
+    :class="isSidebarOpen ? 'ml-64' : 'ml-20'"
   >
     <header
       class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
