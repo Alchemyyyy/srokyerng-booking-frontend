@@ -12,6 +12,12 @@ import {
 } from "@heroicons/vue/24/outline";
 import { formatDate } from "../utils/formatters.js";
 import AppModal from "@/shared/components/AppModal.vue";
+import { useI18n } from "vue-i18n";
+
+const { t, te } = useI18n({ useScope: "global" });
+const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
+const statusLabel = (value) => safeT(`common.status.${String(value || "").toLowerCase()}`, value);
+const roleLabel = (value) => safeT(`admin.userManagementPage.roles.${String(value || "").toLowerCase()}`, value);
 
 const props = defineProps({
     user: { type: Object, default: null },
@@ -57,14 +63,14 @@ const availableActions = computed(() => {
     return actions;
 });
 
-const ACTION_META = {
-    activate: { label: "Activate", color: "btn-approve" },
-    suspend: { label: "Suspend", color: "btn-suspend" },
-};
+const ACTION_META = computed(() => ({
+    activate: { label: t("admin.userManagementPage.actions.activate"), color: "btn-approve" },
+    suspend: { label: t("admin.userManagementPage.actions.suspend"), color: "btn-suspend" },
+}));
 </script>
 
 <template>
-    <AppModal v-if="user" :open="open" title="User Profile" panel-class="max-w-xl" @close="emit('close')">
+    <AppModal v-if="user" :open="open" :title="t('components.userDetailModal.title')" panel-class="max-w-xl" @close="emit('close')">
         <!-- Avatar + identity -->
         <div class="identity-section">
             <div class="avatar-wrap">
@@ -77,13 +83,13 @@ const ACTION_META = {
                 <h3 class="user-name">{{ user.full_name }}</h3>
                 <div class="badges-row">
                     <span class="role-badge" :class="roleClass(user.role)">
-                        {{ user.role }}
+                        {{ roleLabel(user.role) }}
                     </span>
                     <span class="status-badge" :class="statusClass(user.status)">
-                        {{ user.status }}
+                        {{ statusLabel(user.status) }}
                     </span>
                 </div>
-                <p class="user-id">ID #{{ user.id }}</p>
+                <p class="user-id">{{ t("components.userDetailModal.idPrefix") }}{{ user.id }}</p>
             </div>
         </div>
 
@@ -93,12 +99,12 @@ const ACTION_META = {
             <div class="detail-item">
                 <EnvelopeIcon class="detail-icon" />
                 <div>
-                    <p class="detail-label">Email</p>
+                    <p class="detail-label">{{ t("components.userDetailModal.email") }}</p>
                     <p class="detail-value">{{ user.email }}</p>
                 </div>
-                <span v-if="user.email_verified_at" class="verified-badge" title="Email verified">
+                <span v-if="user.email_verified_at" class="verified-badge" :title="t('components.userDetailModal.emailVerified')">
                     <CheckBadgeIcon class="w-4 h-4" />
-                    Verified
+                    {{ t("components.userDetailModal.verified") }}
                 </span>
             </div>
 
@@ -106,7 +112,7 @@ const ACTION_META = {
             <div class="detail-item">
                 <PhoneIcon class="detail-icon" />
                 <div>
-                    <p class="detail-label">Phone</p>
+                    <p class="detail-label">{{ t("components.userDetailModal.phone") }}</p>
                     <p class="detail-value">{{ user.phone || "—" }}</p>
                 </div>
             </div>
@@ -115,7 +121,7 @@ const ACTION_META = {
             <div class="detail-item">
                 <UserCircleIcon class="detail-icon" />
                 <div>
-                    <p class="detail-label">Gender</p>
+                    <p class="detail-label">{{ t("components.userDetailModal.gender") }}</p>
                     <p class="detail-value">
                         {{ user.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : "—" }}
                     </p>
@@ -126,7 +132,7 @@ const ACTION_META = {
             <div class="detail-item">
                 <CalendarDaysIcon class="detail-icon" />
                 <div>
-                    <p class="detail-label">Date of Birth</p>
+                    <p class="detail-label">{{ t("components.userDetailModal.dateOfBirth") }}</p>
                     <p class="detail-value">
                         {{ user.date_of_birth ? formatDate(user.date_of_birth) : "—" }}
                     </p>
@@ -137,7 +143,7 @@ const ACTION_META = {
             <div class="detail-item detail-item--full">
                 <MapPinIcon class="detail-icon" />
                 <div>
-                    <p class="detail-label">Address</p>
+                    <p class="detail-label">{{ t("components.userDetailModal.address") }}</p>
                     <p class="detail-value">{{ user.address || "—" }}</p>
                 </div>
             </div>
@@ -146,9 +152,9 @@ const ACTION_META = {
             <div class="detail-item">
                 <ClockIcon class="detail-icon" />
                 <div>
-                    <p class="detail-label">Last Login</p>
+                    <p class="detail-label">{{ t("components.userDetailModal.lastLogin") }}</p>
                     <p class="detail-value">
-                        {{ user.last_login ? formatDate(user.last_login) : "Never" }}
+                        {{ user.last_login ? formatDate(user.last_login) : t("admin.userManagementPage.never") }}
                     </p>
                 </div>
             </div>
@@ -157,14 +163,14 @@ const ACTION_META = {
             <div class="detail-item">
                 <ShieldCheckIcon class="detail-icon" />
                 <div>
-                    <p class="detail-label">Joined</p>
+                    <p class="detail-label">{{ t("components.userDetailModal.joined") }}</p>
                     <p class="detail-value">{{ formatDate(user.created_at) }}</p>
                 </div>
             </div>
         </div>
 
         <template #footer>
-            <button class="btn-cancel" @click="emit('close')">Close</button>
+            <button class="btn-cancel" @click="emit('close')">{{ t("components.userDetailModal.close") }}</button>
             <div class="action-group">
                 <button v-for="action in availableActions" :key="action" class="action-btn"
                     :class="ACTION_META[action].color" :disabled="processing"

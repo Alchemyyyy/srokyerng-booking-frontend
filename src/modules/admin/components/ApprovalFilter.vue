@@ -1,4 +1,9 @@
 <script setup>
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n({ useScope: "global" });
+
 const props = defineProps({
     modelValue: {
         type: [String, Number],
@@ -12,12 +17,12 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue']);
 
-const tabs = [
-    { label: 'All Requests', value: '' },
-    { label: 'Pending', value: 1, accentClass: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
-    { label: 'Approved', value: 2, accentClass: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
-    { label: 'Rejected', value: 3, accentClass: 'bg-rose-500/10 text-rose-600 border-rose-500/20' },
-];
+const tabs = computed(() => [
+    { label: t("components.approvalFilter.allRequests"), value: '' },
+    { label: t("common.status.pending"), value: 1, accentClass: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
+    { label: t("common.status.approved"), value: 2, accentClass: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
+    { label: t("common.status.rejected"), value: 3, accentClass: 'bg-rose-500/10 text-rose-600 border-rose-500/20' },
+]);
 
 const getCount = (value) => {
     if (value === '') return props.allProperties.length;

@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 // ⚡ ផ្លាស់ប្តូរមកប្រើ Store ថ្មីជំនួស Composable ចាស់
 import { useApprovalStore } from '../store/approval.store';
@@ -9,13 +9,18 @@ import ApprovalTable from '../components/ApprovalTable.vue';
 import AppModal from '@/shared/components/AppModal.vue';
 import AppLoading from '@/shared/components/LoadingSpinner.vue';
 import ApprovalSearch from '../components/ApprovalSearch.vue';
+import TablePagination from '../components/TablePagination.vue';
 import { ExclamationTriangleIcon, InboxIcon, CheckCircleIcon, XCircleIcon, QuestionMarkCircleIcon } from '@heroicons/vue/24/outline';
 import { useSidebar } from '@/shared/composables/useSidebar';
 import { useToastStore } from '@/shared/store/toastStore';
+import { useI18n } from 'vue-i18n';
 
 const router = useRouter();
 const toastStore = useToastStore();
 const { isSidebarOpen } = useSidebar();
+const { t, te } = useI18n({ useScope: 'global' });
+const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
+const statusLabel = (value) => safeT(`common.status.${String(value || '').toLowerCase()}`, value);
 
 // ⚡ ហៅប្រើប្រាស់ Pinia Store 
 const approvalStore = useApprovalStore();
@@ -51,20 +56,52 @@ const filteredProperties = computed(() => {
     return list;
 });
 
+// ── Client-side pagination ────────────────────────────────────────────────
+const PAGE_SIZE = 10;
+const currentPage = ref(1);
+
+const totalPages = computed(() =>
+    Math.max(1, Math.ceil(filteredProperties.value.length / PAGE_SIZE))
+);
+
+const pagedProperties = computed(() => {
+    const start = (currentPage.value - 1) * PAGE_SIZE;
+    return filteredProperties.value.slice(start, start + PAGE_SIZE);
+});
+
+watch([searchKeyword, currentFilterStatus], () => {
+    currentPage.value = 1;
+});
+
 const emptyStateContent = computed(() => {
     if (searchKeyword.value !== '') {
-        return { title: 'No Matching Results', desc: `We couldn't find any records matching "${searchKeyword.value}". Try checking your spelling.` };
+        return {
+            title: t('admin.propertyApprovalPage.emptyState.noMatchTitle'),
+            desc: t('admin.propertyApprovalPage.emptyState.noMatchDesc', { query: searchKeyword.value })
+        };
     }
 
     switch (Number(currentFilterStatus.value)) {
         case 1:
-            return { title: 'No Pending Requests', desc: 'Excellent! There are no outstanding property listings awaiting moderation.' };
+            return {
+                title: t('admin.propertyApprovalPage.emptyState.noPendingTitle'),
+                desc: t('admin.propertyApprovalPage.emptyState.noPendingDesc')
+            };
         case 2:
-            return { title: 'No Approved Properties', desc: 'No property submissions have been approved in this cycle yet.' };
+            return {
+                title: t('admin.propertyApprovalPage.emptyState.noApprovedTitle'),
+                desc: t('admin.propertyApprovalPage.emptyState.noApprovedDesc')
+            };
         case 3:
-            return { title: 'No Rejected Properties', desc: 'Clean record! No property listing requests have been sent to the rejection archive.' };
+            return {
+                title: t('admin.propertyApprovalPage.emptyState.noRejectedTitle'),
+                desc: t('admin.propertyApprovalPage.emptyState.noRejectedDesc')
+            };
         default:
-            return { title: 'Queue Completely Empty', desc: 'The management matrix is clear. There are no property listing records found.' };
+            return {
+                title: t('admin.propertyApprovalPage.emptyState.emptyQueueTitle'),
+                desc: t('admin.propertyApprovalPage.emptyState.emptyQueueDesc')
+            };
     }
 });
 
@@ -118,14 +155,14 @@ const submitApprove = async () => {
     if (success) {
         approveModalOpen.value = false;
         currentApproveId.value = null;
-        toastStore.success('The property listing has been approved successfully.', {
-            title: 'Approval Successful',
+        toastStore.success(t('admin.propertyApprovalPage.toasts.approveSuccessMessage'), {
+            title: t('admin.propertyApprovalPage.toasts.approveSuccessTitle'),
             timeout: 4000
         });
         await approvalStore.fetchProperties(); // Refresh ទិន្នន័យថ្មីពី Server ចូល Store
     } else {
-        toastStore.danger('An error occurred while approving the property.', {
-            title: 'Approval Failed',
+        toastStore.danger(t('admin.propertyApprovalPage.toasts.approveFailMessage'), {
+            title: t('admin.propertyApprovalPage.toasts.approveFailTitle'),
             timeout: 4000
         });
     }
@@ -149,14 +186,14 @@ const submitReject = async () => {
     if (success) {
         rejectModalOpen.value = false;
         currentRejectId.value = null;
-        toastStore.success('The submission listing request has been rejected.', {
-            title: 'Property Rejected',
+        toastStore.success(t('admin.propertyApprovalPage.toasts.rejectSuccessMessage'), {
+            title: t('admin.propertyApprovalPage.toasts.rejectSuccessTitle'),
             timeout: 4000
         });
         await approvalStore.fetchProperties(); // Refresh ទិន្នន័យថ្មីពី Server ចូល Store
     } else {
-        toastStore.danger('An error occurred while rejecting the property.', {
-            title: 'Rejection Failed',
+        toastStore.danger(t('admin.propertyApprovalPage.toasts.rejectFailMessage'), {
+            title: t('admin.propertyApprovalPage.toasts.rejectFailTitle'),
             timeout: 4000
         });
     }
@@ -169,14 +206,14 @@ const submitSetPending = async () => {
     if (success) {
         pendingModalOpen.value = false;
         currentPendingId.value = null;
-        toastStore.success('Property status has been reset to Pending successfully.', {
-            title: 'Status Updated',
+        toastStore.success(t('admin.propertyApprovalPage.toasts.pendingSuccessMessage'), {
+            title: t('admin.propertyApprovalPage.toasts.pendingSuccessTitle'),
             timeout: 4000
         });
         await approvalStore.fetchProperties(); // Refresh ទិន្នន័យថ្មីពី Server ចូល Store
     } else {
-        toastStore.danger('Failed to reset property status. Please try again.', {
-            title: 'Update Error',
+        toastStore.danger(t('admin.propertyApprovalPage.toasts.pendingFailMessage'), {
+            title: t('admin.propertyApprovalPage.toasts.pendingFailTitle'),
             timeout: 4000
         });
     }
@@ -200,20 +237,23 @@ const submitSetPending = async () => {
         <div v-if="approvalStore.error" class="state-card error-card">
             <ExclamationTriangleIcon class="state-icon text-danger" />
             <div class="state-content">
-                <h3 class="state-title">Data Fetching Interrupted</h3>
+                <h3 class="state-title">{{ t('admin.propertyApprovalPage.errors.dataFetchingTitle') }}</h3>
                 <p class="state-desc">{{ approvalStore.error }}</p>
-                <button @click="approvalStore.fetchProperties" class="btn-retry">Try Reconnecting</button>
+                <button @click="approvalStore.fetchProperties" class="btn-retry">{{ t('admin.propertyApprovalPage.errors.retryButton') }}</button>
             </div>
         </div>
 
         <div v-else-if="approvalStore.loading" class="state-card loading-card py-24">
-            <AppLoading label="Synchronizing property database..." />
+            <AppLoading :label="t('admin.propertyApprovalPage.loading.syncing')" />
         </div>
 
         <template v-else>
-            <ApprovalTable v-if="filteredProperties.length > 0" :items="filteredProperties"
+            <ApprovalTable v-if="filteredProperties.length > 0" :items="pagedProperties"
                 :is-processing="approvalStore.processing" @approve="openApproveModal" @reject="openRejectModal"
                 @row-click="goToDetail" @change-status-click="handleDropdownStatusSelection" />
+
+            <TablePagination v-if="filteredProperties.length > 0 && totalPages > 1" :current-page="currentPage"
+                :total-pages="totalPages" @update:current-page="currentPage = $event" />
 
             <div v-else class="state-card empty-card">
                 <InboxIcon class="state-icon text-muted" />
@@ -228,16 +268,15 @@ const submitSetPending = async () => {
                     <CheckCircleIcon class="modal-status-icon text-success" />
                 </div>
                 <div>
-                    <h3 class="modal-title">Confirm Listing Approval</h3>
-                    <p class="modal-desc mt-2">Are you sure you want to approve and publish this property request to the
-                        platform live listings?</p>
+                    <h3 class="modal-title">{{ t('admin.propertyApprovalPage.modal.approve.title') }}</h3>
+                    <p class="modal-desc mt-2">{{ t('admin.propertyApprovalPage.modal.approve.description') }}</p>
                 </div>
                 <div class="modal-footer-actions justify-center mt-4">
-                    <button @click="approveModalOpen = false" class="btn-cancel">Cancel</button>
+                    <button @click="approveModalOpen = false" class="btn-cancel">{{ t('admin.propertyApprovalPage.modal.cancel') }}</button>
                     <button @click="submitApprove" :disabled="approvalStore.processing"
                         class="btn-confirm-approve min-w-120px flex items-center justify-center">
-                        <AppLoading v-if="approvalStore.processing" label="Publishing..." class="text-white" />
-                        <span v-else>Yes, Approve</span>
+                        <AppLoading v-if="approvalStore.processing" :label="t('admin.propertyApprovalPage.modal.approve.publishing')" class="text-white" />
+                        <span v-else>{{ t('admin.propertyApprovalPage.modal.approve.confirm') }}</span>
                     </button>
                 </div>
             </div>
@@ -247,25 +286,23 @@ const submitSetPending = async () => {
             <div class="modal-surface-content">
                 <div class="flex items-center gap-2">
                     <XCircleIcon class="modal-status-icon text-danger small-icon" />
-                    <h3 class="modal-title">Specify Rejection Reason</h3>
+                    <h3 class="modal-title">{{ t('admin.propertyApprovalPage.modal.reject.title') }}</h3>
                 </div>
-                <p class="modal-desc">Provide clear feedback to help the host operator adjust the submission criteria.
+                <p class="modal-desc">{{ t('admin.propertyApprovalPage.modal.reject.description') }}
                 </p>
 
                 <div class="input-container mt-3">
                     <textarea v-model="rejectReason" rows="4" class="modal-textarea"
-                        :class="{ 'input-error': rejectReasonError }" placeholder="Specify reasons..."></textarea>
-                    <span v-if="rejectReasonError" class="validation-msg">Validation Warning: Rejection justification
-                        text field
-                        is required.</span>
+                        :class="{ 'input-error': rejectReasonError }" :placeholder="t('admin.propertyApprovalPage.modal.reject.placeholder')"></textarea>
+                    <span v-if="rejectReasonError" class="validation-msg">{{ t('admin.propertyApprovalPage.modal.reject.validationError') }}</span>
                 </div>
 
                 <div class="modal-footer-actions mt-4">
-                    <button @click="rejectModalOpen = false" class="btn-cancel">Cancel</button>
+                    <button @click="rejectModalOpen = false" class="btn-cancel">{{ t('admin.propertyApprovalPage.modal.cancel') }}</button>
                     <button @click="submitReject" :disabled="approvalStore.processing"
                         class="btn-confirm-reject min-w-150px flex items-center justify-center">
-                        <AppLoading v-if="approvalStore.processing" label="Rejecting..." class="text-white" />
-                        <span v-else>Confirm Rejection</span>
+                        <AppLoading v-if="approvalStore.processing" :label="t('admin.propertyApprovalPage.modal.reject.rejecting')" class="text-white" />
+                        <span v-else>{{ t('admin.propertyApprovalPage.modal.reject.confirm') }}</span>
                     </button>
                 </div>
             </div>
@@ -277,17 +314,16 @@ const submitSetPending = async () => {
                     <QuestionMarkCircleIcon class="modal-status-icon" style="color: var(--color-warning);" />
                 </div>
                 <div>
-                    <h3 class="modal-title">Reset to Pending Queue?</h3>
-                    <p class="modal-desc mt-2">Are you sure you want to move this property listing back to the pending
-                        moderation queue?</p>
+                    <h3 class="modal-title">{{ t('admin.propertyApprovalPage.modal.pending.title') }}</h3>
+                    <p class="modal-desc mt-2">{{ t('admin.propertyApprovalPage.modal.pending.description') }}</p>
                 </div>
                 <div class="modal-footer-actions justify-center mt-4">
-                    <button @click="pendingModalOpen = false" class="btn-cancel">Cancel</button>
+                    <button @click="pendingModalOpen = false" class="btn-cancel">{{ t('admin.propertyApprovalPage.modal.cancel') }}</button>
                     <button @click="submitSetPending" :disabled="approvalStore.processing"
                         class="btn-confirm-approve min-w-160px flex items-center justify-center"
                         style="background-color: var(--color-warning);">
-                        <AppLoading v-if="approvalStore.processing" label="Processing..." class="text-white" />
-                        <span v-else>Yes, Set to Pending</span>
+                        <AppLoading v-if="approvalStore.processing" :label="t('admin.propertyApprovalPage.modal.pending.processing')" class="text-white" />
+                        <span v-else>{{ t('admin.propertyApprovalPage.modal.pending.confirm') }}</span>
                     </button>
                 </div>
             </div>

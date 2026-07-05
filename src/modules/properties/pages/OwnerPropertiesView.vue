@@ -12,6 +12,7 @@ import { usePropertyStore } from "@/modules/properties/store/propertyStore";
 import { useToastStore } from "@/shared/store/toastStore";
 import { propertyApi } from "@/modules/properties/api/property.api";
 import { resolveAssetUrl } from "@/shared/utils/assetUrl";
+import { useI18n } from "vue-i18n";
 
 import {
   PlusIcon,
@@ -36,6 +37,10 @@ import { StarIcon as StarIconSolid } from "@heroicons/vue/24/solid";
 const propertyStore = usePropertyStore();
 const toast = useToastStore();
 const { isSidebarOpen } = useSidebar();
+const { t, te } = useI18n({ useScope: "global" });
+const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
+const statusLabel = (value) =>
+  safeT(`common.status.${String(value || "").toLowerCase()}`, value);
 
 const currentPage = ref(1);
 const perPage = 8;
@@ -155,6 +160,14 @@ const categoryMap = {
   Guesthouse: 5,
 };
 
+const propertyTypeOptions = computed(() => [
+  { value: "Hotel", label: t("owner.propertiesPage.types.hotel") },
+  { value: "Villa", label: t("owner.propertiesPage.types.villa") },
+  { value: "Apartment", label: t("owner.propertiesPage.types.apartment") },
+  { value: "Homestay", label: t("owner.propertiesPage.types.homestay") },
+  { value: "Guesthouse", label: t("owner.propertiesPage.types.guesthouse") },
+]);
+
 // ── Stats ─────────────────────────────────────────────────────────────────────
 const stats = computed(() => ({
   total: properties.value.length,
@@ -203,19 +216,19 @@ const closeAddModal = () => {
 const validateAddForm = () => {
   const errors = {};
   if (!newProperty.value.name.trim())
-    errors.name = "Property name is required.";
+    errors.name = t("owner.propertiesPage.errors.nameRequired");
   else if (newProperty.value.name.trim().length < 3)
-    errors.name = "At least 3 characters.";
+    errors.name = t("owner.propertiesPage.errors.nameMinLength");
   if (!newProperty.value.address.trim())
-    errors.address = "Address is required.";
+    errors.address = t("owner.propertiesPage.errors.addressRequired");
   else if (newProperty.value.address.trim().length < 5)
-    errors.address = "At least 5 characters.";
+    errors.address = t("owner.propertiesPage.errors.addressMinLength");
   if (!newProperty.value.contact_phone.trim())
-    errors.contact_phone = "Phone is required.";
+    errors.contact_phone = t("owner.propertiesPage.errors.phoneRequired");
   if (!newProperty.value.contact_email.trim())
-    errors.contact_email = "Email is required.";
+    errors.contact_email = t("owner.propertiesPage.errors.emailRequired");
   else if (!/\S+@\S+\.\S+/.test(newProperty.value.contact_email))
-    errors.contact_email = "Invalid email format.";
+    errors.contact_email = t("owner.propertiesPage.errors.emailInvalid");
   return errors;
 };
 
@@ -230,7 +243,7 @@ const handleAddProperty = async () => {
     newProperty.value.location,
   );
   if (!city_id || !province_id) {
-    toast.danger("Please select a valid city.");
+    toast.danger(t("owner.propertiesPage.errors.invalidCity"));
     return;
   }
   try {
@@ -256,7 +269,7 @@ const handleAddProperty = async () => {
     );
     currentStep.value = 2;
   } catch {
-    toast.danger("Failed to add property. Please try again.");
+    toast.danger(t("owner.propertiesPage.toasts.addPropertyFailed"));
   }
 };
 
@@ -271,11 +284,17 @@ const handleImageSelect = (event) => {
 
   for (const file of files) {
     if (!allowedTypes.includes(file.type)) {
-      errors.push(`"${file.name}" is not supported. Use PNG or JPG only.`);
+      errors.push(
+        t("owner.propertiesPage.errors.imageTypeNotSupported", {
+          name: file.name,
+        }),
+      );
       continue;
     }
     if (file.size > maxSize) {
-      errors.push(`"${file.name}" exceeds 10MB limit.`);
+      errors.push(
+        t("owner.propertiesPage.errors.imageTooLarge", { name: file.name }),
+      );
       continue;
     }
     validFiles.push(file);
@@ -283,7 +302,10 @@ const handleImageSelect = (event) => {
 
   const totalAfter = selectedImages.value.length + validFiles.length;
   if (totalAfter > maxImages) {
-    imageError.value = `You can upload a maximum of ${maxImages} images. You already have ${selectedImages.value.length}.`;
+    imageError.value = t("owner.propertiesPage.errors.maxImagesExceeded", {
+      max: maxImages,
+      count: selectedImages.value.length,
+    });
     event.target.value = "";
     return;
   }
@@ -312,7 +334,7 @@ const removeNewImage = (index) => {
 
 const handleUploadImages = async () => {
   if (!selectedImages.value.length) {
-    imageError.value = "Please upload at least 1 image to continue.";
+    imageError.value = t("owner.propertiesPage.errors.minOneImage");
     return;
   }
   uploadingImages.value = true;
@@ -327,10 +349,10 @@ const handleUploadImages = async () => {
         propertyStore.propertyImages[0].id,
       );
     }
-    toast.success("Property created successfully!");
+    toast.success(t("owner.propertiesPage.toasts.propertyCreated"));
     closeAddModal();
   } catch {
-    toast.danger("Failed to upload images. You can add them later.");
+    toast.danger(t("owner.propertiesPage.toasts.imageUploadFailed"));
   } finally {
     uploadingImages.value = false;
   }
@@ -379,7 +401,7 @@ const openEditModal = async (property) => {
     isEditModalOpen.value = true;
     await propertyStore.fetchPropertyImages(property.id);
   } catch {
-    toast.danger("Failed to load property details.");
+    toast.danger(t("owner.propertiesPage.toasts.loadPropertyDetailsFailed"));
   }
 };
 
@@ -412,7 +434,7 @@ const deleteEditImage = async (imageId) => {
   try {
     await propertyStore.deletePropertyImage(editingProperty.value.id, imageId);
   } catch {
-    toast.danger("Failed to delete image.");
+    toast.danger(t("owner.propertiesPage.toasts.deleteImageFailed"));
   }
 };
 
@@ -420,7 +442,7 @@ const setCover = async (imageId) => {
   try {
     await propertyStore.setCoverImage(editingProperty.value.id, imageId);
   } catch {
-    toast.danger("Failed to set cover image.");
+    toast.danger(t("owner.propertiesPage.toasts.setCoverFailed"));
   }
 };
 
@@ -435,9 +457,9 @@ const uploadStagedImages = async () => {
     editNewPreviews.value.forEach((u) => URL.revokeObjectURL(u));
     editNewFiles.value = [];
     editNewPreviews.value = [];
-    toast.success("Images uploaded.");
+    toast.success(t("owner.propertiesPage.toasts.imagesUploaded"));
   } catch {
-    toast.danger("Failed to upload images.");
+    toast.danger(t("owner.propertiesPage.toasts.imagesUploadFailedGeneric"));
   } finally {
     editImagesUploading.value = false;
   }
@@ -458,7 +480,7 @@ const handleEditProperty = async () => {
     country_id = resolved.country_id;
 
     if (!city_id || !province_id) {
-      toast.danger("Please select a valid city.");
+      toast.danger(t("owner.propertiesPage.errors.invalidCity"));
       return;
     }
   } else {
@@ -511,14 +533,14 @@ const handleEditProperty = async () => {
     if (editNewFiles.value.length) await uploadStagedImages();
 
     const successMsg = isApprovedProperty
-      ? "Your property changes have been submitted for admin approval."
-      : "Property updated successfully!";
+      ? t("owner.propertiesPage.toasts.propertyChangesSubmitted")
+      : t("owner.propertiesPage.toasts.propertyUpdated");
     toast.success(successMsg);
 
     closeEditModal();
     await propertyStore.fetchMyProperties();
   } catch {
-    toast.danger("Failed to submit changes. Please try again.");
+    toast.danger(t("owner.propertiesPage.toasts.submitChangesFailed"));
   }
 };
 
@@ -540,14 +562,18 @@ const handleToggleStatus = async ({ id, action }) => {
   try {
     if (action === "deactivate") {
       await propertyApi.deactivateProperty(id);
-      toast.success("Property deactivated.");
+      toast.success(t("owner.propertiesPage.toasts.propertyDeactivated"));
     } else {
       await propertyApi.activateProperty(id);
-      toast.success("Property activated.");
+      toast.success(t("owner.propertiesPage.toasts.propertyActivated"));
     }
     await propertyStore.fetchMyProperties();
   } catch {
-    toast.danger(`Failed to ${action} property. Please try again.`);
+    toast.danger(
+      action === "deactivate"
+        ? t("owner.propertiesPage.toasts.deactivatePropertyFailed")
+        : t("owner.propertiesPage.toasts.activatePropertyFailed"),
+    );
   }
 };
 
@@ -742,7 +768,7 @@ onMounted(async () => {
     await Promise.all([propertyStore.fetchMyProperties(), fetchCities()]);
     currentPage.value = 1;
   } catch {
-    toast.danger("Failed to load properties.");
+    toast.danger(t("owner.propertiesPage.toasts.loadPropertiesFailed"));
   }
 });
 </script>
@@ -758,11 +784,10 @@ onMounted(async () => {
       >
         <div>
           <h1 class="text-[28px] font-black text-(--color-text) tracking-tight">
-            My Properties
+            {{ t("owner.propertiesPage.title") }}
           </h1>
           <p class="mt-1 text-sm font-medium text-(--color-muted)">
-            Monitor asset status, update information portfolios, and review live
-            pipeline records.
+            {{ t("owner.propertiesPage.subtitle") }}
           </p>
         </div>
         <button
@@ -770,7 +795,7 @@ onMounted(async () => {
           class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-(--color-primary) text-white text-sm font-bold hover:shadow-[0_8px_20px_rgba(var(--color-primary-rgb),0.24)] hover:-translate-y-0.5 transition-all duration-200 shrink-0"
         >
           <PlusIcon class="w-4 h-4 stroke-[3]" />
-          Add New Property
+          {{ t("owner.propertiesPage.addProperty") }}
         </button>
       </header>
 
@@ -787,7 +812,7 @@ onMounted(async () => {
                 : 'text-(--color-muted) hover:bg-(--color-surface-soft)'
             "
           >
-            All Properties
+            {{ t("owner.propertiesPage.filters.allProperties") }}
             <span
               class="text-[11px] px-2 py-0.5 rounded-md font-black"
               :class="
@@ -810,7 +835,7 @@ onMounted(async () => {
             "
           >
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            Approved
+            {{ statusLabel("approved") }}
             <span
               class="text-[11px] px-2 py-0.5 rounded-md font-black"
               :class="
@@ -833,7 +858,7 @@ onMounted(async () => {
             "
           >
             <span class="w-1.5 h-1.5 rounded-full bg-orange-400" />
-            Pending Changes
+            {{ t("owner.propertiesPage.filters.pendingChanges") }}
             <span
               class="text-[11px] px-2 py-0.5 rounded-md font-black"
               :class="
@@ -856,7 +881,7 @@ onMounted(async () => {
             "
           >
             <span class="w-1.5 h-1.5 rounded-full bg-blue-400" />
-            Under Review
+            {{ t("owner.propertiesPage.filters.underReview") }}
             <span
               class="text-[11px] px-2 py-0.5 rounded-md font-black"
               :class="
@@ -879,7 +904,7 @@ onMounted(async () => {
             "
           >
             <span class="w-1.5 h-1.5 rounded-full bg-rose-500" />
-            Rejected
+            {{ statusLabel("rejected") }}
             <span
               class="text-[11px] px-2 py-0.5 rounded-md font-black"
               :class="
@@ -900,7 +925,7 @@ onMounted(async () => {
             class="flex items-center gap-1.5 text-xs text-(--color-muted) font-bold tracking-wide uppercase bg-(--color-surface-soft) hover:bg-(--color-border) transition px-3.5 py-2 rounded-xl border border-(--color-border)"
           >
             <FunnelIcon class="w-3.5 h-3.5" />
-            Sort
+            {{ t("owner.propertiesPage.filters.sort") }}
           </button>
         </div>
       </div>
@@ -913,7 +938,7 @@ onMounted(async () => {
           <input
             v-model="ownerFilters.search"
             type="text"
-            placeholder="Search by name, tags, or region..."
+            :placeholder="t('owner.propertiesPage.filters.searchPlaceholder')"
             class="w-full pl-11 pr-4 py-3 rounded-xl border border-(--color-border) bg-(--color-surface) text-sm text-(--color-text) placeholder-gray-400 outline-none focus:border-(--color-primary) focus:ring-4 focus:ring-(--color-primary)/5 shadow-[0_4px_18px_rgba(0,0,0,0.01)] transition-all"
           />
         </div>
@@ -923,7 +948,7 @@ onMounted(async () => {
             v-model="ownerFilters.city"
             class="w-full sm:w-auto rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-3 text-sm font-semibold text-(--color-muted) outline-none focus:border-(--color-primary) shadow-[0_4px_18px_rgba(0,0,0,0.01)] transition"
           >
-            <option value="all">All Cities</option>
+            <option value="all">{{ t("owner.propertiesPage.filters.allCities") }}</option>
             <option v-for="c in cities" :key="c.id" :value="c.name">
               {{ c.name }}
             </option>
@@ -933,12 +958,12 @@ onMounted(async () => {
             v-model="ownerFilters.category"
             class="w-full sm:w-auto rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-3 text-sm font-semibold text-(--color-muted) outline-none focus:border-(--color-primary) shadow-[0_4px_18px_rgba(0,0,0,0.01)] transition"
           >
-            <option value="all">All Property Types</option>
-            <option value="hotel">Hotel</option>
-            <option value="villa">Villa</option>
-            <option value="apartment">Apartment</option>
-            <option value="homestay">Homestay</option>
-            <option value="guesthouse">Guesthouse</option>
+            <option value="all">{{ t("owner.propertiesPage.filters.allTypes") }}</option>
+            <option value="hotel">{{ t("owner.propertiesPage.types.hotel") }}</option>
+            <option value="villa">{{ t("owner.propertiesPage.types.villa") }}</option>
+            <option value="apartment">{{ t("owner.propertiesPage.types.apartment") }}</option>
+            <option value="homestay">{{ t("owner.propertiesPage.types.homestay") }}</option>
+            <option value="guesthouse">{{ t("owner.propertiesPage.types.guesthouse") }}</option>
           </select>
 
           <button
@@ -947,7 +972,7 @@ onMounted(async () => {
             class="flex items-center gap-1.5 px-4 py-3 rounded-xl border border-rose-100 text-sm font-bold text-rose-500 bg-rose-50/50 hover:bg-rose-50 transition-all"
           >
             <XMarkIcon class="w-4 h-4 stroke-[2.5]" />
-            Reset
+            {{ t("owner.propertiesPage.filters.reset") }}
           </button>
         </div>
       </div>
@@ -970,18 +995,17 @@ onMounted(async () => {
             <BuildingOffice2Icon class="w-8 h-8" />
           </div>
           <h3 class="text-xl font-black text-(--color-text) tracking-tight">
-            No registered properties
+            {{ t("owner.propertiesPage.emptyStates.noPropertiesTitle") }}
           </h3>
           <p class="text-sm text-(--color-muted) max-w-sm mx-auto mt-2 mb-8">
-            You haven't registered any properties yet. Add your first property
-            to start receiving bookings.
+            {{ t("owner.propertiesPage.emptyStates.noPropertiesMessage") }}
           </p>
           <button
             @click="isAddModalOpen = true"
             class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-(--color-primary) text-white text-sm font-bold hover:opacity-90 transition"
           >
             <PlusIcon class="w-4 h-4 stroke-[2.5]" />
-            Add First Property
+            {{ t("owner.propertiesPage.addFirstProperty") }}
           </button>
         </div>
 
@@ -995,18 +1019,17 @@ onMounted(async () => {
             <MagnifyingGlassIcon class="w-7 h-7" />
           </div>
           <h3 class="text-xl font-black text-(--color-text) tracking-tight">
-            No properties found
+            {{ t("owner.propertiesPage.emptyStates.noResultsTitle") }}
           </h3>
           <p class="text-sm text-(--color-muted) max-w-sm mx-auto mt-2 mb-8">
-            We couldn't find any properties matching your current search
-            criteria.
+            {{ t("owner.propertiesPage.emptyStates.noResultsMessage") }}
           </p>
           <button
             @click="resetOwnerFilters"
             class="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-(--color-border) text-(--color-muted) bg-(--color-surface) text-sm font-bold hover:bg-(--color-surface-soft) transition"
           >
             <XMarkIcon class="w-4 h-4" />
-            Clear Filters
+            {{ t("owner.propertiesPage.emptyStates.clearFilters") }}
           </button>
         </div>
 
@@ -1035,7 +1058,7 @@ onMounted(async () => {
           class="inline-flex items-center gap-1 px-4 py-2.5 rounded-xl border border-(--color-border) bg-(--color-surface) text-sm font-bold text-(--color-muted) hover:border-(--color-border) disabled:opacity-40 disabled:pointer-events-none transition"
         >
           <ArrowLeftIcon class="w-4 h-4 stroke-[2.5]" />
-          Prev
+          {{ t("owner.propertiesPage.pagination.prev") }}
         </button>
         <div class="flex items-center gap-1.5 mx-2">
           <button
@@ -1057,7 +1080,7 @@ onMounted(async () => {
           @click="currentPage++"
           class="inline-flex items-center gap-1 px-4 py-2.5 rounded-xl border border-(--color-border) bg-(--color-surface) text-sm font-bold text-(--color-muted) hover:border-(--color-border) disabled:opacity-40 disabled:pointer-events-none transition"
         >
-          Next
+          {{ t("owner.propertiesPage.pagination.next") }}
           <ArrowRightIcon class="w-4 h-4 stroke-[2.5]" />
         </button>
       </footer>
@@ -1065,7 +1088,11 @@ onMounted(async () => {
 
     <AppModal
       :open="isAddModalOpen"
-      :title="currentStep === 1 ? 'Property Details' : 'Property Images'"
+      :title="
+        currentStep === 1
+          ? t('owner.propertiesPage.modal.detailsTitle')
+          : t('owner.propertiesPage.modal.imagesTitle')
+      "
       @close="closeAddModal"
     >
       <div
@@ -1086,7 +1113,7 @@ onMounted(async () => {
             :class="
               currentStep >= 1 ? 'text-(--color-text)' : 'text-(--color-muted)'
             "
-            >Details</span
+            >{{ t("owner.propertiesPage.modal.stepDetails") }}</span
           >
         </div>
         <div class="flex-1 h-0.5 bg-gray-200 rounded-full" />
@@ -1105,7 +1132,7 @@ onMounted(async () => {
             :class="
               currentStep >= 2 ? 'text-(--color-text)' : 'text-(--color-muted)'
             "
-            >Images</span
+            >{{ t("owner.propertiesPage.modal.stepImages") }}</span
           >
         </div>
       </div>
@@ -1119,9 +1146,9 @@ onMounted(async () => {
         <div>
           <AppInput
             v-model="newProperty.name"
-            label="Property Name"
+            :label="t('owner.propertiesPage.modal.form.nameLabel')"
             required
-            placeholder="e.g. Skyline Residency Tower"
+            :placeholder="t('owner.propertiesPage.modal.form.namePlaceholder')"
             :error="addErrors.name"
           />
         </div>
@@ -1130,34 +1157,33 @@ onMounted(async () => {
           <div class="flex flex-col gap-1.5">
             <label
               class="text-xs font-bold text-(--color-muted) tracking-wide uppercase"
-              >Property Type <span class="text-(--color-danger)">*</span></label
+              >{{ t("owner.propertiesPage.modal.form.typeLabel") }} <span class="text-(--color-danger)">*</span></label
             >
             <select
               v-model="newProperty.type"
               class="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-3.5 py-3 text-sm font-semibold text-(--color-text) outline-none focus:border-(--color-primary) focus:ring-4 focus:ring-primary/5 transition"
             >
-              <option>Hotel</option>
-              <option>Villa</option>
-              <option>Apartment</option>
-              <option>Homestay</option>
-              <option>Guesthouse</option>
+              <option
+                v-for="opt in propertyTypeOptions"
+                :key="opt.value"
+                :value="opt.value"
+              >
+                {{ opt.label }}
+              </option>
             </select>
           </div>
           <div class="flex flex-col gap-1.5">
             <label
               class="text-xs font-bold text-(--color-muted) tracking-wide uppercase"
-              >City / Location <span class="text-(--color-danger)">*</span></label
+              >{{ t("owner.propertiesPage.modal.form.locationLabel") }} <span class="text-(--color-danger)">*</span></label
             >
             <select
               v-model="newProperty.location"
               class="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-3.5 py-3 text-sm font-semibold text-(--color-text) outline-none focus:border-(--color-primary) focus:ring-4 focus:ring-primary/5 transition"
             >
-              <option>Phnom Penh</option>
-              <option>Siem Reap</option>
-              <option>Kampot</option>
-              <option>Sihanoukville</option>
-              <option>Battambang</option>
-              <option>Koh Rong</option>
+              <option v-for="c in cities" :key="c.id" :value="c.name">
+                {{ c.name }}
+              </option>
             </select>
           </div>
         </div>
@@ -1165,9 +1191,9 @@ onMounted(async () => {
         <div>
           <AppInput
             v-model="newProperty.address"
-            label="Street Address"
+            :label="t('owner.propertiesPage.modal.form.addressLabel')"
             required
-            placeholder="e.g. St. 210, Sangkat Boeung Keng Kang I"
+            :placeholder="t('owner.propertiesPage.modal.form.addressPlaceholder')"
             :error="addErrors.address"
           />
         </div>
@@ -1176,18 +1202,18 @@ onMounted(async () => {
           <div>
             <AppInput
               v-model="newProperty.contact_phone"
-              label="Contact Phone"
+              :label="t('owner.propertiesPage.modal.form.phoneLabel')"
               required
-              placeholder="e.g. +855 12 345 678"
+              :placeholder="t('owner.propertiesPage.modal.form.phonePlaceholder')"
               :error="addErrors.contact_phone"
             />
           </div>
           <div>
             <AppInput
               v-model="newProperty.contact_email"
-              label="Contact Email"
+              :label="t('owner.propertiesPage.modal.form.emailLabel')"
               required
-              placeholder="e.g. desks@property.com"
+              :placeholder="t('owner.propertiesPage.modal.form.emailPlaceholder')"
               :error="addErrors.contact_email"
             />
           </div>
@@ -1199,32 +1225,32 @@ onMounted(async () => {
             type="number"
             min="1"
             max="200"
-            label="Number of Floors"
-            placeholder="1"
+            :label="t('owner.propertiesPage.modal.form.floorsLabel')"
+            :placeholder="t('owner.propertiesPage.modal.form.floorsPlaceholder')"
           />
         </div>
 
         <div>
           <label
             class="text-xs font-bold text-(--color-muted) tracking-wide uppercase block mb-1.5"
-            >Property Description</label
+            >{{ t("owner.propertiesPage.modal.form.descriptionLabel") }}</label
           >
           <textarea
             v-model="newProperty.description"
             rows="3"
-            placeholder="Elaborate on structural values, proximity configurations, luxury perks..."
+            :placeholder="t('owner.propertiesPage.modal.form.descriptionPlaceholder')"
             class="w-full p-4 rounded-xl border border-(--color-border) bg-(--color-surface) text-sm text-(--color-text) outline-none focus:border-(--color-primary) focus:ring-4 focus:ring-primary/5 transition resize-none"
           ></textarea>
         </div>
 
         <div>
           <label class="text-xs font-bold text-(--color-muted) tracking-wide uppercase block mb-1.5">
-            Pin Property Location on Map (Click or drag pin to position)
+            {{ t("owner.propertiesPage.modal.form.mapLabel") }}
           </label>
           <div id="register-map" class="w-full h-64 border border-(--color-border) rounded-xl overflow-hidden relative z-10"></div>
           <div class="flex gap-4 mt-2 text-xs text-(--color-muted) font-semibold">
-            <span>Latitude: <strong class="text-(--color-text)">{{ newProperty.latitude || 'Not set' }}</strong></span>
-            <span>Longitude: <strong class="text-(--color-text)">{{ newProperty.longitude || 'Not set' }}</strong></span>
+            <span>{{ t("owner.propertiesPage.modal.form.latitude") }} <strong class="text-(--color-text)">{{ newProperty.latitude || t("owner.propertiesPage.modal.form.notSet") }}</strong></span>
+            <span>{{ t("owner.propertiesPage.modal.form.longitude") }} <strong class="text-(--color-text)">{{ newProperty.longitude || t("owner.propertiesPage.modal.form.notSet") }}</strong></span>
           </div>
         </div>
 
@@ -1236,13 +1262,13 @@ onMounted(async () => {
             @click="closeAddModal"
             class="px-5 py-2.5 rounded-xl border border-(--color-border) text-sm font-bold text-(--color-muted) hover:bg-(--color-surface-soft) transition"
           >
-            Cancel
+            {{ t("owner.propertiesPage.modal.form.cancel") }}
           </button>
           <button
             type="submit"
             class="px-5 py-2.5 rounded-xl bg-(--color-primary) text-white text-sm font-bold hover:opacity-95 transition shadow-sm"
           >
-            Save & Advance
+            {{ t("owner.propertiesPage.modal.form.saveAndAdvance") }}
           </button>
         </div>
       </form>
@@ -1264,11 +1290,10 @@ onMounted(async () => {
             <CloudArrowUpIcon class="w-6 h-6 text-(--color-primary)" />
           </div>
           <p class="text-sm font-bold text-(--color-text)">
-            Drop property images here, or click to browse
+            {{ t("owner.propertiesPage.modal.images.dropzoneTitle") }}
           </p>
           <p class="text-xs text-(--color-muted) mt-1 font-medium">
-            Supports ultra-high-definition PNG, JPEG, WebP (Max 10MB per unit,
-            Limit 10 items)
+            {{ t("owner.propertiesPage.modal.images.dropzoneHint") }}
           </p>
         </div>
 
@@ -1277,7 +1302,7 @@ onMounted(async () => {
         <div v-if="imagePreviewUrls.length > 0" class="space-y-2">
           <label
             class="text-xs font-black text-(--color-muted) tracking-wider uppercase block"
-            >Staged Upload Runway ({{ imagePreviewUrls.length }})</label
+            >{{ t("owner.propertiesPage.modal.images.stagedUploadLabel", { count: imagePreviewUrls.length }) }}</label
           >
           <div
             class="grid grid-cols-5 gap-3 bg-(--color-surface) border border-(--color-border) p-3 rounded-2xl"
@@ -1301,7 +1326,7 @@ onMounted(async () => {
               <span
                 v-if="idx === 0"
                 class="absolute bottom-1 left-1 text-[8px] bg-emerald-500 text-white font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider"
-                >Cover Priority</span
+                >{{ t("owner.propertiesPage.modal.images.coverPriority") }}</span
               >
             </div>
           </div>
@@ -1315,7 +1340,7 @@ onMounted(async () => {
             @click="closeAddModal"
             class="px-5 py-2.5 rounded-xl border border-(--color-border) text-sm font-bold text-(--color-muted) hover:bg-(--color-surface-soft) transition disabled:opacity-50"
           >
-            Skip For Now
+            {{ t("owner.propertiesPage.modal.images.skipForNow") }}
           </button>
           <button
             :disabled="uploadingImages || !selectedImages.length"
@@ -1323,7 +1348,7 @@ onMounted(async () => {
             class="px-5 py-2.5 rounded-xl bg-(--color-primary) text-white text-sm font-bold hover:opacity-95 disabled:opacity-40 transition flex items-center gap-2 shadow-sm"
           >
             <ClockIcon v-if="uploadingImages" class="w-4 h-4 animate-spin" />
-            Upload & Finish
+            {{ t("owner.propertiesPage.modal.images.uploadAndFinish") }}
           </button>
         </div>
       </div>
@@ -1331,7 +1356,7 @@ onMounted(async () => {
 
     <AppModal
       :open="isEditModalOpen"
-      title="Edit Property"
+      :title="t('owner.propertiesPage.modal.editProperty.title')"
       @close="closeEditModal"
     >
       <div v-if="editingProperty" class="space-y-6">
@@ -1339,7 +1364,7 @@ onMounted(async () => {
           <div>
             <AppInput
               v-model="editingProperty.name"
-              label="Property Name"
+              :label="t('owner.propertiesPage.modal.form.nameLabel')"
             />
           </div>
 
@@ -1347,34 +1372,33 @@ onMounted(async () => {
             <div class="flex flex-col gap-1.5">
               <label
                 class="text-xs font-bold text-(--color-muted) tracking-wide uppercase"
-                >Property Type</label
+                >{{ t("owner.propertiesPage.modal.form.typeLabel") }}</label
               >
               <select
                 v-model="editingProperty.type"
                 class="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-3.5 py-3 text-sm font-semibold text-(--color-text) outline-none focus:border-(--color-primary) transition"
               >
-                <option>Hotel</option>
-                <option>Villa</option>
-                <option>Apartment</option>
-                <option>Homestay</option>
-                <option>Guesthouse</option>
+                <option
+                  v-for="opt in propertyTypeOptions"
+                  :key="opt.value"
+                  :value="opt.value"
+                >
+                  {{ opt.label }}
+                </option>
               </select>
             </div>
             <div class="flex flex-col gap-1.5">
               <label
                 class="text-xs font-bold text-(--color-muted) tracking-wide uppercase"
-                >City / Location</label
+                >{{ t("owner.propertiesPage.modal.form.locationLabel") }}</label
               >
               <select
                 v-model="editingProperty.location"
                 class="w-full rounded-xl border border-(--color-border) bg-(--color-surface) px-3.5 py-3 text-sm font-semibold text-(--color-text) outline-none focus:border-(--color-primary) transition"
               >
-                <option>Phnom Penh</option>
-                <option>Siem Reap</option>
-                <option>Kampot</option>
-                <option>Sihanoukville</option>
-                <option>Battambang</option>
-                <option>Koh Rong</option>
+                <option v-for="c in cities" :key="c.id" :value="c.name">
+                  {{ c.name }}
+                </option>
               </select>
             </div>
           </div>
@@ -1382,18 +1406,18 @@ onMounted(async () => {
           <div>
             <AppInput
               v-model="editingProperty.address"
-              label="Street Address"
+              :label="t('owner.propertiesPage.modal.form.addressLabel')"
             />
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <AppInput
               v-model="editingProperty.contact_phone"
-              label="Contact Phone"
+              :label="t('owner.propertiesPage.modal.form.phoneLabel')"
             />
             <AppInput
               v-model="editingProperty.contact_email"
-              label="Contact Email"
+              :label="t('owner.propertiesPage.modal.form.emailLabel')"
             />
           </div>
 
@@ -1403,14 +1427,14 @@ onMounted(async () => {
               type="number"
               min="1"
               max="200"
-              label="Number of Floors"
+              :label="t('owner.propertiesPage.modal.form.floorsLabel')"
             />
           </div>
 
           <div>
             <label
               class="text-xs font-bold text-(--color-muted) tracking-wide uppercase block mb-1.5"
-              >Property Description</label
+              >{{ t("owner.propertiesPage.modal.form.descriptionLabel") }}</label
             >
             <textarea
               v-model="editingProperty.description"
@@ -1421,12 +1445,12 @@ onMounted(async () => {
 
           <div>
             <label class="text-xs font-bold text-(--color-muted) tracking-wide uppercase block mb-1.5">
-              Pin Property Location on Map (Click or drag pin to position)
+              {{ t("owner.propertiesPage.modal.form.mapLabel") }}
             </label>
             <div id="edit-map" class="w-full h-64 border border-(--color-border) rounded-xl overflow-hidden relative z-10"></div>
             <div class="flex gap-4 mt-2 text-xs text-(--color-muted) font-semibold">
-              <span>Latitude: <strong class="text-(--color-text)">{{ editingProperty.latitude || 'Not set' }}</strong></span>
-              <span>Longitude: <strong class="text-(--color-text)">{{ editingProperty.longitude || 'Not set' }}</strong></span>
+              <span>{{ t("owner.propertiesPage.modal.form.latitude") }} <strong class="text-(--color-text)">{{ editingProperty.latitude || t("owner.propertiesPage.modal.form.notSet") }}</strong></span>
+              <span>{{ t("owner.propertiesPage.modal.form.longitude") }} <strong class="text-(--color-text)">{{ editingProperty.longitude || t("owner.propertiesPage.modal.form.notSet") }}</strong></span>
             </div>
           </div>
         </div>
@@ -1435,7 +1459,7 @@ onMounted(async () => {
           <h4
             class="text-xs font-black text-(--color-muted) tracking-wider uppercase mb-3"
           >
-            Uploaded Images
+            {{ t("owner.propertiesPage.modal.editProperty.uploadedImagesTitle") }}
           </h4>
 
           <div
@@ -1463,7 +1487,7 @@ onMounted(async () => {
                 v-if="editCoverId === img.id"
                 class="absolute top-1.5 left-1.5 bg-emerald-600 text-[8px] font-black tracking-widest text-white px-2 py-0.5 rounded-md uppercase"
               >
-                Active Cover
+                {{ t("owner.propertiesPage.modal.editProperty.activeCover") }}
               </div>
 
               <div
@@ -1473,14 +1497,14 @@ onMounted(async () => {
                   v-if="editCoverId !== img.id"
                   @click="setCover(img.id)"
                   class="p-1.5 bg-(--color-surface) text-(--color-text) hover:text-emerald-600 hover:scale-105 rounded-lg shadow transition text-[10px] font-bold"
-                  title="Make Cover"
+                  :title="t('owner.propertiesPage.modal.editProperty.makeCover')"
                 >
-                  Set Cover
+                  {{ t("owner.propertiesPage.modal.editProperty.setCover") }}
                 </button>
                 <button
                   @click="deleteEditImage(img.id)"
                   class="p-1.5 bg-(--color-surface) text-rose-600 hover:bg-rose-50 hover:scale-105 rounded-lg shadow transition"
-                  title="Delete Image"
+                  :title="t('owner.propertiesPage.modal.editProperty.deleteImageTitle')"
                 >
                   <TrashIcon class="w-3.5 h-3.5" />
                 </button>
@@ -1492,7 +1516,7 @@ onMounted(async () => {
             >
               <PhotoIcon class="w-5 h-5" />
               <span class="text-[10px] font-bold tracking-tight"
-                >Add Photo</span
+                >{{ t("owner.propertiesPage.modal.editProperty.addPhoto") }}</span
               >
               <input
                 type="file"
@@ -1510,14 +1534,14 @@ onMounted(async () => {
             <div class="flex items-center justify-between">
               <span
                 class="text-[11px] font-bold text-orange-700 uppercase tracking-wider"
-                >Unsaved Images ({{ editNewPreviews.length }})</span
+                >{{ t("owner.propertiesPage.modal.editProperty.unsavedImages", { count: editNewPreviews.length }) }}</span
               >
               <button
                 :disabled="editImagesUploading"
                 @click="uploadStagedImages"
                 class="text-[11px] font-black text-white bg-orange-500 hover:bg-orange-600 px-3 py-1 rounded-lg transition disabled:opacity-50"
               >
-                Upload Images
+                {{ t("owner.propertiesPage.modal.editProperty.uploadImages") }}
               </button>
             </div>
             <div class="grid grid-cols-6 gap-2">
@@ -1546,13 +1570,13 @@ onMounted(async () => {
             @click="closeEditModal"
             class="px-5 py-2.5 rounded-xl border border-(--color-border) text-sm font-bold text-(--color-muted) hover:bg-(--color-surface-soft) transition"
           >
-            Close Panel
+            {{ t("owner.propertiesPage.modal.editProperty.closePanel") }}
           </button>
           <button
             @click="handleEditProperty"
             class="px-5 py-2.5 rounded-xl bg-(--color-primary) text-white text-sm font-bold hover:opacity-95 transition shadow-sm"
           >
-            Save Changes
+            {{ t("owner.propertiesPage.modal.editProperty.saveChanges") }}
           </button>
         </div>
       </div>
@@ -1560,7 +1584,7 @@ onMounted(async () => {
 
     <AppModal
       :open="isDeleteModalOpen"
-      title="Delete Property"
+      :title="t('owner.propertiesPage.modal.deleteProperty.title')"
       @close="closeDeleteModal"
     >
       <div class="p-1 text-center">
@@ -1570,37 +1594,36 @@ onMounted(async () => {
           <TrashIcon class="w-6 h-6 stroke-[2.5]" />
         </div>
         <h3 class="text-lg font-black text-(--color-text) tracking-tight">
-          Delete Property??
+          {{ t("owner.propertiesPage.modal.deleteProperty.confirmTitle") }}
         </h3>
         <p
           class="text-sm text-(--color-muted) mt-2 max-w-sm mx-auto font-medium"
         >
-          Are you sure you want to delete this property? This action is
-          permanent and cannot be undone.
+          {{ t("owner.propertiesPage.modal.deleteProperty.confirmMessage") }}
         </p>
         <div class="flex items-center justify-center gap-3 mt-8">
           <button
             @click="closeDeleteModal"
             class="px-5 py-2.5 rounded-xl border border-(--color-border) bg-(--color-surface) text-sm font-bold text-(--color-muted) hover:bg-(--color-surface-soft) transition"
           >
-            Cancel
+            {{ t("owner.propertiesPage.modal.deleteProperty.cancel") }}
           </button>
           <button
             @click="
               async () => {
                 try {
                   await propertyStore.deleteProperty(deletingPropertyId);
-                  toast.success('Asset successfully purged.');
+                  toast.success(t('owner.propertiesPage.toasts.assetPurged'));
                   closeDeleteModal();
                   await propertyStore.fetchMyProperties();
                 } catch {
-                  toast.danger('Destruction chain failed to resolve.');
+                  toast.danger(t('owner.propertiesPage.toasts.destructionFailed'));
                 }
               }
             "
             class="px-5 py-2.5 rounded-xl bg-rose-600 text-white text-sm font-bold hover:bg-rose-700 hover:shadow-lg hover:shadow-rose-100 transition duration-150"
           >
-            Delete Property
+            {{ t("owner.propertiesPage.modal.deleteProperty.confirm") }}
           </button>
         </div>
       </div>

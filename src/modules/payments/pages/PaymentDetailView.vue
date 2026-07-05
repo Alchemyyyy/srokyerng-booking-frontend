@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import http from "@/app/api/http";
 import AppButton from "@/shared/components/AppButton.vue";
 import {
@@ -13,6 +14,11 @@ import {
   ClockIcon,
   XCircleIcon,
 } from "@heroicons/vue/24/outline";
+
+const { t, te } = useI18n({ useScope: "global" });
+const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
+const statusLabel = (value) =>
+  safeT(`common.status.${String(value || "").toLowerCase()}`, value);
 
 const router = useRouter();
 const route = useRoute();
@@ -42,7 +48,7 @@ const fetchPayment = async () => {
     const res = await http.get(`/payments/${paymentId.value}`);
     payment.value = res.data;
   } catch (err) {
-    error.value = "Failed to synchronize your payment details.";
+    error.value = t("paymentDetailPage.errors.fetchFailed");
     console.error(err);
   } finally {
     loading.value = false;
@@ -54,7 +60,7 @@ const getStatusMeta = (status) => {
   const norm = String(status).toLowerCase();
   if (norm.includes("pending")) {
     return {
-      label: "Pending Verification",
+      label: t("paymentDetailPage.status.pending"),
       bg: "bg-amber-500/10 text-amber-600 border-amber-500/20",
       icon: ClockIcon,
     };
@@ -62,7 +68,7 @@ const getStatusMeta = (status) => {
   // FIX #4: handle "submitted" status — was incorrectly falling into "Rejected/Failed"
   if (norm.includes("submitted")) {
     return {
-      label: "Under Review",
+      label: t("paymentDetailPage.status.submitted"),
       bg: "bg-blue-500/10 text-blue-600 border-blue-500/20",
       icon: ClockIcon,
     };
@@ -73,13 +79,13 @@ const getStatusMeta = (status) => {
     norm.includes("paid")
   ) {
     return {
-      label: "Payment Approved",
+      label: t("paymentDetailPage.status.approved"),
       bg: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
       icon: CheckCircleIcon,
     };
   }
   return {
-    label: "Rejected / Failed",
+    label: t("paymentDetailPage.status.rejected"),
     bg: "bg-rose-500/10 text-rose-600 border-rose-500/20",
     icon: XCircleIcon,
   };
@@ -123,15 +129,15 @@ onMounted(() => {
         <ArrowLeftIcon
           class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform"
         />
-        <span>Back to Ledger</span>
+        <span>{{ t("paymentDetailPage.backButton") }}</span>
       </button>
 
       <header class="mb-8">
         <h1 class="text-3xl font-black tracking-tight text-(--color-text)">
-          Payment Statement
+          {{ t("paymentDetailPage.heading") }}
         </h1>
         <p class="text-sm text-(--color-muted) mt-1">
-          Review your settlement status and asset breakdown information.
+          {{ t("paymentDetailPage.subheading") }}
         </p>
       </header>
 
@@ -143,7 +149,7 @@ onMounted(() => {
           class="inline-block w-8 h-8 border-4 border-(--color-primary) border-t-transparent rounded-full animate-spin mb-4"
         ></div>
         <p class="text-sm font-semibold text-(--color-muted)">
-          Retrieving invoice record data...
+          {{ t("paymentDetailPage.loadingText") }}
         </p>
       </div>
 
@@ -156,7 +162,7 @@ onMounted(() => {
           @click="fetchPayment"
           class="mt-3 text-xs font-black text-(--color-primary) uppercase tracking-wider hover:underline"
         >
-          Retry Connection
+          {{ t("paymentDetailPage.retryButton") }}
         </button>
       </div>
 
@@ -176,12 +182,12 @@ onMounted(() => {
                 <p
                   class="text-[10px] font-black uppercase tracking-widest text-(--color-muted)"
                 >
-                  Transaction Identifier
+                  {{ t("paymentDetailPage.transactionIdLabel") }}
                 </p>
                 <p
                   class="text-sm font-mono font-bold text-(--color-text) mt-0.5"
                 >
-                  #PAY-{{ payment.id }}
+                  {{ t("paymentDetailPage.transactionIdValue", { id: payment.id }) }}
                 </p>
               </div>
 
@@ -201,7 +207,7 @@ onMounted(() => {
               <p
                 class="text-[10px] font-black uppercase tracking-widest text-(--color-muted)"
               >
-                Total Remitted Volume
+                {{ t("paymentDetailPage.totalLabel") }}
               </p>
               <h2
                 class="text-4xl font-black tracking-tight text-(--color-text) mt-1"
@@ -221,10 +227,10 @@ onMounted(() => {
                   <p
                     class="text-[10px] font-black uppercase tracking-wider text-(--color-muted)"
                   >
-                    Reserved Property
+                    {{ t("paymentDetailPage.propertyLabel") }}
                   </p>
                   <p class="text-sm font-bold text-(--color-text) mt-0.5">
-                    {{ payment.property_name || "N/A" }}
+                    {{ payment.property_name || t("paymentDetailPage.notAvailable") }}
                   </p>
                 </div>
               </div>
@@ -239,10 +245,10 @@ onMounted(() => {
                   <p
                     class="text-[10px] font-black uppercase tracking-wider text-(--color-muted)"
                   >
-                    Allocated Suite / Unit
+                    {{ t("paymentDetailPage.roomLabel") }}
                   </p>
                   <p class="text-sm font-bold text-(--color-text) mt-0.5">
-                    {{ payment.room_name || "N/A" }}
+                    {{ payment.room_name || t("paymentDetailPage.notAvailable") }}
                   </p>
                 </div>
               </div>
@@ -255,7 +261,7 @@ onMounted(() => {
               <p
                 class="text-[10px] font-black uppercase tracking-widest text-(--color-muted) mb-3"
               >
-                Submitted Remittance Voucher
+                {{ t("paymentDetailPage.receiptLabel") }}
               </p>
               <div
                 class="relative rounded-2xl overflow-hidden border border-(--color-border) group shadow-xs hover:shadow-md transition duration-300"
@@ -263,7 +269,7 @@ onMounted(() => {
                 <img
                   :src="`${BASE_URL}${payment.receipt_image_url}`"
                   class="w-full h-auto object-cover max-h-[380px] transition duration-500 group-hover:scale-[1.01]"
-                  alt="Voucher Receipt Image Proof"
+                  :alt="t('paymentDetailPage.receiptAlt')"
                 />
               </div>
             </div>
@@ -284,8 +290,8 @@ onMounted(() => {
             />
             <span>{{
               payment.receipt_image_url
-                ? "Update Payment Proof"
-                : "Upload Payment Proof"
+                ? t("paymentDetailPage.uploadButton.update")
+                : t("paymentDetailPage.uploadButton.upload")
             }}</span>
           </AppButton>
         </div>

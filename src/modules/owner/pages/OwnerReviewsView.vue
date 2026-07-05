@@ -14,9 +14,11 @@ import {
   ExclamationTriangleIcon,
 } from '@heroicons/vue/24/outline'
 import { StarIcon as StarSolid } from '@heroicons/vue/24/solid'
+import { useI18n } from 'vue-i18n'
 
 const toast              = useToastStore()
 const { isSidebarOpen } = useSidebar()
+const { t } = useI18n({ useScope: "global" })
 
 const loading      = ref(true)
 const error        = ref('')
@@ -34,7 +36,7 @@ const fetchReviews = async () => {
     const raw = Array.isArray(res) ? res : res?.data || []
     reviews.value = raw.map(normalizeReview)
   } catch (err) {
-    error.value = err?.message || 'Failed to load reviews.'
+    error.value = err?.message || t("owner.reviews.loadFailed")
   } finally {
     loading.value = false
   }
@@ -110,9 +112,9 @@ const handleReply = async ({ reviewId, reply }) => {
         repliedAt: fmt(new Date().toISOString()),
       }
     }
-    toast.success('Reply posted successfully!')
+    toast.success(t("owner.reviews.replyPosted"))
   } catch (err) {
-    toast.error(err?.response?.data?.message || 'Failed to post reply.')
+    toast.error(err?.response?.data?.message || t("owner.reviews.replyPostFailed"))
     throw err  // re-throw so OwnerReviewCard keeps compose open
   }
 }
@@ -123,9 +125,9 @@ const handleDeleteReply = async (reviewId) => {
     await reviewApi.replyToReview(reviewId, null)
     const idx = reviews.value.findIndex(r => r.id === reviewId)
     if (idx !== -1) reviews.value[idx] = { ...reviews.value[idx], ownerReply: null, repliedAt: null }
-    toast.success('Reply removed.')
+    toast.success(t("owner.reviews.replyRemoved"))
   } catch (err) {
-    toast.error(err?.response?.data?.message || 'Failed to remove reply.')
+    toast.error(err?.response?.data?.message || t("owner.reviews.replyRemoveFailed"))
   }
 }
 
@@ -262,14 +264,14 @@ onMounted(fetchReviews)
     </section>
 
     <!-- Loading -->
-    <OwnerLoadingState v-if="loading" label="Loading reviews…" />
+    <OwnerLoadingState v-if="loading" :label="t('owner.reviews.loading')" />
 
     <!-- Error -->
     <section v-else-if="error" class="flex flex-col items-center gap-3 py-16 rounded-2xl border border-rose-500/20 bg-rose-500/5 text-center">
       <ExclamationTriangleIcon class="w-8 h-8 text-rose-500" />
       <p class="text-sm font-semibold text-rose-600">{{ error }}</p>
       <button @click="fetchReviews" class="px-4 py-2 bg-(--color-primary) text-white text-xs font-bold rounded-lg">
-        Try Again
+        {{ t("owner.reviews.tryAgain") }}
       </button>
     </section>
 

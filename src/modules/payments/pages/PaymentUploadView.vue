@@ -6,11 +6,18 @@
  */
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { ArrowLeftIcon, ShieldCheckIcon } from "@heroicons/vue/24/outline";
 import AppButton from "@/shared/components/AppButton.vue";
 import ReceiptUploadForm from "@/modules/payments/components/ReceiptUploadForm.vue";
 import PaymentMethodCard from "@/modules/payments/components/PaymentMethodCard.vue";
 import { usePaymentStore } from "@/modules/payments/store/paymentStore";
+
+const { t, te } = useI18n({ useScope: "global" });
+const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
+const statusLabel = (value) =>
+  safeT(`common.status.${String(value || "").toLowerCase()}`, value);
+
 const uploadType = ref("receipt");
 
 const route = useRoute();
@@ -94,7 +101,7 @@ onMounted(async () => {
       <!-- Back -->
       <button type="button" class="upload-page__back" @click="router.back()">
         <ArrowLeftIcon class="upload-page__back-icon" />
-        <span>Back to Booking</span>
+        <span>{{ t("paymentUploadPage.backButton") }}</span>
       </button>
 
       <!-- ── Success screen ── -->
@@ -102,11 +109,11 @@ onMounted(async () => {
         <div class="success-state__icon-wrap">
           <ShieldCheckIcon class="success-state__icon" />
         </div>
-        <h2 class="success-state__heading">Proof submitted!</h2>
+        <h2 class="success-state__heading">{{ t("paymentUploadPage.success.heading") }}</h2>
         <p class="success-state__text">
-          We're reviewing your payment. You'll be notified shortly.
+          {{ t("paymentUploadPage.success.text") }}
         </p>
-        <p class="success-state__redirect">Redirecting…</p>
+        <p class="success-state__redirect">{{ t("paymentUploadPage.success.redirecting") }}</p>
       </div>
 
       <!-- ── Main grid ── -->
@@ -115,16 +122,19 @@ onMounted(async () => {
         <div class="upload-page__left">
           <div class="upload-page__intro">
             <h1 class="upload-page__heading">
-              Pay via {{ khqrAccount?.method_name || "Bank Transfer" }}
+              {{
+                t("paymentUploadPage.payVia", {
+                  method: khqrAccount?.method_name || t("paymentUploadPage.defaultMethod"),
+                })
+              }}
             </h1>
             <p class="upload-page__subheading">
-              Scan the QR code with any Cambodian banking app, transfer the
-              exact amount, then upload your receipt.
+              {{ t("paymentUploadPage.subheading") }}
             </p>
 
             <!-- Amount pill -->
             <div v-if="formattedAmount" class="upload-page__amount-pill">
-              <span class="upload-page__amount-label">Amount due</span>
+              <span class="upload-page__amount-label">{{ t("paymentUploadPage.amountDue") }}</span>
               <span class="upload-page__amount-value">{{
                 formattedAmount
               }}</span>
@@ -152,14 +162,14 @@ onMounted(async () => {
           <div class="upload-page__security">
             <ShieldCheckIcon class="upload-page__security-icon" />
             <p class="upload-page__security-text">
-              Your transaction is encrypted and secure.
+              {{ t("paymentUploadPage.securityText") }}
             </p>
           </div>
         </div>
 
         <!-- Right: upload form -->
         <div class="upload-page__right">
-          <p class="upload-page__step-label">Final step — Upload your receipt</p>
+          <p class="upload-page__step-label">{{ t("paymentUploadPage.stepLabel") }}</p>
 
           <ReceiptUploadForm :loading="isUploading" @submit="handleSubmit" />
 
@@ -168,7 +178,7 @@ onMounted(async () => {
           </p>
 
           <p class="upload-page__formats">
-            Accepted formats: PNG, JPG, PDF · Max 5 MB
+            {{ t("paymentUploadPage.formatsHint") }}
           </p>
         </div>
       </div>

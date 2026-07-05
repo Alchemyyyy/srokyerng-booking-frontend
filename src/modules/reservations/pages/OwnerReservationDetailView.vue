@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { reservationApi } from "../api/reservation.api";
 import { useSidebar } from "@/shared/composables/useSidebar";
 import LoadingSpinner from "@/shared/components/LoadingSpinner.vue";
@@ -10,6 +11,9 @@ import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
 const route = useRoute();
 const router = useRouter();
 const { isSidebarOpen } = useSidebar();
+const { t, te } = useI18n({ useScope: "global" });
+const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
+const statusLabel = (value) => safeT(`common.status.${String(value || "").toLowerCase()}`, value);
 
 const loading = ref(true);
 const error = ref("");
@@ -70,7 +74,7 @@ const fetchReservation = async () => {
     error.value =
       requestError?.response?.data?.message ||
       requestError?.message ||
-      "Failed to load reservation details.";
+      t("owner.reservationDetail.loadError");
   } finally {
     loading.value = false;
   }
@@ -90,11 +94,11 @@ onMounted(fetchReservation);
         class="inline-flex items-center gap-2 px-4 py-2 bg-(--color-surface) border border-(--color-border) rounded-xl text-xs font-bold text-(--color-text) hover:bg-(--color-surface-soft) transition cursor-pointer shadow-sm"
       >
         <ArrowLeftIcon class="w-4 h-4" />
-        <span>Back to List</span>
+        <span>{{ t("owner.reservationDetail.backToList") }}</span>
       </button>
     </header>
 
-    <OwnerLoadingState v-if="loading" label="Loading reservation details..." />
+    <OwnerLoadingState v-if="loading" :label="t('owner.reservationDetail.loading')" />
 
     <div
       v-else-if="error"
@@ -109,13 +113,13 @@ onMounted(fetchReservation);
       >
         <div class="flex items-center justify-between">
           <h1 class="text-2xl font-bold text-(--color-text)">
-            Reservation #{{ reservation.id }}
+            {{ t("owner.reservationDetail.reservationHash") }}{{ reservation.id }}
           </h1>
           <span
             class="inline-flex rounded-xl border px-3 py-1.5 text-[10px] font-black uppercase tracking-widest"
             :class="getStatusBadgeClass(reservation.reservation_status)"
           >
-            {{ reservation.reservation_status }}
+            {{ statusLabel(reservation.reservation_status) }}
           </span>
         </div>
 
@@ -123,21 +127,21 @@ onMounted(fetchReservation);
           <span
             class="text-xs font-bold text-(--color-muted) uppercase tracking-wider block border-b border-(--color-border) pb-1.5"
           >
-            Guest Information
+            {{ t("owner.reservationDetail.guestInformation") }}
           </span>
           <div
             class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-(--color-surface-soft) p-4 rounded-xl border border-(--color-border)"
           >
             <div>
-              <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Full Name</span>
+              <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.reservationDetail.fullName") }}</span>
               <span class="font-bold text-(--color-text) text-sm">{{ reservation.customer_name }}</span>
             </div>
             <div>
-              <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Phone Number</span>
+              <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.reservationDetail.phoneNumber") }}</span>
               <span class="font-semibold text-(--color-primary) text-sm">{{ reservation.customer_phone || "N/A" }}</span>
             </div>
             <div class="overflow-hidden">
-              <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Email Address</span>
+              <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.reservationDetail.emailAddress") }}</span>
               <span
                 class="font-medium text-(--color-text) text-sm truncate block"
                 :title="reservation.customer_email"
@@ -151,51 +155,51 @@ onMounted(fetchReservation);
           <span
             class="text-xs font-bold text-(--color-muted) uppercase tracking-wider block border-b border-(--color-border) pb-1.5"
           >
-            Stay Details
+            {{ t("owner.reservationDetail.stayDetails") }}
           </span>
           <div
             class="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-(--color-surface-soft) p-4 rounded-xl border border-(--color-border)"
           >
             <div class="col-span-2">
-              <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Property</span>
+              <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.reservationDetail.property") }}</span>
               <span class="font-bold text-(--color-text) text-sm truncate block">{{ reservation.property_name }}</span>
             </div>
             <div>
-              <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Room</span>
+              <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.reservationDetail.room") }}</span>
               <span class="font-semibold text-(--color-text) text-sm">{{ reservation.room_name }}</span>
             </div>
             <div>
-              <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Guests</span>
+              <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.reservationDetail.guests") }}</span>
               <span class="font-bold text-(--color-primary) text-sm">{{ reservation.total_guests }}</span>
             </div>
             <div>
-              <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Check-in</span>
+              <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.reservationDetail.checkIn") }}</span>
               <span class="font-medium text-(--color-text) text-xs">{{ formatDate(reservation.check_in_date) }}</span>
             </div>
             <div>
-              <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Check-out</span>
+              <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.reservationDetail.checkOut") }}</span>
               <span class="font-medium text-(--color-text) text-xs">{{ formatDate(reservation.check_out_date) }}</span>
             </div>
             <div>
-              <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Nights</span>
+              <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.reservationDetail.nights") }}</span>
               <span class="font-medium text-(--color-text) text-xs">{{ reservation.total_nights }}</span>
             </div>
             <div>
-              <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Price / Night</span>
+              <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.reservationDetail.pricePerNight") }}</span>
               <span class="font-medium text-(--color-text) text-xs">${{ formatCurrency(reservation.price_per_night) }}</span>
             </div>
           </div>
         </div>
 
         <div v-if="reservation.special_request" class="space-y-2">
-          <span class="text-xs font-bold text-(--color-muted) uppercase tracking-wider block">Special Request</span>
+          <span class="text-xs font-bold text-(--color-muted) uppercase tracking-wider block">{{ t("owner.reservationDetail.specialRequest") }}</span>
           <div class="bg-(--color-surface-soft) p-4 rounded-xl border border-(--color-border)">
             <p class="text-sm font-medium text-(--color-text)">"{{ reservation.special_request }}"</p>
           </div>
         </div>
 
         <div v-if="reservation.cancellation_reason" class="space-y-2">
-          <span class="text-xs font-bold text-(--color-danger) uppercase tracking-wider block">Cancellation Reason</span>
+          <span class="text-xs font-bold text-(--color-danger) uppercase tracking-wider block">{{ t("owner.reservationDetail.cancellationReason") }}</span>
           <div class="bg-(--color-danger-soft) p-4 rounded-xl border border-(--color-danger)">
             <p class="text-sm font-bold text-(--color-danger)">"{{ reservation.cancellation_reason }}"</p>
           </div>
@@ -208,26 +212,26 @@ onMounted(fetchReservation);
         <span
           class="text-xs font-bold text-(--color-muted) uppercase tracking-wider block border-b border-(--color-border) pb-1.5"
         >
-          Booking Summary
+          {{ t("owner.reservationDetail.bookingSummary") }}
         </span>
 
         <div>
-          <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Total Amount</span>
+          <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.reservationDetail.totalAmount") }}</span>
           <span class="font-black text-(--color-success) text-2xl">${{ formatCurrency(reservation.total_amount) }}</span>
         </div>
 
         <div>
-          <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Booking ID</span>
+          <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.reservationDetail.bookingId") }}</span>
           <span class="font-mono text-xs font-bold text-(--color-primary)">#{{ reservation.id }}</span>
         </div>
 
         <div>
-          <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Created At</span>
+          <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.reservationDetail.createdAt") }}</span>
           <span class="font-medium text-(--color-muted) text-xs">{{ formatDateTime(reservation.created_at) }}</span>
         </div>
 
         <div>
-          <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Last Updated</span>
+          <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.reservationDetail.lastUpdated") }}</span>
           <span class="font-medium text-(--color-muted) text-xs">{{ formatDateTime(reservation.updated_at) }}</span>
         </div>
 
@@ -236,7 +240,7 @@ onMounted(fetchReservation);
           :to="{ name: 'owner.property-detail', params: { id: reservation.property_id } }"
           class="mt-2 inline-flex items-center justify-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface-soft) px-4 py-2.5 text-xs font-bold text-(--color-text) transition hover:bg-(--color-surface)"
         >
-          View Property
+          {{ t("owner.reservationDetail.viewProperty") }}
         </router-link>
       </div>
     </div>

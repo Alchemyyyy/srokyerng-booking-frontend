@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
@@ -7,6 +8,8 @@ import {
   XCircleIcon,
   XMarkIcon,
 } from "@heroicons/vue/24/outline";
+
+const { t } = useI18n({ useScope: "global" });
 
 const props = defineProps({
   variant: {
@@ -79,7 +82,7 @@ const AlertIcon = computed(() => activeConfig.value.icon);
       v-if="dismissible"
       type="button"
       class="-mr-1 -mt-1 rounded-sm p-1 text-(--color-muted) opacity-80 transition hover:bg-(--color-surface-soft) hover:text-(--color-text) hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-(--color-primary)/30"
-      aria-label="Dismiss alert"
+      :aria-label="t('components.appAlert.dismiss')"
       @click="$emit('close')"
     >
       <XMarkIcon class="h-4 w-4" />

@@ -20,7 +20,26 @@
     "retry": "Retry",
     "save": "Save",
     "submit": "Submit",
-    "continue": "Continue"
+    "continue": "Continue",
+    "close": "Close",
+    "edit": "Edit",
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "cancelled": "Cancelled",
+      "completed": "Completed",
+      "paid": "Paid",
+      "submitted": "Submitted",
+      "verified": "Verified",
+      "rejected": "Rejected",
+      "refunded": "Refunded",
+      "failed": "Failed",
+      "requested": "Requested",
+      "approved": "Approved",
+      "active": "Active",
+      "inactive": "Inactive",
+      "suspended": "Suspended"
+    }
   },
   "auth": {
     "accountType": "Account type",
@@ -162,7 +181,327 @@
       "dark": "Dark",
       "system": "System",
       "followsOs": "Follows your OS preference",
-      "overridesOs": "Overrides OS preference"
+      "overridesOs": "Overrides OS preference",
+      "switchToLight": "Switch to light mode",
+      "switchToDark": "Switch to dark mode"
+    },
+    "tablePagination": {
+      "ariaLabel": "Pagination"
+    },
+    "roomDeleteModal": {
+      "title": "Delete Room",
+      "confirmPrefix": "Are you sure you want to delete",
+      "confirmSuffix": "? This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete Room"
+    },
+    "roomCard": {
+      "idBadge": "ID: {id}",
+      "guests": "{count} guests",
+      "floor": "Floor {number}",
+      "baseRate": "Base Rate:",
+      "perNight": "/ night",
+      "editRoom": "Edit Room",
+      "deleteRoom": "Delete room"
+    },
+    "roomFormModal": {
+      "tooManyImages": "You can upload maximum 10 images",
+      "tooManyImagesTitle": "Too Many Images",
+      "unsupportedFileType": "{fileName} is not supported. Use JPG or PNG only.",
+      "fileTooLarge": "{fileName} exceeds 5MB limit.",
+      "property": "Property",
+      "selectProperty": "Select property",
+      "roomType": "Room Type",
+      "selectRoomType": "Select room type",
+      "roomImages": "Room Images",
+      "maxImagesHint": "(max 10)",
+      "cover": "Cover",
+      "saved": "Saved",
+      "removeImage": "Remove image",
+      "newPhotoAlt": "New room photo preview",
+      "clickToUpload": "Click to upload images",
+      "roomName": "Room Name",
+      "roomNamePlaceholder": "e.g. Deluxe King Suite",
+      "pricePerNight": "Price / Night ($)",
+      "maxGuests": "Max Guests",
+      "totalRooms": "Total Rooms",
+      "floorNumber": "Floor Number",
+      "floorNumberPlaceholder": "e.g. 3",
+      "description": "Description",
+      "descriptionPlaceholder": "Short room description...",
+      "cancel": "Cancel"
+    },
+    "propertyPagination": {
+      "ariaLabel": "Pagination"
+    },
+    "paymentFilterBar": {
+      "tabs": {
+        "all": "All",
+        "pending": "Pending Verification",
+        "submitted": "Submitted",
+        "confirmed": "Confirmed / Paid",
+        "cancelled": "Cancelled / Failed",
+        "refunded": "Refunded"
+      }
+    },
+    "paymentMethodCard": {
+      "scanToPay": "Scan to Pay",
+      "khqrWithMethod": "KHQR · {method}",
+      "khqrOnly": "KHQR",
+      "qrAlt": "Bakong KHQR code",
+      "qrNotConfigured": "QR not configured",
+      "bank": "Bank",
+      "merchant": "Merchant",
+      "accountNumber": "Account Number",
+      "bakongId": "Bakong ID",
+      "manualHint": "No QR code yet? Transfer manually to the account number above.",
+      "instructionHint": "Open your banking app · Scan this QR · Transfer the exact amount"
+    },
+    "receiptUploadForm": {
+      "fileTooLarge": "File is too large. Maximum size is {size}MB.",
+      "uploadAriaLabel": "Upload payment receipt",
+      "dropHeading": "Drop it here",
+      "uploadHeading": "Upload your receipt",
+      "dragDropHint": "Drag and drop, or click to browse.",
+      "formatsHint": "PNG, JPG, PDF — max {size}MB.",
+      "previewAlt": "Receipt preview",
+      "removeButton": "Remove",
+      "removeFileAriaLabel": "Remove file",
+      "referenceLabel": "Transaction reference",
+      "referenceOptional": "(optional)",
+      "referencePlaceholder": "e.g. the reference number from your bank app",
+      "submitButton": "Submit Payment for Review"
+    },
+    "createPaymentAccountForm": {
+      "requiredFieldsMessage": "Please fill in all required fields.",
+      "requiredFieldsTitle": "Required Fields",
+      "requiredQrMessage": "Please upload a QR Code image.",
+      "requiredQrTitle": "Required QR",
+      "successTitle": "Success",
+      "errorTitle": "Error",
+      "titleUpdate": "Update Payment Account",
+      "titleAdd": "Add Payment Account",
+      "selectBankLabel": "Select Bank",
+      "chooseBankPlaceholder": "-- Choose Bank --",
+      "banks": {
+        "aba": "ABA Bank",
+        "acleda": "Acleda Bank",
+        "wing": "Wing Bank"
+      },
+      "bankLockedHint": "Bank provider cannot be changed.",
+      "accountNameLabel": "Account Name",
+      "accountNamePlaceholder": "e.g. SOK SAN",
+      "accountNumberLabel": "Account Number",
+      "accountNumberPlaceholder": "e.g. 000 111 222",
+      "qrCodeLabel": "Bank QR Code",
+      "uploadImagesHint": "Click to upload images",
+      "uploadFormatsHint": "PNG, JPG up to 10MB (multiple allowed)",
+      "qrPreviewAlt": "QR Preview",
+      "newQrSelected": "New QR Selected",
+      "clickToChangeQr": "Click to Change QR Image",
+      "cancelButton": "Cancel",
+      "savingButton": "Saving...",
+      "updateButton": "Update Now",
+      "saveButton": "Save"
+    },
+    "paymentAccountFilter": {
+      "tabs": {
+        "all": "All",
+        "active": "Active",
+        "deactivated": "Deactivated"
+      }
+    },
+    "propertyCard": {
+      "badgePendingChanges": "Pending changes",
+      "statusUnknown": "Unknown",
+      "waitingApproval": "Waiting for admin approval",
+      "submittedOn": "Submitted on {date}",
+      "rejectedByAdmin": "Rejected by admin",
+      "reason": "Reason: {reason}",
+      "underReview": "Under admin review",
+      "deactivatedHidden": "Deactivated — hidden from guests",
+      "country": "Cambodia",
+      "revenue": "Revenue",
+      "rooms": "Rooms",
+      "bookings": "Bookings",
+      "edit": "Edit",
+      "moreOptions": "More options",
+      "deactivate": "Deactivate",
+      "activate": "Activate"
+    },
+    "bookingForm": {
+      "heading": "Guest Information",
+      "subheading": "Enter the primary guest details for this reservation.",
+      "firstNameLabel": "First Name",
+      "firstNamePlaceholder": "John",
+      "lastNameLabel": "Last Name",
+      "lastNamePlaceholder": "Doe",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "john@example.com",
+      "floorPreferenceLabel": "Floor Preference",
+      "optionalNotGuaranteed": "(optional, not guaranteed)",
+      "noPreference": "No preference",
+      "groundFloor": "Ground floor",
+      "lowerFloor": "Lower floor",
+      "higherFloor": "Higher floor",
+      "specialRequestsLabel": "Special Requests",
+      "optional": "(optional)",
+      "specialRequestsPlaceholder": "Any special requests or preferences...",
+      "paymentMethodLabel": "Payment Method",
+      "loadingPaymentMethods": "Loading payment methods…",
+      "noPaymentMethods": "This host hasn't set up a payment method yet. Please contact them before booking.",
+      "floorPreferenceNote": "Floor preference: {label} (not guaranteed).",
+      "confirmBooking": "Confirm Booking →",
+      "errors": {
+        "firstNameRequired": "First name is required.",
+        "lastNameRequired": "Last name is required.",
+        "emailRequired": "Email is required.",
+        "emailInvalid": "Invalid email format.",
+        "checkInRequired": "Check-in date is required.",
+        "checkOutRequired": "Check-out date is required.",
+        "checkOutAfterCheckIn": "Check-out must be after check-in.",
+        "paymentMethodRequired": "Please select a payment method."
+      }
+    },
+    "bookingCard": {
+      "roomFallback": "Room",
+      "reservationPrefix": "RES",
+      "propertyFallback": "Property",
+      "checkInLabel": "In",
+      "checkOutLabel": "Out",
+      "nights": "{count} night(s)",
+      "paymentLabel": "Payment: {status}",
+      "totalAmount": "Total amount",
+      "reupload": "Re-upload",
+      "payNow": "Pay Now",
+      "bookAgain": "Book Again",
+      "details": "Details",
+      "viewDetails": "View Details",
+      "receipt": "Receipt",
+      "cancelBooking": "Cancel Booking"
+    },
+    "refundStatusBadge": {
+      "ariaLabel": "Refund status: {label}",
+      "status": {
+        "notRequested": "No Refund",
+        "pending": "Refund Pending",
+        "processing": "Processing",
+        "approved": "Refund Approved",
+        "refunded": "Refunded",
+        "rejected": "Refund Rejected"
+      }
+    },
+    "approvalFilter": {
+      "allRequests": "All Requests"
+    },
+    "approvalSearch": {
+      "placeholder": "Search by property name, host, or location...",
+      "clearSearch": "Clear search"
+    },
+    "approvalTable": {
+      "propertyDetail": "Property Detail",
+      "hostOwner": "Host / Owner",
+      "geographicLocation": "Geographic Location",
+      "auditStatus": "Audit Status",
+      "actions": "Actions",
+      "unnamedProperty": "Unnamed Property",
+      "standardListing": "Standard Listing",
+      "unknownHost": "Unknown Host",
+      "noEmailProvided": "No email provided",
+      "cambodia": "Cambodia",
+      "approve": "Approve",
+      "reject": "Reject",
+      "editStatus": "Edit Status",
+      "setToPending": "Set to Pending",
+      "approveListing": "Approve Listing",
+      "rejectListing": "Reject Listing"
+    },
+    "userDetailModal": {
+      "title": "User Profile",
+      "idPrefix": "ID #",
+      "email": "Email",
+      "emailVerified": "Email verified",
+      "verified": "Verified",
+      "phone": "Phone",
+      "gender": "Gender",
+      "dateOfBirth": "Date of Birth",
+      "address": "Address",
+      "lastLogin": "Last Login",
+      "joined": "Joined",
+      "close": "Close"
+    },
+    "wishlistCard": {
+      "removeFromWishlist": "Remove from wishlist",
+      "night": "night"
+    },
+    "toastContainer": {
+      "dismiss": "Dismiss notification"
+    },
+    "appAlert": {
+      "dismiss": "Dismiss alert"
+    },
+    "roomFilter": {
+      "filters": "Filters",
+      "resetAll": "Reset All",
+      "maxNightlyBudget": "Max Nightly Budget",
+      "roomCapacity": "Room Capacity",
+      "facilitiesAmenities": "Facilities & Amenities",
+      "capacity": {
+        "oneGuest": "1 Guest",
+        "twoGuests": "2 Guests",
+        "threeGuests": "3 Guests",
+        "fourPlusGuests": "4+ Guests"
+      },
+      "facilities": {
+        "wifi": "Free WiFi",
+        "ac": "Air Conditioning",
+        "breakfast": "Breakfast Included",
+        "smartTv": "Smart TV",
+        "balcony": "Balcony",
+        "privateBathroom": "Private Bathroom"
+      }
+    },
+    "availabilityCalendar": {
+      "loading": "Loading availability...",
+      "loadFailed": "Failed to load availability.",
+      "comingSoonTitle": "Availability calendar coming soon",
+      "comingSoonDesc": "The availability endpoint is not ready yet. The calendar will show here once the backend is connected.",
+      "availableNights": "Available nights",
+      "bookedNights": "Booked nights",
+      "occupancy": "Occupancy",
+      "bookedClickForDetails": "Booked — click for details",
+      "booked": "Booked",
+      "blockedByOwner": "Blocked by Owner — click to unblock",
+      "unavailable": "Unavailable",
+      "bookingsPrefix": "Bookings —",
+      "bookingPrefix": "Booking —",
+      "blockedDatePrefix": "Blocked Date —",
+      "availableDatePrefix": "Available Date —",
+      "close": "Close",
+      "guestFallback": "Guest",
+      "checkInLabel": "Check-in:",
+      "checkOutLabel": "Check-out:",
+      "statusLabel": "Status:",
+      "viewFullReservation": "View full reservation →",
+      "blockedForMaintenance": "Blocked for Maintenance / External Booking",
+      "unblockDate": "Unblock Date",
+      "dateAvailableForBookings": "Date is available for guest bookings",
+      "blockDate": "Block Date",
+      "openRoomCalendarHint": "Open a specific room's calendar to block dates",
+      "selectedDates": "Selected Dates",
+      "selectEndDate": "Select end date",
+      "legendAvailable": "Available",
+      "legendBooked": "Booked",
+      "legendBlocked": "Blocked",
+      "legendSelected": "Selected",
+      "legendToday": "Today",
+      "upcomingStays": "Upcoming stays",
+      "noUpcomingBookings": "No bookings coming up this period.",
+      "nightsBooked": "{count} night(s) booked",
+      "dateUnblocked": "Date unblocked successfully",
+      "dateBlocked": "Date blocked successfully",
+      "updateBlockFailed": "Failed to update block status.",
+      "rangeIncludesUnavailable": "Your selected range includes unavailable dates. Please choose different dates."
     }
   },
   "nav": {
@@ -405,6 +744,37 @@
       "passwordMismatch": "New password and confirmation do not match",
       "profileImageType": "Profile image must be a JPG, PNG, or WebP file",
       "profileImageSize": "Profile image must be 2MB or smaller"
+    },
+    "tabs": {
+      "aboutMe": "About me",
+      "pastTrips": "Past trips",
+      "connections": "Connections"
+    },
+    "editBtn": "Edit",
+    "completeProfile": {
+      "title": "Complete your profile",
+      "description": "Your SrokYerng profile is an important part of every reservation. Complete yours to help other hosts and guests get to know you.",
+      "getStarted": "Get started"
+    },
+    "reviews": {
+      "customer": "Show reviews I've written",
+      "owner": "Show reviews about my properties"
+    },
+    "connections": {
+      "title": "Social Connections",
+      "description": "Manage your connected accounts. Log in instantly and secure your Srok-Yerng Booking account.",
+      "googleTitle": "Google Account",
+      "googleDesc": "Allows one-tap login and registration. Safe and secure.",
+      "facebookTitle": "Facebook Account",
+      "facebookDesc": "Link your Facebook profile to instantly log into your bookings.",
+      "connected": "Connected",
+      "connect": "Connect",
+      "connecting": "Connecting...",
+      "disconnect": "Disconnect",
+      "disconnectTitle": "Disconnect account?",
+      "disconnectConfirm": "Are you sure you want to disconnect your Srok-Yerng Booking account from this {provider} account? You will no longer be able to log in using it.",
+      "connectSuccess": "{provider} account connected successfully!",
+      "disconnectSuccess": "{provider} account disconnected."
     }
   },
   "notifications": {
@@ -439,7 +809,8 @@
       "unreadTitle": "No unread notifications",
       "readTitle": "No read notifications",
       "allMessage": "Important booking, payment, property, and account updates will appear here.",
-      "filteredMessage": "Try switching filters to see other notifications."
+      "filteredMessage": "Try switching filters to see other notifications.",
+      "exploreProperties": "Explore Properties"
     },
     "types": {
       "reservation_created": "Reservation created",
@@ -458,6 +829,24 @@
       "markAllRead": "All notifications marked as read",
       "markRead": "Notification marked as read",
       "archived": "Notification archived"
+    },
+    "actions": {
+      "viewDetails": "View Details",
+      "viewBooking": "View Booking",
+      "viewPayment": "View Payment",
+      "viewProperty": "View Property"
+    },
+    "metadata": {
+      "reservationId": "Reservation ID",
+      "propertyName": "Property Name",
+      "propertyId": "Property ID",
+      "amount": "Amount",
+      "checkInDate": "Check-in Date",
+      "checkOutDate": "Check-out Date",
+      "status": "Status"
+    },
+    "detailModal": {
+      "title": "Notification details"
     },
     "errors": {
       "load": "Could not load notifications",
@@ -514,6 +903,21 @@
       "reviews": "reviews",
       "subtitle": "Handpicked accommodations with the best reviews and top guest experiences",
       "exploreAll": "Explore all stays",
+      "loading": "Loading featured properties...",
+      "emptyTitle": "No stays available",
+      "emptyDesc": "There are no approved stays listed under this category at the moment. Try selecting another tab or click the explorer link to search all locations.",
+      "guestFavorite": "Guest favorite",
+      "newListing": "New Listing",
+      "new": "New",
+      "freeCancellation": "Free cancellation",
+      "loginToSave": "Please login to save properties to your wishlist",
+      "addedToWishlist": "Added \"{name}\" to your wishlist!",
+      "addedToWishlistGeneric": "Added to wishlist!",
+      "removedFromWishlist": "Removed \"{name}\" from your wishlist!",
+      "removedFromWishlistGeneric": "Removed from wishlist!",
+      "wishlistError": "Failed to update wishlist for \"{name}\"",
+      "wishlistErrorGeneric": "Failed to update wishlist",
+      "stay": "Stay",
       "badges": {
         "mostPopular": "Most Popular",
         "topRated": "Top Rated",
@@ -1299,6 +1703,517 @@
         "guestRelations": "Guest Relations"
       }
     },
+    "reservationsPage": {
+      "title": "Reservations Summary",
+      "subtitle": "Overview of recent reservations from the backend.",
+      "refresh": "Refresh",
+      "refreshing": "Refreshing...",
+      "totalEarnings": "Total Earnings",
+      "totalBookings": "Total Bookings",
+      "pendingAction": "Pending Action",
+      "loading": "Loading reservations...",
+      "loadError": "Failed to load reservations.",
+      "noReservations": "No recent reservations found.",
+      "to": "to",
+      "columns": {
+        "bookingId": "Booking ID",
+        "guest": "Guest",
+        "property": "Property",
+        "amount": "Amount",
+        "date": "Date",
+        "status": "Status"
+      }
+    },
+    "reservationDetail": {
+      "backToList": "Back to List",
+      "loading": "Loading reservation details...",
+      "loadError": "Failed to load reservation details.",
+      "reservationHash": "Reservation #",
+      "guestInformation": "Guest Information",
+      "fullName": "Full Name",
+      "phoneNumber": "Phone Number",
+      "emailAddress": "Email Address",
+      "stayDetails": "Stay Details",
+      "property": "Property",
+      "room": "Room",
+      "guests": "Guests",
+      "checkIn": "Check-in",
+      "checkOut": "Check-out",
+      "nights": "Nights",
+      "pricePerNight": "Price / Night",
+      "specialRequest": "Special Request",
+      "cancellationReason": "Cancellation Reason",
+      "bookingSummary": "Booking Summary",
+      "totalAmount": "Total Amount",
+      "bookingId": "Booking ID",
+      "createdAt": "Created At",
+      "lastUpdated": "Last Updated",
+      "viewProperty": "View Property"
+    },
+    "bookingCalendarPage": {
+      "title": "Booking Calendar",
+      "subtitle": "Property availability calendar",
+      "selectProperty": "Select property",
+      "loadingProperties": "Loading your properties...",
+      "loadError": "Failed to load your properties.",
+      "retry": "Retry",
+      "noProperties": "You don't have any properties yet. Add a property to see its booking calendar here."
+    },
+    "manageRoomsPage": {
+      "title": "Rooms",
+      "subtitle": "Manage rooms across all your properties.",
+      "addRoom": "Add Room",
+      "editRoom": "Edit Room",
+      "saveRoom": "Save Room",
+      "saveChanges": "Save Changes",
+      "searchPlaceholder": "Search by room name, type, or property...",
+      "clearSearch": "Clear search",
+      "resetFilters": "Reset filters",
+      "dismiss": "Dismiss",
+      "noRoomsFoundTitle": "No rooms found",
+      "noRoomsTitle": "No Rooms Found",
+      "noRoomsFoundMessage": "Try a different search term or clear the filter.",
+      "noRoomsMessage": "No rooms have been added yet. Click Add Room to get started.",
+      "previous": "Previous",
+      "next": "Next",
+      "sort": {
+        "default": "Default order",
+        "priceLow": "Price: Low to High",
+        "priceHigh": "Price: High to Low",
+        "newest": "Newest first",
+        "idAsc": "Room ID (ascending)"
+      },
+      "errors": {
+        "floorRequired": "This property already has rooms on different floors — please set the floor for this room.",
+        "floorNotNumber": "Floor number must be a number.",
+        "floorNotInteger": "Floor number must be a whole number (no decimals).",
+        "floorTooLow": "Floor number can't be less than {min}.",
+        "floorTooHigh": "Floor number seems too high — double check it.",
+        "chooseProperty": "Please choose a property.",
+        "typeRequired": "Room type is required.",
+        "nameRequired": "Room name is required.",
+        "priceRequired": "Price is required."
+      },
+      "toasts": {
+        "roomAdded": "Room added successfully.",
+        "roomUpdated": "Room updated successfully.",
+        "roomDeleted": "Room deleted successfully.",
+        "roomDeleteFailed": "Failed to delete room. Please try again.",
+        "imageRemoveFailed": "Some images could not be removed. Please try again.",
+        "imageUploadFailed": "Room updated, but new images failed to upload."
+      }
+    },
+    "roomDetailPage": {
+      "loading": "Loading room details...",
+      "loadError": "Failed to load room details.",
+      "retry": "Retry",
+      "backToRooms": "Back to Rooms",
+      "roomDetail": "Room Detail",
+      "photosCount": "{count} Photos",
+      "pricePerNight": "Price / Night",
+      "maxGuests": "Max Guests",
+      "totalRooms": "Total Rooms",
+      "description": "Description",
+      "noDescription": "No description provided.",
+      "tabAvailability": "Availability",
+      "tabBookings": "Bookings",
+      "tabImages": "Images",
+      "availabilityCalendar": "Room Availability Calendar",
+      "loadingBookings": "Loading bookings...",
+      "noBookings": "No bookings yet",
+      "noBookingsDesc": "Bookings for this room will appear here.",
+      "guest": "Guest",
+      "checkIn": "Check-in",
+      "checkOut": "Check-out",
+      "nightsCount": "{count} night(s)",
+      "total": "Total",
+      "imagesCount": "{count} image(s)",
+      "uploading": "Uploading...",
+      "uploadImages": "Upload Images",
+      "noImages": "No images yet",
+      "noImagesDesc": "Upload images to showcase this room.",
+      "cover": "Cover",
+      "setAsCover": "Set as cover",
+      "deleteImage": "Delete image",
+      "updatedTitle": "Updated",
+      "updateFailed": "Failed to update room.",
+      "updateFailedTitle": "Update Failed",
+      "imagesUploaded": "Images uploaded successfully.",
+      "uploadedTitle": "Uploaded",
+      "imagesUploadFailed": "Failed to upload images.",
+      "uploadFailedTitle": "Upload Failed",
+      "imageDeleted": "Image deleted.",
+      "deletedTitle": "Deleted",
+      "imageDeleteFailed": "Failed to delete image.",
+      "deleteFailedTitle": "Delete Failed",
+      "coverUpdated": "Cover image updated.",
+      "coverUpdateFailed": "Failed to set cover image.",
+      "errorTitle": "Error"
+    },
+    "paymentsPage": {
+      "title": "Financial Ledger",
+      "subtitle": "Audit customer incoming payments and handle client refund requests.",
+      "refreshData": "Refresh Data",
+      "confirmedEarnings": "Confirmed Earnings",
+      "totalRecords": "Total Records",
+      "awaitingVerification": "Awaiting Verification",
+      "pendingRefunds": "Pending Refunds",
+      "incomingReceipts": "Incoming Verification Receipts",
+      "refundRequests": "Refund Requests",
+      "loadingRecords": "Loading comprehensive data records...",
+      "noEntries": "No entries match the current selection filters.",
+      "paymentReference": "Payment reference:",
+      "roomLabel": "Room:",
+      "noReasonSpecified": "No reason specified",
+      "to": "to",
+      "reasonRequired": "Please provide a rejection or cancellation reason for the guest.",
+      "changeReservationStatus": "Change Reservation Status",
+      "confirmPayment": "Confirm Payment",
+      "approveRefund": "Approve Refund",
+      "setStatusTo": "Set Status to {status}",
+      "confirmPaymentSlip": "Confirm Payment Slip",
+      "confirmOperationPrompt": "Are you sure you want to proceed with this operation? This will change the real-time record statement on the ecosystem ledger.",
+      "cancel": "Cancel",
+      "yesProceed": "Yes, Proceed",
+      "modifyStatusReason": "Modify Status Reason",
+      "rejectPaymentSlip": "Reject Payment Slip",
+      "rejectRefund": "Reject Refund",
+      "changeStatusReasonPrompt": "Please provide a short reason for changing the reservation status to \"{status}\".",
+      "rejectionFeedbackPrompt": "Provide clear feedback to help the user understand the cancellation or rejection criteria.",
+      "specifyJustification": "Specify Log Justification",
+      "specifyReasonsPlaceholder": "Specify reasons...",
+      "justificationRequired": "Validation Warning: Justification text field is required.",
+      "confirmAction": "Confirm Action",
+      "columns": {
+        "guestInfo": "Guest Info",
+        "propertyRoom": "Property / Room",
+        "amount": "Amount",
+        "stayPeriod": "Stay Period",
+        "paymentStatus": "Payment Status",
+        "reservationStatus": "Reservation Status",
+        "reservationAction": "Reservation Action",
+        "paymentAction": "Payment Action",
+        "refundId": "Refund ID",
+        "refundAmount": "Refund Amount",
+        "reason": "Reason",
+        "status": "Status",
+        "actions": "Actions"
+      }
+    },
+    "paymentDetail": {
+      "backToList": "Back to List",
+      "loadingRecords": "Loading transaction records...",
+      "paymentNotFound": "Payment record not found.",
+      "loadFailed": "Failed to load details.",
+      "guestInformation": "Guest Information",
+      "fullName": "Full Name",
+      "phoneNumber": "Phone Number",
+      "emailAddress": "Email Address",
+      "stayDetails": "Stay Details",
+      "propertyName": "Property Name",
+      "room": "Room",
+      "duration": "Duration",
+      "nightsSuffix": "Night(s)",
+      "checkInDate": "Check-in Date",
+      "checkOutDate": "Check-out Date",
+      "financialAudit": "Financial Audit",
+      "amountRequested": "Amount Requested",
+      "paymentMethod": "Payment Method",
+      "bookingId": "Booking ID",
+      "transactionReference": "Transaction Reference",
+      "requestedAt": "Requested At",
+      "paymentStatus": "Payment Status",
+      "reservationStatus": "Reservation Status",
+      "customerRefundReason": "Customer Refund Request Reason",
+      "refundRejectionReasonOwner": "Refund Rejection Reason (Owner Decision)",
+      "paymentRejectionReason": "Payment Rejection Reason",
+      "cancellationReason": "Cancellation Reason",
+      "noCancellationDetails": "No details provided",
+      "reasonForRejectingPayment": "Reason for Rejection Payment *",
+      "stateRejectPaymentPlaceholder": "State the reason why you reject this payment...",
+      "reasonForRejectingRefund": "Reason for Rejection Refund *",
+      "stateRejectRefundPlaceholder": "State the reason why you reject this refund request...",
+      "customerSubmittedProof": "Customer Submitted Proof",
+      "paymentProof": "Payment Proof",
+      "clickToViewFull": "Click to view full image",
+      "placeholderGraphic": "Placeholder graphic",
+      "fullPaymentProof": "Full Payment Proof",
+      "verificationNote": "Verification Note",
+      "verificationNoteDesc": "Only accept clear and valid payment proof showing transaction details.",
+      "back": "Back",
+      "rejecting": "Rejecting...",
+      "approving": "Approving...",
+      "confirmRejectPayment": "Confirm Reject Payment",
+      "rejectPayment": "Reject Payment",
+      "confirmPayment": "Confirm Payment",
+      "confirmRejectRefund": "Confirm Reject Refund",
+      "rejectRefund": "Reject Refund",
+      "approveRefund": "Approve Refund",
+      "refundAmount": "Refund Amount",
+      "paymentColon": "Payment:",
+      "reservationColon": "Reservation:",
+      "paymentVerified": "Payment verified successfully!",
+      "approvedTitle": "Approved",
+      "verifyFailed": "Failed to verify payment",
+      "enterRejectionReason": "Please enter a rejection reason.",
+      "validationError": "Validation Error",
+      "paymentRejected": "Payment has been rejected.",
+      "rejectedTitle": "Rejected",
+      "rejectFailed": "Failed to reject payment",
+      "refundApproved": "Refund request approved successfully!",
+      "refundApproveFailed": "Failed to approve refund",
+      "enterRefundRejectionReason": "Please enter a reason for rejecting this refund request.",
+      "refundRejected": "Refund request has been rejected.",
+      "refundRejectFailed": "Failed to reject refund"
+    },
+    "paymentAccountsPage": {
+      "eyebrow": "Payment management center",
+      "title": "Payment Accounts",
+      "subtitle": "Manage all your bank accounts and QR codes for receiving bookings cash.",
+      "createAccount": "Create Account",
+      "active": "Active",
+      "deactivated": "Deactivated",
+      "editAccount": "Edit Account",
+      "deactivateAccount": "Deactivate Account",
+      "activateAccount": "Activate Account",
+      "accountName": "Account Name",
+      "bankName": "Bank Name",
+      "accountNumber": "Account Number",
+      "paymentQrCode": "Payment QR Code",
+      "clickQrToView": "Click QR to view full size",
+      "created": "Created:",
+      "updated": "Updated:",
+      "noAccountsFound": "No payment accounts found.",
+      "closePreview": "Close Preview"
+    },
+    "propertiesPage": {
+      "title": "My Properties",
+      "subtitle": "Monitor asset status, update information portfolios, and review live pipeline records.",
+      "addProperty": "Add New Property",
+      "addFirstProperty": "Add First Property",
+      "filters": {
+        "allProperties": "All Properties",
+        "pendingChanges": "Pending Changes",
+        "underReview": "Under Review",
+        "sort": "Sort",
+        "searchPlaceholder": "Search by name, tags, or region...",
+        "allCities": "All Cities",
+        "allTypes": "All Property Types",
+        "reset": "Reset"
+      },
+      "types": {
+        "hotel": "Hotel",
+        "villa": "Villa",
+        "apartment": "Apartment",
+        "homestay": "Homestay",
+        "guesthouse": "Guesthouse"
+      },
+      "emptyStates": {
+        "noPropertiesTitle": "No registered properties",
+        "noPropertiesMessage": "You haven't registered any properties yet. Add your first property to start receiving bookings.",
+        "noResultsTitle": "No properties found",
+        "noResultsMessage": "We couldn't find any properties matching your current search criteria.",
+        "clearFilters": "Clear Filters"
+      },
+      "pagination": {
+        "prev": "Prev",
+        "next": "Next"
+      },
+      "modal": {
+        "detailsTitle": "Property Details",
+        "imagesTitle": "Property Images",
+        "stepDetails": "Details",
+        "stepImages": "Images",
+        "form": {
+          "nameLabel": "Property Name",
+          "namePlaceholder": "e.g. Skyline Residency Tower",
+          "typeLabel": "Property Type",
+          "locationLabel": "City / Location",
+          "addressLabel": "Street Address",
+          "addressPlaceholder": "e.g. St. 210, Sangkat Boeung Keng Kang I",
+          "phoneLabel": "Contact Phone",
+          "phonePlaceholder": "e.g. +855 12 345 678",
+          "emailLabel": "Contact Email",
+          "emailPlaceholder": "e.g. desks@property.com",
+          "floorsLabel": "Number of Floors",
+          "floorsPlaceholder": "1",
+          "descriptionLabel": "Property Description",
+          "descriptionPlaceholder": "Elaborate on structural values, proximity configurations, luxury perks...",
+          "mapLabel": "Pin Property Location on Map (Click or drag pin to position)",
+          "latitude": "Latitude:",
+          "longitude": "Longitude:",
+          "notSet": "Not set",
+          "cancel": "Cancel",
+          "saveAndAdvance": "Save & Advance"
+        },
+        "images": {
+          "dropzoneTitle": "Drop property images here, or click to browse",
+          "dropzoneHint": "Supports ultra-high-definition PNG, JPEG, WebP (Max 10MB per unit, Limit 10 items)",
+          "stagedUploadLabel": "Staged Upload Runway ({count})",
+          "coverPriority": "Cover Priority",
+          "skipForNow": "Skip For Now",
+          "uploadAndFinish": "Upload & Finish"
+        },
+        "editProperty": {
+          "title": "Edit Property",
+          "uploadedImagesTitle": "Uploaded Images",
+          "activeCover": "Active Cover",
+          "makeCover": "Make Cover",
+          "setCover": "Set Cover",
+          "deleteImageTitle": "Delete Image",
+          "addPhoto": "Add Photo",
+          "unsavedImages": "Unsaved Images ({count})",
+          "uploadImages": "Upload Images",
+          "closePanel": "Close Panel",
+          "saveChanges": "Save Changes"
+        },
+        "deleteProperty": {
+          "title": "Delete Property",
+          "confirmTitle": "Delete Property??",
+          "confirmMessage": "Are you sure you want to delete this property? This action is permanent and cannot be undone.",
+          "cancel": "Cancel",
+          "confirm": "Delete Property"
+        }
+      },
+      "errors": {
+        "nameRequired": "Property name is required.",
+        "nameMinLength": "At least 3 characters.",
+        "addressRequired": "Address is required.",
+        "addressMinLength": "At least 5 characters.",
+        "phoneRequired": "Phone is required.",
+        "emailRequired": "Email is required.",
+        "emailInvalid": "Invalid email format.",
+        "invalidCity": "Please select a valid city.",
+        "imageTypeNotSupported": "\"{name}\" is not supported. Use PNG or JPG only.",
+        "imageTooLarge": "\"{name}\" exceeds 10MB limit.",
+        "maxImagesExceeded": "You can upload a maximum of {max} images. You already have {count}.",
+        "minOneImage": "Please upload at least 1 image to continue."
+      },
+      "toasts": {
+        "addPropertyFailed": "Failed to add property. Please try again.",
+        "propertyCreated": "Property created successfully!",
+        "imageUploadFailed": "Failed to upload images. You can add them later.",
+        "loadPropertyDetailsFailed": "Failed to load property details.",
+        "deleteImageFailed": "Failed to delete image.",
+        "setCoverFailed": "Failed to set cover image.",
+        "imagesUploaded": "Images uploaded.",
+        "imagesUploadFailedGeneric": "Failed to upload images.",
+        "propertyChangesSubmitted": "Your property changes have been submitted for admin approval.",
+        "propertyUpdated": "Property updated successfully!",
+        "submitChangesFailed": "Failed to submit changes. Please try again.",
+        "propertyDeactivated": "Property deactivated.",
+        "propertyActivated": "Property activated.",
+        "deactivatePropertyFailed": "Failed to deactivate property. Please try again.",
+        "activatePropertyFailed": "Failed to activate property. Please try again.",
+        "loadPropertiesFailed": "Failed to load properties.",
+        "assetPurged": "Asset successfully purged.",
+        "destructionFailed": "Destruction chain failed to resolve."
+      }
+    },
+    "propertyDetailPage": {
+      "loading": "Loading property details...",
+      "notAvailable": "Not available",
+      "backToProperties": "Back to Properties",
+      "cover": "Cover",
+      "noImagesUploaded": "No images uploaded yet.",
+      "noImagesAlt": "No images",
+      "closePreview": "Close Preview",
+      "propertyImageAlt": "Property image",
+      "sections": {
+        "propertyImages": "Property Images",
+        "availabilityCalendar": "Availability Calendar",
+        "propertyInformation": "Property Information",
+        "contactInformation": "Contact Information",
+        "locationCoordinates": "Location Coordinates",
+        "ownerInformation": "Owner Information",
+        "quickActions": "Quick Actions",
+        "timeline": "Timeline"
+      },
+      "fields": {
+        "propertyName": "Property Name",
+        "category": "Category",
+        "city": "City",
+        "province": "Province",
+        "country": "Country",
+        "numberOfFloors": "Number of Floors",
+        "address": "Address",
+        "description": "Description",
+        "phone": "Phone",
+        "email": "Email",
+        "latitude": "Latitude",
+        "longitude": "Longitude",
+        "name": "Name",
+        "created": "Created",
+        "lastUpdated": "Last Updated"
+      },
+      "badges": {
+        "pendingChanges": "Pending Changes",
+        "changesRejected": "Changes Rejected"
+      },
+      "banners": {
+        "pendingTitle": "Pending Changes — Waiting for Admin Approval",
+        "pendingMessage": "Customers still see the original approved property. It will update automatically once an admin approves your edit request.",
+        "rejectedTitle": "Your property changes were rejected",
+        "reasonLabel": "Reason",
+        "rejectedMessage": "Your original property is still live and unchanged. You can edit and resubmit your changes below.",
+        "editAndResubmit": "Edit & Resubmit"
+      },
+      "actions": {
+        "editProperty": "Edit Property",
+        "editPendingApproval": "Edit Pending Approval",
+        "locked": "Locked",
+        "manageRooms": "Manage Rooms",
+        "processing": "Processing...",
+        "deactivateProperty": "Deactivate Property",
+        "activateProperty": "Activate Property"
+      },
+      "confirm": {
+        "deactivateMessage": "Deactivate this property? It will be hidden from guests.",
+        "activateMessage": "Activate this property? It will be visible to guests again."
+      },
+      "errors": {
+        "nameRequired": "Property name is required.",
+        "nameMinLength": "At least 3 characters.",
+        "addressRequired": "Address is required.",
+        "addressMinLength": "At least 5 characters.",
+        "phoneRequired": "Phone is required.",
+        "emailRequired": "Email is required.",
+        "emailInvalid": "Invalid email format."
+      },
+      "toasts": {
+        "loadPropertyDetailsFailed": "Failed to load property details.",
+        "propertyChangesSubmitted": "Your changes have been submitted for admin approval.",
+        "propertyUpdated": "Property updated successfully!",
+        "submitChangesFailed": "Failed to submit changes. Please try again."
+      },
+      "modal": {
+        "editPropertyTitle": "Edit Property",
+        "requestChangesTitle": "Request Property Changes",
+        "approvalRequiredTitle": "Admin approval required.",
+        "approvalRequiredMessage": "This property is live — your changes will be submitted as a pending edit request. The current listing stays unchanged until an admin approves.",
+        "previousRejectionReason": "Previous rejection reason:",
+        "cancel": "Cancel",
+        "submitting": "Submitting...",
+        "submitForApproval": "Submit for Approval",
+        "saveChanges": "Save Changes",
+        "form": {
+          "nameLabel": "Property Name *",
+          "namePlaceholder": "e.g. Sunset Villa",
+          "typeLabel": "Type *",
+          "locationLabel": "City *",
+          "floorsLabel": "Number of Floors *",
+          "floorsPlaceholder": "e.g. 5",
+          "phoneLabel": "Contact Phone *",
+          "phonePlaceholder": "+855 12 345 678",
+          "emailLabel": "Contact Email *",
+          "emailPlaceholder": "contact@example.com",
+          "addressLabel": "Address *",
+          "addressPlaceholder": "Street address",
+          "descriptionLabel": "Description",
+          "descriptionPlaceholder": "Brief description for guests..."
+        }
+      }
+    },
     "analytics": {
       "loadingDashboard": "Loading owner dashboard...",
       "retry": "Retry",
@@ -1388,6 +2303,13 @@
       "search": "Search guest, property…",
       "empty": "No guest reviews yet.",
       "emptyFilter": "No reviews match your filters.",
+      "loading": "Loading reviews…",
+      "tryAgain": "Try Again",
+      "loadFailed": "Failed to load reviews.",
+      "replyPosted": "Reply posted successfully!",
+      "replyPostFailed": "Failed to post reply.",
+      "replyRemoved": "Reply removed.",
+      "replyRemoveFailed": "Failed to remove reply.",
       "card": {
         "noReplyYet": "No reply yet",
         "replyToGuest": "Reply to Guest",
@@ -1399,6 +2321,9 @@
         "posting": "Posting…",
         "saveChanges": "Save Changes",
         "postReply": "Post Reply",
+        "cancel": "Cancel",
+        "updatePlaceholder": "Update your reply…",
+        "replyPlaceholder": "Thank the guest, address their comments…",
         "confirmRemove": "Remove your reply to this review?",
         "ratings": {
           "excellent": "Excellent",
@@ -1661,6 +2586,874 @@
       "completed": "Completed stays cannot be cancelled.",
       "checkInPassed": "Cancellation is not available after check-in has started.",
       "notEligible": "This reservation is not eligible for cancellation."
+    }
+  },
+  "admin": {
+    "profile": {
+      "name": "Admin Name",
+      "role": "Super Admin"
+    },
+    "sidebar": {
+      "navigation": "Navigation",
+      "analytics": "Analytics",
+      "properties": "Properties",
+      "reservations": "Reservations",
+      "users": "Users",
+      "settings": "Settings"
+    },
+    "dashboardHero": {
+      "eyebrow": "Approval management center",
+      "title": "Property Approvals",
+      "subtitle": "Review and manage platform host listings requests."
+    },
+    "propertyApprovalPage": {
+      "errors": {
+        "dataFetchingTitle": "Data Fetching Interrupted",
+        "retryButton": "Try Reconnecting"
+      },
+      "loading": {
+        "syncing": "Synchronizing property database..."
+      },
+      "emptyState": {
+        "noMatchTitle": "No Matching Results",
+        "noMatchDesc": "We couldn't find any records matching \"{query}\". Try checking your spelling.",
+        "noPendingTitle": "No Pending Requests",
+        "noPendingDesc": "Excellent! There are no outstanding property listings awaiting moderation.",
+        "noApprovedTitle": "No Approved Properties",
+        "noApprovedDesc": "No property submissions have been approved in this cycle yet.",
+        "noRejectedTitle": "No Rejected Properties",
+        "noRejectedDesc": "Clean record! No property listing requests have been sent to the rejection archive.",
+        "emptyQueueTitle": "Queue Completely Empty",
+        "emptyQueueDesc": "The management matrix is clear. There are no property listing records found."
+      },
+      "toasts": {
+        "approveSuccessTitle": "Approval Successful",
+        "approveSuccessMessage": "The property listing has been approved successfully.",
+        "approveFailTitle": "Approval Failed",
+        "approveFailMessage": "An error occurred while approving the property.",
+        "rejectSuccessTitle": "Property Rejected",
+        "rejectSuccessMessage": "The submission listing request has been rejected.",
+        "rejectFailTitle": "Rejection Failed",
+        "rejectFailMessage": "An error occurred while rejecting the property.",
+        "pendingSuccessTitle": "Status Updated",
+        "pendingSuccessMessage": "Property status has been reset to Pending successfully.",
+        "pendingFailTitle": "Update Error",
+        "pendingFailMessage": "Failed to reset property status. Please try again."
+      },
+      "modal": {
+        "cancel": "Cancel",
+        "approve": {
+          "title": "Confirm Listing Approval",
+          "description": "Are you sure you want to approve and publish this property request to the platform live listings?",
+          "publishing": "Publishing...",
+          "confirm": "Yes, Approve"
+        },
+        "reject": {
+          "title": "Specify Rejection Reason",
+          "description": "Provide clear feedback to help the host operator adjust the submission criteria.",
+          "placeholder": "Specify reasons...",
+          "validationError": "Validation Warning: Rejection justification text field is required.",
+          "rejecting": "Rejecting...",
+          "confirm": "Confirm Rejection"
+        },
+        "pending": {
+          "title": "Reset to Pending Queue?",
+          "description": "Are you sure you want to move this property listing back to the pending moderation queue?",
+          "processing": "Processing...",
+          "confirm": "Yes, Set to Pending"
+        }
+      }
+    },
+    "propertyReviewDetailPage": {
+      "nav": {
+        "backToList": "Back to List"
+      },
+      "loading": {
+        "syncing": "Synchronizing database info..."
+      },
+      "media": {
+        "title": "Property Media Assets",
+        "coverBadge": "Cover",
+        "noMedia": "No Media Uploaded"
+      },
+      "specs": {
+        "title": "Core Specifications",
+        "propertyName": "Property Name",
+        "categoryGroup": "Category Group",
+        "categoryFallback": "Standard Listing",
+        "cityLocation": "City Location",
+        "provinceRegion": "Province / Region",
+        "provinceFallback": "N/A",
+        "countryIdentity": "Country Identity",
+        "countryFallback": "Cambodia",
+        "geographicAddress": "Geographic Address",
+        "addressFallback": "N/A",
+        "description": "Detailed Presentation Description",
+        "descriptionFallback": "No description added yet.",
+        "locationOnMap": "Location on Map"
+      },
+      "contact": {
+        "title": "Operation Contact Info",
+        "phone": "Listing Phone Number",
+        "email": "Listing Mail Address",
+        "fallback": "N/A"
+      },
+      "host": {
+        "title": "Merchant Host Identity",
+        "ownerName": "Host Owner Name",
+        "ownerNameFallback": "Unknown User",
+        "contactLine": "Host Contact Line",
+        "emailAccount": "Host Email Account",
+        "fallback": "N/A"
+      },
+      "logs": {
+        "title": "Database Logs",
+        "created": "Submission Created",
+        "updated": "Latest Process Event"
+      },
+      "moderation": {
+        "title": "Moderation Portal Hub",
+        "approvePublish": "Approve & Publish",
+        "rejectSubmission": "Reject Submission",
+        "editStatus": "Edit Status",
+        "setPending": "Set back to Pending",
+        "approveListing": "Approve Listing",
+        "rejectListing": "Reject Listing"
+      },
+      "toasts": {
+        "approveSuccessTitle": "Approval Successful",
+        "approveSuccessMessage": "The property listing has been approved successfully.",
+        "approveFailTitle": "Approval Failed",
+        "approveFailMessage": "An error occurred while approving the property.",
+        "rejectSuccessTitle": "Property Rejected",
+        "rejectSuccessMessage": "The submission listing request has been rejected.",
+        "rejectFailTitle": "Rejection Failed",
+        "rejectFailMessage": "An error occurred while rejecting the property.",
+        "pendingSuccessTitle": "Status Updated",
+        "pendingSuccessMessage": "Property status has been reset to Pending successfully.",
+        "pendingFailTitle": "Update Error",
+        "pendingFailMessage": "Failed to reset property status. Please try again."
+      },
+      "modal": {
+        "cancel": "Cancel",
+        "approve": {
+          "title": "Confirm Listing Approval",
+          "description": "Are you sure you want to approve and publish this property request to the platform live listings?",
+          "publishing": "Publishing...",
+          "confirm": "Yes, Approve"
+        },
+        "reject": {
+          "title": "Specify Rejection Reason",
+          "description": "Provide clear feedback to help the host operator adjust the submission criteria.",
+          "placeholder": "Provide comprehensive reasons for rejection...",
+          "validationError": "Validation Warning: Rejection justification text field is required.",
+          "rejecting": "Rejecting...",
+          "confirm": "Confirm Rejection"
+        },
+        "pending": {
+          "title": "Reset to Pending Queue?",
+          "description": "Are you sure you want to move this property listing back to the pending moderation queue?",
+          "processing": "Processing...",
+          "confirm": "Yes, Set to Pending"
+        }
+      }
+    },
+    "paymentMonitorPage": {
+      "title": "Payment Monitoring",
+      "subtitle": "Review payment slips submitted by customers.",
+      "tabs": {
+        "all": "All",
+        "pendingVerification": "Pending Verification",
+        "verified": "Verified",
+        "rejected": "Rejected"
+      },
+      "searchPlaceholder": "Search by customer, reference, method...",
+      "loading": "Loading payments...",
+      "empty": "No payments match this filter.",
+      "columns": {
+        "id": "ID",
+        "customer": "Customer",
+        "reservation": "Reservation",
+        "method": "Method",
+        "reference": "Reference",
+        "amount": "Amount",
+        "submitted": "Submitted",
+        "receipt": "Receipt",
+        "status": "Status"
+      },
+      "receipt": {
+        "view": "View",
+        "close": "Close"
+      },
+      "modal": {
+        "title": "Payment Receipt — #{id}",
+        "imageAlt": "Payment receipt"
+      }
+    },
+    "userManagementPage": {
+      "title": "User Management",
+      "subtitle": "Review accounts, roles, and account status across all users.",
+      "tabs": {
+        "all": "All",
+        "customer": "Customers",
+        "owner": "Owners",
+        "admin": "Admins"
+      },
+      "searchPlaceholder": "Search by name, email, phone...",
+      "errors": {
+        "loadTitle": "Failed to Load Users",
+        "retry": "Retry"
+      },
+      "loading": "Loading users...",
+      "empty": {
+        "title": "No Users Found",
+        "searchDesc": "No users match your search.",
+        "categoryDesc": "No users in this category yet."
+      },
+      "columns": {
+        "user": "User",
+        "phone": "Phone",
+        "role": "Role",
+        "status": "Status",
+        "lastLogin": "Last Login",
+        "joined": "Joined",
+        "actions": "Actions"
+      },
+      "never": "Never",
+      "roles": {
+        "customer": "Customer",
+        "owner": "Owner",
+        "admin": "Admin"
+      },
+      "actions": {
+        "activate": "Activate",
+        "suspend": "Suspend"
+      },
+      "toasts": {
+        "activated": "User activated successfully.",
+        "suspended": "User suspended successfully.",
+        "updateFailed": "Failed to update user status."
+      },
+      "modal": {
+        "confirmTitle": "{action} User?",
+        "confirmDescPrefix": "Are you sure you want to",
+        "confirmDescSuffix": "? This will immediately change their account status.",
+        "cancel": "Cancel"
+      }
+    },
+    "analyticsPage": {
+      "errorMessage": "Error: {message}",
+      "retry": "Retry",
+      "noActivities": "No system activities found.",
+      "noPipeline": "No pending property pipeline recorded.",
+      "hero": {
+        "eyebrow": "Admin command center",
+        "title": "Platform monitoring dashboard",
+        "subtitle": "Track platform activity, review pending approvals, and manage users.",
+        "historyLabel": "Overview history"
+      },
+      "metrics": {
+        "totalProperties": "Total Properties",
+        "pendingProperties": "Pending Properties",
+        "totalBookings": "Total Bookings",
+        "activeUsers": "Active Users",
+        "vsLastMonth": "vs last month",
+        "vsLastWeek": "vs last week",
+        "activeCycles": "active cycles",
+        "bounceRate": "bounce rate"
+      },
+      "growthChart": {
+        "title": "Platform Growth Overview",
+        "subtitle": "Historical tracking of system properties, and registered users",
+        "exportAriaLabel": "Export dataset link"
+      },
+      "approvalDoughnut": {
+        "title": "Listing Approval Status",
+        "subtitle": "Compliance metrics for host registration properties",
+        "countMode": "Count",
+        "percentageMode": "%",
+        "allRequests": "All Requests",
+        "propertiesUnit": "properties"
+      },
+      "activityFeed": {
+        "title": "Recent System Activity"
+      },
+      "pipelineTable": {
+        "title": "New Properties Pipeline & Performance",
+        "columnProperty": "Property Structural Identity",
+        "columnRooms": "Allocated Rooms",
+        "columnValuation": "Base Valuation",
+        "columnStatus": "Verification Status"
+      },
+      "quickActions": {
+        "title": "Quick actions",
+        "subtitle": "Open key admin workflows in one click.",
+        "ariaLabel": "Quick admin workflows"
+      }
+    },
+    "reservationMonitorPage": {
+      "title": "Reservations",
+      "subtitle": "Monitor and manage all reservations across the platform.",
+      "loading": "Loading reservations...",
+      "emptyState": "No reservations match this filter.",
+      "viewDetail": "View detail",
+      "nightsCount": "{count} night(s)",
+      "tabs": {
+        "all": "All",
+        "pending": "Pending",
+        "confirmed": "Confirmed",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "detailTabs": {
+        "reservation": "Reservation",
+        "payment": "Payment",
+        "proof": "Proof"
+      },
+      "filters": {
+        "searchPlaceholder": "Search guest, property, room..."
+      },
+      "columns": {
+        "id": "ID",
+        "guest": "Guest",
+        "propertyRoom": "Property / Room",
+        "owner": "Owner",
+        "dates": "Dates",
+        "amount": "Amount",
+        "status": "Status",
+        "action": "Action"
+      },
+      "aria": {
+        "closePanel": "Close panel"
+      },
+      "modal": {
+        "loadingPayment": "Loading payment details…",
+        "property": "Property",
+        "room": "Room",
+        "total": "Total",
+        "checkIn": "Check-in",
+        "checkOut": "Check-out",
+        "guest": "Guest",
+        "owner": "Owner",
+        "name": "Name",
+        "email": "Email",
+        "reservationId": "Reservation ID",
+        "noPaymentYet": "No payment yet",
+        "submittedOn": "Submitted {date}",
+        "paymentNotReceived": "Payment not received",
+        "viewDetailsArrow": "View details →",
+        "changeStatus": "Change Reservation Status",
+        "noPaymentRecord": "No payment record",
+        "noPaymentRecordHint": "The guest has not submitted any payment yet.",
+        "paymentVerified": "Payment Verified",
+        "pendingVerification": "Pending Verification",
+        "paymentDetails": "Payment Details",
+        "paymentId": "Payment ID",
+        "reservation": "Reservation",
+        "method": "Method",
+        "reference": "Reference",
+        "submitted": "Submitted",
+        "customer": "Customer",
+        "customerEmail": "Customer Email",
+        "phone": "Phone",
+        "viewPaymentProof": "View Payment Proof",
+        "paymentProof": "Payment Proof",
+        "noProofUploaded": "No proof uploaded",
+        "noProofUploadedHint": "The guest has not submitted a payment receipt yet.",
+        "receiptAlt": "Payment receipt",
+        "transferReceipt": "Transfer Receipt",
+        "openArrow": "Open ↗",
+        "reservationHash": "Reservation #",
+        "close": "Close"
+      }
+    }
+  },
+  "wishlists": {
+    "title": "Wishlists",
+    "subtitle": "View, explore, and manage your saved properties",
+    "savedStay": "saved stay",
+    "savedStays": "saved stays",
+    "emptyTitle": "Your Wishlist is Empty",
+    "emptyDesc": "You haven't saved any properties yet. Start exploring and click the heart icon on any stay to save your favorites.",
+    "exploreProperties": "Explore Properties",
+    "viewDetails": "View Details",
+    "perNight": "/ night",
+    "showList": "Show list",
+    "showMap": "Show map",
+    "propertiesOnMap": "Properties on Map",
+    "propertyFallback": "Property",
+    "cambodiaFallback": "Cambodia",
+    "newBadge": "New"
+  },
+  "reportsPage": {
+    "reportsTitle": "Reports",
+    "reportDetailTitle": "Report detail",
+    "submitReportTitle": "Submit report"
+  },
+  "chats": {
+    "pane": {
+      "loading": "Loading messages...",
+      "defaultPropertyName": "Conversation thread",
+      "empty": {
+        "title": "No messages yet",
+        "subtitle": "Start the conversation by typing a message below."
+      },
+      "attachmentAlt": "Attachment",
+      "previewAlt": "Preview image",
+      "voiceNoteDraft": "Voice Note Draft",
+      "status": {
+        "read": "Read",
+        "sent": "Sent"
+      },
+      "actions": {
+        "unsendTitle": "Unsend Message",
+        "addPhoto": "Add photo",
+        "recordVoice": "Record voice note"
+      },
+      "recording": {
+        "label": "Recording Voice...",
+        "discard": "Discard",
+        "stopSend": "Stop & Send"
+      },
+      "placeholders": {
+        "message": "Type a message..."
+      },
+      "confirm": {
+        "unsend": "Are you sure you want to unsend this message?"
+      },
+      "errors": {
+        "micDenied": "Could not access microphone. Please check permissions."
+      },
+      "fallback": {
+        "sentImage": "Sent an image"
+      }
+    },
+    "listPage": {
+      "heading": "Messages",
+      "searchPlaceholder": "Search messages",
+      "yesterday": "Yesterday",
+      "noMessagesYet": "No messages yet",
+      "tabs": {
+        "all": "All",
+        "unread": "Unread"
+      },
+      "loading": "Loading conversations...",
+      "errors": {
+        "title": "Couldn't load your messages",
+        "retry": "Try again"
+      },
+      "empty": {
+        "title": "No messages found",
+        "searchHint": "Try adjusting your search criteria.",
+        "noChats": "When you contact owners, your chats appear here."
+      },
+      "noSelection": {
+        "title": "No conversation selected",
+        "subtitle": "Choose a thread from the list on the left side to review message logs."
+      }
+    }
+  },
+  "paymentDetailPage": {
+    "backButton": "Back to Ledger",
+    "heading": "Payment Statement",
+    "subheading": "Review your settlement status and asset breakdown information.",
+    "loadingText": "Retrieving invoice record data...",
+    "retryButton": "Retry Connection",
+    "errors": {
+      "fetchFailed": "Failed to synchronize your payment details."
+    },
+    "status": {
+      "pending": "Pending Verification",
+      "submitted": "Under Review",
+      "approved": "Payment Approved",
+      "rejected": "Rejected / Failed"
+    },
+    "transactionIdLabel": "Transaction Identifier",
+    "transactionIdValue": "#PAY-{id}",
+    "totalLabel": "Total Remitted Volume",
+    "propertyLabel": "Reserved Property",
+    "roomLabel": "Allocated Suite / Unit",
+    "notAvailable": "N/A",
+    "receiptLabel": "Submitted Remittance Voucher",
+    "receiptAlt": "Voucher Receipt Image Proof",
+    "uploadButton": {
+      "update": "Update Payment Proof",
+      "upload": "Upload Payment Proof"
+    }
+  },
+  "paymentUploadPage": {
+    "backButton": "Back to Booking",
+    "payVia": "Pay via {method}",
+    "defaultMethod": "Bank Transfer",
+    "subheading": "Scan the QR code with any Cambodian banking app, transfer the exact amount, then upload your receipt.",
+    "amountDue": "Amount due",
+    "securityText": "Your transaction is encrypted and secure.",
+    "stepLabel": "Final step — Upload your receipt",
+    "formatsHint": "Accepted formats: PNG, JPG, PDF · Max 5 MB",
+    "success": {
+      "heading": "Proof submitted!",
+      "text": "We're reviewing your payment. You'll be notified shortly.",
+      "redirecting": "Redirecting…"
+    }
+  },
+  "bookingCreatePage": {
+    "backButton": "Back to Explorer",
+    "secureCheckout": "Secure Checkout",
+    "heading": "Complete Your Booking",
+    "subheading": "Review your stay details and choose a payment method to confirm your reservation.",
+    "yourStayLabel": "Your Stay",
+    "loadingRoom": "Loading room…",
+    "loadingProperty": "Loading property…",
+    "checkInLabel": "Check-In",
+    "checkOutLabel": "Check-Out",
+    "durationLabel": "Duration",
+    "nightsCount": "{count} night(s)",
+    "baseRateLabel": "Base rate",
+    "perNight": "/ night",
+    "priceDetailsLabel": "Price Details",
+    "roomRateLine": "Room rate ({count} night(s))",
+    "totalAmountLabel": "Total Amount",
+    "cancellation": {
+      "title": "Flexible Cancellation Protect",
+      "description": "Get a complete reimbursement guarantee up to 48 hours prior to checking in."
+    },
+    "toasts": {
+      "selectPaymentMethod": "Please select a payment method.",
+      "noPaymentMethodSetup": "This host hasn't set up a payment method yet. Please contact them before booking.",
+      "bookingCreated": "Booking created! Please upload your receipt.",
+      "roomAlreadyBooked": "This room is already booked for selected dates.",
+      "invalidBookingDetails": "Invalid booking details. Please check your dates.",
+      "bookingFailed": "Failed to create booking."
+    }
+  },
+  "settingsPage": {
+    "shell": {
+      "guest": "Guest",
+      "title": "Account",
+      "goToProfile": "Go to profile",
+      "cards": {
+        "personalInfo": {
+          "title": "Personal info",
+          "description": "Provide personal details and how we can reach you."
+        },
+        "loginSecurity": {
+          "title": "Login & security",
+          "description": "Update your password and secure your account."
+        },
+        "paymentsPayouts": {
+          "title": "Payments & payouts",
+          "description": "Review payments, payouts, coupons, and billing info."
+        },
+        "notifications": {
+          "title": "Notifications",
+          "description": "Choose notification preferences and how you want to be contacted."
+        },
+        "privacySharing": {
+          "title": "Privacy & sharing",
+          "description": "Manage your personal data, sharing settings, and connected portals."
+        },
+        "globalPreferences": {
+          "title": "Global preferences",
+          "description": "Set your default language, currency, and time zone."
+        }
+      }
+    },
+    "loginSecurity": {
+      "breadcrumb": {
+        "account": "Account",
+        "current": "Login & security"
+      },
+      "title": "Login & security",
+      "password": {
+        "label": "Password",
+        "lastUpdated": "Last updated recently",
+        "currentLabel": "Current password",
+        "currentPlaceholder": "Enter current password",
+        "newLabel": "New password",
+        "newPlaceholder": "Enter new password",
+        "confirmLabel": "Confirm password",
+        "confirmPlaceholder": "Re-enter new password",
+        "updating": "Updating...",
+        "updateButton": "Update password",
+        "cancelButton": "Cancel",
+        "updateToggle": "Update"
+      },
+      "deviceManagement": {
+        "title": "Device management"
+      },
+      "sidebar": {
+        "tipsTitle": "Security tips",
+        "tipsDescription": "Use a password that is unique to your Srok-Yerng Booking account. Avoid reusing passwords from other online services.",
+        "sessionActivityTitle": "Session activity",
+        "sessionActivityDescription": "If you notice any suspicious active login or device that you do not recognize, you can revoke its token instantly under Device management."
+      },
+      "errors": {
+        "passwordTooShort": "Password must be at least 6 characters long",
+        "passwordMismatch": "Passwords do not match",
+        "updateFailed": "Failed to change password"
+      },
+      "toasts": {
+        "passwordUpdated": "Password changed successfully."
+      }
+    },
+    "notifications": {
+      "breadcrumb": {
+        "account": "Account",
+        "current": "Notifications"
+      },
+      "title": "Notification settings",
+      "sections": {
+        "stays": {
+          "title": "Stays & reservations",
+          "description": "Updates about your booking activity, check-in information, and host notifications.",
+          "emailTitle": "Email notifications",
+          "emailDescription": "Receive booking receipts and check-in details.",
+          "smsTitle": "SMS text messages",
+          "smsDescription": "Get instant texts when checking in.",
+          "pushTitle": "Mobile push alerts",
+          "pushDescription": "Alerts on stay updates, host reminders, and check-outs."
+        },
+        "messages": {
+          "title": "Messages from hosts",
+          "description": "Updates about active chats, unread messages, and conversation threads.",
+          "emailTitle": "Email notifications",
+          "emailDescription": "Get emails when you receive offline messages.",
+          "pushTitle": "Mobile push alerts",
+          "pushDescription": "Direct push notification when host sends a message."
+        },
+        "security": {
+          "title": "Account security alerts",
+          "description": "Updates regarding login activity, password modifications, and security verification.",
+          "emailTitle": "Email security alerts",
+          "emailDescription": "Receive immediate warnings of password changes and new device logins.",
+          "complianceNote": "For security compliance, critical account logins and alerts are always delivered to your primary email address and cannot be turned off."
+        }
+      },
+      "sidebar": {
+        "title": "Custom preferences",
+        "description": "Toggles save automatically when changed. You can return to modify email, SMS, and device notifications preferences at any time."
+      },
+      "toasts": {
+        "updated": "Notification preferences updated successfully."
+      }
+    },
+    "paymentsPayouts": {
+      "breadcrumb": {
+        "account": "Account",
+        "current": "Payments & payouts"
+      },
+      "title": "Payments & payouts",
+      "tabs": {
+        "payments": "Payments",
+        "payouts": "Payouts"
+      },
+      "methods": {
+        "comingSoonTitle": "Saved payment methods coming soon",
+        "comingSoonDesc": "Saved cards and Srok-Yerng credits aren't available yet. Pay for bookings via bank transfer or KHQR during checkout."
+      },
+      "transactions": {
+        "title": "Recent transactions",
+        "columns": {
+          "transaction": "Transaction / Stay",
+          "date": "Date",
+          "amount": "Amount",
+          "status": "Status"
+        },
+        "loading": "Loading transactions history...",
+        "empty": "No recent transactions found.",
+        "defaultPropertyName": "Stay Booking",
+        "defaultRoomType": "Room Stay",
+        "recent": "Recent"
+      },
+      "payouts": {
+        "title": "Receive host payouts",
+        "description": "If you listing stays on Srok-Yerng Booking, this is how you set up payout methods to receive direct deposit earnings from guest reservations.",
+        "loadingAccounts": "Loading payment accounts...",
+        "noAccountsConfigured": "You haven't set up a payment account yet.",
+        "manageLink": "Manage payment accounts in host dashboard",
+        "notPartnerNote": "Only verified Partner/Host accounts can receive reservation payouts.",
+        "becomePartner": "Become a Partner"
+      },
+      "sidebar": {
+        "title": "Payment security",
+        "description": "All credit cards and transactions are encrypted and secured. Srok-Yerng Booking never exposes raw payment credentials to hosts or third-parties."
+      }
+    },
+    "personalInfo": {
+      "title": "Personal info",
+      "breadcrumbs": {
+        "account": "Account",
+        "current": "Personal info"
+      },
+      "notProvided": "Not provided",
+      "save": "Save",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "fields": {
+        "fullName": {
+          "label": "Legal name",
+          "hint": "This is the name on your travel document, which could be a license or a passport.",
+          "placeholder": "Enter legal name"
+        },
+        "email": {
+          "label": "Email address",
+          "hint": "Email verification is tied to account registration and cannot be modified."
+        },
+        "phone": {
+          "label": "Phone number",
+          "hint": "Add a number for booking updates, notifications, and verification.",
+          "placeholder": "e.g. +855 12 345 678"
+        },
+        "gender": {
+          "label": "Gender",
+          "options": {
+            "select": "Select gender",
+            "male": "Male",
+            "female": "Female",
+            "other": "Other"
+          }
+        },
+        "dateOfBirth": {
+          "label": "Date of birth"
+        },
+        "address": {
+          "label": "Address",
+          "placeholder": "e.g. Street 271, Phnom Penh, Cambodia"
+        }
+      },
+      "toasts": {
+        "updateSuccess": "{field} updated successfully.",
+        "updateError": "Failed to update {field}"
+      },
+      "sidebar": {
+        "whyEdit": {
+          "title": "Why edit?",
+          "description": "Srok-Yerng Booking uses your verified name, email, and phone number to secure reservations, confirm stays, and send booking updates."
+        },
+        "dataSafety": {
+          "title": "Is my data safe?",
+          "description": "Your email and phone number are kept private and only shared with verified property hosts after a booking has been officially confirmed."
+        }
+      }
+    },
+    "privacySharing": {
+      "title": "Privacy & sharing",
+      "breadcrumbs": {
+        "account": "Account",
+        "current": "Privacy & sharing"
+      },
+      "sections": {
+        "sharing": {
+          "title": "Profile sharing",
+          "description": "Control how your profile and reviews appear on search results or partner websites."
+        },
+        "connections": {
+          "title": "Connected portals",
+          "description": "Link your Srok-Yerng Booking account to social services for fast authentication."
+        },
+        "dataArchive": {
+          "title": "Data archive",
+          "description": "Download a copy of your personal data archive containing reservations history and profile details."
+        }
+      },
+      "toggles": {
+        "searchEngines": {
+          "label": "Search engine indexing",
+          "description": "Let search engines like Google and Bing list your profile page."
+        },
+        "reviewSharing": {
+          "label": "Review sharing",
+          "description": "Publish your feedback and review comments to external travel portals."
+        }
+      },
+      "connections": {
+        "google": {
+          "label": "Google Account",
+          "linked": "Linked to your email"
+        },
+        "facebook": {
+          "label": "Facebook Account",
+          "linked": "Linked successfully"
+        },
+        "notLinked": "Not linked",
+        "connect": "Connect",
+        "disconnect": "Disconnect"
+      },
+      "dataArchive": {
+        "exportCard": {
+          "title": "Export my profile data",
+          "description": "Compiles all of your records into a portable PDF document.",
+          "button": "Request Archive"
+        },
+        "documentTitle": "Srok-Yerng Booking - Personal Data Archive",
+        "reportTitle": "Data Archive Report",
+        "generatedOn": "Generated on {date}",
+        "personalProfileSection": "Personal Profile Information",
+        "legalName": "Legal Name",
+        "emailAddress": "Email Address",
+        "phoneNumber": "Phone Number",
+        "gender": "Gender",
+        "dateOfBirth": "Date of Birth",
+        "address": "Address",
+        "notProvided": "Not provided",
+        "accountMetadataSection": "Account Metadata",
+        "accountId": "Account ID",
+        "memberRole": "Member Role",
+        "customerRoleFallback": "Customer",
+        "dateJoined": "Date Joined",
+        "recent": "Recent",
+        "notAvailable": "N/A",
+        "googleAccount": "Google Account",
+        "facebookAccount": "Facebook Account",
+        "connectedLinked": "Connected / Linked",
+        "notLinked": "Not linked",
+        "footerConfidential": "Srok-Yerng Booking Privacy Data Export • Confidential. For user personal reference only.",
+        "footerRights": "{year} Srok-Yerng Booking. All rights reserved."
+      },
+      "toasts": {
+        "preferencesUpdated": "Privacy preferences updated successfully.",
+        "googleConnected": "Connected to Google Account.",
+        "googleDisconnected": "Disconnected Google Account.",
+        "facebookConnected": "Connected to Facebook Account.",
+        "facebookDisconnected": "Disconnected Facebook Account."
+      },
+      "sidebar": {
+        "privacyCommitment": {
+          "title": "Privacy commitment",
+          "description": "We care about your privacy. We never sell your personal data or reservation itineraries to advertising syndicates."
+        },
+        "appConnections": {
+          "title": "App connections",
+          "description": "Connecting your Facebook or Google profile allows you to sign in with a single click, using social auth credentials."
+        }
+      }
+    }
+  },
+  "rooms": {
+    "propertyRoomsPage": {
+      "home": "Home",
+      "properties": "Properties",
+      "verifiedReviews": "{count} Verified Reviews",
+      "newListing": "New Listing",
+      "availableRoomsAt": "Available Rooms at",
+      "loading": "Loading...",
+      "addressPlaceholder": "National Road 6, Airport District, Siem Reap, Cambodia",
+      "roomCoverAlt": "Room Cover View",
+      "availableConfigurations": "Available Configurations",
+      "roomsFound": "{count} room(s) found",
+      "sortBy": "Sort by:",
+      "sortRecommended": "Recommended",
+      "sortPriceAsc": "Price: Low to High",
+      "sortPriceDesc": "Price: High to Low",
+      "availableRoomFallback": "Available room",
+      "guestsCount": "{count} Guests",
+      "viewDetailedSpecs": "View detailed room specs →",
+      "rateFrom": "Rate From",
+      "perNight": "per night",
+      "bookRoom": "Book Room",
+      "noRoomsMatch": "No rooms match your filters. Try adjusting your criteria.",
+      "resetFilters": "Reset Filters"
     }
   }
 }

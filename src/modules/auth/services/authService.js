@@ -17,6 +17,14 @@ export const authService = {
     return authApi.facebookLogin(payload);
   },
 
+  linkGoogleAccount(payload) {
+    return authApi.linkGoogleAccount(payload);
+  },
+
+  unlinkGoogleAccount() {
+    return authApi.unlinkGoogleAccount();
+  },
+
   refreshToken() {
     return authApi.refreshToken();
   },

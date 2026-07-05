@@ -13,11 +13,15 @@ import {
   CheckCircleIcon, XCircleIcon,
   QuestionMarkCircleIcon, ChevronDownIcon
 } from '@heroicons/vue/24/outline';
+import { useI18n } from 'vue-i18n';
 
 const route = useRoute();
 const router = useRouter();
 const toastStore = useToastStore();
 const { isSidebarOpen } = useSidebar();
+const { t, te } = useI18n({ useScope: 'global' });
+const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
+const statusLabel = (value) => safeT(`common.status.${String(value || '').toLowerCase()}`, value);
 
 const approvalStore = useApprovalStore();
 
@@ -62,14 +66,14 @@ const executeApprove = async () => {
   const success = await approvalStore.handleApprove(approvalStore.currentProperty.id);
   if (success) {
     approveModalOpen.value = false;
-    toastStore.success('The property listing has been approved successfully.', {
-      title: 'Approval Successful',
+    toastStore.success(t('admin.propertyReviewDetailPage.toasts.approveSuccessMessage'), {
+      title: t('admin.propertyReviewDetailPage.toasts.approveSuccessTitle'),
       timeout: 4000
     });
     await approvalStore.fetchPropertyDetail(route.params.id);
   } else {
-    toastStore.danger('An error occurred while approving the property.', {
-      title: 'Approval Failed',
+    toastStore.danger(t('admin.propertyReviewDetailPage.toasts.approveFailMessage'), {
+      title: t('admin.propertyReviewDetailPage.toasts.approveFailTitle'),
       timeout: 4000
     });
   }
@@ -85,14 +89,14 @@ const executeReject = async () => {
   const success = await approvalStore.handleReject(approvalStore.currentProperty.id, rejectReason.value);
   if (success) {
     rejectModalOpen.value = false;
-    toastStore.success('The submission listing request has been rejected.', {
-      title: 'Property Rejected',
+    toastStore.success(t('admin.propertyReviewDetailPage.toasts.rejectSuccessMessage'), {
+      title: t('admin.propertyReviewDetailPage.toasts.rejectSuccessTitle'),
       timeout: 4000
     });
     await approvalStore.fetchPropertyDetail(route.params.id);
   } else {
-    toastStore.danger('An error occurred while rejecting the property.', {
-      title: 'Rejection Failed',
+    toastStore.danger(t('admin.propertyReviewDetailPage.toasts.rejectFailMessage'), {
+      title: t('admin.propertyReviewDetailPage.toasts.rejectFailTitle'),
       timeout: 4000
     });
   }
@@ -102,14 +106,14 @@ const executeSetPending = async () => {
   const success = await approvalStore.handleSetPending(approvalStore.currentProperty.id);
   if (success) {
     pendingModalOpen.value = false;
-    toastStore.success('Property status has been reset to Pending successfully.', {
-      title: 'Status Updated',
+    toastStore.success(t('admin.propertyReviewDetailPage.toasts.pendingSuccessMessage'), {
+      title: t('admin.propertyReviewDetailPage.toasts.pendingSuccessTitle'),
       timeout: 4000
     });
     await approvalStore.fetchPropertyDetail(route.params.id);
   } else {
-    toastStore.danger('Failed to reset property status. Please try again.', {
-      title: 'Update Error',
+    toastStore.danger(t('admin.propertyReviewDetailPage.toasts.pendingFailMessage'), {
+      title: t('admin.propertyReviewDetailPage.toasts.pendingFailTitle'),
       timeout: 4000
     });
   }
@@ -122,7 +126,7 @@ const executeSetPending = async () => {
     <div v-if="approvalStore.currentProperty" class="flex justify-between items-start mb-6">
       <div>
         <button @click="router.back()" class="back-btn mb-2">
-          <ChevronLeftIcon class="w-4 h-4" /> Back to List
+          <ChevronLeftIcon class="w-4 h-4" /> {{ t('admin.propertyReviewDetailPage.nav.backToList') }}
         </button>
         <h1 class="page-main-title">{{ approvalStore.currentProperty.property_name }}</h1>
         <p class="page-subtitle">
@@ -139,7 +143,7 @@ const executeSetPending = async () => {
             'status-rejected': approvalStore.currentProperty.status_id === 3 || approvalStore.currentProperty.status_name?.toLowerCase() === 'rejected'
           }
         ]">
-          ● {{ approvalStore.currentProperty.status_name || 'Pending' }}
+          ● {{ statusLabel(approvalStore.currentProperty.status_name || 'pending') }}
         </span>
       </div>
     </div>
@@ -147,7 +151,7 @@ const executeSetPending = async () => {
     <div v-if="approvalStore.error" class="status-error-card p-6 rounded-xl mb-6">{{ approvalStore.error }}</div>
 
     <div v-if="approvalStore.loading" class="flex justify-center items-center py-24">
-      <AppLoading label="Synchronizing database info..." />
+      <AppLoading :label="t('admin.propertyReviewDetailPage.loading.syncing')" />
     </div>
 
     <div v-else-if="approvalStore.currentProperty" class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
@@ -155,7 +159,7 @@ const executeSetPending = async () => {
       <div class="lg:col-span-2 flex flex-col gap-6">
 
         <div class="custom-card">
-          <h3 class="section-title">Property Media Assets</h3>
+          <h3 class="section-title">{{ t('admin.propertyReviewDetailPage.media.title') }}</h3>
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div v-for="(img, idx) in approvalStore.propertyImages" :key="img.id || idx"
               class="img-container aspect-video rounded-xl overflow-hidden relative group cursor-pointer"
@@ -163,50 +167,50 @@ const executeSetPending = async () => {
               <img :src="img.url"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               <span v-if="img.is_cover"
-                class="absolute top-2 left-2 bg-(--color-primary) text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">Cover</span>
+                class="absolute top-2 left-2 bg-(--color-primary) text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">{{ t('admin.propertyReviewDetailPage.media.coverBadge') }}</span>
             </div>
             <div v-if="!approvalStore.propertyImages || approvalStore.propertyImages.length === 0"
               class="aspect-video rounded-xl flex items-center justify-center border-2 border-dashed border-muted/20 text-muted text-sm">
-              No Media Uploaded
+              {{ t('admin.propertyReviewDetailPage.media.noMedia') }}
             </div>
           </div>
         </div>
 
         <div class="custom-card grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div class="sm:col-span-2">
-            <h3 class="section-title mb-0">Core Specifications</h3>
+            <h3 class="section-title mb-0">{{ t('admin.propertyReviewDetailPage.specs.title') }}</h3>
           </div>
 
           <div class="info-field">
-            <label>Property Name</label>
+            <label>{{ t('admin.propertyReviewDetailPage.specs.propertyName') }}</label>
             <div class="val font-bold">{{ approvalStore.currentProperty.property_name }}</div>
           </div>
           <div class="info-field">
-            <label>Category Group</label>
-            <div class="val">{{ approvalStore.currentProperty.category_name || 'Standard Listing' }}</div>
+            <label>{{ t('admin.propertyReviewDetailPage.specs.categoryGroup') }}</label>
+            <div class="val">{{ approvalStore.currentProperty.category_name || t('admin.propertyReviewDetailPage.specs.categoryFallback') }}</div>
           </div>
-          <div class="info-field"><label>City Location</label>
+          <div class="info-field"><label>{{ t('admin.propertyReviewDetailPage.specs.cityLocation') }}</label>
             <div class="val">{{ approvalStore.currentProperty.city }}</div>
           </div>
-          <div class="info-field"><label>Province / Region</label>
-            <div class="val">{{ approvalStore.currentProperty.province || 'N/A' }}</div>
+          <div class="info-field"><label>{{ t('admin.propertyReviewDetailPage.specs.provinceRegion') }}</label>
+            <div class="val">{{ approvalStore.currentProperty.province || t('admin.propertyReviewDetailPage.specs.provinceFallback') }}</div>
           </div>
-          <div class="info-field"><label>Country Identity</label>
-            <div class="val">{{ approvalStore.currentProperty.country || 'Cambodia' }}</div>
+          <div class="info-field"><label>{{ t('admin.propertyReviewDetailPage.specs.countryIdentity') }}</label>
+            <div class="val">{{ approvalStore.currentProperty.country || t('admin.propertyReviewDetailPage.specs.countryFallback') }}</div>
           </div>
-          <div class="info-field"><label>Geographic Address</label>
-            <div class="val">{{ approvalStore.currentProperty.address || 'N/A' }}</div>
+          <div class="info-field"><label>{{ t('admin.propertyReviewDetailPage.specs.geographicAddress') }}</label>
+            <div class="val">{{ approvalStore.currentProperty.address || t('admin.propertyReviewDetailPage.specs.addressFallback') }}</div>
           </div>
 
           <div class="info-field sm:col-span-2">
-            <label>Detailed Presentation Description</label>
+            <label>{{ t('admin.propertyReviewDetailPage.specs.description') }}</label>
             <div class="val italic opacity-90 leading-relaxed">
-              {{ approvalStore.currentProperty.description || 'No description added yet.' }}
+              {{ approvalStore.currentProperty.description || t('admin.propertyReviewDetailPage.specs.descriptionFallback') }}
             </div>
           </div>
 
           <div class="info-field sm:col-span-2">
-            <label>Location on Map</label>
+            <label>{{ t('admin.propertyReviewDetailPage.specs.locationOnMap') }}</label>
             <PropertyLocationMap
               :latitude="approvalStore.currentProperty.latitude"
               :longitude="approvalStore.currentProperty.longitude"
@@ -217,13 +221,13 @@ const executeSetPending = async () => {
 
         <div class="custom-card grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div class="sm:col-span-2">
-            <h3 class="section-title mb-0">Operation Contact Info</h3>
+            <h3 class="section-title mb-0">{{ t('admin.propertyReviewDetailPage.contact.title') }}</h3>
           </div>
-          <div class="info-field"><label>Listing Phone Number</label>
-            <div class="val">{{ approvalStore.currentProperty.contact_phone || 'N/A' }}</div>
+          <div class="info-field"><label>{{ t('admin.propertyReviewDetailPage.contact.phone') }}</label>
+            <div class="val">{{ approvalStore.currentProperty.contact_phone || t('admin.propertyReviewDetailPage.contact.fallback') }}</div>
           </div>
-          <div class="info-field"><label>Listing Mail Address</label>
-            <div class="val">{{ approvalStore.currentProperty.contact_email || 'N/A' }}</div>
+          <div class="info-field"><label>{{ t('admin.propertyReviewDetailPage.contact.email') }}</label>
+            <div class="val">{{ approvalStore.currentProperty.contact_email || t('admin.propertyReviewDetailPage.contact.fallback') }}</div>
           </div>
         </div>
       </div>
@@ -231,62 +235,62 @@ const executeSetPending = async () => {
       <div class="flex flex-col gap-6">
 
         <div class="custom-card">
-          <h3 class="section-title">Merchant Host Identity</h3>
+          <h3 class="section-title">{{ t('admin.propertyReviewDetailPage.host.title') }}</h3>
           <div class="flex flex-col gap-4">
-            <div class="info-field"><label>Host Owner Name</label>
-              <div class="val font-semibold text-base">{{ approvalStore.currentProperty.owner_name || 'Unknown User' }}
+            <div class="info-field"><label>{{ t('admin.propertyReviewDetailPage.host.ownerName') }}</label>
+              <div class="val font-semibold text-base">{{ approvalStore.currentProperty.owner_name || t('admin.propertyReviewDetailPage.host.ownerNameFallback') }}
               </div>
             </div>
-            <div class="info-field"><label>Host Contact Line</label>
-              <div class="val">{{ approvalStore.currentProperty.owner_phone || 'N/A' }}</div>
+            <div class="info-field"><label>{{ t('admin.propertyReviewDetailPage.host.contactLine') }}</label>
+              <div class="val">{{ approvalStore.currentProperty.owner_phone || t('admin.propertyReviewDetailPage.host.fallback') }}</div>
             </div>
-            <div class="info-field"><label>Host Email Account</label>
-              <div class="val lowercase">{{ approvalStore.currentProperty.owner_email || 'N/A' }}</div>
+            <div class="info-field"><label>{{ t('admin.propertyReviewDetailPage.host.emailAccount') }}</label>
+              <div class="val lowercase">{{ approvalStore.currentProperty.owner_email || t('admin.propertyReviewDetailPage.host.fallback') }}</div>
             </div>
           </div>
         </div>
 
         <div class="custom-card">
-          <h3 class="section-title">Database Logs</h3>
+          <h3 class="section-title">{{ t('admin.propertyReviewDetailPage.logs.title') }}</h3>
           <div class="flex flex-col gap-4">
-            <div class="info-field"><label>Submission Created</label>
+            <div class="info-field"><label>{{ t('admin.propertyReviewDetailPage.logs.created') }}</label>
               <div class="val">{{ formatDate(approvalStore.currentProperty.created_at) }}</div>
             </div>
-            <div class="info-field"><label>Latest Process Event</label>
+            <div class="info-field"><label>{{ t('admin.propertyReviewDetailPage.logs.updated') }}</label>
               <div class="val">{{ formatDate(approvalStore.currentProperty.updated_at) }}</div>
             </div>
           </div>
         </div>
 
         <div class="custom-card border border-dashed border-(--color-primary)">
-          <h3 class="section-title text-(--color-primary)">Moderation Portal Hub</h3>
+          <h3 class="section-title text-(--color-primary)">{{ t('admin.propertyReviewDetailPage.moderation.title') }}</h3>
           <div class="flex flex-col gap-3 relative">
 
             <template
               v-if="approvalStore.currentProperty.status_id === 1 || approvalStore.currentProperty.status_name?.toLowerCase() === 'pending'">
               <button @click="approveModalOpen = true" :disabled="approvalStore.processing" class="btn-action-primary">
-                <CheckIcon class="w-4 h-4 stroke-3" /> Approve & Publish
+                <CheckIcon class="w-4 h-4 stroke-3" /> {{ t('admin.propertyReviewDetailPage.moderation.approvePublish') }}
               </button>
               <button @click="rejectReason = ''; rejectReasonError = false; rejectModalOpen = true;"
                 :disabled="approvalStore.processing" class="btn-action-danger-outline">
-                <XMarkIcon class="w-4 h-4 stroke-3" /> Reject Submission
+                <XMarkIcon class="w-4 h-4 stroke-3" /> {{ t('admin.propertyReviewDetailPage.moderation.rejectSubmission') }}
               </button>
             </template>
 
             <template v-else>
               <div class="relative w-full">
                 <button @click="toggleActionDropdown" :disabled="approvalStore.processing" class="btn-action-dropdown">
-                  Edit Status
+                  {{ t('admin.propertyReviewDetailPage.moderation.editStatus') }}
                   <ChevronDownIcon class="w-4 h-4 ml-auto" />
                 </button>
                 <div v-if="isActionDropdownOpen" class="popover-panel">
                   <button v-if="approvalStore.currentProperty.status_id !== 1" @click="pendingModalOpen = true"
-                    class="popover-item item-warning">Set back to Pending</button>
+                    class="popover-item item-warning">{{ t('admin.propertyReviewDetailPage.moderation.setPending') }}</button>
                   <button v-if="approvalStore.currentProperty.status_id !== 2" @click="approveModalOpen = true"
-                    class="popover-item item-success">Approve Listing</button>
+                    class="popover-item item-success">{{ t('admin.propertyReviewDetailPage.moderation.approveListing') }}</button>
                   <button v-if="approvalStore.currentProperty.status_id !== 3"
                     @click="rejectReason = ''; rejectReasonError = false; rejectModalOpen = true;"
-                    class="popover-item item-danger">Reject Listing</button>
+                    class="popover-item item-danger">{{ t('admin.propertyReviewDetailPage.moderation.rejectListing') }}</button>
                 </div>
               </div>
             </template>
@@ -300,15 +304,13 @@ const executeSetPending = async () => {
         <div class="modal-icon-container bg-(--color-success-soft)">
           <CheckCircleIcon class="w-14 h-14 text-(--color-success)" />
         </div>
-        <h3 class="modal-main-title">Confirm Listing Approval</h3>
-        <p class="modal-description">Are you sure you want to approve and publish this property request to the platform
-          live
-          listings?</p>
+        <h3 class="modal-main-title">{{ t('admin.propertyReviewDetailPage.modal.approve.title') }}</h3>
+        <p class="modal-description">{{ t('admin.propertyReviewDetailPage.modal.approve.description') }}</p>
         <div class="flex gap-3 justify-center mt-6">
-          <button @click="approveModalOpen = false" class="btn-modal-cancel">Cancel</button>
+          <button @click="approveModalOpen = false" class="btn-modal-cancel">{{ t('admin.propertyReviewDetailPage.modal.cancel') }}</button>
           <button @click="executeApprove" :disabled="approvalStore.processing" class="btn-modal-success-confirm">
-            <AppLoading v-if="approvalStore.processing" label="Publishing..." class="text-(--color-text-inverse)" />
-            <span v-else>Yes, Approve</span>
+            <AppLoading v-if="approvalStore.processing" :label="t('admin.propertyReviewDetailPage.modal.approve.publishing')" class="text-(--color-text-inverse)" />
+            <span v-else>{{ t('admin.propertyReviewDetailPage.modal.approve.confirm') }}</span>
           </button>
         </div>
       </div>
@@ -318,25 +320,22 @@ const executeSetPending = async () => {
       <div class="p-2">
         <div class="flex items-center gap-3 mb-2">
           <XCircleIcon class="w-6 h-6 text-(--color-danger)" />
-          <h3 class="modal-main-title mb-0 text-left">Specify Rejection Reason</h3>
+          <h3 class="modal-main-title mb-0 text-left">{{ t('admin.propertyReviewDetailPage.modal.reject.title') }}</h3>
         </div>
-        <p class="modal-description text-left">Provide clear feedback to help the host operator adjust the submission
-          criteria.</p>
+        <p class="modal-description text-left">{{ t('admin.propertyReviewDetailPage.modal.reject.description') }}</p>
 
         <div class="flex flex-col gap-2 mt-4">
           <textarea v-model="rejectReason" rows="4" class="modal-form-textarea"
             :class="{ 'textarea-err': rejectReasonError }"
-            placeholder="Provide comprehensive reasons for rejection..."></textarea>
-          <span v-if="rejectReasonError" class="validation-error-msg">Validation Warning: Rejection justification text
-            field
-            is required.</span>
+            :placeholder="t('admin.propertyReviewDetailPage.modal.reject.placeholder')"></textarea>
+          <span v-if="rejectReasonError" class="validation-error-msg">{{ t('admin.propertyReviewDetailPage.modal.reject.validationError') }}</span>
         </div>
 
         <div class="flex gap-3 justify-end mt-6">
-          <button @click="rejectModalOpen = false" class="btn-modal-cancel">Cancel</button>
+          <button @click="rejectModalOpen = false" class="btn-modal-cancel">{{ t('admin.propertyReviewDetailPage.modal.cancel') }}</button>
           <button @click="executeReject" :disabled="approvalStore.processing" class="btn-modal-danger-confirm">
-            <AppLoading v-if="approvalStore.processing" label="Rejecting..." class="text-(--color-text-inverse)" />
-            <span v-else>Confirm Rejection</span>
+            <AppLoading v-if="approvalStore.processing" :label="t('admin.propertyReviewDetailPage.modal.reject.rejecting')" class="text-(--color-text-inverse)" />
+            <span v-else>{{ t('admin.propertyReviewDetailPage.modal.reject.confirm') }}</span>
           </button>
         </div>
       </div>
@@ -347,14 +346,13 @@ const executeSetPending = async () => {
         <div class="modal-icon-container bg-(--color-warning-soft)">
           <QuestionMarkCircleIcon class="w-14 h-14 text-(--color-warning)" />
         </div>
-        <h3 class="modal-main-title">Reset to Pending Queue?</h3>
-        <p class="modal-description">Are you sure you want to move this property listing back to the pending moderation
-          queue?</p>
+        <h3 class="modal-main-title">{{ t('admin.propertyReviewDetailPage.modal.pending.title') }}</h3>
+        <p class="modal-description">{{ t('admin.propertyReviewDetailPage.modal.pending.description') }}</p>
         <div class="flex gap-3 justify-center mt-6">
-          <button @click="pendingModalOpen = false" class="btn-modal-cancel">Cancel</button>
+          <button @click="pendingModalOpen = false" class="btn-modal-cancel">{{ t('admin.propertyReviewDetailPage.modal.cancel') }}</button>
           <button @click="executeSetPending" :disabled="approvalStore.processing" class="btn-modal-warning-confirm">
-            <AppLoading v-if="approvalStore.processing" label="Processing..." class="text-(--color-text-inverse)" />
-            <span v-else>Yes, Set to Pending</span>
+            <AppLoading v-if="approvalStore.processing" :label="t('admin.propertyReviewDetailPage.modal.pending.processing')" class="text-(--color-text-inverse)" />
+            <span v-else>{{ t('admin.propertyReviewDetailPage.modal.pending.confirm') }}</span>
           </button>
         </div>
       </div>

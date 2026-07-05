@@ -67,6 +67,10 @@ export const propertyApi = {
     return http.get(`/properties/cities`);
   },
 
+  getCategories() {
+    return http.get(`/properties/categories`);
+  },
+
   // ── NEW: Pending Edit Request APIs ──────────────────────────────────────────
 
   // Submit a pending edit request for an approved property

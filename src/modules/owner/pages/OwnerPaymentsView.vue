@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import AppTable from "../components/OwnerVerfivationTable.vue";
@@ -13,10 +13,14 @@ import { useOwnerPaymentStore } from "../store/ownerPayment.store";
 import { ShieldCheckIcon, CheckIcon, XMarkIcon, CheckCircleIcon, XCircleIcon } from "@heroicons/vue/24/outline";
 import { useSidebar } from "@/shared/composables/useSidebar";
 import { useToastStore } from "@/shared/store/toastStore";
+import { useI18n } from "vue-i18n";
 
 const router = useRouter();
 const { isSidebarOpen } = useSidebar();
 const toast = useToastStore();
+const { t, te } = useI18n({ useScope: "global" });
+const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
+const statusLabel = (value) => safeT(`common.status.${String(value || "").toLowerCase()}`, value);
 
 // Connect Pinia Store Setup Engine
 const paymentStore = useOwnerPaymentStore();
@@ -42,26 +46,26 @@ const selectedItem = ref(null);
 const rejectNoteText = ref("");
 const targetStatus = ref("");
 
-const reservationColumns = [
-    { key: "guestName", label: "Guest Info" },
-    { key: "propertyName", label: "Property & Room" },
-    { key: "amount", label: "Amount" },
-    { key: "checkIn", label: "Stay Period" },
-    { key: "status", label: "Payment Status" },
-    { key: "reservation_status", label: "Reservation Status" },
-    { key: "reservation_action", label: "Reservation Action" },
-    { key: "payment_action", label: "Payment Action" },
-];
+const reservationColumns = computed(() => [
+    { key: "guestName", label: t("owner.paymentsPage.columns.guestInfo") },
+    { key: "propertyName", label: t("owner.paymentsPage.columns.propertyRoom") },
+    { key: "amount", label: t("owner.paymentsPage.columns.amount") },
+    { key: "checkIn", label: t("owner.paymentsPage.columns.stayPeriod") },
+    { key: "status", label: t("owner.paymentsPage.columns.paymentStatus") },
+    { key: "reservation_status", label: t("owner.paymentsPage.columns.reservationStatus") },
+    { key: "reservation_action", label: t("owner.paymentsPage.columns.reservationAction") },
+    { key: "payment_action", label: t("owner.paymentsPage.columns.paymentAction") },
+]);
 
-const refundColumns = [
-    { key: "id", label: "Refund ID" },
-    { key: "customer_name", label: "Guest Info" },
-    { key: "property_name", label: "Property & Room" },
-    { key: "amount", label: "Refund Amount" },
-    { key: "reason", label: "Reason" },
-    { key: "refund_status", label: "Status" },
-    { key: "payment_action", label: "Actions" }, // ប្រើសោរដូចគ្នាដើម្បីកាត់បន្ថយភាពស្មុគស្មាញក្នុង Table
-];
+const refundColumns = computed(() => [
+    { key: "id", label: t("owner.paymentsPage.columns.refundId") },
+    { key: "customer_name", label: t("owner.paymentsPage.columns.guestInfo") },
+    { key: "property_name", label: t("owner.paymentsPage.columns.propertyRoom") },
+    { key: "amount", label: t("owner.paymentsPage.columns.refundAmount") },
+    { key: "reason", label: t("owner.paymentsPage.columns.reason") },
+    { key: "refund_status", label: t("owner.paymentsPage.columns.status") },
+    { key: "payment_action", label: t("owner.paymentsPage.columns.actions") },
+]);
 
 const formatCurrency = (value) =>
     new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value || 0));
@@ -131,7 +135,7 @@ const handleConfirmApprove = async () => {
 
 const handleConfirmReject = async () => {
     if (!rejectNoteText.value || !rejectNoteText.value.trim()) {
-        toast.error("Please provide a rejection or cancellation reason for the guest.");
+        toast.error(t("owner.paymentsPage.reasonRequired"));
         return;
     }
     let success = false;
@@ -165,42 +169,63 @@ const closeRejectModal = () => {
 };
 
 onMounted(paymentStore.loadData);
+
+const approveModalTitle = computed(() =>
+    activeModule.value === 'payments'
+        ? (targetStatus.value ? t("owner.paymentsPage.changeReservationStatus") : t("owner.paymentsPage.confirmPayment"))
+        : t("owner.paymentsPage.approveRefund")
+);
+
+const approveModalHeading = computed(() =>
+    targetStatus.value
+        ? t("owner.paymentsPage.setStatusTo", { status: targetStatus.value })
+        : (activeModule.value === 'payments' ? t("owner.paymentsPage.confirmPaymentSlip") : t("owner.paymentsPage.approveRefund"))
+);
+
+const rejectModalTitle = computed(() =>
+    targetStatus.value
+        ? t("owner.paymentsPage.modifyStatusReason")
+        : (activeModule.value === 'payments' ? t("owner.paymentsPage.rejectPaymentSlip") : t("owner.paymentsPage.rejectRefund"))
+);
+
+const rejectModalDesc = computed(() =>
+    targetStatus.value
+        ? t("owner.paymentsPage.changeStatusReasonPrompt", { status: targetStatus.value })
+        : t("owner.paymentsPage.rejectionFeedbackPrompt")
+);
 </script>
 
 <template>
     <main class="owner-payments space-y-6 my-25" :class="isSidebarOpen ? 'ml-64' : 'ml-20'">
         <header class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h1 class="text-3xl font-bold tracking-tight text-(--color-text)">Financial Ledger</h1>
-                <p class="mt-1 text-sm text-(--color-muted)">Audit customer incoming payments and handle client refund
-                    requests.</p>
+                <h1 class="text-3xl font-bold tracking-tight text-(--color-text)">{{ t("owner.paymentsPage.title") }}</h1>
+                <p class="mt-1 text-sm text-(--color-muted)">{{ t("owner.paymentsPage.subtitle") }}</p>
             </div>
 
             <button type="button"
                 class="inline-flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2 text-xs font-semibold text-(--color-text) transition hover:bg-(--color-input)/50 shadow-sm cursor-pointer"
                 :disabled="loading" @click="paymentStore.loadData">
                 <LoadingSpinner v-if="loading" class="h-4 w-4" />
-                <span>Refresh Data</span>
+                <span>{{ t("owner.paymentsPage.refreshData") }}</span>
             </button>
         </header>
 
         <section class="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-4">
             <div class="rounded-xl border border-(--color-border) bg-(--color-surface) p-5 shadow-sm">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-(--color-muted)">Confirmed
-                    Earnings</span>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-(--color-muted)">{{ t("owner.paymentsPage.confirmedEarnings") }}</span>
                 <h3 class="mt-1 text-2xl font-bold text-(--color-text)">${{ formatCurrency(stats.totalEarnings) }}</h3>
             </div>
             <div class="rounded-xl border border-(--color-border) bg-(--color-surface) p-5 shadow-sm">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-(--color-muted)">Total Records</span>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-(--color-muted)">{{ t("owner.paymentsPage.totalRecords") }}</span>
                 <h3 class="mt-1 text-2xl font-bold text-(--color-text)">{{ stats.totalBookings }}</h3>
             </div>
             <div class="rounded-xl border border-(--color-border) bg-(--color-surface) p-5 shadow-sm">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-(--color-muted)">Awaiting
-                    Verification</span>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-(--color-muted)">{{ t("owner.paymentsPage.awaitingVerification") }}</span>
                 <h3 class="mt-1 text-2xl font-bold text-amber-500">{{ stats.pendingCount }}</h3>
             </div>
             <div class="rounded-xl border border-(--color-border) bg-(--color-surface) p-5 shadow-sm">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-(--color-muted)">Pending Refunds</span>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-(--color-muted)">{{ t("owner.paymentsPage.pendingRefunds") }}</span>
                 <h3 class="mt-1 text-2xl font-bold text-rose-500">{{ stats.pendingRefunds }}</h3>
             </div>
         </section>
@@ -208,11 +233,11 @@ onMounted(paymentStore.loadData);
         <div class="flex items-center border-b border-(--color-border) gap-6 mb-2">
             <button @click="paymentStore.switchModule('payments')"
                 :class="['pb-3 text-sm font-bold border-b-2 transition cursor-pointer', activeModule === 'payments' ? 'border-(--color-primary) text-(--color-primary)' : 'border-transparent text-(--color-muted)']">
-                Incoming Verification Receipts
+                {{ t("owner.paymentsPage.incomingReceipts") }}
             </button>
             <button @click="paymentStore.switchModule('refunds')"
                 :class="['pb-3 text-sm font-bold border-b-2 transition cursor-pointer', activeModule === 'refunds' ? 'border-(--color-primary) text-(--color-primary)' : 'border-transparent text-(--color-muted)']">
-                Refund Requests ({{ refundRequests.length }})
+                {{ t("owner.paymentsPage.refundRequests") }} ({{ refundRequests.length }})
             </button>
         </div>
 
@@ -225,9 +250,9 @@ onMounted(paymentStore.loadData);
             <div v-if="error"
                 class="rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-600">{{ error }}
             </div>
-            <OwnerLoadingState v-if="loading" label="Loading comprehensive data records..." />
+            <OwnerLoadingState v-if="loading" :label="t('owner.paymentsPage.loadingRecords')" />
             <div v-else-if="filteredItems.length === 0" class="rounded-xl px-5 py-10 text-center text-(--color-muted)">
-                No entries match the current selection filters.</div>
+                {{ t("owner.paymentsPage.noEntries") }}</div>
 
             <template v-else>
                 <AppTable :columns="activeModule === 'payments' ? reservationColumns : refundColumns"
@@ -245,21 +270,21 @@ onMounted(paymentStore.loadData);
                     <template #cell-customer_name="{ row }">
                         <div class="flex flex-col text-sm">
                             <span class="font-bold text-(--color-text)">{{ row.customer_name }}</span>
-                            <span class="text-xs text-(--color-muted)">Payment reference: #{{ row.payment_id }}</span>
+                            <span class="text-xs text-(--color-muted)">{{ t("owner.paymentsPage.paymentReference") }} #{{ row.payment_id }}</span>
                         </div>
                     </template>
 
                     <template #cell-propertyName="{ row }">
                         <div class="flex flex-col text-sm">
                             <span class="font-semibold text-(--color-text)">{{ row.propertyName }}</span>
-                            <span class="text-xs text-(--color-muted)">Room: {{ row.roomName }}</span>
+                            <span class="text-xs text-(--color-muted)">{{ t("owner.paymentsPage.roomLabel") }} {{ row.roomName }}</span>
                         </div>
                     </template>
 
                     <template #cell-property_name="{ row }">
                         <div class="flex flex-col text-sm">
                             <span class="font-semibold text-(--color-text)">{{ row.property_name }}</span>
-                            <span class="text-xs text-(--color-muted)">Room: {{ row.room_name }}</span>
+                            <span class="text-xs text-(--color-muted)">{{ t("owner.paymentsPage.roomLabel") }} {{ row.room_name }}</span>
                         </div>
                     </template>
 
@@ -271,7 +296,7 @@ onMounted(paymentStore.loadData);
                     </template>
 
                     <template #cell-reason="{ value }">
-                        <span class="text-sm text-(--color-text)">{{ value || 'No reason specified' }}</span>
+                        <span class="text-sm text-(--color-text)">{{ value || t("owner.paymentsPage.noReasonSpecified") }}</span>
                     </template>
 
                     <template #cell-status="{ value }">
@@ -284,7 +309,7 @@ onMounted(paymentStore.loadData);
                                 value === 'refunded' ? 'border-(--color-danger) bg-(--color-danger-soft) text-(--color-danger)' : '',
                                 value === 'pending' ? 'border-(--color-warning) bg-(--color-warning-soft) text-(--color-warning)' : ''
                             ]">
-                            {{ value }}
+                            {{ statusLabel(value) }}
                         </span>
                     </template>
 
@@ -297,7 +322,7 @@ onMounted(paymentStore.loadData);
                                 ['pending', 'hold'].includes(value) ? 'border-(--color-warning) bg-(--color-warning-soft) text-(--color-warning)' : '',
                                 value === 'completed' ? 'border-(--color-primary) bg-(--color-primary-soft) text-(--color-primary)' : ''
                             ]">
-                            {{ value }}
+                            {{ statusLabel(value) }}
                         </span>
                     </template>
 
@@ -309,14 +334,14 @@ onMounted(paymentStore.loadData);
                                 value === 'rejected' ? 'border-(--color-danger) bg-(--color-danger-soft) text-(--color-danger)' : '',
                                 ['pending', 'requested'].includes(value) ? 'border-(--color-warning) bg-(--color-warning-soft) text-(--color-warning)' : '',
                             ]">
-                            {{ value }}
+                            {{ statusLabel(value) }}
                         </span>
                     </template>
 
                     <template #cell-checkIn="{ row }">
                         <div class="flex flex-col text-sm">
                             <span class="text-(--color-text)">{{ formatDate(row.checkIn) }}</span>
-                            <span v-if="row.checkOut" class="text-[11px] text-(--color-muted)">to {{
+                            <span v-if="row.checkOut" class="text-[11px] text-(--color-muted)">{{ t("owner.paymentsPage.to") }} {{
                                 formatDate(row.checkOut) }}</span>
                         </div>
                     </template>
@@ -327,69 +352,59 @@ onMounted(paymentStore.loadData);
             </template>
         </section>
 
-        <AppModal
-            :title="activeModule === 'payments' ? (targetStatus ? 'Change Reservation Status' : 'Confirm Payment') : 'Approve Refund'"
-            :open="isApproveModalOpen" @close="closeApproveModal">
+        <AppModal :title="approveModalTitle" :open="isApproveModalOpen" @close="closeApproveModal">
             <div class="modal-surface-content text-center pt-2">
                 <div class="icon-wrapper confirmation-success">
                     <CheckCircleIcon class="modal-status-icon text-(--color-success)" />
                 </div>
                 <div>
                     <h3 class="modal-title">
-                        {{ targetStatus ? `Set Status to ${targetStatus}` : (activeModule === 'payments' ?
-                            'Confirm Payment Slip'
-                            : 'Approve Refund') }}
+                        {{ approveModalHeading }}
                     </h3>
                     <p class="modal-desc mt-2">
-                        Are you sure you want to proceed with this operation? This will change the real-time record
-                        statement on
-                        the ecosystem ledger.
+                        {{ t("owner.paymentsPage.confirmOperationPrompt") }}
                     </p>
                 </div>
                 <div class="modal-footer-actions justify-center mt-4">
                     <button type="button" @click="closeApproveModal" :disabled="actionLoading"
-                        class="btn-cancel">Cancel</button>
+                        class="btn-cancel">{{ t("owner.paymentsPage.cancel") }}</button>
                     <button type="button" @click="handleConfirmApprove" :disabled="actionLoading"
                         class="btn-confirm-approve min-w-120px flex items-center justify-center">
                         <LoadingSpinner v-if="actionLoading" class="h-4 w-4 text-white" />
-                        <span v-else>Yes, Proceed</span>
+                        <span v-else>{{ t("owner.paymentsPage.yesProceed") }}</span>
                     </button>
                 </div>
             </div>
         </AppModal>
 
-        <AppModal
-            :title="targetStatus ? 'Modify Status Reason' : (activeModule === 'payments' ? 'Reject Payment Slip' : 'Reject Refund')"
-            :open="isRejectModalOpen" @close="closeRejectModal">
+        <AppModal :title="rejectModalTitle" :open="isRejectModalOpen" @close="closeRejectModal">
             <div class="modal-surface-content text-center pt-2">
                 <div class="icon-wrapper confirmation-danger">
                     <XCircleIcon class="modal-status-icon text-(--color-danger)" />
                 </div>
                 <div>
-                    <h3 class="modal-title">Specify Log Justification</h3>
+                    <h3 class="modal-title">{{ t("owner.paymentsPage.specifyJustification") }}</h3>
                     <p class="modal-desc mt-2">
-                        {{ targetStatus ? `Please provide a short reason for changing the reservation status to
-                        "${targetStatus}".`
-                            : 'Provide clear feedback to help the user understand the cancellation or rejection criteria.' }}
+                        {{ rejectModalDesc }}
                     </p>
                 </div>
 
                 <div class="input-container mt-3 text-left">
                     <textarea v-model="rejectNoteText" rows="4" class="modal-textarea"
                         :class="{ 'input-error': !rejectNoteText.trim() && actionLoading }"
-                        placeholder="Specify reasons..."></textarea>
+                        :placeholder="t('owner.paymentsPage.specifyReasonsPlaceholder')"></textarea>
                     <span v-if="!rejectNoteText.trim() && actionLoading" class="validation-msg">
-                        Validation Warning: Justification text field is required.
+                        {{ t("owner.paymentsPage.justificationRequired") }}
                     </span>
                 </div>
 
                 <div class="modal-footer-actions justify-center mt-4">
                     <button type="button" @click="closeRejectModal" :disabled="actionLoading"
-                        class="btn-cancel">Cancel</button>
+                        class="btn-cancel">{{ t("owner.paymentsPage.cancel") }}</button>
                     <button type="button" @click="handleConfirmReject" :disabled="actionLoading"
                         class="btn-confirm-reject min-w-150px flex items-center justify-center">
                         <LoadingSpinner v-if="actionLoading" class="h-4 w-4 text-white" />
-                        <span v-else>Confirm Action</span>
+                        <span v-else>{{ t("owner.paymentsPage.confirmAction") }}</span>
                     </button>
                 </div>
             </div>

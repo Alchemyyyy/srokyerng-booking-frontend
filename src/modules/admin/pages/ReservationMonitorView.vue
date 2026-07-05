@@ -1,7 +1,9 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useReservationStore } from "../store/Reservation.store";
 import { usePaymentStore } from "../store/Payment.store";
+import TablePagination from "../components/TablePagination.vue";
 import {
   formatMoney,
   formatDate,
@@ -16,19 +18,39 @@ import {
   DocumentTextIcon,
 } from "@heroicons/vue/24/outline";
 
+const { t, te } = useI18n({ useScope: "global" });
+const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
+const statusLabel = (value) =>
+  safeT(`common.status.${String(value || "").toLowerCase()}`, value);
+
 const reservationStore = useReservationStore();
 const paymentStore = usePaymentStore();
 
 // ── Status tabs (reservation) ─────────────────────────────────────────────────
-const STATUS_TABS = [
-  { key: "all", label: "All" },
-  { key: "pending", label: "Pending" },
-  { key: "confirmed", label: "Confirmed" },
-  { key: "completed", label: "Completed" },
-  { key: "cancelled", label: "Cancelled" },
-];
+const STATUS_TABS = computed(() => [
+  { key: "all", label: t("admin.reservationMonitorPage.tabs.all") },
+  { key: "pending", label: t("admin.reservationMonitorPage.tabs.pending") },
+  {
+    key: "confirmed",
+    label: t("admin.reservationMonitorPage.tabs.confirmed"),
+  },
+  {
+    key: "completed",
+    label: t("admin.reservationMonitorPage.tabs.completed"),
+  },
+  {
+    key: "cancelled",
+    label: t("admin.reservationMonitorPage.tabs.cancelled"),
+  },
+]);
 
 const STATUS_OPTIONS = ["pending", "confirmed", "cancelled", "completed"];
+
+const DETAIL_TABS = computed(() => [
+  { key: "reservation", label: t("admin.reservationMonitorPage.detailTabs.reservation") },
+  { key: "payment", label: t("admin.reservationMonitorPage.detailTabs.payment") },
+  { key: "proof", label: t("admin.reservationMonitorPage.detailTabs.proof") },
+]);
 
 // ── Detail panel state ────────────────────────────────────────────────────────
 const detailPanel = ref({
@@ -93,6 +115,9 @@ const formatDateOnly = (value) => {
   }).format(date);
 };
 
+const nightsLabel = (nights) =>
+  t("admin.reservationMonitorPage.nightsCount", { count: nights ?? 0 });
+
 onMounted(() => {
   reservationStore.fetchReservations();
 });
@@ -102,9 +127,11 @@ onMounted(() => {
   <div class="ml-64 mt-25 min-h-screen px-6 pb-10 text-(--color-text)">
     <!-- Header -->
     <header class="mb-6">
-      <h1 class="text-3xl font-bold tracking-tight">Reservations</h1>
+      <h1 class="text-3xl font-bold tracking-tight">
+        {{ t("admin.reservationMonitorPage.title") }}
+      </h1>
       <p class="text-sm text-(--color-muted) mt-1">
-        Monitor and manage all reservations across the platform.
+        {{ t("admin.reservationMonitorPage.subtitle") }}
       </p>
     </header>
 
@@ -149,7 +176,7 @@ onMounted(() => {
 
       <input
         type="text"
-        placeholder="Search guest, property, room..."
+        :placeholder="t('admin.reservationMonitorPage.filters.searchPlaceholder')"
         :value="reservationStore.searchQuery"
         @input="reservationStore.setSearchQuery($event.target.value)"
         class="w-full sm:w-64 px-4 py-2 text-sm rounded-xl border border-(--color-border) bg-(--color-surface) placeholder:text-(--color-muted) focus:outline-none focus:ring-2 focus:ring-(--color-primary)/30"
@@ -161,7 +188,7 @@ onMounted(() => {
       v-if="reservationStore.loading"
       class="py-24 text-center text-(--color-muted) text-sm"
     >
-      Loading reservations...
+      {{ t("admin.reservationMonitorPage.loading") }}
     </div>
 
     <!-- Empty -->
@@ -170,7 +197,7 @@ onMounted(() => {
       class="rounded-2xl border border-dashed border-(--color-border) bg-(--color-surface) p-16 text-center"
     >
       <p class="text-sm text-(--color-muted)">
-        No reservations match this filter.
+        {{ t("admin.reservationMonitorPage.emptyState") }}
       </p>
     </div>
 
@@ -185,19 +212,19 @@ onMounted(() => {
             <tr
               class="border-b border-(--color-border) bg-(--color-surface-soft)"
             >
-              <th class="table-th">ID</th>
-              <th class="table-th">Guest</th>
-              <th class="table-th">Property / Room</th>
-              <th class="table-th">Owner</th>
-              <th class="table-th">Dates</th>
-              <th class="table-th">Amount</th>
-              <th class="table-th">Status</th>
-              <th class="table-th text-center">Action</th>
+              <th class="table-th">{{ t("admin.reservationMonitorPage.columns.id") }}</th>
+              <th class="table-th">{{ t("admin.reservationMonitorPage.columns.guest") }}</th>
+              <th class="table-th">{{ t("admin.reservationMonitorPage.columns.propertyRoom") }}</th>
+              <th class="table-th">{{ t("admin.reservationMonitorPage.columns.owner") }}</th>
+              <th class="table-th">{{ t("admin.reservationMonitorPage.columns.dates") }}</th>
+              <th class="table-th">{{ t("admin.reservationMonitorPage.columns.amount") }}</th>
+              <th class="table-th">{{ t("admin.reservationMonitorPage.columns.status") }}</th>
+              <th class="table-th text-center">{{ t("admin.reservationMonitorPage.columns.action") }}</th>
             </tr>
           </thead>
           <tbody>
             <tr
-              v-for="reservation in reservationStore.filteredReservations"
+              v-for="reservation in reservationStore.pagedReservations"
               :key="reservation.id"
               @click="openDetail(reservation)"
               class="border-b border-(--color-border) last:border-0 hover:bg-(--color-surface-soft)/60 transition-colors cursor-pointer"
@@ -239,9 +266,7 @@ onMounted(() => {
                   {{ formatDateOnly(reservation.check_out_date) }}
                 </p>
                 <p class="text-xs text-(--color-muted)">
-                  {{ reservation.total_nights }} night{{
-                    reservation.total_nights !== 1 ? "s" : ""
-                  }}
+                  {{ nightsLabel(reservation.total_nights) }}
                 </p>
               </td>
 
@@ -253,7 +278,7 @@ onMounted(() => {
               <!-- Status -->
               <td class="px-4 py-3">
                 <span :class="statusBadgeClass(reservation.reservation_status)">
-                  {{ reservation.reservation_status }}
+                  {{ statusLabel(reservation.reservation_status) }}
                 </span>
               </td>
 
@@ -263,7 +288,7 @@ onMounted(() => {
                   @click="openDetail(reservation)"
                   class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-(--color-primary) text-(--color-primary) hover:bg-(--color-primary-soft) transition"
                 >
-                  View detail
+                  {{ t("admin.reservationMonitorPage.viewDetail") }}
                 </button>
               </td>
             </tr>
@@ -271,6 +296,13 @@ onMounted(() => {
         </table>
       </div>
     </div>
+
+    <TablePagination
+      v-if="reservationStore.pagination.total_pages > 1"
+      :current-page="reservationStore.pagination.page"
+      :total-pages="reservationStore.pagination.total_pages"
+      @update:current-page="reservationStore.setPage($event)"
+    />
   </div>
 
   <!-- ══════════════════════════════════════════════════════════════════════════
@@ -311,9 +343,13 @@ onMounted(() => {
                     )
                   "
                 >
-                  {{ detailPanel.reservation?.reservation_status }}
+                  {{ statusLabel(detailPanel.reservation?.reservation_status) }}
                 </span>
-                <button @click="closeDetail" class="close-btn">
+                <button
+                  @click="closeDetail"
+                  class="close-btn"
+                  :aria-label="t('admin.reservationMonitorPage.aria.closePanel')"
+                >
                   <XMarkIcon class="w-4 h-4" />
                 </button>
               </div>
@@ -322,11 +358,7 @@ onMounted(() => {
             <!-- Tabs -->
             <div class="panel-tabs">
               <button
-                v-for="tab in [
-                  { key: 'reservation', label: 'Reservation' },
-                  { key: 'payment', label: 'Payment' },
-                  { key: 'proof', label: 'Proof' },
-                ]"
+                v-for="tab in DETAIL_TABS"
                 :key="tab.key"
                 @click="activeTab = tab.key"
                 :class="[
@@ -345,7 +377,7 @@ onMounted(() => {
                 v-if="detailPanel.loading"
                 class="py-16 text-center text-(--color-muted) text-sm"
               >
-                Loading payment details…
+                {{ t("admin.reservationMonitorPage.modal.loadingPayment") }}
               </div>
 
               <template v-else>
@@ -355,33 +387,29 @@ onMounted(() => {
                   <div class="summary-card">
                     <div class="summary-card-top">
                       <div>
-                        <p class="summary-label">Property</p>
+                        <p class="summary-label">{{ t("admin.reservationMonitorPage.modal.property") }}</p>
                         <p class="summary-title">
                           {{ detailPanel.reservation?.property_name || "-" }}
                         </p>
                         <p class="text-sm text-slate-300 mt-0.5">
-                          Room: {{ detailPanel.reservation?.room_name || "-" }}
+                          {{ t("admin.reservationMonitorPage.modal.room") }}: {{ detailPanel.reservation?.room_name || "-" }}
                         </p>
                       </div>
                       <div class="text-right">
-                        <p class="summary-label">Total</p>
+                        <p class="summary-label">{{ t("admin.reservationMonitorPage.modal.total") }}</p>
                         <p class="text-2xl font-bold text-emerald-400">
                           {{
                             formatMoney(detailPanel.reservation?.total_amount)
                           }}
                         </p>
                         <p class="text-xs text-slate-400">
-                          {{ detailPanel.reservation?.total_nights }} night{{
-                            detailPanel.reservation?.total_nights !== 1
-                              ? "s"
-                              : ""
-                          }}
+                          {{ nightsLabel(detailPanel.reservation?.total_nights) }}
                         </p>
                       </div>
                     </div>
                     <div class="summary-card-bottom grid grid-cols-2 gap-4">
                       <div>
-                        <p class="info-label">Check-in</p>
+                        <p class="info-label">{{ t("admin.reservationMonitorPage.modal.checkIn") }}</p>
                         <p class="info-value">
                           <span class="text-emerald-500 mr-1">→</span>
                           {{
@@ -392,7 +420,7 @@ onMounted(() => {
                         </p>
                       </div>
                       <div>
-                        <p class="info-label">Check-out</p>
+                        <p class="info-label">{{ t("admin.reservationMonitorPage.modal.checkOut") }}</p>
                         <p class="info-value">
                           <span class="text-rose-400 mr-1">←</span>
                           {{
@@ -408,16 +436,16 @@ onMounted(() => {
                   <!-- Guest & Owner -->
                   <div class="grid grid-cols-2 gap-4">
                     <div class="info-card">
-                      <p class="info-section-title">Guest</p>
+                      <p class="info-section-title">{{ t("admin.reservationMonitorPage.modal.guest") }}</p>
                       <div class="space-y-2.5">
                         <div>
-                          <p class="info-label">Name</p>
+                          <p class="info-label">{{ t("admin.reservationMonitorPage.modal.name") }}</p>
                           <p class="info-value">
                             {{ detailPanel.reservation?.customer_name || "-" }}
                           </p>
                         </div>
                         <div>
-                          <p class="info-label">Email</p>
+                          <p class="info-label">{{ t("admin.reservationMonitorPage.modal.email") }}</p>
                           <p class="info-value text-xs break-all">
                             {{ detailPanel.reservation?.customer_email || "-" }}
                           </p>
@@ -425,16 +453,16 @@ onMounted(() => {
                       </div>
                     </div>
                     <div class="info-card">
-                      <p class="info-section-title">Owner</p>
+                      <p class="info-section-title">{{ t("admin.reservationMonitorPage.modal.owner") }}</p>
                       <div class="space-y-2.5">
                         <div>
-                          <p class="info-label">Name</p>
+                          <p class="info-label">{{ t("admin.reservationMonitorPage.modal.name") }}</p>
                           <p class="info-value">
                             {{ detailPanel.reservation?.owner_name || "-" }}
                           </p>
                         </div>
                         <div>
-                          <p class="info-label">Reservation ID</p>
+                          <p class="info-label">{{ t("admin.reservationMonitorPage.modal.reservationId") }}</p>
                           <p class="info-value font-mono">
                             #{{ detailPanel.reservation?.id }}
                           </p>
@@ -461,14 +489,14 @@ onMounted(() => {
                           <p class="font-semibold text-sm text-(--color-text)">
                             {{
                               detailPanel.payment?.payment_method ||
-                              "No payment yet"
+                              t("admin.reservationMonitorPage.modal.noPaymentYet")
                             }}
                           </p>
                           <p class="text-xs text-(--color-muted)">
                             {{
                               detailPanel.payment
-                                ? `Submitted ${formatDate(detailPanel.payment.created_at)}`
-                                : "Payment not received"
+                                ? t("admin.reservationMonitorPage.modal.submittedOn", { date: formatDate(detailPanel.payment.created_at) })
+                                : t("admin.reservationMonitorPage.modal.paymentNotReceived")
                             }}
                           </p>
                         </div>
@@ -477,7 +505,7 @@ onMounted(() => {
                         @click="activeTab = 'payment'"
                         class="text-xs text-(--color-primary) font-semibold hover:underline"
                       >
-                        View details →
+                        {{ t("admin.reservationMonitorPage.modal.viewDetailsArrow") }}
                       </button>
                     </div>
                   </div>
@@ -485,7 +513,7 @@ onMounted(() => {
                   <!-- Change Status -->
                   <div class="info-card">
                     <p class="info-section-title mb-3">
-                      Change Reservation Status
+                      {{ t("admin.reservationMonitorPage.modal.changeStatus") }}
                     </p>
                     <div class="flex flex-wrap gap-2">
                       <button
@@ -502,7 +530,7 @@ onMounted(() => {
                             : 'border-(--color-border) text-(--color-muted) hover:bg-(--color-surface-soft) hover:text-(--color-text)',
                         ]"
                       >
-                        {{ status }}
+                        {{ statusLabel(status) }}
                       </button>
                     </div>
                   </div>
@@ -517,10 +545,10 @@ onMounted(() => {
                   >
                     <CreditCardIcon class="h-8 w-8 mx-auto mb-3 text-(--color-muted)" />
                     <p class="text-sm font-semibold text-(--color-text)">
-                      No payment record
+                      {{ t("admin.reservationMonitorPage.modal.noPaymentRecord") }}
                     </p>
                     <p class="text-xs text-(--color-muted) mt-1">
-                      The guest has not submitted any payment yet.
+                      {{ t("admin.reservationMonitorPage.modal.noPaymentRecordHint") }}
                     </p>
                   </div>
 
@@ -546,8 +574,8 @@ onMounted(() => {
                           >
                             {{
                               detailPanel.payment.payment_status === "verified"
-                                ? "Payment Verified"
-                                : "Pending Verification"
+                                ? t("admin.reservationMonitorPage.modal.paymentVerified")
+                                : t("admin.reservationMonitorPage.modal.pendingVerification")
                             }}
                           </p>
                           <p class="text-2xl font-bold text-(--color-text)">
@@ -563,35 +591,35 @@ onMounted(() => {
                             statusBadgeClass(detailPanel.payment.payment_status)
                           "
                         >
-                          {{ detailPanel.payment.payment_status }}
+                          {{ statusLabel(detailPanel.payment.payment_status) }}
                         </span>
                       </div>
                     </div>
 
                     <!-- Payment details grid -->
                     <div class="info-card">
-                      <p class="info-section-title mb-3">Payment Details</p>
+                      <p class="info-section-title mb-3">{{ t("admin.reservationMonitorPage.modal.paymentDetails") }}</p>
                       <div class="grid grid-cols-2 gap-x-4 gap-y-3">
                         <div>
-                          <p class="info-label">Payment ID</p>
+                          <p class="info-label">{{ t("admin.reservationMonitorPage.modal.paymentId") }}</p>
                           <p class="info-value font-mono">
                             #{{ detailPanel.payment.id }}
                           </p>
                         </div>
                         <div>
-                          <p class="info-label">Reservation</p>
+                          <p class="info-label">{{ t("admin.reservationMonitorPage.modal.reservation") }}</p>
                           <p class="info-value font-mono">
                             #{{ detailPanel.payment.reservation_id }}
                           </p>
                         </div>
                         <div>
-                          <p class="info-label">Method</p>
+                          <p class="info-label">{{ t("admin.reservationMonitorPage.modal.method") }}</p>
                           <p class="info-value">
                             {{ detailPanel.payment.payment_method || "—" }}
                           </p>
                         </div>
                         <div>
-                          <p class="info-label">Reference</p>
+                          <p class="info-label">{{ t("admin.reservationMonitorPage.modal.reference") }}</p>
                           <p class="info-value font-mono text-xs">
                             {{
                               detailPanel.payment.transaction_reference || "—"
@@ -599,19 +627,19 @@ onMounted(() => {
                           </p>
                         </div>
                         <div>
-                          <p class="info-label">Submitted</p>
+                          <p class="info-label">{{ t("admin.reservationMonitorPage.modal.submitted") }}</p>
                           <p class="info-value">
                             {{ formatDate(detailPanel.payment.created_at) }}
                           </p>
                         </div>
                         <div>
-                          <p class="info-label">Customer</p>
+                          <p class="info-label">{{ t("admin.reservationMonitorPage.modal.customer") }}</p>
                           <p class="info-value">
                             {{ detailPanel.payment.customer_name || "—" }}
                           </p>
                         </div>
                         <div class="col-span-2">
-                          <p class="info-label">Customer Email</p>
+                          <p class="info-label">{{ t("admin.reservationMonitorPage.modal.customerEmail") }}</p>
                           <p class="info-value text-xs break-all">
                             {{ detailPanel.payment.customer_email || "—" }}
                           </p>
@@ -620,7 +648,7 @@ onMounted(() => {
                           v-if="detailPanel.payment.customer_phone"
                           class="col-span-2"
                         >
-                          <p class="info-label">Phone</p>
+                          <p class="info-label">{{ t("admin.reservationMonitorPage.modal.phone") }}</p>
                           <p class="info-value">
                             {{ detailPanel.payment.customer_phone }}
                           </p>
@@ -635,14 +663,14 @@ onMounted(() => {
                       class="w-full py-3 rounded-xl border-2 border-dashed border-(--color-border) text-(--color-muted) text-sm font-semibold hover:border-(--color-primary) hover:text-(--color-primary) transition flex items-center justify-center gap-2"
                     >
                       <EyeIcon class="w-4 h-4" />
-                      View Payment Proof
+                      {{ t("admin.reservationMonitorPage.modal.viewPaymentProof") }}
                     </button>
                   </template>
                 </div>
 
                 <!-- ── TAB: PROOF ─────────────────────────────────────────── -->
                 <div v-else-if="activeTab === 'proof'" class="space-y-4">
-                  <p class="info-section-title">Payment Proof</p>
+                  <p class="info-section-title">{{ t("admin.reservationMonitorPage.modal.paymentProof") }}</p>
 
                   <!-- No proof -->
                   <div
@@ -651,10 +679,10 @@ onMounted(() => {
                   >
                     <DocumentTextIcon class="h-8 w-8 mx-auto mb-3 text-(--color-muted)" />
                     <p class="text-sm font-semibold text-(--color-text)">
-                      No proof uploaded
+                      {{ t("admin.reservationMonitorPage.modal.noProofUploaded") }}
                     </p>
                     <p class="text-xs text-(--color-muted) mt-1">
-                      The guest has not submitted a payment receipt yet.
+                      {{ t("admin.reservationMonitorPage.modal.noProofUploadedHint") }}
                     </p>
                   </div>
 
@@ -664,7 +692,7 @@ onMounted(() => {
                   >
                     <img
                       :src="getImageUrl(detailPanel.payment.receipt_image_url)"
-                      alt="Payment receipt"
+                      :alt="t('admin.reservationMonitorPage.modal.receiptAlt')"
                       class="w-full object-contain max-h-[55vh]"
                     />
                     <div
@@ -672,7 +700,7 @@ onMounted(() => {
                     >
                       <div>
                         <p class="text-sm font-semibold text-(--color-text)">
-                          Transfer Receipt
+                          {{ t("admin.reservationMonitorPage.modal.transferReceipt") }}
                         </p>
                         <p class="text-xs text-(--color-muted)">
                           {{ detailPanel.payment.transaction_reference || "—" }}
@@ -688,7 +716,7 @@ onMounted(() => {
                         rel="noopener noreferrer"
                         class="text-xs px-3 py-1.5 bg-(--color-primary) text-white rounded-lg font-semibold hover:opacity-90 transition"
                       >
-                        Open ↗
+                        {{ t("admin.reservationMonitorPage.modal.openArrow") }}
                       </a>
                     </div>
                   </div>
@@ -699,11 +727,11 @@ onMounted(() => {
             <!-- Panel Footer -->
             <div class="panel-footer">
               <span class="text-xs" style="color: var(--color-secondary-soft)">
-                Reservation #{{ detailPanel.reservation?.id }} ·
+                {{ t("admin.reservationMonitorPage.modal.reservationHash") }}{{ detailPanel.reservation?.id }} ·
                 {{ detailPanel.reservation?.property_name }}
               </span>
               <button @click="closeDetail" class="close-footer-btn">
-                Close
+                {{ t("admin.reservationMonitorPage.modal.close") }}
               </button>
             </div>
           </div>

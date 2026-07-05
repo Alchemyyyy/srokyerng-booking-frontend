@@ -1,21 +1,25 @@
 <script setup>
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import AppTable from '@/shared/components/AppTable.vue'
+
+const { t } = useI18n({ useScope: 'global' })
 
 defineProps({
   properties: { type: Array, required: true }
 })
 
-const columns = [
-  { key: 'property', label: 'Property Structural Identity' },
-  { key: 'rooms', label: 'Allocated Rooms' },
-  { key: 'valuation', label: 'Base Valuation' },
-  { key: 'status', label: 'Verification Status' },
-]
+const columns = computed(() => [
+  { key: 'property', label: t('admin.analyticsPage.pipelineTable.columnProperty') },
+  { key: 'rooms', label: t('admin.analyticsPage.pipelineTable.columnRooms') },
+  { key: 'valuation', label: t('admin.analyticsPage.pipelineTable.columnValuation') },
+  { key: 'status', label: t('admin.analyticsPage.pipelineTable.columnStatus') },
+])
 </script>
 
 <template>
   <div class="dashboard-panel lg:col-span-3">
-    <h3 class="panel-title mb-4">New Properties Pipeline & Performance</h3>
+    <h3 class="panel-title mb-4">{{ t('admin.analyticsPage.pipelineTable.title') }}</h3>
 
     <AppTable :columns="columns" :rows="properties">
       <template #cell-property="{ row }">

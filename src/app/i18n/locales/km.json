@@ -20,7 +20,26 @@
     "retry": "ព្យាយាមម្តងទៀត",
     "save": "រក្សាទុក",
     "submit": "ដាក់ស្នើ",
-    "continue": "បន្ត"
+    "continue": "បន្ត",
+    "close": "បិទ",
+    "edit": "កែសម្រួល",
+    "status": {
+      "pending": "កំពុងរង់ចាំ",
+      "confirmed": "បានបញ្ជាក់",
+      "cancelled": "បានបោះបង់",
+      "completed": "បានបញ្ចប់",
+      "paid": "បានបង់ប្រាក់",
+      "submitted": "បានដាក់ស្នើ",
+      "verified": "បានផ្ទៀងផ្ទាត់",
+      "rejected": "បានបដិសេធ",
+      "refunded": "បានបង្វិលសង",
+      "failed": "បរាជ័យ",
+      "requested": "បានស្នើសុំ",
+      "approved": "បានអនុម័ត",
+      "active": "សកម្ម",
+      "inactive": "អសកម្ម",
+      "suspended": "បានផ្អាក"
+    }
   },
   "auth": {
     "accountType": "ប្រភេទគណនី",
@@ -162,7 +181,327 @@
       "dark": "ងងឹត",
       "system": "ប្រព័ន្ធ",
       "followsOs": "អនុវត្តតាមចំណូលចិត្តប្រព័ន្ធប្រតិបត្តិការ",
-      "overridesOs": "មិនអនុវត្តតាមចំណូលចិត្តប្រព័ន្ធប្រតិបត្តិការ"
+      "overridesOs": "មិនអនុវត្តតាមចំណូលចិត្តប្រព័ន្ធប្រតិបត្តិការ",
+      "switchToLight": "ប្តូរទៅរបៀបភ្លឺ",
+      "switchToDark": "ប្តូរទៅរបៀបងងឹត"
+    },
+    "tablePagination": {
+      "ariaLabel": "ការបែងចែកទំព័រ"
+    },
+    "roomDeleteModal": {
+      "title": "លុបបន្ទប់",
+      "confirmPrefix": "តើអ្នកប្រាកដថាចង់លុប",
+      "confirmSuffix": "? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។",
+      "cancel": "បោះបង់",
+      "confirm": "លុបបន្ទប់"
+    },
+    "roomCard": {
+      "idBadge": "លេខសម្គាល់៖ {id}",
+      "guests": "ភ្ញៀវ {count} នាក់",
+      "floor": "ជាន់ទី {number}",
+      "baseRate": "តម្លៃមូលដ្ឋាន៖",
+      "perNight": "/ យប់",
+      "editRoom": "កែសម្រួលបន្ទប់",
+      "deleteRoom": "លុបបន្ទប់"
+    },
+    "roomFormModal": {
+      "tooManyImages": "អ្នកអាចផ្ទុកឡើងបានអតិបរមា ១០ រូបភាព",
+      "tooManyImagesTitle": "រូបភាពច្រើនពេក",
+      "unsupportedFileType": "{fileName} មិនត្រូវបានគាំទ្រទេ។ សូមប្រើតែ JPG ឬ PNG ប៉ុណ្ណោះ។",
+      "fileTooLarge": "{fileName} លើសទំហំកំណត់ 5MB។",
+      "property": "អចលនទ្រព្យ",
+      "selectProperty": "ជ្រើសរើសអចលនទ្រព្យ",
+      "roomType": "ប្រភេទបន្ទប់",
+      "selectRoomType": "ជ្រើសរើសប្រភេទបន្ទប់",
+      "roomImages": "រូបភាពបន្ទប់",
+      "maxImagesHint": "(អតិបរមា ១០)",
+      "cover": "គម្រប",
+      "saved": "បានរក្សាទុក",
+      "removeImage": "លុបរូបភាព",
+      "newPhotoAlt": "មើលរូបថតបន្ទប់ថ្មី",
+      "clickToUpload": "ចុចដើម្បីផ្ទុករូបភាពឡើង",
+      "roomName": "ឈ្មោះបន្ទប់",
+      "roomNamePlaceholder": "ឧ. Deluxe King Suite",
+      "pricePerNight": "តម្លៃ / យប់ ($)",
+      "maxGuests": "ភ្ញៀវអតិបរមា",
+      "totalRooms": "បន្ទប់សរុប",
+      "floorNumber": "លេខជាន់",
+      "floorNumberPlaceholder": "ឧ. 3",
+      "description": "ការពិពណ៌នា",
+      "descriptionPlaceholder": "ការពិពណ៌នាបន្ទប់សង្ខេប...",
+      "cancel": "បោះបង់"
+    },
+    "propertyPagination": {
+      "ariaLabel": "ការបែងចែកទំព័រ"
+    },
+    "paymentFilterBar": {
+      "tabs": {
+        "all": "ទាំងអស់",
+        "pending": "កំពុងរង់ចាំផ្ទៀងផ្ទាត់",
+        "submitted": "បានដាក់ស្នើ",
+        "confirmed": "បានបញ្ជាក់ / បានទូទាត់",
+        "cancelled": "បានលុបចោល / បរាជ័យ",
+        "refunded": "បានសងវិញ"
+      }
+    },
+    "paymentMethodCard": {
+      "scanToPay": "ស្កេនដើម្បីទូទាត់",
+      "khqrWithMethod": "KHQR · {method}",
+      "khqrOnly": "KHQR",
+      "qrAlt": "កូដ Bakong KHQR",
+      "qrNotConfigured": "មិនទាន់បានកំណត់ QR ទេ",
+      "bank": "ធនាគារ",
+      "merchant": "អ្នកលក់",
+      "accountNumber": "លេខគណនី",
+      "bakongId": "លេខសម្គាល់ Bakong",
+      "manualHint": "មិនទាន់មានកូដ QR ទេ? ផ្ទេរប្រាក់ដោយផ្ទាល់ទៅលេខគណនីខាងលើ។",
+      "instructionHint": "បើកកម្មវិធីធនាគាររបស់អ្នក · ស្កេនកូដ QR នេះ · ផ្ទេរប្រាក់តាមចំនួនត្រឹមត្រូវ"
+    },
+    "receiptUploadForm": {
+      "fileTooLarge": "ឯកសារធំពេក។ ទំហំអតិបរមាគឺ {size}MB។",
+      "uploadAriaLabel": "ផ្ទុកបង្កាន់ដៃទូទាត់ឡើង",
+      "dropHeading": "ទម្លាក់វានៅទីនេះ",
+      "uploadHeading": "ផ្ទុកបង្កាន់ដៃរបស់អ្នកឡើង",
+      "dragDropHint": "អូសនិងទម្លាក់ ឬចុចដើម្បីរកមើល។",
+      "formatsHint": "PNG, JPG, PDF — អតិបរមា {size}MB។",
+      "previewAlt": "មើលបង្កាន់ដៃជាមុន",
+      "removeButton": "លុប",
+      "removeFileAriaLabel": "លុបឯកសារ",
+      "referenceLabel": "លេខយោងប្រតិបត្តិការ",
+      "referenceOptional": "(មិនចាំបាច់)",
+      "referencePlaceholder": "ឧ. លេខយោងពីកម្មវិធីធនាគាររបស់អ្នក",
+      "submitButton": "ដាក់ស្នើការទូទាត់សម្រាប់ការត្រួតពិនិត្យ"
+    },
+    "createPaymentAccountForm": {
+      "requiredFieldsMessage": "សូមបំពេញគ្រប់ប្រអប់ដែលត្រូវការទាំងអស់។",
+      "requiredFieldsTitle": "ប្រអប់ដែលត្រូវការ",
+      "requiredQrMessage": "សូមផ្ទុករូបភាពកូដ QR ឡើង។",
+      "requiredQrTitle": "ត្រូវការ QR",
+      "successTitle": "ជោគជ័យ",
+      "errorTitle": "កំហុស",
+      "titleUpdate": "ធ្វើបច្ចុប្បន្នភាពគណនីទូទាត់",
+      "titleAdd": "បន្ថែមគណនីទូទាត់",
+      "selectBankLabel": "ជ្រើសរើសធនាគារ",
+      "chooseBankPlaceholder": "-- ជ្រើសរើសធនាគារ --",
+      "banks": {
+        "aba": "ធនាគារ ABA",
+        "acleda": "ធនាគារ Acleda",
+        "wing": "ធនាគារ Wing"
+      },
+      "bankLockedHint": "អ្នកផ្តល់សេវាធនាគារមិនអាចផ្លាស់ប្តូរបានទេ។",
+      "accountNameLabel": "ឈ្មោះគណនី",
+      "accountNamePlaceholder": "ឧ. SOK SAN",
+      "accountNumberLabel": "លេខគណនី",
+      "accountNumberPlaceholder": "ឧ. 000 111 222",
+      "qrCodeLabel": "កូដ QR ធនាគារ",
+      "uploadImagesHint": "ចុចដើម្បីផ្ទុករូបភាពឡើង",
+      "uploadFormatsHint": "PNG, JPG រហូតដល់ 10MB (អាចជ្រើសរើសច្រើន)",
+      "qrPreviewAlt": "មើល QR ជាមុន",
+      "newQrSelected": "បានជ្រើសរើស QR ថ្មី",
+      "clickToChangeQr": "ចុចដើម្បីផ្លាស់ប្តូររូបភាព QR",
+      "cancelButton": "បោះបង់",
+      "savingButton": "កំពុងរក្សាទុក...",
+      "updateButton": "ធ្វើបច្ចុប្បន្នភាពឥឡូវនេះ",
+      "saveButton": "រក្សាទុក"
+    },
+    "paymentAccountFilter": {
+      "tabs": {
+        "all": "ទាំងអស់",
+        "active": "សកម្ម",
+        "deactivated": "បានផ្អាក"
+      }
+    },
+    "propertyCard": {
+      "badgePendingChanges": "ការផ្លាស់ប្តូរកំពុងរង់ចាំ",
+      "statusUnknown": "មិនស្គាល់",
+      "waitingApproval": "កំពុងរង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង",
+      "submittedOn": "បានដាក់ស្នើនៅ {date}",
+      "rejectedByAdmin": "បានបដិសេធដោយអ្នកគ្រប់គ្រង",
+      "reason": "ហេតុផល៖ {reason}",
+      "underReview": "កំពុងពិនិត្យដោយអ្នកគ្រប់គ្រង",
+      "deactivatedHidden": "បានផ្អាក — លាក់ពីភ្ញៀវ",
+      "country": "កម្ពុជា",
+      "revenue": "ចំណូល",
+      "rooms": "បន្ទប់",
+      "bookings": "ការកក់",
+      "edit": "កែសម្រួល",
+      "moreOptions": "ជម្រើសបន្ថែម",
+      "deactivate": "ផ្អាក",
+      "activate": "ធ្វើឱ្យសកម្ម"
+    },
+    "bookingForm": {
+      "heading": "ព័ត៌មានភ្ញៀវ",
+      "subheading": "បញ្ចូលព័ត៌មានលម្អិតភ្ញៀវសំខាន់សម្រាប់ការកក់នេះ។",
+      "firstNameLabel": "នាមខ្លួន",
+      "firstNamePlaceholder": "John",
+      "lastNameLabel": "នាមត្រកូល",
+      "lastNamePlaceholder": "Doe",
+      "emailLabel": "អាសយដ្ឋានអ៊ីមែល",
+      "emailPlaceholder": "john@example.com",
+      "floorPreferenceLabel": "ចំណូលចិត្តជាន់",
+      "optionalNotGuaranteed": "(មិនចាំបាច់ មិនធានា)",
+      "noPreference": "គ្មានចំណូលចិត្ត",
+      "groundFloor": "ជាន់ផ្ទាល់ដី",
+      "lowerFloor": "ជាន់ក្រោម",
+      "higherFloor": "ជាន់ខ្ពស់",
+      "specialRequestsLabel": "សំណើពិសេស",
+      "optional": "(មិនចាំបាច់)",
+      "specialRequestsPlaceholder": "សំណើ ឬចំណូលចិត្តពិសេសណាមួយ...",
+      "paymentMethodLabel": "វិធីទូទាត់",
+      "loadingPaymentMethods": "កំពុងផ្ទុកវិធីទូទាត់…",
+      "noPaymentMethods": "ម្ចាស់ផ្ទះនេះមិនទាន់បានកំណត់វិធីទូទាត់ទេ។ សូមទាក់ទងពួកគេមុនពេលកក់។",
+      "floorPreferenceNote": "ចំណូលចិត្តជាន់៖ {label} (មិនធានា)។",
+      "confirmBooking": "បញ្ជាក់ការកក់ →",
+      "errors": {
+        "firstNameRequired": "ត្រូវការនាមខ្លួន។",
+        "lastNameRequired": "ត្រូវការនាមត្រកូល។",
+        "emailRequired": "ត្រូវការអ៊ីមែល។",
+        "emailInvalid": "ទម្រង់អ៊ីមែលមិនត្រឹមត្រូវ។",
+        "checkInRequired": "ត្រូវការកាលបរិច្ឆេទចូលស្នាក់នៅ។",
+        "checkOutRequired": "ត្រូវការកាលបរិច្ឆេទចេញពីស្នាក់នៅ។",
+        "checkOutAfterCheckIn": "ថ្ងៃចេញត្រូវក្រោយថ្ងៃចូល។",
+        "paymentMethodRequired": "សូមជ្រើសរើសវិធីទូទាត់មួយ។"
+      }
+    },
+    "bookingCard": {
+      "roomFallback": "បន្ទប់",
+      "reservationPrefix": "RES",
+      "propertyFallback": "អចលនទ្រព្យ",
+      "checkInLabel": "ចូល",
+      "checkOutLabel": "ចេញ",
+      "nights": "{count} យប់",
+      "paymentLabel": "ការទូទាត់៖ {status}",
+      "totalAmount": "ចំនួនទឹកប្រាក់សរុប",
+      "reupload": "ផ្ទុកឡើងវិញ",
+      "payNow": "ទូទាត់ឥឡូវនេះ",
+      "bookAgain": "កក់ម្តងទៀត",
+      "details": "ព័ត៌មានលម្អិត",
+      "viewDetails": "មើលព័ត៌មានលម្អិត",
+      "receipt": "បង្កាន់ដៃ",
+      "cancelBooking": "លុបចោលការកក់"
+    },
+    "refundStatusBadge": {
+      "ariaLabel": "ស្ថានភាពសងវិញ៖ {label}",
+      "status": {
+        "notRequested": "គ្មានការសងវិញ",
+        "pending": "កំពុងរង់ចាំសងវិញ",
+        "processing": "កំពុងដំណើរការ",
+        "approved": "បានអនុម័តការសងវិញ",
+        "refunded": "បានសងវិញ",
+        "rejected": "បានបដិសេធការសងវិញ"
+      }
+    },
+    "approvalFilter": {
+      "allRequests": "សំណើទាំងអស់"
+    },
+    "approvalSearch": {
+      "placeholder": "ស្វែងរកតាមឈ្មោះអចលនទ្រព្យ ម្ចាស់ផ្ទះ ឬទីតាំង...",
+      "clearSearch": "សម្អាតការស្វែងរក"
+    },
+    "approvalTable": {
+      "propertyDetail": "ព័ត៌មានលម្អិតអចលនទ្រព្យ",
+      "hostOwner": "ម្ចាស់ផ្ទះ / ម្ចាស់",
+      "geographicLocation": "ទីតាំងភូមិសាស្ត្រ",
+      "auditStatus": "ស្ថានភាពត្រួតពិនិត្យ",
+      "actions": "សកម្មភាព",
+      "unnamedProperty": "អចលនទ្រព្យគ្មានឈ្មោះ",
+      "standardListing": "បញ្ជីស្តង់ដារ",
+      "unknownHost": "ម្ចាស់ផ្ទះមិនស្គាល់",
+      "noEmailProvided": "គ្មានអ៊ីមែលផ្តល់ជូន",
+      "cambodia": "កម្ពុជា",
+      "approve": "អនុម័ត",
+      "reject": "បដិសេធ",
+      "editStatus": "កែសម្រួលស្ថានភាព",
+      "setToPending": "កំណត់ជាកំពុងរង់ចាំ",
+      "approveListing": "អនុម័តបញ្ជី",
+      "rejectListing": "បដិសេធបញ្ជី"
+    },
+    "userDetailModal": {
+      "title": "ប្រវត្តិរូបអ្នកប្រើប្រាស់",
+      "idPrefix": "លេខសម្គាល់ #",
+      "email": "អ៊ីមែល",
+      "emailVerified": "អ៊ីមែលបានផ្ទៀងផ្ទាត់",
+      "verified": "បានផ្ទៀងផ្ទាត់",
+      "phone": "ទូរស័ព្ទ",
+      "gender": "ភេទ",
+      "dateOfBirth": "ថ្ងៃខែឆ្នាំកំណើត",
+      "address": "អាសយដ្ឋាន",
+      "lastLogin": "ចូលចុងក្រោយ",
+      "joined": "ចូលរួមនៅ",
+      "close": "បិទ"
+    },
+    "wishlistCard": {
+      "removeFromWishlist": "ដកចេញពីបញ្ជីប្រាថ្នា",
+      "night": "យប់"
+    },
+    "toastContainer": {
+      "dismiss": "បិទការជូនដំណឹង"
+    },
+    "appAlert": {
+      "dismiss": "បិទការជូនដំណឹង"
+    },
+    "roomFilter": {
+      "filters": "តម្រង",
+      "resetAll": "កំណត់ឡើងវិញទាំងអស់",
+      "maxNightlyBudget": "ថវិកាអតិបរមាក្នុងមួយយប់",
+      "roomCapacity": "ចំណុះបន្ទប់",
+      "facilitiesAmenities": "សម្ភារៈ & កន្លែងសម្រាប់ភ្ញៀវ",
+      "capacity": {
+        "oneGuest": "ភ្ញៀវ ១ នាក់",
+        "twoGuests": "ភ្ញៀវ ២ នាក់",
+        "threeGuests": "ភ្ញៀវ ៣ នាក់",
+        "fourPlusGuests": "ភ្ញៀវ ៤+ នាក់"
+      },
+      "facilities": {
+        "wifi": "វិហ្វីឥតគិតថ្លៃ",
+        "ac": "ម៉ាស៊ីនត្រជាក់",
+        "breakfast": "អាហារពេលព្រឹករួមបញ្ចូល",
+        "smartTv": "ទូរទស្សន៍ឆ្លាតវៃ",
+        "balcony": "រានហាល",
+        "privateBathroom": "បន្ទប់ទឹកឯកជន"
+      }
+    },
+    "availabilityCalendar": {
+      "loading": "កំពុងផ្ទុកភាពទំនេរ...",
+      "loadFailed": "មិនអាចផ្ទុកភាពទំនេរបានទេ។",
+      "comingSoonTitle": "ប្រតិទិនភាពទំនេរនឹងមកដល់ឆាប់ៗនេះ",
+      "comingSoonDesc": "ចំណុចប្រទាក់ភាពទំនេរមិនទាន់រួចរាល់ទេ។ ប្រតិទិននឹងបង្ហាញនៅទីនេះនៅពេលភ្ជាប់ជាមួយប្រព័ន្ធខាងក្រោយ។",
+      "availableNights": "យប់ទំនេរ",
+      "bookedNights": "យប់បានកក់",
+      "occupancy": "អត្រាកាន់កាប់",
+      "bookedClickForDetails": "បានកក់ — ចុចដើម្បីមើលព័ត៌មានលម្អិត",
+      "booked": "បានកក់",
+      "blockedByOwner": "បានទប់ស្កាត់ដោយម្ចាស់ផ្ទះ — ចុចដើម្បីដោះការទប់ស្កាត់",
+      "unavailable": "មិនអាចប្រើបាន",
+      "bookingsPrefix": "ការកក់ —",
+      "bookingPrefix": "ការកក់ —",
+      "blockedDatePrefix": "កាលបរិច្ឆេទត្រូវបានទប់ស្កាត់ —",
+      "availableDatePrefix": "កាលបរិច្ឆេទទំនេរ —",
+      "close": "បិទ",
+      "guestFallback": "ភ្ញៀវ",
+      "checkInLabel": "ចូលស្នាក់នៅ៖",
+      "checkOutLabel": "ចេញពីស្នាក់នៅ៖",
+      "statusLabel": "ស្ថានភាព៖",
+      "viewFullReservation": "មើលការកក់ពេញលេញ →",
+      "blockedForMaintenance": "បានទប់ស្កាត់សម្រាប់ការថែទាំ / ការកក់ខាងក្រៅ",
+      "unblockDate": "ដោះការទប់ស្កាត់",
+      "dateAvailableForBookings": "កាលបរិច្ឆេទនេះអាចប្រើសម្រាប់ការកក់របស់ភ្ញៀវ",
+      "blockDate": "ទប់ស្កាត់កាលបរិច្ឆេទ",
+      "openRoomCalendarHint": "បើកប្រតិទិនបន្ទប់ជាក់លាក់មួយដើម្បីទប់ស្កាត់កាលបរិច្ឆេទ",
+      "selectedDates": "កាលបរិច្ឆេទដែលបានជ្រើសរើស",
+      "selectEndDate": "ជ្រើសរើសកាលបរិច្ឆេទបញ្ចប់",
+      "legendAvailable": "ទំនេរ",
+      "legendBooked": "បានកក់",
+      "legendBlocked": "បានទប់ស្កាត់",
+      "legendSelected": "បានជ្រើសរើស",
+      "legendToday": "ថ្ងៃនេះ",
+      "upcomingStays": "ការស្នាក់នៅខាងមុខ",
+      "noUpcomingBookings": "គ្មានការកក់ណាមួយនៅពេលនេះទេ។",
+      "nightsBooked": "{count} យប់ត្រូវបានកក់",
+      "dateUnblocked": "បានដោះការទប់ស្កាត់កាលបរិច្ឆេទដោយជោគជ័យ",
+      "dateBlocked": "បានទប់ស្កាត់កាលបរិច្ឆេទដោយជោគជ័យ",
+      "updateBlockFailed": "មិនអាចធ្វើបច្ចុប្បន្នភាពស្ថានភាពទប់ស្កាត់បានទេ។",
+      "rangeIncludesUnavailable": "ចន្លោះកាលបរិច្ឆេទដែលអ្នកបានជ្រើសរើសរួមបញ្ចូលកាលបរិច្ឆេទដែលមិនអាចប្រើបាន។ សូមជ្រើសរើសកាលបរិច្ឆេទផ្សេងទៀត។"
     }
   },
   "nav": {
@@ -405,6 +744,37 @@
       "passwordMismatch": "ពាក្យសម្ងាត់ថ្មី និងការបញ្ជាក់មិនដូចគ្នា",
       "profileImageType": "រូបភាពប្រវត្តិរូបត្រូវតែជា JPG, PNG ឬ WebP",
       "profileImageSize": "រូបភាពប្រវត្តិរូបត្រូវមានទំហំ ២MB ឬតូចជាងនេះ"
+    },
+    "tabs": {
+      "aboutMe": "អំពីខ្ញុំ",
+      "pastTrips": "ដំណើរកន្លងមក",
+      "connections": "ការតភ្ជាប់"
+    },
+    "editBtn": "កែសម្រួល",
+    "completeProfile": {
+      "title": "បំពេញប្រវត្តិរូបរបស់អ្នក",
+      "description": "ប្រវត្តិរូបស្រុកយើងរបស់អ្នកជាផ្នែកសំខាន់នៃរាល់ការកក់។ បំពេញវា ដើម្បីជួយម្ចាស់ផ្ទះ និងភ្ញៀវផ្សេងស្គាល់អ្នក។",
+      "getStarted": "ចាប់ផ្តើម"
+    },
+    "reviews": {
+      "customer": "បង្ហាញមតិយោបល់ដែលខ្ញុំបានសរសេរ",
+      "owner": "បង្ហាញមតិយោបល់អំពីអចលនទ្រព្យរបស់ខ្ញុំ"
+    },
+    "connections": {
+      "title": "ការតភ្ជាប់សង្គម",
+      "description": "គ្រប់គ្រងគណនីដែលបានភ្ជាប់។ ចូលភ្លាមៗ និងការពារគណនីស្រុកយើង Booking របស់អ្នក។",
+      "googleTitle": "គណនី Google",
+      "googleDesc": "អនុញ្ញាតឱ្យចូលមួយចុច និងចុះឈ្មោះ។ សុវត្ថិភាព និងមានសន្តិសុខ។",
+      "facebookTitle": "គណនី Facebook",
+      "facebookDesc": "ភ្ជាប់ប្រវត្តិរូប Facebook របស់អ្នក ដើម្បីចូលការកក់ភ្លាមៗ។",
+      "connected": "បានភ្ជាប់",
+      "connect": "ភ្ជាប់",
+      "connecting": "កំពុងភ្ជាប់...",
+      "disconnect": "ផ្ដាច់",
+      "disconnectTitle": "ផ្ដាច់គណនី?",
+      "disconnectConfirm": "តើអ្នកប្រាកដថាចង់ផ្ដាច់គណនីស្រុកយើង Booking ពីគណនី {provider} នេះទេ? អ្នកនឹងមិនអាចចូលដោយប្រើវាបានទៀតទេ។",
+      "connectSuccess": "គណនី {provider} បានភ្ជាប់ដោយជោគជ័យ!",
+      "disconnectSuccess": "គណនី {provider} បានផ្ដាច់។"
     }
   },
   "notifications": {
@@ -439,7 +809,8 @@
       "unreadTitle": "មិនមានការជូនដំណឹងមិនទាន់អាន",
       "readTitle": "មិនមានការជូនដំណឹងបានអាន",
       "allMessage": "បច្ចុប្បន្នភាពសំខាន់ៗអំពីការកក់ ការទូទាត់ អចលនទ្រព្យ និងគណនីនឹងបង្ហាញនៅទីនេះ។",
-      "filteredMessage": "សាកល្បងប្តូរតម្រង ដើម្បីមើលការជូនដំណឹងផ្សេងទៀត។"
+      "filteredMessage": "សាកល្បងប្តូរតម្រង ដើម្បីមើលការជូនដំណឹងផ្សេងទៀត។",
+      "exploreProperties": "រុករកអចលនទ្រព្យ"
     },
     "types": {
       "reservation_created": "បានបង្កើតការកក់",
@@ -458,6 +829,24 @@
       "markAllRead": "បានសម្គាល់ការជូនដំណឹងទាំងអស់ថាអាន",
       "markRead": "បានសម្គាល់ការជូនដំណឹងថាអាន",
       "archived": "បានដាក់ការជូនដំណឹងក្នុងបណ្ណសារ"
+    },
+    "actions": {
+      "viewDetails": "មើលព័ត៌មានលម្អិត",
+      "viewBooking": "មើលការកក់",
+      "viewPayment": "មើលការទូទាត់",
+      "viewProperty": "មើលអចលនទ្រព្យ"
+    },
+    "metadata": {
+      "reservationId": "លេខសម្គាល់ការកក់",
+      "propertyName": "ឈ្មោះអចលនទ្រព្យ",
+      "propertyId": "លេខសម្គាល់អចលនទ្រព្យ",
+      "amount": "ចំនួនទឹកប្រាក់",
+      "checkInDate": "ថ្ងៃចូល",
+      "checkOutDate": "ថ្ងៃចេញ",
+      "status": "ស្ថានភាព"
+    },
+    "detailModal": {
+      "title": "ព័ត៌មានលម្អិតការជូនដំណឹង"
     },
     "errors": {
       "load": "មិនអាចផ្ទុកការជូនដំណឹងបានទេ",
@@ -514,6 +903,21 @@
       "reviews": "មតិយោបល់",
       "subtitle": "កន្លែងស្នាក់នៅដែលត្រូវបានជ្រើសរើសយ៉ាងសម្រិតសម្រាំង ផ្អែកលើមតិយោបល់ល្អៗ និងបទពិសោធន៍ភ្ញៀវដ៏អស្ចារ្យ",
       "exploreAll": "រុករកកន្លែងស្នាក់នៅទាំងអស់",
+      "loading": "កំពុងផ្ទុកកន្លែងស្នាក់នៅពិសេស...",
+      "emptyTitle": "មិនមានកន្លែងស្នាក់នៅ",
+      "emptyDesc": "មិនមានកន្លែងស្នាក់នៅដែលបានអនុម័តក្នុងប្រភេទនេះទេ។ សាកល្បងជ្រើសរើសផ្ទាំងផ្សេង ឬចុចតំណរុករក ដើម្បីស្វែងរកទីតាំងទាំងអស់។",
+      "guestFavorite": "ចំណូលចិត្តភ្ញៀវ",
+      "newListing": "ថ្មី",
+      "new": "ថ្មី",
+      "freeCancellation": "បោះបង់ដោយឥតគិតថ្លៃ",
+      "loginToSave": "សូមចូលគណនី ដើម្បីរក្សាទុកអចលនទ្រព្យក្នុងបញ្ជីប្រាថ្នា",
+      "addedToWishlist": "បានបន្ថែម \"{name}\" ក្នុងបញ្ជីប្រាថ្នា!",
+      "addedToWishlistGeneric": "បានបន្ថែមក្នុងបញ្ជីប្រាថ្នា!",
+      "removedFromWishlist": "បានដក \"{name}\" ចេញពីបញ្ជីប្រាថ្នា!",
+      "removedFromWishlistGeneric": "បានដកចេញពីបញ្ជីប្រាថ្នា!",
+      "wishlistError": "មិនអាចធ្វើបច្ចុប្បន្នភាពបញ្ជីប្រាថ្នាសម្រាប់ \"{name}\"",
+      "wishlistErrorGeneric": "មិនអាចធ្វើបច្ចុប្បន្នភាពបញ្ជីប្រាថ្នា",
+      "stay": "កន្លែងស្នាក់នៅ",
       "badges": {
         "topRated": "វាយតម្លៃខ្ពស់បំផុត",
         "mostPopular": "ពេញនិយមបំផុត",
@@ -1300,6 +1704,517 @@
         "guestRelations": "ទំនាក់ទំនងភ្ញៀវ"
       }
     },
+    "reservationsPage": {
+      "title": "សេចក្តីសង្ខេបការកក់",
+      "subtitle": "ទិដ្ឋភាពទូទៅនៃការកក់ថ្មីៗពីម៉ាស៊ីនមេ។",
+      "refresh": "ផ្ទុកឡើងវិញ",
+      "refreshing": "កំពុងផ្ទុកឡើងវិញ...",
+      "totalEarnings": "ចំណូលសរុប",
+      "totalBookings": "ការកក់សរុប",
+      "pendingAction": "ត្រូវការសកម្មភាព",
+      "loading": "កំពុងផ្ទុកការកក់...",
+      "loadError": "មិនអាចផ្ទុកការកក់បានទេ។",
+      "noReservations": "រកមិនឃើញការកក់ថ្មីៗទេ។",
+      "to": "ដល់",
+      "columns": {
+        "bookingId": "លេខកក់",
+        "guest": "ភ្ញៀវ",
+        "property": "អចលនទ្រព្យ",
+        "amount": "ចំនួនទឹកប្រាក់",
+        "date": "កាលបរិច្ឆេទ",
+        "status": "ស្ថានភាព"
+      }
+    },
+    "reservationDetail": {
+      "backToList": "ត្រឡប់ទៅបញ្ជី",
+      "loading": "កំពុងផ្ទុកព័ត៌មានលម្អិតការកក់...",
+      "loadError": "មិនអាចផ្ទុកព័ត៌មានលម្អិតការកក់បានទេ។",
+      "reservationHash": "ការកក់ #",
+      "guestInformation": "ព័ត៌មានភ្ញៀវ",
+      "fullName": "ឈ្មោះពេញ",
+      "phoneNumber": "លេខទូរស័ព្ទ",
+      "emailAddress": "អាសយដ្ឋានអ៊ីមែល",
+      "stayDetails": "ព័ត៌មានលម្អិតការស្នាក់នៅ",
+      "property": "អចលនទ្រព្យ",
+      "room": "បន្ទប់",
+      "guests": "ភ្ញៀវ",
+      "checkIn": "ចូលស្នាក់នៅ",
+      "checkOut": "ចេញពីស្នាក់នៅ",
+      "nights": "ចំនួនយប់",
+      "pricePerNight": "តម្លៃក្នុងមួយយប់",
+      "specialRequest": "សំណើពិសេស",
+      "cancellationReason": "មូលហេតុនៃការបោះបង់",
+      "bookingSummary": "សេចក្តីសង្ខេបការកក់",
+      "totalAmount": "ចំនួនទឹកប្រាក់សរុប",
+      "bookingId": "លេខកក់",
+      "createdAt": "បង្កើតនៅ",
+      "lastUpdated": "ធ្វើបច្ចុប្បន្នភាពចុងក្រោយ",
+      "viewProperty": "មើលអចលនទ្រព្យ"
+    },
+    "bookingCalendarPage": {
+      "title": "ប្រតិទិនការកក់",
+      "subtitle": "ប្រតិទិនភាពទំនេររបស់អចលនទ្រព្យ",
+      "selectProperty": "ជ្រើសរើសអចលនទ្រព្យ",
+      "loadingProperties": "កំពុងផ្ទុកអចលនទ្រព្យរបស់អ្នក...",
+      "loadError": "មិនអាចផ្ទុកអចលនទ្រព្យរបស់អ្នកបានទេ។",
+      "retry": "ព្យាយាមម្តងទៀត",
+      "noProperties": "អ្នកមិនទាន់មានអចលនទ្រព្យនៅឡើយទេ។ បន្ថែមអចលនទ្រព្យដើម្បីមើលប្រតិទិនការកក់នៅទីនេះ។"
+    },
+    "manageRoomsPage": {
+      "title": "បន្ទប់",
+      "subtitle": "គ្រប់គ្រងបន្ទប់នៅគ្រប់អចលនទ្រព្យរបស់អ្នក។",
+      "addRoom": "បន្ថែមបន្ទប់",
+      "editRoom": "កែសម្រួលបន្ទប់",
+      "saveRoom": "រក្សាទុកបន្ទប់",
+      "saveChanges": "រក្សាទុកការផ្លាស់ប្តូរ",
+      "searchPlaceholder": "ស្វែងរកតាមឈ្មោះបន្ទប់ ប្រភេទ ឬអចលនទ្រព្យ...",
+      "clearSearch": "សម្អាតការស្វែងរក",
+      "resetFilters": "កំណត់តម្រងឡើងវិញ",
+      "dismiss": "បិទ",
+      "noRoomsFoundTitle": "រកមិនឃើញបន្ទប់",
+      "noRoomsTitle": "រកមិនឃើញបន្ទប់",
+      "noRoomsFoundMessage": "សាកល្បងពាក្យស្វែងរកផ្សេង ឬសម្អាតតម្រង។",
+      "noRoomsMessage": "មិនទាន់មានបន្ទប់ត្រូវបានបន្ថែមទេ។ ចុចបន្ថែមបន្ទប់ដើម្បីចាប់ផ្តើម។",
+      "previous": "មុន",
+      "next": "បន្ទាប់",
+      "sort": {
+        "default": "លំដាប់លំដោយធម្មតា",
+        "priceLow": "តម្លៃ៖ ទាបទៅខ្ពស់",
+        "priceHigh": "តម្លៃ៖ ខ្ពស់ទៅទាប",
+        "newest": "ថ្មីបំផុត",
+        "idAsc": "លេខសម្គាល់បន្ទប់ (លំដាប់ឡើង)"
+      },
+      "errors": {
+        "floorRequired": "អចលនទ្រព្យនេះមានបន្ទប់នៅជាន់ផ្សេងគ្នារួចហើយ សូមកំណត់ជាន់សម្រាប់បន្ទប់នេះ។",
+        "floorNotNumber": "លេខជាន់ត្រូវតែជាលេខ។",
+        "floorNotInteger": "លេខជាន់ត្រូវតែជាចំនួនគត់ (គ្មានទសភាគ)។",
+        "floorTooLow": "លេខជាន់មិនអាចតិចជាង {min} បានទេ។",
+        "floorTooHigh": "លេខជាន់ហាក់ដូចជាខ្ពស់ពេក សូមពិនិត្យម្តងទៀត។",
+        "chooseProperty": "សូមជ្រើសរើសអចលនទ្រព្យមួយ។",
+        "typeRequired": "ត្រូវការប្រភេទបន្ទប់។",
+        "nameRequired": "ត្រូវការឈ្មោះបន្ទប់។",
+        "priceRequired": "ត្រូវការតម្លៃ។"
+      },
+      "toasts": {
+        "roomAdded": "បានបន្ថែមបន្ទប់ដោយជោគជ័យ។",
+        "roomUpdated": "បានធ្វើបច្ចុប្បន្នភាពបន្ទប់ដោយជោគជ័យ។",
+        "roomDeleted": "បានលុបបន្ទប់ដោយជោគជ័យ។",
+        "roomDeleteFailed": "មិនអាចលុបបន្ទប់បានទេ។ សូមព្យាយាមម្តងទៀត។",
+        "imageRemoveFailed": "រូបភាពមួយចំនួនមិនអាចលុបបានទេ។ សូមព្យាយាមម្តងទៀត។",
+        "imageUploadFailed": "បានធ្វើបច្ចុប្បន្នភាពបន្ទប់ ប៉ុន្តែរូបភាពថ្មីមិនអាចផ្ទុកឡើងបានទេ។"
+      }
+    },
+    "roomDetailPage": {
+      "loading": "កំពុងផ្ទុកព័ត៌មានលម្អិតបន្ទប់...",
+      "loadError": "មិនអាចផ្ទុកព័ត៌មានលម្អិតបន្ទប់បានទេ។",
+      "retry": "ព្យាយាមម្តងទៀត",
+      "backToRooms": "ត្រឡប់ទៅបន្ទប់",
+      "roomDetail": "ព័ត៌មានលម្អិតបន្ទប់",
+      "photosCount": "រូបភាព {count}",
+      "pricePerNight": "តម្លៃក្នុងមួយយប់",
+      "maxGuests": "ភ្ញៀវអតិបរមា",
+      "totalRooms": "បន្ទប់សរុប",
+      "description": "ការពិពណ៌នា",
+      "noDescription": "មិនទាន់មានការពិពណ៌នាទេ។",
+      "tabAvailability": "ភាពទំនេរ",
+      "tabBookings": "ការកក់",
+      "tabImages": "រូបភាព",
+      "availabilityCalendar": "ប្រតិទិនភាពទំនេរបន្ទប់",
+      "loadingBookings": "កំពុងផ្ទុកការកក់...",
+      "noBookings": "មិនទាន់មានការកក់ទេ",
+      "noBookingsDesc": "ការកក់សម្រាប់បន្ទប់នេះនឹងបង្ហាញនៅទីនេះ។",
+      "guest": "ភ្ញៀវ",
+      "checkIn": "ចូលស្នាក់នៅ",
+      "checkOut": "ចេញពីស្នាក់នៅ",
+      "nightsCount": "{count} យប់",
+      "total": "សរុប",
+      "imagesCount": "{count} រូបភាព",
+      "uploading": "កំពុងផ្ទុកឡើង...",
+      "uploadImages": "ផ្ទុករូបភាពឡើង",
+      "noImages": "មិនទាន់មានរូបភាពទេ",
+      "noImagesDesc": "ផ្ទុករូបភាពឡើងដើម្បីបង្ហាញបន្ទប់នេះ។",
+      "cover": "គម្រប",
+      "setAsCover": "កំណត់ជាគម្រប",
+      "deleteImage": "លុបរូបភាព",
+      "updatedTitle": "បានធ្វើបច្ចុប្បន្នភាព",
+      "updateFailed": "មិនអាចធ្វើបច្ចុប្បន្នភាពបន្ទប់បានទេ។",
+      "updateFailedTitle": "ការធ្វើបច្ចុប្បន្នភាពបរាជ័យ",
+      "imagesUploaded": "បានផ្ទុករូបភាពឡើងដោយជោគជ័យ។",
+      "uploadedTitle": "បានផ្ទុកឡើង",
+      "imagesUploadFailed": "មិនអាចផ្ទុករូបភាពឡើងបានទេ។",
+      "uploadFailedTitle": "ការផ្ទុកឡើងបរាជ័យ",
+      "imageDeleted": "បានលុបរូបភាព។",
+      "deletedTitle": "បានលុប",
+      "imageDeleteFailed": "មិនអាចលុបរូបភាពបានទេ។",
+      "deleteFailedTitle": "ការលុបបរាជ័យ",
+      "coverUpdated": "បានធ្វើបច្ចុប្បន្នភាពរូបភាពគម្រប។",
+      "coverUpdateFailed": "មិនអាចកំណត់រូបភាពគម្របបានទេ។",
+      "errorTitle": "កំហុស"
+    },
+    "paymentsPage": {
+      "title": "បញ្ជីគណនីហិរញ្ញវត្ថុ",
+      "subtitle": "ត្រួតពិនិត្យការទូទាត់ចូលរបស់ភ្ញៀវ និងដោះស្រាយសំណើសងប្រាក់វិញរបស់ភ្ញៀវ។",
+      "refreshData": "ផ្ទុកទិន្នន័យឡើងវិញ",
+      "confirmedEarnings": "ប្រាក់ចំណូលដែលបានបញ្ជាក់",
+      "totalRecords": "កំណត់ត្រាសរុប",
+      "awaitingVerification": "កំពុងរង់ចាំការផ្ទៀងផ្ទាត់",
+      "pendingRefunds": "ការសងប្រាក់វិញកំពុងរង់ចាំ",
+      "incomingReceipts": "បង្កាន់ដៃផ្ទៀងផ្ទាត់ដែលចូលមក",
+      "refundRequests": "សំណើសងប្រាក់វិញ",
+      "loadingRecords": "កំពុងផ្ទុកកំណត់ត្រាទិន្នន័យ...",
+      "noEntries": "គ្មានធាតុណាត្រូវនឹងតម្រងដែលបានជ្រើសរើសទេ។",
+      "paymentReference": "លេខយោងការទូទាត់៖",
+      "roomLabel": "បន្ទប់៖",
+      "noReasonSpecified": "មិនបានបញ្ជាក់ហេតុផល",
+      "to": "ដល់",
+      "reasonRequired": "សូមផ្តល់ហេតុផលនៃការបដិសេធ ឬលុបចោលសម្រាប់ភ្ញៀវ។",
+      "changeReservationStatus": "ផ្លាស់ប្តូរស្ថានភាពការកក់",
+      "confirmPayment": "បញ្ជាក់ការទូទាត់",
+      "approveRefund": "អនុម័តការសងប្រាក់វិញ",
+      "setStatusTo": "កំណត់ស្ថានភាពទៅជា {status}",
+      "confirmPaymentSlip": "បញ្ជាក់ស្លីបទូទាត់",
+      "confirmOperationPrompt": "តើអ្នកប្រាកដថាចង់បន្តប្រតិបត្តិការនេះទេ? វានឹងផ្លាស់ប្តូរសេចក្តីថ្លែងកំណត់ត្រាតាមពេលវេលាជាក់ស្តែងនៅលើប្រព័ន្ធគណនី។",
+      "cancel": "បោះបង់",
+      "yesProceed": "បាទ/ចាស ធ្វើបន្ត",
+      "modifyStatusReason": "កែប្រែហេតុផលនៃស្ថានភាព",
+      "rejectPaymentSlip": "បដិសេធស្លីបទូទាត់",
+      "rejectRefund": "បដិសេធការសងប្រាក់វិញ",
+      "changeStatusReasonPrompt": "សូមផ្តល់ហេតុផលសង្ខេបសម្រាប់ការផ្លាស់ប្តូរស្ថានភាពការកក់ទៅជា \"{status}\"។",
+      "rejectionFeedbackPrompt": "ផ្តល់មតិយោបល់ច្បាស់លាស់ដើម្បីជួយអ្នកប្រើប្រាស់យល់ពីលក្ខខណ្ឌនៃការលុបចោល ឬបដិសេធ។",
+      "specifyJustification": "បញ្ជាក់ហេតុផលកំណត់ត្រា",
+      "specifyReasonsPlaceholder": "បញ្ជាក់ហេតុផល...",
+      "justificationRequired": "ការព្រមាន៖ ត្រូវការបំពេញប្រអប់ហេតុផល។",
+      "confirmAction": "បញ្ជាក់សកម្មភាព",
+      "columns": {
+        "guestInfo": "ព័ត៌មានភ្ញៀវ",
+        "propertyRoom": "អចលនទ្រព្យ / បន្ទប់",
+        "amount": "ចំនួនទឹកប្រាក់",
+        "stayPeriod": "រយៈពេលស្នាក់នៅ",
+        "paymentStatus": "ស្ថានភាពទូទាត់",
+        "reservationStatus": "ស្ថានភាពការកក់",
+        "reservationAction": "សកម្មភាពការកក់",
+        "paymentAction": "សកម្មភាពទូទាត់",
+        "refundId": "លេខសំណើសងប្រាក់វិញ",
+        "refundAmount": "ចំនួនប្រាក់សង",
+        "reason": "ហេតុផល",
+        "status": "ស្ថានភាព",
+        "actions": "សកម្មភាព"
+      }
+    },
+    "paymentDetail": {
+      "backToList": "ត្រឡប់ទៅបញ្ជី",
+      "loadingRecords": "កំពុងផ្ទុកកំណត់ត្រាប្រតិបត្តិការ...",
+      "paymentNotFound": "រកមិនឃើញកំណត់ត្រាទូទាត់ទេ។",
+      "loadFailed": "មិនអាចផ្ទុកព័ត៌មានលម្អិតបានទេ។",
+      "guestInformation": "ព័ត៌មានភ្ញៀវ",
+      "fullName": "ឈ្មោះពេញ",
+      "phoneNumber": "លេខទូរស័ព្ទ",
+      "emailAddress": "អាសយដ្ឋានអ៊ីមែល",
+      "stayDetails": "ព័ត៌មានលម្អិតការស្នាក់នៅ",
+      "propertyName": "ឈ្មោះអចលនទ្រព្យ",
+      "room": "បន្ទប់",
+      "duration": "រយៈពេល",
+      "nightsSuffix": "យប់",
+      "checkInDate": "កាលបរិច្ឆេទចូលស្នាក់នៅ",
+      "checkOutDate": "កាលបរិច្ឆេទចេញពីស្នាក់នៅ",
+      "financialAudit": "ការត្រួតពិនិត្យហិរញ្ញវត្ថុ",
+      "amountRequested": "ចំនួនទឹកប្រាក់ស្នើសុំ",
+      "paymentMethod": "វិធីទូទាត់",
+      "bookingId": "លេខការកក់",
+      "transactionReference": "លេខយោងប្រតិបត្តិការ",
+      "requestedAt": "ស្នើសុំនៅ",
+      "paymentStatus": "ស្ថានភាពទូទាត់",
+      "reservationStatus": "ស្ថានភាពការកក់",
+      "customerRefundReason": "ហេតុផលសំណើសងប្រាក់វិញរបស់ភ្ញៀវ",
+      "refundRejectionReasonOwner": "ហេតុផលបដិសេធការសងប្រាក់វិញ (ការសម្រេចរបស់ម្ចាស់)",
+      "paymentRejectionReason": "ហេតុផលបដិសេធការទូទាត់",
+      "cancellationReason": "ហេតុផលលុបចោល",
+      "noCancellationDetails": "មិនបានផ្តល់ព័ត៌មានលម្អិត",
+      "reasonForRejectingPayment": "ហេតុផលនៃការបដិសេធការទូទាត់ *",
+      "stateRejectPaymentPlaceholder": "បញ្ជាក់ហេតុផលដែលអ្នកបដិសេធការទូទាត់នេះ...",
+      "reasonForRejectingRefund": "ហេតុផលនៃការបដិសេធការសងប្រាក់វិញ *",
+      "stateRejectRefundPlaceholder": "បញ្ជាក់ហេតុផលដែលអ្នកបដិសេធសំណើសងប្រាក់វិញនេះ...",
+      "customerSubmittedProof": "ភស្តុតាងដែលភ្ញៀវបានដាក់ស្នើ",
+      "paymentProof": "ភស្តុតាងទូទាត់",
+      "clickToViewFull": "ចុចដើម្បីមើលរូបភាពពេញ",
+      "placeholderGraphic": "រូបភាពគំរូ",
+      "fullPaymentProof": "ភស្តុតាងទូទាត់ពេញ",
+      "verificationNote": "កំណត់ចំណាំផ្ទៀងផ្ទាត់",
+      "verificationNoteDesc": "ទទួលយកតែភស្តុតាងទូទាត់ច្បាស់លាស់ និងត្រឹមត្រូវដែលបង្ហាញព័ត៌មានលម្អិតប្រតិបត្តិការប៉ុណ្ណោះ។",
+      "back": "ត្រឡប់ក្រោយ",
+      "rejecting": "កំពុងបដិសេធ...",
+      "approving": "កំពុងអនុម័ត...",
+      "confirmRejectPayment": "បញ្ជាក់ការបដិសេធការទូទាត់",
+      "rejectPayment": "បដិសេធការទូទាត់",
+      "confirmPayment": "បញ្ជាក់ការទូទាត់",
+      "confirmRejectRefund": "បញ្ជាក់ការបដិសេធការសងប្រាក់វិញ",
+      "rejectRefund": "បដិសេធការសងប្រាក់វិញ",
+      "approveRefund": "អនុម័តការសងប្រាក់វិញ",
+      "refundAmount": "ចំនួនប្រាក់សងវិញ",
+      "paymentColon": "ការទូទាត់៖",
+      "reservationColon": "ការកក់៖",
+      "paymentVerified": "បានផ្ទៀងផ្ទាត់ការទូទាត់ដោយជោគជ័យ!",
+      "approvedTitle": "បានអនុម័ត",
+      "verifyFailed": "មិនអាចផ្ទៀងផ្ទាត់ការទូទាត់បានទេ",
+      "enterRejectionReason": "សូមបញ្ចូលហេតុផលនៃការបដិសេធ។",
+      "validationError": "កំហុសក្នុងការផ្ទៀងផ្ទាត់",
+      "paymentRejected": "ការទូទាត់ត្រូវបានបដិសេធ។",
+      "rejectedTitle": "បានបដិសេធ",
+      "rejectFailed": "មិនអាចបដិសេធការទូទាត់បានទេ",
+      "refundApproved": "សំណើសងប្រាក់វិញត្រូវបានអនុម័តដោយជោគជ័យ!",
+      "refundApproveFailed": "មិនអាចអនុម័តការសងប្រាក់វិញបានទេ",
+      "enterRefundRejectionReason": "សូមបញ្ចូលហេតុផលសម្រាប់ការបដិសេធសំណើសងប្រាក់វិញនេះ។",
+      "refundRejected": "សំណើសងប្រាក់វិញត្រូវបានបដិសេធ។",
+      "refundRejectFailed": "មិនអាចបដិសេធការសងប្រាក់វិញបានទេ"
+    },
+    "paymentAccountsPage": {
+      "eyebrow": "មជ្ឈមណ្ឌលគ្រប់គ្រងការទូទាត់",
+      "title": "គណនីទូទាត់",
+      "subtitle": "គ្រប់គ្រងគណនីធនាគារ និងកូដ QR ទាំងអស់របស់អ្នកសម្រាប់ទទួលការទូទាត់ជាសាច់ប្រាក់ពីការកក់។",
+      "createAccount": "បង្កើតគណនី",
+      "active": "សកម្ម",
+      "deactivated": "បានផ្អាក",
+      "editAccount": "កែសម្រួលគណនី",
+      "deactivateAccount": "ផ្អាកគណនី",
+      "activateAccount": "ធ្វើឱ្យគណនីសកម្ម",
+      "accountName": "ឈ្មោះគណនី",
+      "bankName": "ឈ្មោះធនាគារ",
+      "accountNumber": "លេខគណនី",
+      "paymentQrCode": "កូដ QR ទូទាត់",
+      "clickQrToView": "ចុច QR ដើម្បីមើលទំហំពេញ",
+      "created": "បង្កើតនៅ៖",
+      "updated": "ធ្វើបច្ចុប្បន្នភាពនៅ៖",
+      "noAccountsFound": "រកមិនឃើញគណនីទូទាត់ទេ។",
+      "closePreview": "បិទការមើលជាមុន"
+    },
+    "propertiesPage": {
+      "title": "អចលនទ្រព្យរបស់ខ្ញុំ",
+      "subtitle": "តាមដានស្ថានភាពទ្រព្យសម្បត្តិ ធ្វើបច្ចុប្បន្នភាពព័ត៌មាន និងពិនិត្យកំណត់ត្រាដំណើរការជាក់ស្តែង។",
+      "addProperty": "បន្ថែមអចលនទ្រព្យថ្មី",
+      "addFirstProperty": "បន្ថែមអចលនទ្រព្យដំបូង",
+      "filters": {
+        "allProperties": "អចលនទ្រព្យទាំងអស់",
+        "pendingChanges": "ការផ្លាស់ប្តូរកំពុងរង់ចាំ",
+        "underReview": "កំពុងពិនិត្យ",
+        "sort": "តម្រៀប",
+        "searchPlaceholder": "ស្វែងរកតាមឈ្មោះ ស្លាក ឬតំបន់...",
+        "allCities": "ទីក្រុងទាំងអស់",
+        "allTypes": "ប្រភេទអចលនទ្រព្យទាំងអស់",
+        "reset": "កំណត់ឡើងវិញ"
+      },
+      "types": {
+        "hotel": "សណ្ឋាគារ",
+        "villa": "វីឡា",
+        "apartment": "អាផាតមិន",
+        "homestay": "សំណាក់ផ្ទះ",
+        "guesthouse": "ផ្ទះសំណាក់"
+      },
+      "emptyStates": {
+        "noPropertiesTitle": "មិនទាន់មានអចលនទ្រព្យចុះបញ្ជីទេ",
+        "noPropertiesMessage": "អ្នកមិនទាន់បានចុះបញ្ជីអចលនទ្រព្យណាមួយនៅឡើយទេ។ បន្ថែមអចលនទ្រព្យដំបូងរបស់អ្នកដើម្បីចាប់ផ្តើមទទួលការកក់។",
+        "noResultsTitle": "រកមិនឃើញអចលនទ្រព្យទេ",
+        "noResultsMessage": "យើងមិនអាចរកឃើញអចលនទ្រព្យណាមួយដែលត្រូវនឹងលក្ខខណ្ឌស្វែងរករបស់អ្នកទេ។",
+        "clearFilters": "សម្អាតតម្រង"
+      },
+      "pagination": {
+        "prev": "មុន",
+        "next": "បន្ទាប់"
+      },
+      "modal": {
+        "detailsTitle": "ព័ត៌មានលម្អិតអចលនទ្រព្យ",
+        "imagesTitle": "រូបភាពអចលនទ្រព្យ",
+        "stepDetails": "ព័ត៌មានលម្អិត",
+        "stepImages": "រូបភាព",
+        "form": {
+          "nameLabel": "ឈ្មោះអចលនទ្រព្យ",
+          "namePlaceholder": "ឧ. Skyline Residency Tower",
+          "typeLabel": "ប្រភេទអចលនទ្រព្យ",
+          "locationLabel": "ទីក្រុង / ទីតាំង",
+          "addressLabel": "អាសយដ្ឋានផ្លូវ",
+          "addressPlaceholder": "ឧ. ផ្លូវលេខ ២១០ សង្កាត់បឹងកេងកង១",
+          "phoneLabel": "លេខទូរស័ព្ទទំនាក់ទំនង",
+          "phonePlaceholder": "ឧ. +855 12 345 678",
+          "emailLabel": "អ៊ីមែលទំនាក់ទំនង",
+          "emailPlaceholder": "ឧ. desks@property.com",
+          "floorsLabel": "ចំនួនជាន់",
+          "floorsPlaceholder": "1",
+          "descriptionLabel": "ការពិពណ៌នាអចលនទ្រព្យ",
+          "descriptionPlaceholder": "ពិពណ៌នាអំពីរចនាសម្ព័ន្ធ ទីតាំងជិតខាង និងសម្ភារៈប្រណីត...",
+          "mapLabel": "ចំណុចទីតាំងអចលនទ្រព្យលើផែនទី (ចុច ឬអូសដើម្បីកំណត់ទីតាំង)",
+          "latitude": "រយៈទទឹង៖",
+          "longitude": "រយៈបណ្តោយ៖",
+          "notSet": "មិនទាន់កំណត់",
+          "cancel": "បោះបង់",
+          "saveAndAdvance": "រក្សាទុក & បន្ត"
+        },
+        "images": {
+          "dropzoneTitle": "ទម្លាក់រូបភាពអចលនទ្រព្យទីនេះ ឬចុចដើម្បីរកមើល",
+          "dropzoneHint": "គាំទ្រ PNG, JPEG, WebP គុណភាពខ្ពស់ (អតិបរមា 10MB ក្នុងមួយឯកតា កំណត់ 10 ធាតុ)",
+          "stagedUploadLabel": "រូបភាពត្រៀមផ្ទុកឡើង ({count})",
+          "coverPriority": "អាទិភាពគម្រប",
+          "skipForNow": "រំលងសិន",
+          "uploadAndFinish": "ផ្ទុកឡើង & បញ្ចប់"
+        },
+        "editProperty": {
+          "title": "កែសម្រួលអចលនទ្រព្យ",
+          "uploadedImagesTitle": "រូបភាពដែលបានផ្ទុកឡើង",
+          "activeCover": "គម្របសកម្ម",
+          "makeCover": "កំណត់ជាគម្រប",
+          "setCover": "កំណត់គម្រប",
+          "deleteImageTitle": "លុបរូបភាព",
+          "addPhoto": "បន្ថែមរូបថត",
+          "unsavedImages": "រូបភាពមិនទាន់រក្សាទុក ({count})",
+          "uploadImages": "ផ្ទុករូបភាពឡើង",
+          "closePanel": "បិទផ្ទាំង",
+          "saveChanges": "រក្សាទុកការផ្លាស់ប្តូរ"
+        },
+        "deleteProperty": {
+          "title": "លុបអចលនទ្រព្យ",
+          "confirmTitle": "លុបអចលនទ្រព្យ??",
+          "confirmMessage": "តើអ្នកប្រាកដថាចង់លុបអចលនទ្រព្យនេះទេ? សកម្មភាពនេះជាអចិន្ត្រៃយ៍ និងមិនអាចត្រឡប់វិញបានទេ។",
+          "cancel": "បោះបង់",
+          "confirm": "លុបអចលនទ្រព្យ"
+        }
+      },
+      "errors": {
+        "nameRequired": "ត្រូវការឈ្មោះអចលនទ្រព្យ។",
+        "nameMinLength": "យ៉ាងហោចណាស់ ៣ តួអក្សរ។",
+        "addressRequired": "ត្រូវការអាសយដ្ឋាន។",
+        "addressMinLength": "យ៉ាងហោចណាស់ ៥ តួអក្សរ។",
+        "phoneRequired": "ត្រូវការលេខទូរស័ព្ទ។",
+        "emailRequired": "ត្រូវការអ៊ីមែល។",
+        "emailInvalid": "ទម្រង់អ៊ីមែលមិនត្រឹមត្រូវ។",
+        "invalidCity": "សូមជ្រើសរើសទីក្រុងត្រឹមត្រូវ។",
+        "imageTypeNotSupported": "\"{name}\" មិនត្រូវបានគាំទ្រទេ។ សូមប្រើតែ PNG ឬ JPG ប៉ុណ្ណោះ។",
+        "imageTooLarge": "\"{name}\" លើសទំហំកំណត់ 10MB។",
+        "maxImagesExceeded": "អ្នកអាចផ្ទុកឡើងបានអតិបរមា {max} រូបភាព។ អ្នកមានរួចហើយ {count}។",
+        "minOneImage": "សូមផ្ទុករូបភាពយ៉ាងហោចណាស់ ១ សន្លឹកដើម្បីបន្ត។"
+      },
+      "toasts": {
+        "addPropertyFailed": "មិនអាចបន្ថែមអចលនទ្រព្យបានទេ។ សូមព្យាយាមម្តងទៀត។",
+        "propertyCreated": "បានបង្កើតអចលនទ្រព្យដោយជោគជ័យ!",
+        "imageUploadFailed": "មិនអាចផ្ទុករូបភាពឡើងបានទេ។ អ្នកអាចបន្ថែមពួកវានៅពេលក្រោយ។",
+        "loadPropertyDetailsFailed": "មិនអាចផ្ទុកព័ត៌មានលម្អិតអចលនទ្រព្យបានទេ។",
+        "deleteImageFailed": "មិនអាចលុបរូបភាពបានទេ។",
+        "setCoverFailed": "មិនអាចកំណត់រូបភាពគម្របបានទេ។",
+        "imagesUploaded": "បានផ្ទុករូបភាពឡើង។",
+        "imagesUploadFailedGeneric": "មិនអាចផ្ទុករូបភាពឡើងបានទេ។",
+        "propertyChangesSubmitted": "ការផ្លាស់ប្តូរអចលនទ្រព្យរបស់អ្នកត្រូវបានដាក់ស្នើសម្រាប់ការអនុម័តពីអ្នកគ្រប់គ្រង។",
+        "propertyUpdated": "បានធ្វើបច្ចុប្បន្នភាពអចលនទ្រព្យដោយជោគជ័យ!",
+        "submitChangesFailed": "មិនអាចដាក់ស្នើការផ្លាស់ប្តូរបានទេ។ សូមព្យាយាមម្តងទៀត។",
+        "propertyDeactivated": "អចលនទ្រព្យត្រូវបានផ្អាក។",
+        "propertyActivated": "អចលនទ្រព្យត្រូវបានធ្វើឱ្យសកម្ម។",
+        "deactivatePropertyFailed": "មិនអាចផ្អាកអចលនទ្រព្យបានទេ។ សូមព្យាយាមម្តងទៀត។",
+        "activatePropertyFailed": "មិនអាចធ្វើឱ្យអចលនទ្រព្យសកម្មបានទេ។ សូមព្យាយាមម្តងទៀត។",
+        "loadPropertiesFailed": "មិនអាចផ្ទុកអចលនទ្រព្យបានទេ។",
+        "assetPurged": "ទ្រព្យសម្បត្តិត្រូវបានលុបចោលដោយជោគជ័យ។",
+        "destructionFailed": "ខ្សែសង្វាក់លុបបំបាត់បរាជ័យ។"
+      }
+    },
+    "propertyDetailPage": {
+      "loading": "កំពុងផ្ទុកព័ត៌មានលម្អិតអចលនទ្រព្យ...",
+      "notAvailable": "មិនអាចរកបានទេ",
+      "backToProperties": "ត្រឡប់ទៅអចលនទ្រព្យ",
+      "cover": "គម្រប",
+      "noImagesUploaded": "មិនទាន់មានរូបភាពដែលបានផ្ទុកឡើងទេ។",
+      "noImagesAlt": "គ្មានរូបភាព",
+      "closePreview": "បិទការមើលជាមុន",
+      "propertyImageAlt": "រូបភាពអចលនទ្រព្យ",
+      "sections": {
+        "propertyImages": "រូបភាពអចលនទ្រព្យ",
+        "availabilityCalendar": "ប្រតិទិនភាពទំនេរ",
+        "propertyInformation": "ព័ត៌មានអចលនទ្រព្យ",
+        "contactInformation": "ព័ត៌មានទំនាក់ទំនង",
+        "locationCoordinates": "កូអរដោនេទីតាំង",
+        "ownerInformation": "ព័ត៌មានម្ចាស់",
+        "quickActions": "សកម្មភាពរហ័ស",
+        "timeline": "កាលវិភាគ"
+      },
+      "fields": {
+        "propertyName": "ឈ្មោះអចលនទ្រព្យ",
+        "category": "ប្រភេទ",
+        "city": "ទីក្រុង",
+        "province": "ខេត្ត",
+        "country": "ប្រទេស",
+        "numberOfFloors": "ចំនួនជាន់",
+        "address": "អាសយដ្ឋាន",
+        "description": "ការពិពណ៌នា",
+        "phone": "ទូរស័ព្ទ",
+        "email": "អ៊ីមែល",
+        "latitude": "រយៈទទឹង",
+        "longitude": "រយៈបណ្តោយ",
+        "name": "ឈ្មោះ",
+        "created": "បង្កើតនៅ",
+        "lastUpdated": "ធ្វើបច្ចុប្បន្នភាពចុងក្រោយ"
+      },
+      "badges": {
+        "pendingChanges": "ការផ្លាស់ប្តូរកំពុងរង់ចាំ",
+        "changesRejected": "ការផ្លាស់ប្តូរត្រូវបានបដិសេធ"
+      },
+      "banners": {
+        "pendingTitle": "ការផ្លាស់ប្តូរកំពុងរង់ចាំ — កំពុងរង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង",
+        "pendingMessage": "អតិថិជននៅតែឃើញអចលនទ្រព្យដើមដែលបានអនុម័ត។ វានឹងធ្វើបច្ចុប្បន្នភាពដោយស្វ័យប្រវត្តិនៅពេលអ្នកគ្រប់គ្រងអនុម័តសំណើកែប្រែរបស់អ្នក។",
+        "rejectedTitle": "ការផ្លាស់ប្តូរអចលនទ្រព្យរបស់អ្នកត្រូវបានបដិសេធ",
+        "reasonLabel": "ហេតុផល",
+        "rejectedMessage": "អចលនទ្រព្យដើមរបស់អ្នកនៅតែដំណើរការ និងមិនផ្លាស់ប្តូរ។ អ្នកអាចកែសម្រួល និងដាក់ស្នើការផ្លាស់ប្តូររបស់អ្នកម្តងទៀតខាងក្រោម។",
+        "editAndResubmit": "កែសម្រួល & ដាក់ស្នើម្តងទៀត"
+      },
+      "actions": {
+        "editProperty": "កែសម្រួលអចលនទ្រព្យ",
+        "editPendingApproval": "កែសម្រួលកំពុងរង់ចាំការអនុម័ត",
+        "locked": "បានចាក់សោ",
+        "manageRooms": "គ្រប់គ្រងបន្ទប់",
+        "processing": "កំពុងដំណើរការ...",
+        "deactivateProperty": "ផ្អាកអចលនទ្រព្យ",
+        "activateProperty": "ធ្វើឱ្យអចលនទ្រព្យសកម្ម"
+      },
+      "confirm": {
+        "deactivateMessage": "ផ្អាកអចលនទ្រព្យនេះ? វានឹងលាក់ពីភ្ញៀវ។",
+        "activateMessage": "ធ្វើឱ្យអចលនទ្រព្យនេះសកម្ម? វានឹងអាចមើលឃើញដោយភ្ញៀវម្តងទៀត។"
+      },
+      "errors": {
+        "nameRequired": "ត្រូវការឈ្មោះអចលនទ្រព្យ។",
+        "nameMinLength": "យ៉ាងហោចណាស់ ៣ តួអក្សរ។",
+        "addressRequired": "ត្រូវការអាសយដ្ឋាន។",
+        "addressMinLength": "យ៉ាងហោចណាស់ ៥ តួអក្សរ។",
+        "phoneRequired": "ត្រូវការលេខទូរស័ព្ទ។",
+        "emailRequired": "ត្រូវការអ៊ីមែល។",
+        "emailInvalid": "ទម្រង់អ៊ីមែលមិនត្រឹមត្រូវ។"
+      },
+      "toasts": {
+        "loadPropertyDetailsFailed": "មិនអាចផ្ទុកព័ត៌មានលម្អិតអចលនទ្រព្យបានទេ។",
+        "propertyChangesSubmitted": "ការផ្លាស់ប្តូររបស់អ្នកត្រូវបានដាក់ស្នើសម្រាប់ការអនុម័តពីអ្នកគ្រប់គ្រង។",
+        "propertyUpdated": "បានធ្វើបច្ចុប្បន្នភាពអចលនទ្រព្យដោយជោគជ័យ!",
+        "submitChangesFailed": "មិនអាចដាក់ស្នើការផ្លាស់ប្តូរបានទេ។ សូមព្យាយាមម្តងទៀត។"
+      },
+      "modal": {
+        "editPropertyTitle": "កែសម្រួលអចលនទ្រព្យ",
+        "requestChangesTitle": "ស្នើសុំកែប្រែអចលនទ្រព្យ",
+        "approvalRequiredTitle": "ត្រូវការការអនុម័តពីអ្នកគ្រប់គ្រង។",
+        "approvalRequiredMessage": "អចលនទ្រព្យនេះកំពុងដំណើរការ — ការផ្លាស់ប្តូររបស់អ្នកនឹងត្រូវបានដាក់ស្នើជាសំណើកែប្រែកំពុងរង់ចាំ។ បញ្ជីបច្ចុប្បន្ននឹងនៅដដែលរហូតដល់អ្នកគ្រប់គ្រងអនុម័ត។",
+        "previousRejectionReason": "ហេតុផលបដិសេធពីមុន៖",
+        "cancel": "បោះបង់",
+        "submitting": "កំពុងដាក់ស្នើ...",
+        "submitForApproval": "ដាក់ស្នើសម្រាប់ការអនុម័ត",
+        "saveChanges": "រក្សាទុកការផ្លាស់ប្តូរ",
+        "form": {
+          "nameLabel": "ឈ្មោះអចលនទ្រព្យ *",
+          "namePlaceholder": "ឧ. Sunset Villa",
+          "typeLabel": "ប្រភេទ *",
+          "locationLabel": "ទីក្រុង *",
+          "floorsLabel": "ចំនួនជាន់ *",
+          "floorsPlaceholder": "ឧ. 5",
+          "phoneLabel": "លេខទូរស័ព្ទទំនាក់ទំនង *",
+          "phonePlaceholder": "+855 12 345 678",
+          "emailLabel": "អ៊ីមែលទំនាក់ទំនង *",
+          "emailPlaceholder": "contact@example.com",
+          "addressLabel": "អាសយដ្ឋាន *",
+          "addressPlaceholder": "អាសយដ្ឋានផ្លូវ",
+          "descriptionLabel": "ការពិពណ៌នា",
+          "descriptionPlaceholder": "ការពិពណ៌នាសង្ខេបសម្រាប់ភ្ញៀវ..."
+        }
+      }
+    },
     "analytics": {
       "loadingDashboard": "កំពុងផ្ទុកផ្ទាំងគ្រប់គ្រងម្ចាស់...",
       "retry": "ព្យាយាមម្តងទៀត",
@@ -1389,6 +2304,13 @@
       "search": "ស្វែងរកភ្ញៀវ ឬអចលនទ្រព្យ…",
       "empty": "មិនទាន់មានមតិយោបល់ពីភ្ញៀវទេ។",
       "emptyFilter": "រកមិនឃើញមតិយោបល់ដែលត្រូវនឹងការច្រោះ។",
+      "loading": "កំពុងផ្ទុកមតិយោបល់...",
+      "tryAgain": "ព្យាយាមម្តងទៀត",
+      "loadFailed": "មិនអាចផ្ទុកមតិយោបល់បានទេ។",
+      "replyPosted": "បានប្រកាសការឆ្លើយតបដោយជោគជ័យ!",
+      "replyPostFailed": "មិនអាចប្រកាសការឆ្លើយតបបានទេ។",
+      "replyRemoved": "បានលុបការឆ្លើយតប។",
+      "replyRemoveFailed": "មិនអាចលុបការឆ្លើយតបបានទេ។",
       "card": {
         "noReplyYet": "មិនទាន់មានការឆ្លើយតប",
         "replyToGuest": "ឆ្លើយតបភ្ញៀវ",
@@ -1400,6 +2322,9 @@
         "posting": "កំពុងបង្ហោះ…",
         "saveChanges": "រក្សាទុកការផ្លាស់ប្តូរ",
         "postReply": "បង្ហោះការឆ្លើយតប",
+        "cancel": "បោះបង់",
+        "updatePlaceholder": "ធ្វើបច្ចុប្បន្នភាពការឆ្លើយតបរបស់អ្នក…",
+        "replyPlaceholder": "អរគុណភ្ញៀវ ហើយឆ្លើយតបទៅនឹងមតិយោបល់របស់ពួកគេ…",
         "confirmRemove": "លុបការឆ្លើយតបរបស់អ្នករចំពោះការពិនិត្យនេះ?",
         "ratings": {
           "excellent": "ល្អប្រសើរ",
@@ -1662,6 +2587,874 @@
       "completed": "ការស្នាក់នៅដែលបានបញ្ចប់មិនអាចលុបចោលបានទេ។",
       "checkInPassed": "មិនអាចលុបចោលបន្ទាប់ពីការឆែកឆេរបានចាប់ផ្តើមហើយ។",
       "notEligible": "ការកក់នេះមិនមានសិទ្ធិលុបចោលទេ។"
+    }
+  },
+  "admin": {
+    "profile": {
+      "name": "ឈ្មោះអ្នកគ្រប់គ្រង",
+      "role": "អ្នកគ្រប់គ្រងជាន់ខ្ពស់"
+    },
+    "sidebar": {
+      "navigation": "ការរុករក",
+      "analytics": "វិភាគ",
+      "properties": "អចលនទ្រព្យ",
+      "reservations": "ការកក់",
+      "users": "អ្នកប្រើប្រាស់",
+      "settings": "ការកំណត់"
+    },
+    "dashboardHero": {
+      "eyebrow": "មជ្ឈមណ្ឌលគ្រប់គ្រងការអនុម័ត",
+      "title": "ការអនុម័តអចលនទ្រព្យ",
+      "subtitle": "ពិនិត្យ និងគ្រប់គ្រងសំណើបញ្ជីម្ចាស់ផ្ទះនៅលើវេទិកា។"
+    },
+    "propertyApprovalPage": {
+      "errors": {
+        "dataFetchingTitle": "ការទាញយកទិន្នន័យត្រូវបានរំខាន",
+        "retryButton": "ព្យាយាមភ្ជាប់ម្តងទៀត"
+      },
+      "loading": {
+        "syncing": "កំពុងធ្វើសមកាលកម្មមូលដ្ឋានទិន្នន័យអចលនទ្រព្យ..."
+      },
+      "emptyState": {
+        "noMatchTitle": "គ្មានលទ្ធផលដែលត្រូវគ្នា",
+        "noMatchDesc": "យើងមិនអាចរកឃើញកំណត់ត្រាណាមួយត្រូវនឹង \"{query}\" ទេ។ សូមពិនិត្យអក្ខរាវិរុទ្ធរបស់អ្នក។",
+        "noPendingTitle": "គ្មានសំណើកំពុងរង់ចាំ",
+        "noPendingDesc": "ល្អប្រសើរ! គ្មានបញ្ជីអចលនទ្រព្យណាមួយកំពុងរង់ចាំការត្រួតពិនិត្យទេ។",
+        "noApprovedTitle": "គ្មានអចលនទ្រព្យដែលបានអនុម័ត",
+        "noApprovedDesc": "គ្មានការដាក់ស្នើអចលនទ្រព្យត្រូវបានអនុម័តក្នុងវដ្តនេះទេ។",
+        "noRejectedTitle": "គ្មានអចលនទ្រព្យដែលបានបដិសេធ",
+        "noRejectedDesc": "កំណត់ត្រាស្អាត! គ្មានសំណើបញ្ជីអចលនទ្រព្យត្រូវបានផ្ញើទៅឯកសារបដិសេធទេ។",
+        "emptyQueueTitle": "ជួរខ្សែទទេទាំងស្រុង",
+        "emptyQueueDesc": "ម៉ាទ្រីសគ្រប់គ្រងគឺទទេ។ គ្មានកំណត់ត្រាបញ្ជីអចលនទ្រព្យត្រូវបានរកឃើញទេ។"
+      },
+      "toasts": {
+        "approveSuccessTitle": "ការអនុម័តជោគជ័យ",
+        "approveSuccessMessage": "បញ្ជីអចលនទ្រព្យត្រូវបានអនុម័តដោយជោគជ័យ។",
+        "approveFailTitle": "ការអនុម័តបរាជ័យ",
+        "approveFailMessage": "មានកំហុសកើតឡើងខណៈពេលអនុម័តអចលនទ្រព្យ។",
+        "rejectSuccessTitle": "អចលនទ្រព្យត្រូវបានបដិសេធ",
+        "rejectSuccessMessage": "សំណើបញ្ជីដាក់ស្នើត្រូវបានបដិសេធ។",
+        "rejectFailTitle": "ការបដិសេធបរាជ័យ",
+        "rejectFailMessage": "មានកំហុសកើតឡើងខណៈពេលបដិសេធអចលនទ្រព្យ។",
+        "pendingSuccessTitle": "បានធ្វើបច្ចុប្បន្នភាពស្ថានភាព",
+        "pendingSuccessMessage": "ស្ថានភាពអចលនទ្រព្យត្រូវបានកំណត់ឡើងវិញទៅជាកំពុងរង់ចាំដោយជោគជ័យ។",
+        "pendingFailTitle": "កំហុសក្នុងការធ្វើបច្ចុប្បន្នភាព",
+        "pendingFailMessage": "មិនអាចកំណត់ស្ថានភាពអចលនទ្រព្យឡើងវិញបានទេ។ សូមព្យាយាមម្តងទៀត។"
+      },
+      "modal": {
+        "cancel": "បោះបង់",
+        "approve": {
+          "title": "បញ្ជាក់ការអនុម័តបញ្ជី",
+          "description": "តើអ្នកប្រាកដថាចង់អនុម័ត និងផ្សព្វផ្សាយសំណើអចលនទ្រព្យនេះទៅកាន់បញ្ជីផ្សព្វផ្សាយផ្ទាល់នៅលើវេទិកាទេ?",
+          "publishing": "កំពុងផ្សព្វផ្សាយ...",
+          "confirm": "បាទ/ចាស អនុម័ត"
+        },
+        "reject": {
+          "title": "បញ្ជាក់ហេតុផលបដិសេធ",
+          "description": "ផ្តល់មតិយោបល់ច្បាស់លាស់ដើម្បីជួយអ្នកប្រតិបត្តិការម្ចាស់ផ្ទះកែសម្រួលលក្ខខណ្ឌដាក់ស្នើ។",
+          "placeholder": "បញ្ជាក់ហេតុផល...",
+          "validationError": "ការព្រមាន៖ ត្រូវការបំពេញប្រអប់ហេតុផលបដិសេធ។",
+          "rejecting": "កំពុងបដិសេធ...",
+          "confirm": "បញ្ជាក់ការបដិសេធ"
+        },
+        "pending": {
+          "title": "កំណត់ឡើងវិញទៅជួរខ្សែកំពុងរង់ចាំ?",
+          "description": "តើអ្នកប្រាកដថាចង់ផ្លាស់ទីបញ្ជីអចលនទ្រព្យនេះត្រឡប់ទៅជួរខ្សែត្រួតពិនិត្យកំពុងរង់ចាំវិញទេ?",
+          "processing": "កំពុងដំណើរការ...",
+          "confirm": "បាទ/ចាស កំណត់ជាកំពុងរង់ចាំ"
+        }
+      }
+    },
+    "propertyReviewDetailPage": {
+      "nav": {
+        "backToList": "ត្រឡប់ទៅបញ្ជី"
+      },
+      "loading": {
+        "syncing": "កំពុងធ្វើសមកាលកម្មព័ត៌មានមូលដ្ឋានទិន្នន័យ..."
+      },
+      "media": {
+        "title": "ឯកសារមេឌៀអចលនទ្រព្យ",
+        "coverBadge": "គម្រប",
+        "noMedia": "គ្មានឯកសារមេឌៀបានផ្ទុកឡើងទេ"
+      },
+      "specs": {
+        "title": "លក្ខណៈបច្ចេកទេសស្នូល",
+        "propertyName": "ឈ្មោះអចលនទ្រព្យ",
+        "categoryGroup": "ក្រុមប្រភេទ",
+        "categoryFallback": "បញ្ជីស្តង់ដារ",
+        "cityLocation": "ទីតាំងទីក្រុង",
+        "provinceRegion": "ខេត្ត / តំបន់",
+        "provinceFallback": "N/A",
+        "countryIdentity": "អត្តសញ្ញាណប្រទេស",
+        "countryFallback": "កម្ពុជា",
+        "geographicAddress": "អាសយដ្ឋានភូមិសាស្ត្រ",
+        "addressFallback": "N/A",
+        "description": "ការពិពណ៌នាបទបង្ហាញលម្អិត",
+        "descriptionFallback": "មិនទាន់មានការពិពណ៌នាបន្ថែមទេ។",
+        "locationOnMap": "ទីតាំងលើផែនទី"
+      },
+      "contact": {
+        "title": "ព័ត៌មានទំនាក់ទំនងប្រតិបត្តិការ",
+        "phone": "លេខទូរស័ព្ទបញ្ជី",
+        "email": "អាសយដ្ឋានអ៊ីមែលបញ្ជី",
+        "fallback": "N/A"
+      },
+      "host": {
+        "title": "អត្តសញ្ញាណម្ចាស់ផ្ទះអ្នកលក់",
+        "ownerName": "ឈ្មោះម្ចាស់ផ្ទះ",
+        "ownerNameFallback": "អ្នកប្រើប្រាស់មិនស្គាល់",
+        "contactLine": "លេខទំនាក់ទំនងម្ចាស់ផ្ទះ",
+        "emailAccount": "គណនីអ៊ីមែលម្ចាស់ផ្ទះ",
+        "fallback": "N/A"
+      },
+      "logs": {
+        "title": "កំណត់ត្រាមូលដ្ឋានទិន្នន័យ",
+        "created": "ការដាក់ស្នើបានបង្កើត",
+        "updated": "ព្រឹត្តិការណ៍ដំណើរការចុងក្រោយ"
+      },
+      "moderation": {
+        "title": "មជ្ឈមណ្ឌលត្រួតពិនិត្យ",
+        "approvePublish": "អនុម័ត & ផ្សព្វផ្សាយ",
+        "rejectSubmission": "បដិសេធការដាក់ស្នើ",
+        "editStatus": "កែសម្រួលស្ថានភាព",
+        "setPending": "កំណត់ត្រឡប់ទៅកំពុងរង់ចាំ",
+        "approveListing": "អនុម័តបញ្ជី",
+        "rejectListing": "បដិសេធបញ្ជី"
+      },
+      "toasts": {
+        "approveSuccessTitle": "ការអនុម័តជោគជ័យ",
+        "approveSuccessMessage": "បញ្ជីអចលនទ្រព្យត្រូវបានអនុម័តដោយជោគជ័យ។",
+        "approveFailTitle": "ការអនុម័តបរាជ័យ",
+        "approveFailMessage": "មានកំហុសកើតឡើងខណៈពេលអនុម័តអចលនទ្រព្យ។",
+        "rejectSuccessTitle": "អចលនទ្រព្យត្រូវបានបដិសេធ",
+        "rejectSuccessMessage": "សំណើបញ្ជីដាក់ស្នើត្រូវបានបដិសេធ។",
+        "rejectFailTitle": "ការបដិសេធបរាជ័យ",
+        "rejectFailMessage": "មានកំហុសកើតឡើងខណៈពេលបដិសេធអចលនទ្រព្យ។",
+        "pendingSuccessTitle": "បានធ្វើបច្ចុប្បន្នភាពស្ថានភាព",
+        "pendingSuccessMessage": "ស្ថានភាពអចលនទ្រព្យត្រូវបានកំណត់ឡើងវិញទៅជាកំពុងរង់ចាំដោយជោគជ័យ។",
+        "pendingFailTitle": "កំហុសក្នុងការធ្វើបច្ចុប្បន្នភាព",
+        "pendingFailMessage": "មិនអាចកំណត់ស្ថានភាពអចលនទ្រព្យឡើងវិញបានទេ។ សូមព្យាយាមម្តងទៀត។"
+      },
+      "modal": {
+        "cancel": "បោះបង់",
+        "approve": {
+          "title": "បញ្ជាក់ការអនុម័តបញ្ជី",
+          "description": "តើអ្នកប្រាកដថាចង់អនុម័ត និងផ្សព្វផ្សាយសំណើអចលនទ្រព្យនេះទៅកាន់បញ្ជីផ្សព្វផ្សាយផ្ទាល់នៅលើវេទិកាទេ?",
+          "publishing": "កំពុងផ្សព្វផ្សាយ...",
+          "confirm": "បាទ/ចាស អនុម័ត"
+        },
+        "reject": {
+          "title": "បញ្ជាក់ហេតុផលបដិសេធ",
+          "description": "ផ្តល់មតិយោបល់ច្បាស់លាស់ដើម្បីជួយអ្នកប្រតិបត្តិការម្ចាស់ផ្ទះកែសម្រួលលក្ខខណ្ឌដាក់ស្នើ។",
+          "placeholder": "ផ្តល់ហេតុផលពេញលេញសម្រាប់ការបដិសេធ...",
+          "validationError": "ការព្រមាន៖ ត្រូវការបំពេញប្រអប់ហេតុផលបដិសេធ។",
+          "rejecting": "កំពុងបដិសេធ...",
+          "confirm": "បញ្ជាក់ការបដិសេធ"
+        },
+        "pending": {
+          "title": "កំណត់ឡើងវិញទៅជួរខ្សែកំពុងរង់ចាំ?",
+          "description": "តើអ្នកប្រាកដថាចង់ផ្លាស់ទីបញ្ជីអចលនទ្រព្យនេះត្រឡប់ទៅជួរខ្សែត្រួតពិនិត្យកំពុងរង់ចាំវិញទេ?",
+          "processing": "កំពុងដំណើរការ...",
+          "confirm": "បាទ/ចាស កំណត់ជាកំពុងរង់ចាំ"
+        }
+      }
+    },
+    "paymentMonitorPage": {
+      "title": "ការត្រួតពិនិត្យការទូទាត់",
+      "subtitle": "ត្រួតពិនិត្យស្លីបទូទាត់ដែលបានដាក់ស្នើដោយអតិថិជន។",
+      "tabs": {
+        "all": "ទាំងអស់",
+        "pendingVerification": "កំពុងរង់ចាំការផ្ទៀងផ្ទាត់",
+        "verified": "បានផ្ទៀងផ្ទាត់",
+        "rejected": "បានបដិសេធ"
+      },
+      "searchPlaceholder": "ស្វែងរកតាមអតិថិជន លេខយោង វិធីសាស្ត្រ...",
+      "loading": "កំពុងផ្ទុកការទូទាត់...",
+      "empty": "គ្មានការទូទាត់ណាមួយត្រូវនឹងតម្រងនេះទេ។",
+      "columns": {
+        "id": "លេខសម្គាល់",
+        "customer": "អតិថិជន",
+        "reservation": "ការកក់",
+        "method": "វិធីសាស្ត្រ",
+        "reference": "លេខយោង",
+        "amount": "ចំនួនទឹកប្រាក់",
+        "submitted": "បានដាក់ស្នើ",
+        "receipt": "បង្កាន់ដៃ",
+        "status": "ស្ថានភាព"
+      },
+      "receipt": {
+        "view": "មើល",
+        "close": "បិទ"
+      },
+      "modal": {
+        "title": "បង្កាន់ដៃទូទាត់ — #{id}",
+        "imageAlt": "បង្កាន់ដៃទូទាត់"
+      }
+    },
+    "userManagementPage": {
+      "title": "គ្រប់គ្រងអ្នកប្រើប្រាស់",
+      "subtitle": "ត្រួតពិនិត្យគណនី តួនាទី និងស្ថានភាពគណនីនៅទូទាំងអ្នកប្រើប្រាស់ទាំងអស់។",
+      "tabs": {
+        "all": "ទាំងអស់",
+        "customer": "អតិថិជន",
+        "owner": "ម្ចាស់",
+        "admin": "អ្នកគ្រប់គ្រង"
+      },
+      "searchPlaceholder": "ស្វែងរកតាមឈ្មោះ អ៊ីមែល ទូរស័ព្ទ...",
+      "errors": {
+        "loadTitle": "មិនអាចផ្ទុកអ្នកប្រើប្រាស់បានទេ",
+        "retry": "ព្យាយាមម្តងទៀត"
+      },
+      "loading": "កំពុងផ្ទុកអ្នកប្រើប្រាស់...",
+      "empty": {
+        "title": "រកមិនឃើញអ្នកប្រើប្រាស់",
+        "searchDesc": "គ្មានអ្នកប្រើប្រាស់ណាមួយត្រូវនឹងការស្វែងរករបស់អ្នកទេ។",
+        "categoryDesc": "មិនទាន់មានអ្នកប្រើប្រាស់ក្នុងប្រភេទនេះទេ។"
+      },
+      "columns": {
+        "user": "អ្នកប្រើប្រាស់",
+        "phone": "ទូរស័ព្ទ",
+        "role": "តួនាទី",
+        "status": "ស្ថានភាព",
+        "lastLogin": "ចូលចុងក្រោយ",
+        "joined": "ចូលរួមនៅ",
+        "actions": "សកម្មភាព"
+      },
+      "never": "មិនដែល",
+      "roles": {
+        "customer": "អតិថិជន",
+        "owner": "ម្ចាស់",
+        "admin": "អ្នកគ្រប់គ្រង"
+      },
+      "actions": {
+        "activate": "ធ្វើឱ្យសកម្ម",
+        "suspend": "ផ្អាក"
+      },
+      "toasts": {
+        "activated": "អ្នកប្រើប្រាស់ត្រូវបានធ្វើឱ្យសកម្មដោយជោគជ័យ។",
+        "suspended": "អ្នកប្រើប្រាស់ត្រូវបានផ្អាកដោយជោគជ័យ។",
+        "updateFailed": "មិនអាចធ្វើបច្ចុប្បន្នភាពស្ថានភាពអ្នកប្រើប្រាស់បានទេ។"
+      },
+      "modal": {
+        "confirmTitle": "{action} អ្នកប្រើប្រាស់?",
+        "confirmDescPrefix": "តើអ្នកប្រាកដថាចង់",
+        "confirmDescSuffix": "? វានឹងផ្លាស់ប្តូរស្ថានភាពគណនីរបស់ពួកគេភ្លាមៗ។",
+        "cancel": "បោះបង់"
+      }
+    },
+    "analyticsPage": {
+      "errorMessage": "កំហុស៖ {message}",
+      "retry": "ព្យាយាមម្តងទៀត",
+      "noActivities": "រកមិនឃើញសកម្មភាពប្រព័ន្ធទេ។",
+      "noPipeline": "គ្មានបំពង់អចលនទ្រព្យកំពុងរង់ចាំបានកត់ត្រាទេ។",
+      "hero": {
+        "eyebrow": "មជ្ឈមណ្ឌលបញ្ជាការអ្នកគ្រប់គ្រង",
+        "title": "ផ្ទាំងគ្រប់គ្រងត្រួតពិនិត្យវេទិកា",
+        "subtitle": "តាមដានសកម្មភាពវេទិកា ពិនិត្យការអនុម័តកំពុងរង់ចាំ និងគ្រប់គ្រងអ្នកប្រើប្រាស់។",
+        "historyLabel": "ទិដ្ឋភាពទូទៅប្រវត្តិ"
+      },
+      "metrics": {
+        "totalProperties": "អចលនទ្រព្យសរុប",
+        "pendingProperties": "អចលនទ្រព្យកំពុងរង់ចាំ",
+        "totalBookings": "ការកក់សរុប",
+        "activeUsers": "អ្នកប្រើប្រាស់សកម្ម",
+        "vsLastMonth": "ធៀបនឹងខែមុន",
+        "vsLastWeek": "ធៀបនឹងសប្តាហ៍មុន",
+        "activeCycles": "វដ្តសកម្ម",
+        "bounceRate": "អត្រាចាកចេញ"
+      },
+      "growthChart": {
+        "title": "ទិដ្ឋភាពទូទៅកំណើនវេទិកា",
+        "subtitle": "តាមដានប្រវត្តិអចលនទ្រព្យប្រព័ន្ធ និងអ្នកប្រើប្រាស់ដែលបានចុះឈ្មោះ",
+        "exportAriaLabel": "នាំចេញតំណទិន្នន័យ"
+      },
+      "approvalDoughnut": {
+        "title": "ស្ថានភាពការអនុម័តបញ្ជី",
+        "subtitle": "សូចនាករអនុលោមភាពសម្រាប់អចលនទ្រព្យចុះឈ្មោះម្ចាស់ផ្ទះ",
+        "countMode": "ចំនួន",
+        "percentageMode": "%",
+        "allRequests": "សំណើទាំងអស់",
+        "propertiesUnit": "អចលនទ្រព្យ"
+      },
+      "activityFeed": {
+        "title": "សកម្មភាពប្រព័ន្ធថ្មីៗ"
+      },
+      "pipelineTable": {
+        "title": "បំពង់អចលនទ្រព្យថ្មី & ដំណើរការ",
+        "columnProperty": "អត្តសញ្ញាណរចនាសម្ព័ន្ធអចលនទ្រព្យ",
+        "columnRooms": "បន្ទប់ដែលបានបែងចែក",
+        "columnValuation": "ការវាយតម្លៃមូលដ្ឋាន",
+        "columnStatus": "ស្ថានភាពផ្ទៀងផ្ទាត់"
+      },
+      "quickActions": {
+        "title": "សកម្មភាពរហ័ស",
+        "subtitle": "បើកដំណើរការគ្រប់គ្រងសំខាន់ៗដោយចុចតែម្តង។",
+        "ariaLabel": "ដំណើរការគ្រប់គ្រងរហ័ស"
+      }
+    },
+    "reservationMonitorPage": {
+      "title": "ការកក់",
+      "subtitle": "តាមដាន និងគ្រប់គ្រងការកក់ទាំងអស់នៅលើវេទិកា។",
+      "loading": "កំពុងផ្ទុកការកក់...",
+      "emptyState": "គ្មានការកក់ណាមួយត្រូវនឹងតម្រងនេះទេ។",
+      "viewDetail": "មើលព័ត៌មានលម្អិត",
+      "nightsCount": "{count} យប់",
+      "tabs": {
+        "all": "ទាំងអស់",
+        "pending": "កំពុងរង់ចាំ",
+        "confirmed": "បានបញ្ជាក់",
+        "completed": "បានបញ្ចប់",
+        "cancelled": "បានលុបចោល"
+      },
+      "detailTabs": {
+        "reservation": "ការកក់",
+        "payment": "ការទូទាត់",
+        "proof": "ភស្តុតាង"
+      },
+      "filters": {
+        "searchPlaceholder": "ស្វែងរកភ្ញៀវ អចលនទ្រព្យ បន្ទប់..."
+      },
+      "columns": {
+        "id": "លេខសម្គាល់",
+        "guest": "ភ្ញៀវ",
+        "propertyRoom": "អចលនទ្រព្យ / បន្ទប់",
+        "owner": "ម្ចាស់",
+        "dates": "កាលបរិច្ឆេទ",
+        "amount": "ចំនួនទឹកប្រាក់",
+        "status": "ស្ថានភាព",
+        "action": "សកម្មភាព"
+      },
+      "aria": {
+        "closePanel": "បិទផ្ទាំង"
+      },
+      "modal": {
+        "loadingPayment": "កំពុងផ្ទុកព័ត៌មានលម្អិតការទូទាត់…",
+        "property": "អចលនទ្រព្យ",
+        "room": "បន្ទប់",
+        "total": "សរុប",
+        "checkIn": "ចូលស្នាក់នៅ",
+        "checkOut": "ចេញពីស្នាក់នៅ",
+        "guest": "ភ្ញៀវ",
+        "owner": "ម្ចាស់",
+        "name": "ឈ្មោះ",
+        "email": "អ៊ីមែល",
+        "reservationId": "លេខការកក់",
+        "noPaymentYet": "មិនទាន់មានការទូទាត់ទេ",
+        "submittedOn": "បានដាក់ស្នើ {date}",
+        "paymentNotReceived": "មិនទាន់ទទួលបានការទូទាត់ទេ",
+        "viewDetailsArrow": "មើលព័ត៌មានលម្អិត →",
+        "changeStatus": "ផ្លាស់ប្តូរស្ថានភាពការកក់",
+        "noPaymentRecord": "គ្មានកំណត់ត្រាទូទាត់",
+        "noPaymentRecordHint": "ភ្ញៀវមិនទាន់បានដាក់ស្នើការទូទាត់ណាមួយនៅឡើយទេ។",
+        "paymentVerified": "ការទូទាត់បានផ្ទៀងផ្ទាត់",
+        "pendingVerification": "កំពុងរង់ចាំការផ្ទៀងផ្ទាត់",
+        "paymentDetails": "ព័ត៌មានលម្អិតការទូទាត់",
+        "paymentId": "លេខការទូទាត់",
+        "reservation": "ការកក់",
+        "method": "វិធីសាស្ត្រ",
+        "reference": "លេខយោង",
+        "submitted": "បានដាក់ស្នើ",
+        "customer": "អតិថិជន",
+        "customerEmail": "អ៊ីមែលអតិថិជន",
+        "phone": "ទូរស័ព្ទ",
+        "viewPaymentProof": "មើលភស្តុតាងទូទាត់",
+        "paymentProof": "ភស្តុតាងទូទាត់",
+        "noProofUploaded": "មិនទាន់មានភស្តុតាងផ្ទុកឡើងទេ",
+        "noProofUploadedHint": "ភ្ញៀវមិនទាន់បានដាក់ស្នើបង្កាន់ដៃទូទាត់ណាមួយនៅឡើយទេ។",
+        "receiptAlt": "បង្កាន់ដៃទូទាត់",
+        "transferReceipt": "បង្កាន់ដៃផ្ទេរប្រាក់",
+        "openArrow": "បើក ↗",
+        "reservationHash": "ការកក់ #",
+        "close": "បិទ"
+      }
+    }
+  },
+  "wishlists": {
+    "title": "បញ្ជីប្រាថ្នា",
+    "subtitle": "មើល រុករក និងគ្រប់គ្រងអចលនទ្រព្យដែលបានរក្សាទុក",
+    "savedStay": "កន្លែងស្នាក់នៅដែលបានរក្សាទុក",
+    "savedStays": "កន្លែងស្នាក់នៅដែលបានរក្សាទុក",
+    "emptyTitle": "បញ្ជីប្រាថ្នារបស់អ្នកទទេ",
+    "emptyDesc": "អ្នកមិនទាន់បានរក្សាទុកអចលនទ្រព្យណាមួយទេ។ ចាប់ផ្ដើមរុករក ហើយចុចរូបបេះដូងលើកន្លែងស្នាក់នៅ ដើម្បីរក្សាទុកជាចំណូលចិត្ត។",
+    "exploreProperties": "រុករកអចលនទ្រព្យ",
+    "viewDetails": "មើលព័ត៌មានលម្អិត",
+    "perNight": "/ យប់",
+    "showList": "បង្ហាញបញ្ជី",
+    "showMap": "បង្ហាញផែនទី",
+    "propertiesOnMap": "អចលនទ្រព្យលើផែនទី",
+    "propertyFallback": "អចលនទ្រព្យ",
+    "cambodiaFallback": "កម្ពុជា",
+    "newBadge": "ថ្មី"
+  },
+  "reportsPage": {
+    "reportsTitle": "របាយការណ៍",
+    "reportDetailTitle": "ព័ត៌មានលម្អិតរបាយការណ៍",
+    "submitReportTitle": "ដាក់ស្នើរបាយការណ៍"
+  },
+  "chats": {
+    "pane": {
+      "loading": "កំពុងផ្ទុកសារ...",
+      "defaultPropertyName": "ខ្សែសន្ទនា",
+      "empty": {
+        "title": "មិនទាន់មានសារទេ",
+        "subtitle": "ចាប់ផ្តើមការសន្ទនាដោយវាយសារខាងក្រោម។"
+      },
+      "attachmentAlt": "ឯកសារភ្ជាប់",
+      "previewAlt": "មើលរូបភាពជាមុន",
+      "voiceNoteDraft": "សេចក្តីព្រាងសារជាសំឡេង",
+      "status": {
+        "read": "បានអាន",
+        "sent": "បានផ្ញើ"
+      },
+      "actions": {
+        "unsendTitle": "ដកសារត្រឡប់វិញ",
+        "addPhoto": "បន្ថែមរូបថត",
+        "recordVoice": "ថតសារជាសំឡេង"
+      },
+      "recording": {
+        "label": "កំពុងថតសំឡេង...",
+        "discard": "បោះបង់",
+        "stopSend": "បញ្ឈប់ & ផ្ញើ"
+      },
+      "placeholders": {
+        "message": "សរសេរសារ..."
+      },
+      "confirm": {
+        "unsend": "តើអ្នកប្រាកដថាចង់ដកសារនេះត្រឡប់វិញទេ?"
+      },
+      "errors": {
+        "micDenied": "មិនអាចចូលប្រើមីក្រូហ្វូនបានទេ។ សូមពិនិត្យការអនុញ្ញាត។"
+      },
+      "fallback": {
+        "sentImage": "បានផ្ញើរូបភាព"
+      }
+    },
+    "listPage": {
+      "heading": "សារ",
+      "searchPlaceholder": "ស្វែងរកសារ",
+      "yesterday": "ម្សិលមិញ",
+      "noMessagesYet": "មិនទាន់មានសារទេ",
+      "tabs": {
+        "all": "ទាំងអស់",
+        "unread": "មិនទាន់អាន"
+      },
+      "loading": "កំពុងផ្ទុកការសន្ទនា...",
+      "errors": {
+        "title": "មិនអាចផ្ទុកសាររបស់អ្នកបានទេ",
+        "retry": "ព្យាយាមម្តងទៀត"
+      },
+      "empty": {
+        "title": "រកមិនឃើញសារទេ",
+        "searchHint": "សូមសាកល្បងកែសម្រួលលក្ខខណ្ឌស្វែងរករបស់អ្នក។",
+        "noChats": "នៅពេលអ្នកទាក់ទងម្ចាស់ផ្ទះ ការសន្ទនារបស់អ្នកនឹងបង្ហាញនៅទីនេះ។"
+      },
+      "noSelection": {
+        "title": "គ្មានការសន្ទនាណាមួយត្រូវបានជ្រើសរើសទេ",
+        "subtitle": "ជ្រើសរើសខ្សែសន្ទនាមួយពីបញ្ជីខាងឆ្វេងដើម្បីពិនិត្យកំណត់ត្រាសារ។"
+      }
+    }
+  },
+  "paymentDetailPage": {
+    "backButton": "ត្រឡប់ទៅបញ្ជីគណនី",
+    "heading": "សេចក្តីថ្លែងការណ៍ទូទាត់",
+    "subheading": "ពិនិត្យស្ថានភាពទូទាត់ និងព័ត៌មានលម្អិតទ្រព្យសកម្មរបស់អ្នក។",
+    "loadingText": "កំពុងទាញយកទិន្នន័យវិក័យប័ត្រ...",
+    "retryButton": "ព្យាយាមភ្ជាប់ម្តងទៀត",
+    "errors": {
+      "fetchFailed": "មិនអាចធ្វើសមកាលកម្មព័ត៌មានលម្អិតទូទាត់របស់អ្នកបានទេ។"
+    },
+    "status": {
+      "pending": "កំពុងរង់ចាំការផ្ទៀងផ្ទាត់",
+      "submitted": "កំពុងពិនិត្យ",
+      "approved": "ការទូទាត់បានអនុម័ត",
+      "rejected": "បដិសេធ / បរាជ័យ"
+    },
+    "transactionIdLabel": "លេខសម្គាល់ប្រតិបត្តិការ",
+    "transactionIdValue": "#PAY-{id}",
+    "totalLabel": "ចំនួនសរុបដែលបានផ្ញើ",
+    "propertyLabel": "អចលនទ្រព្យបានកក់",
+    "roomLabel": "បន្ទប់ / ឯកតាបានចាត់ចែង",
+    "notAvailable": "N/A",
+    "receiptLabel": "បង្កាន់ដៃផ្ទេរប្រាក់ដែលបានដាក់ស្នើ",
+    "receiptAlt": "ភស្តុតាងរូបភាពបង្កាន់ដៃ",
+    "uploadButton": {
+      "update": "ធ្វើបច្ចុប្បន្នភាពភស្តុតាងទូទាត់",
+      "upload": "ផ្ទុកភស្តុតាងទូទាត់ឡើង"
+    }
+  },
+  "paymentUploadPage": {
+    "backButton": "ត្រឡប់ទៅការកក់",
+    "payVia": "ទូទាត់តាម {method}",
+    "defaultMethod": "ផ្ទេរប្រាក់តាមធនាគារ",
+    "subheading": "ស្កេនកូដ QR ជាមួយកម្មវិធីធនាគារកម្ពុជាណាមួយ ផ្ទេរប្រាក់តាមចំនួនត្រឹមត្រូវ រួចផ្ទុកបង្កាន់ដៃរបស់អ្នកឡើង។",
+    "amountDue": "ចំនួនត្រូវទូទាត់",
+    "securityText": "ប្រតិបត្តិការរបស់អ្នកត្រូវបានអ៊ិនគ្រីប និងមានសុវត្ថិភាព។",
+    "stepLabel": "ជំហានចុងក្រោយ — ផ្ទុកបង្កាន់ដៃរបស់អ្នកឡើង",
+    "formatsHint": "ទម្រង់ដែលទទួលយក៖ PNG, JPG, PDF · អតិបរមា 5 MB",
+    "success": {
+      "heading": "បានដាក់ស្នើភស្តុតាង!",
+      "text": "យើងកំពុងត្រួតពិនិត្យការទូទាត់របស់អ្នក។ អ្នកនឹងទទួលបានការជូនដំណឹងឆាប់ៗនេះ។",
+      "redirecting": "កំពុងបញ្ជូនបន្ត…"
+    }
+  },
+  "bookingCreatePage": {
+    "backButton": "ត្រឡប់ទៅការរុករក",
+    "secureCheckout": "ការទូទាត់សុវត្ថិភាព",
+    "heading": "បញ្ចប់ការកក់របស់អ្នក",
+    "subheading": "ពិនិត្យព័ត៌មានលម្អិតការស្នាក់នៅ និងជ្រើសរើសវិធីទូទាត់ដើម្បីបញ្ជាក់ការកក់របស់អ្នក។",
+    "yourStayLabel": "ការស្នាក់នៅរបស់អ្នក",
+    "loadingRoom": "កំពុងផ្ទុកបន្ទប់…",
+    "loadingProperty": "កំពុងផ្ទុកអចលនទ្រព្យ…",
+    "checkInLabel": "ចូលស្នាក់នៅ",
+    "checkOutLabel": "ចេញពីស្នាក់នៅ",
+    "durationLabel": "រយៈពេល",
+    "nightsCount": "{count} យប់",
+    "baseRateLabel": "តម្លៃមូលដ្ឋាន",
+    "perNight": "/ យប់",
+    "priceDetailsLabel": "ព័ត៌មានលម្អិតតម្លៃ",
+    "roomRateLine": "តម្លៃបន្ទប់ ({count} យប់)",
+    "totalAmountLabel": "ចំនួនទឹកប្រាក់សរុប",
+    "cancellation": {
+      "title": "ការការពារការលុបចោលបត់បែន",
+      "description": "ទទួលបានការធានាសងប្រាក់វិញពេញលេញរហូតដល់ 48 ម៉ោងមុនពេលចូលស្នាក់នៅ។"
+    },
+    "toasts": {
+      "selectPaymentMethod": "សូមជ្រើសរើសវិធីទូទាត់មួយ។",
+      "noPaymentMethodSetup": "ម្ចាស់ផ្ទះនេះមិនទាន់បានកំណត់វិធីទូទាត់ទេ។ សូមទាក់ទងពួកគេមុនពេលកក់។",
+      "bookingCreated": "បានបង្កើតការកក់! សូមផ្ទុកបង្កាន់ដៃរបស់អ្នកឡើង។",
+      "roomAlreadyBooked": "បន្ទប់នេះត្រូវបានកក់រួចហើយសម្រាប់កាលបរិច្ឆេទដែលបានជ្រើសរើស។",
+      "invalidBookingDetails": "ព័ត៌មានលម្អិតការកក់មិនត្រឹមត្រូវ។ សូមពិនិត្យកាលបរិច្ឆេទរបស់អ្នក។",
+      "bookingFailed": "មិនអាចបង្កើតការកក់បានទេ។"
+    }
+  },
+  "settingsPage": {
+    "shell": {
+      "guest": "ភ្ញៀវ",
+      "title": "គណនី",
+      "goToProfile": "ទៅកាន់ប្រវត្តិរូប",
+      "cards": {
+        "personalInfo": {
+          "title": "ព័ត៌មានផ្ទាល់ខ្លួន",
+          "description": "ផ្តល់ព័ត៌មានផ្ទាល់ខ្លួន និងវិធីដែលយើងអាចទាក់ទងអ្នក។"
+        },
+        "loginSecurity": {
+          "title": "ចូលប្រើ & សុវត្ថិភាព",
+          "description": "ធ្វើបច្ចុប្បន្នភាពពាក្យសម្ងាត់ និងធានាសុវត្ថិភាពគណនីរបស់អ្នក។"
+        },
+        "paymentsPayouts": {
+          "title": "ការទូទាត់ & ការទូទាត់ចេញ",
+          "description": "ពិនិត្យការទូទាត់ ការទូទាត់ចេញ គូប៉ុង និងព័ត៌មានវិក្កយបត្រ។"
+        },
+        "notifications": {
+          "title": "ការជូនដំណឹង",
+          "description": "ជ្រើសរើសចំណូលចិត្តការជូនដំណឹង និងវិធីដែលអ្នកចង់ត្រូវបានទាក់ទង។"
+        },
+        "privacySharing": {
+          "title": "ភាពឯកជន & ការចែករំលែក",
+          "description": "គ្រប់គ្រងទិន្នន័យផ្ទាល់ខ្លួន ការកំណត់ការចែករំលែក និងគណនីភ្ជាប់របស់អ្នក។"
+        },
+        "globalPreferences": {
+          "title": "ចំណូលចិត្តទូទៅ",
+          "description": "កំណត់ភាសា រូបិយប័ណ្ណ និងតំបន់ពេលវេលាលំនាំដើមរបស់អ្នក។"
+        }
+      }
+    },
+    "loginSecurity": {
+      "breadcrumb": {
+        "account": "គណនី",
+        "current": "ចូលប្រើ & សុវត្ថិភាព"
+      },
+      "title": "ចូលប្រើ & សុវត្ថិភាព",
+      "password": {
+        "label": "ពាក្យសម្ងាត់",
+        "lastUpdated": "បានធ្វើបច្ចុប្បន្នភាពថ្មីៗនេះ",
+        "currentLabel": "ពាក្យសម្ងាត់បច្ចុប្បន្ន",
+        "currentPlaceholder": "បញ្ចូលពាក្យសម្ងាត់បច្ចុប្បន្ន",
+        "newLabel": "ពាក្យសម្ងាត់ថ្មី",
+        "newPlaceholder": "បញ្ចូលពាក្យសម្ងាត់ថ្មី",
+        "confirmLabel": "បញ្ជាក់ពាក្យសម្ងាត់",
+        "confirmPlaceholder": "បញ្ចូលពាក្យសម្ងាត់ថ្មីម្តងទៀត",
+        "updating": "កំពុងធ្វើបច្ចុប្បន្នភាព...",
+        "updateButton": "ធ្វើបច្ចុប្បន្នភាពពាក្យសម្ងាត់",
+        "cancelButton": "បោះបង់",
+        "updateToggle": "ធ្វើបច្ចុប្បន្នភាព"
+      },
+      "deviceManagement": {
+        "title": "ការគ្រប់គ្រងឧបករណ៍"
+      },
+      "sidebar": {
+        "tipsTitle": "គន្លឹះសុវត្ថិភាព",
+        "tipsDescription": "ប្រើពាក្យសម្ងាត់ដែលមានតែមួយគត់សម្រាប់គណនី Srok-Yerng Booking របស់អ្នក។ ជៀសវាងការប្រើពាក្យសម្ងាត់ដដែលពីសេវាកម្មអនឡាញផ្សេងទៀត។",
+        "sessionActivityTitle": "សកម្មភាពសម័យ",
+        "sessionActivityDescription": "ប្រសិនបើអ្នកសម្គាល់ឃើញការចូលប្រើ ឬឧបករណ៍សកម្មគួរឱ្យសង្ស័យដែលអ្នកមិនស្គាល់ អ្នកអាចដកហូតតូខឹនរបស់វាភ្លាមៗនៅក្រោមការគ្រប់គ្រងឧបករណ៍។"
+      },
+      "errors": {
+        "passwordTooShort": "ពាក្យសម្ងាត់ត្រូវមានយ៉ាងហោចណាស់ ៦ តួអក្សរ",
+        "passwordMismatch": "ពាក្យសម្ងាត់មិនត្រូវគ្នាទេ",
+        "updateFailed": "មិនអាចផ្លាស់ប្តូរពាក្យសម្ងាត់បានទេ"
+      },
+      "toasts": {
+        "passwordUpdated": "ពាក្យសម្ងាត់ត្រូវបានផ្លាស់ប្តូរដោយជោគជ័យ។"
+      }
+    },
+    "notifications": {
+      "breadcrumb": {
+        "account": "គណនី",
+        "current": "ការជូនដំណឹង"
+      },
+      "title": "ការកំណត់ការជូនដំណឹង",
+      "sections": {
+        "stays": {
+          "title": "ការស្នាក់នៅ & ការកក់",
+          "description": "ការធ្វើបច្ចុប្បន្នភាពអំពីសកម្មភាពការកក់ ព័ត៌មានចូលស្នាក់នៅ និងការជូនដំណឹងពីម្ចាស់ផ្ទះ។",
+          "emailTitle": "ការជូនដំណឹងតាមអ៊ីមែល",
+          "emailDescription": "ទទួលបានបង្កាន់ដៃការកក់ និងព័ត៌មានលម្អិតចូលស្នាក់នៅ។",
+          "smsTitle": "សារ SMS",
+          "smsDescription": "ទទួលបានសារភ្លាមៗពេលចូលស្នាក់នៅ។",
+          "pushTitle": "ការជូនដំណឹងលើកម្មវិធីទូរស័ព្ទ",
+          "pushDescription": "ការជូនដំណឹងអំពីការធ្វើបច្ចុប្បន្នភាពការស្នាក់នៅ ការរំលឹកពីម្ចាស់ផ្ទះ និងការចេញពីស្នាក់នៅ។"
+        },
+        "messages": {
+          "title": "សារពីម្ចាស់ផ្ទះ",
+          "description": "ការធ្វើបច្ចុប្បន្នភាពអំពីការសន្ទនាសកម្ម សារមិនទាន់អាន និងខ្សែសន្ទនា។",
+          "emailTitle": "ការជូនដំណឹងតាមអ៊ីមែល",
+          "emailDescription": "ទទួលបានអ៊ីមែលនៅពេលអ្នកទទួលបានសារក្រៅបណ្តាញ។",
+          "pushTitle": "ការជូនដំណឹងលើកម្មវិធីទូរស័ព្ទ",
+          "pushDescription": "ការជូនដំណឹងផ្ទាល់ភ្លាមៗនៅពេលម្ចាស់ផ្ទះផ្ញើសារ។"
+        },
+        "security": {
+          "title": "ការជូនដំណឹងសុវត្ថិភាពគណនី",
+          "description": "ការធ្វើបច្ចុប្បន្នភាពទាក់ទងនឹងសកម្មភាពចូលប្រើ ការកែប្រែពាក្យសម្ងាត់ និងការផ្ទៀងផ្ទាត់សុវត្ថិភាព។",
+          "emailTitle": "ការជូនដំណឹងសុវត្ថិភាពតាមអ៊ីមែល",
+          "emailDescription": "ទទួលបានការព្រមានភ្លាមៗអំពីការផ្លាស់ប្តូរពាក្យសម្ងាត់ និងការចូលប្រើឧបករណ៍ថ្មី។",
+          "complianceNote": "សម្រាប់ការអនុលោមតាមសុវត្ថិភាព ការចូលប្រើគណនី និងការជូនដំណឹងសំខាន់ៗតែងតែត្រូវបានផ្ញើទៅអាសយដ្ឋានអ៊ីមែលចម្បងរបស់អ្នក ហើយមិនអាចបិទបានទេ។"
+        }
+      },
+      "sidebar": {
+        "title": "ចំណូលចិត្តផ្ទាល់ខ្លួន",
+        "description": "កម្មវិធីបិទបើករក្សាទុកដោយស្វ័យប្រវត្តិនៅពេលផ្លាស់ប្តូរ។ អ្នកអាចត្រឡប់មកកែសម្រួលចំណូលចិត្តអ៊ីមែល SMS និងឧបករណ៍បានគ្រប់ពេល។"
+      },
+      "toasts": {
+        "updated": "ចំណូលចិត្តការជូនដំណឹងត្រូវបានធ្វើបច្ចុប្បន្នភាពដោយជោគជ័យ។"
+      }
+    },
+    "paymentsPayouts": {
+      "breadcrumb": {
+        "account": "គណនី",
+        "current": "ការទូទាត់ & ការទូទាត់ចេញ"
+      },
+      "title": "ការទូទាត់ & ការទូទាត់ចេញ",
+      "tabs": {
+        "payments": "ការទូទាត់",
+        "payouts": "ការទូទាត់ចេញ"
+      },
+      "methods": {
+        "comingSoonTitle": "វិធីទូទាត់ដែលបានរក្សាទុកនឹងមកដល់ឆាប់ៗនេះ",
+        "comingSoonDesc": "កាតដែលបានរក្សាទុក និងក្រេឌីត Srok-Yerng មិនទាន់អាចប្រើបានទេ។ សូមទូទាត់ការកក់តាមរយៈការផ្ទេរប្រាក់តាមធនាគារ ឬ KHQR ពេលទូទាត់។"
+      },
+      "transactions": {
+        "title": "ប្រតិបត្តិការថ្មីៗ",
+        "columns": {
+          "transaction": "ប្រតិបត្តិការ / ការស្នាក់នៅ",
+          "date": "កាលបរិច្ឆេទ",
+          "amount": "ចំនួនទឹកប្រាក់",
+          "status": "ស្ថានភាព"
+        },
+        "loading": "កំពុងផ្ទុកប្រវត្តិប្រតិបត្តិការ...",
+        "empty": "រកមិនឃើញប្រតិបត្តិការថ្មីៗទេ។",
+        "defaultPropertyName": "ការកក់ស្នាក់នៅ",
+        "defaultRoomType": "ការស្នាក់នៅបន្ទប់",
+        "recent": "ថ្មីៗ"
+      },
+      "payouts": {
+        "title": "ទទួលការទូទាត់ចេញរបស់ម្ចាស់ផ្ទះ",
+        "description": "ប្រសិនបើអ្នកចុះបញ្ជីស្នាក់នៅលើ Srok-Yerng Booking នេះជាវិធីដែលអ្នកកំណត់វិធីទូទាត់ចេញដើម្បីទទួលបានប្រាក់ចំណូលដោយផ្ទាល់ពីការកក់របស់ភ្ញៀវ។",
+        "loadingAccounts": "កំពុងផ្ទុកគណនីទូទាត់...",
+        "noAccountsConfigured": "អ្នកមិនទាន់បានកំណត់គណនីទូទាត់ណាមួយនៅឡើយទេ។",
+        "manageLink": "គ្រប់គ្រងគណនីទូទាត់នៅផ្ទាំងគ្រប់គ្រងម្ចាស់ផ្ទះ",
+        "notPartnerNote": "មានតែគណនីដៃគូ/ម្ចាស់ផ្ទះដែលបានផ្ទៀងផ្ទាត់ប៉ុណ្ណោះដែលអាចទទួលការទូទាត់ចេញការកក់។",
+        "becomePartner": "ក្លាយជាដៃគូ"
+      },
+      "sidebar": {
+        "title": "សុវត្ថិភាពការទូទាត់",
+        "description": "កាតឥណទាន និងប្រតិបត្តិការទាំងអស់ត្រូវបានអ៊ិនគ្រីប និងមានសុវត្ថិភាព។ Srok-Yerng Booking មិនដែលបង្ហាញព័ត៌មានសម្ងាត់ការទូទាត់ដើមទៅម្ចាស់ផ្ទះ ឬភាគីទីបីឡើយ។"
+      }
+    },
+    "personalInfo": {
+      "title": "ព័ត៌មានផ្ទាល់ខ្លួន",
+      "breadcrumbs": {
+        "account": "គណនី",
+        "current": "ព័ត៌មានផ្ទាល់ខ្លួន"
+      },
+      "notProvided": "មិនបានផ្តល់ជូន",
+      "save": "រក្សាទុក",
+      "saving": "កំពុងរក្សាទុក...",
+      "cancel": "បោះបង់",
+      "edit": "កែសម្រួល",
+      "fields": {
+        "fullName": {
+          "label": "ឈ្មោះស្របច្បាប់",
+          "hint": "នេះជាឈ្មោះនៅលើឯកសារធ្វើដំណើររបស់អ្នក ដែលអាចជាប័ណ្ណបើកបរ ឬលិខិតឆ្លងដែន។",
+          "placeholder": "បញ្ចូលឈ្មោះស្របច្បាប់"
+        },
+        "email": {
+          "label": "អាសយដ្ឋានអ៊ីមែល",
+          "hint": "ការផ្ទៀងផ្ទាត់អ៊ីមែលភ្ជាប់ជាមួយការចុះឈ្មោះគណនី ហើយមិនអាចកែប្រែបានទេ។"
+        },
+        "phone": {
+          "label": "លេខទូរស័ព្ទ",
+          "hint": "បន្ថែមលេខសម្រាប់ការធ្វើបច្ចុប្បន្នភាពការកក់ ការជូនដំណឹង និងការផ្ទៀងផ្ទាត់។",
+          "placeholder": "ឧ. +855 12 345 678"
+        },
+        "gender": {
+          "label": "ភេទ",
+          "options": {
+            "select": "ជ្រើសរើសភេទ",
+            "male": "ប្រុស",
+            "female": "ស្រី",
+            "other": "ផ្សេងទៀត"
+          }
+        },
+        "dateOfBirth": {
+          "label": "ថ្ងៃខែឆ្នាំកំណើត"
+        },
+        "address": {
+          "label": "អាសយដ្ឋាន",
+          "placeholder": "ឧ. ផ្លូវលេខ 271 ភ្នំពេញ កម្ពុជា"
+        }
+      },
+      "toasts": {
+        "updateSuccess": "{field} ត្រូវបានធ្វើបច្ចុប្បន្នភាពដោយជោគជ័យ។",
+        "updateError": "មិនអាចធ្វើបច្ចុប្បន្នភាព {field} បានទេ"
+      },
+      "sidebar": {
+        "whyEdit": {
+          "title": "ហេតុអ្វីត្រូវកែសម្រួល?",
+          "description": "Srok-Yerng Booking ប្រើឈ្មោះ អ៊ីមែល និងលេខទូរស័ព្ទដែលបានផ្ទៀងផ្ទាត់របស់អ្នកដើម្បីធានាការកក់ បញ្ជាក់ការស្នាក់នៅ និងផ្ញើការធ្វើបច្ចុប្បន្នភាពការកក់។"
+        },
+        "dataSafety": {
+          "title": "តើទិន្នន័យរបស់ខ្ញុំមានសុវត្ថិភាពទេ?",
+          "description": "អ៊ីមែល និងលេខទូរស័ព្ទរបស់អ្នកត្រូវបានរក្សាទុកជាឯកជន ហើយត្រូវបានចែករំលែកតែជាមួយម្ចាស់ផ្ទះដែលបានផ្ទៀងផ្ទាត់បន្ទាប់ពីការកក់ត្រូវបានបញ្ជាក់ជាផ្លូវការ។"
+        }
+      }
+    },
+    "privacySharing": {
+      "title": "ភាពឯកជន & ការចែករំលែក",
+      "breadcrumbs": {
+        "account": "គណនី",
+        "current": "ភាពឯកជន & ការចែករំលែក"
+      },
+      "sections": {
+        "sharing": {
+          "title": "ការចែករំលែកប្រវត្តិរូប",
+          "description": "គ្រប់គ្រងវិធីដែលប្រវត្តិរូប និងមតិយោបល់របស់អ្នកបង្ហាញនៅលើលទ្ធផលស្វែងរក ឬគេហទំព័រដៃគូ។"
+        },
+        "connections": {
+          "title": "គណនីភ្ជាប់",
+          "description": "ភ្ជាប់គណនី Srok-Yerng Booking របស់អ្នកទៅសេវាកម្មសង្គមសម្រាប់ការផ្ទៀងផ្ទាត់រហ័ស។"
+        },
+        "dataArchive": {
+          "title": "ឯកសារទិន្នន័យ",
+          "description": "ទាញយកច្បាប់ចម្លងនៃឯកសារទិន្នន័យផ្ទាល់ខ្លួនរបស់អ្នកដែលមានប្រវត្តិការកក់ និងព័ត៌មានលម្អិតប្រវត្តិរូប។"
+        }
+      },
+      "toggles": {
+        "searchEngines": {
+          "label": "ការចាត់លិបិក្រមម៉ាស៊ីនស្វែងរក",
+          "description": "អនុញ្ញាតឱ្យម៉ាស៊ីនស្វែងរកដូចជា Google និង Bing រាយបញ្ជីទំព័រប្រវត្តិរូបរបស់អ្នក។"
+        },
+        "reviewSharing": {
+          "label": "ការចែករំលែកមតិយោបល់",
+          "description": "បោះពុម្ភផ្សាយមតិយោបល់ និងសេចក្តីអត្ថាធិប្បាយរបស់អ្នកទៅគេហទំព័រធ្វើដំណើរខាងក្រៅ។"
+        }
+      },
+      "connections": {
+        "google": {
+          "label": "គណនី Google",
+          "linked": "បានភ្ជាប់ជាមួយអ៊ីមែលរបស់អ្នក"
+        },
+        "facebook": {
+          "label": "គណនី Facebook",
+          "linked": "បានភ្ជាប់ដោយជោគជ័យ"
+        },
+        "notLinked": "មិនទាន់ភ្ជាប់ទេ",
+        "connect": "ភ្ជាប់",
+        "disconnect": "ផ្តាច់"
+      },
+      "dataArchive": {
+        "exportCard": {
+          "title": "នាំចេញទិន្នន័យប្រវត្តិរូបរបស់ខ្ញុំ",
+          "description": "ចងក្រងកំណត់ត្រាទាំងអស់របស់អ្នកទៅជាឯកសារ PDF ដែលអាចយកតាមខ្លួនបាន។",
+          "button": "ស្នើសុំឯកសារ"
+        },
+        "documentTitle": "Srok-Yerng Booking - ឯកសារទិន្នន័យផ្ទាល់ខ្លួន",
+        "reportTitle": "របាយការណ៍ឯកសារទិន្នន័យ",
+        "generatedOn": "បង្កើតនៅ {date}",
+        "personalProfileSection": "ព័ត៌មានប្រវត្តិរូបផ្ទាល់ខ្លួន",
+        "legalName": "ឈ្មោះស្របច្បាប់",
+        "emailAddress": "អាសយដ្ឋានអ៊ីមែល",
+        "phoneNumber": "លេខទូរស័ព្ទ",
+        "gender": "ភេទ",
+        "dateOfBirth": "ថ្ងៃខែឆ្នាំកំណើត",
+        "address": "អាសយដ្ឋាន",
+        "notProvided": "មិនបានផ្តល់ជូន",
+        "accountMetadataSection": "ព័ត៌មានលម្អិតគណនី",
+        "accountId": "លេខសម្គាល់គណនី",
+        "memberRole": "តួនាទីសមាជិក",
+        "customerRoleFallback": "អតិថិជន",
+        "dateJoined": "ថ្ងៃចូលរួម",
+        "recent": "ថ្មីៗ",
+        "notAvailable": "N/A",
+        "googleAccount": "គណនី Google",
+        "facebookAccount": "គណនី Facebook",
+        "connectedLinked": "បានភ្ជាប់ / បានតភ្ជាប់",
+        "notLinked": "មិនទាន់ភ្ជាប់ទេ",
+        "footerConfidential": "ការនាំចេញទិន្នន័យឯកជនភាព Srok-Yerng Booking • សម្ងាត់។ សម្រាប់ការយោងផ្ទាល់ខ្លួនរបស់អ្នកប្រើប្រាស់ប៉ុណ្ណោះ។",
+        "footerRights": "{year} Srok-Yerng Booking។ រក្សាសិទ្ធិគ្រប់យ៉ាង។"
+      },
+      "toasts": {
+        "preferencesUpdated": "ចំណូលចិត្តភាពឯកជនត្រូវបានធ្វើបច្ចុប្បន្នភាពដោយជោគជ័យ។",
+        "googleConnected": "បានភ្ជាប់ទៅគណនី Google។",
+        "googleDisconnected": "បានផ្តាច់គណនី Google។",
+        "facebookConnected": "បានភ្ជាប់ទៅគណនី Facebook។",
+        "facebookDisconnected": "បានផ្តាច់គណនី Facebook។"
+      },
+      "sidebar": {
+        "privacyCommitment": {
+          "title": "ការប្តេជ្ញាចិត្តភាពឯកជន",
+          "description": "យើងយកចិត្តទុកដាក់ចំពោះភាពឯកជនរបស់អ្នក។ យើងមិនដែលលក់ទិន្នន័យផ្ទាល់ខ្លួន ឬកម្មវិធីធ្វើដំណើររបស់អ្នកទៅឱ្យក្រុមហ៊ុនផ្សាយពាណិជ្ជកម្មឡើយ។"
+        },
+        "appConnections": {
+          "title": "ការភ្ជាប់កម្មវិធី",
+          "description": "ការភ្ជាប់ប្រវត្តិរូប Facebook ឬ Google របស់អ្នកអនុញ្ញាតឱ្យអ្នកចូលប្រើដោយចុចតែម្តងគត់ ដោយប្រើព័ត៌មានសម្ងាត់ផ្ទៀងផ្ទាត់សង្គម។"
+        }
+      }
+    }
+  },
+  "rooms": {
+    "propertyRoomsPage": {
+      "home": "ទំព័រដើម",
+      "properties": "អចលនទ្រព្យ",
+      "verifiedReviews": "មតិយោបល់ដែលបានផ្ទៀងផ្ទាត់ {count}",
+      "newListing": "បញ្ជីថ្មី",
+      "availableRoomsAt": "បន្ទប់ទំនេរនៅ",
+      "loading": "កំពុងផ្ទុក...",
+      "addressPlaceholder": "ផ្លូវជាតិលេខ ៦ ស្រុកព្រលានយន្តហោះ សៀមរាប កម្ពុជា",
+      "roomCoverAlt": "រូបភាពគម្របបន្ទប់",
+      "availableConfigurations": "ការកំណត់ដែលមាន",
+      "roomsFound": "រកឃើញបន្ទប់ {count}",
+      "sortBy": "តម្រៀបតាម៖",
+      "sortRecommended": "ណែនាំ",
+      "sortPriceAsc": "តម្លៃ៖ ទាបទៅខ្ពស់",
+      "sortPriceDesc": "តម្លៃ៖ ខ្ពស់ទៅទាប",
+      "availableRoomFallback": "បន្ទប់ទំនេរ",
+      "guestsCount": "ភ្ញៀវ {count} នាក់",
+      "viewDetailedSpecs": "មើលលក្ខណៈបន្ទប់លម្អិត →",
+      "rateFrom": "តម្លៃចាប់ពី",
+      "perNight": "ក្នុងមួយយប់",
+      "bookRoom": "កក់បន្ទប់",
+      "noRoomsMatch": "គ្មានបន្ទប់ណាមួយត្រូវនឹងតម្រងរបស់អ្នកទេ។ សូមសាកល្បងកែសម្រួលលក្ខខណ្ឌរបស់អ្នក។",
+      "resetFilters": "កំណត់តម្រងឡើងវិញ"
     }
   }
 }

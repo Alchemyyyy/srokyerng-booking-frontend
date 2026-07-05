@@ -14,10 +14,12 @@ import PaymentAccountSkeleton from '../components/PaymentAccountSkeleton.vue';
 
 import { PencilIcon, ArrowsRightLeftIcon } from '@heroicons/vue/24/outline';
 import { getBankName, getBankLogo, getBankAccentClass } from '../utils/bankBranding';
+import { useI18n } from 'vue-i18n';
 
 const paymentStore = useOwnerPaymentStore();
 const isModalOpen = ref(false);
 const { isSidebarOpen } = useSidebar();
+const { t } = useI18n({ useScope: "global" });
 
 const isQrModalOpen = ref(false);
 const selectedQrUrl = ref('');
@@ -115,13 +117,13 @@ const handleToggleActive = async (account) => {
     <div class="payment-account-container space-y-6 my-25" :class="isSidebarOpen ? 'ml-64' : 'ml-20'">
 
         <div class="page-header">
-            <DashboardHero eyebrow="Payment management center" title="Payment Accounts"
-                subtitle="Manage all your bank accounts and QR codes for receiving bookings cash."
+            <DashboardHero :eyebrow="t('owner.paymentAccountsPage.eyebrow')" :title="t('owner.paymentAccountsPage.title')"
+                :subtitle="t('owner.paymentAccountsPage.subtitle')"
                 class="items-center">
                 <template #action>
                     <button @click="openCreateModal"
                         class="my-auto px-5 py-2.5 bg-(--color-primary) text-white font-bold rounded-xl shadow-sm hover:opacity-95 flex items-center gap-2 cursor-pointer transition transform active:scale-95 text-sm whitespace-nowrap">
-                        <span>+ Create Account</span>
+                        <span>+ {{ t("owner.paymentAccountsPage.createAccount") }}</span>
                     </button>
                 </template>
             </DashboardHero>
@@ -151,17 +153,17 @@ const handleToggleActive = async (account) => {
                             :class="account.is_active ? 'bg-(--color-success-soft) border-(--color-success) text-(--color-success)' : 'bg-slate-500/10 border-slate-500/20 text-slate-500'">
                             <span class="w-1.5 h-1.5 rounded-full"
                                 :class="account.is_active ? 'bg-(--color-success)' : 'bg-slate-400'"></span>
-                            {{ account.is_active ? 'Active' : 'Deactivated' }}
+                            {{ account.is_active ? t("owner.paymentAccountsPage.active") : t("owner.paymentAccountsPage.deactivated") }}
                         </div>
 
-                        <button @click="handleEditAccount(account)" title="Edit Account"
+                        <button @click="handleEditAccount(account)" :title="t('owner.paymentAccountsPage.editAccount')"
                             :disabled="paymentStore.loading"
                             class="p-1.5 rounded-lg border border-(--color-primary) hover:bg-(--color-primary-soft) text-(--color-primary) transition cursor-pointer flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
                             <PencilIcon class="w-4 h-4" />
                         </button>
 
                         <button @click="handleToggleActive(account)" :disabled="paymentStore.loading"
-                            :title="account.is_active ? 'Deactivate Account' : 'Activate Account'"
+                            :title="account.is_active ? t('owner.paymentAccountsPage.deactivateAccount') : t('owner.paymentAccountsPage.activateAccount')"
                             class="p-1.5 rounded-lg border transition flex items-center justify-center select-none cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed transform active:scale-95 min-w-8.5 min-h-8.5"
                             :class="account.is_active ? 'border-(--color-warning) text-(--color-warning) hover:bg-(--color-warning-soft)' : 'border-(--color-success) text-(--color-success) hover:bg-(--color-success-soft)'">
                             <ArrowsRightLeftIcon class="w-4 h-4" />
@@ -173,16 +175,14 @@ const handleToggleActive = async (account) => {
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <span
-                                class="text-[11px] uppercase tracking-wider text-(--color-muted) block font-medium">Account
-                                Name</span>
+                                class="text-[11px] uppercase tracking-wider text-(--color-muted) block font-medium">{{ t("owner.paymentAccountsPage.accountName") }}</span>
                             <p class="text-sm font-bold text-(--color-text) uppercase mt-0.5 truncate">{{
                                 account.account_name
                             }}</p>
                         </div>
                         <div class="text-right">
                             <span
-                                class="text-[11px] uppercase tracking-wider text-(--color-muted) block font-medium">Bank
-                                Name</span>
+                                class="text-[11px] uppercase tracking-wider text-(--color-muted) block font-medium">{{ t("owner.paymentAccountsPage.bankName") }}</span>
                             <p class="text-sm font-semibold text-(--color-text) mt-0.5">{{
                                 getBankName(account.payment_method_id) }}</p>
                         </div>
@@ -190,16 +190,15 @@ const handleToggleActive = async (account) => {
 
                     <div>
                         <span
-                            class="text-[11px] uppercase tracking-wider text-(--color-muted) block font-medium">Account
-                            Number</span>
+                            class="text-[11px] uppercase tracking-wider text-(--color-muted) block font-medium">{{ t("owner.paymentAccountsPage.accountNumber") }}</span>
                         <p class="text-base font-mono font-black text-(--color-text) tracking-wide mt-0.5">{{
                             account.account_number }}</p>
                     </div>
 
                     <div class="border-t border-(--color-border) pt-3 flex items-center justify-between gap-4">
                         <div class="space-y-0.5">
-                            <span class="text-[11px] font-medium text-(--color-text) block">Payment QR Code</span>
-                            <span class="text-xs text-(--color-muted)">Click QR to view full size</span>
+                            <span class="text-[11px] font-medium text-(--color-text) block">{{ t("owner.paymentAccountsPage.paymentQrCode") }}</span>
+                            <span class="text-xs text-(--color-muted)">{{ t("owner.paymentAccountsPage.clickQrToView") }}</span>
                         </div>
                         <div @click="openQrPreview(account)"
                             class="bg-(--color-surface-soft) p-1.5 rounded-xl border border-slate-200 w-17.5 h-17.5 flex items-center justify-center shadow-sm cursor-zoom-in hover:border-(--color-primary) hover:scale-105 transition duration-200">
@@ -211,12 +210,12 @@ const handleToggleActive = async (account) => {
                     <div
                         class="border-t border-(--color-border)/60 pt-3 flex flex-col gap-1 text-[10px] text-(--color-muted) font-medium">
                         <div class="flex justify-between">
-                            <span>Created:</span>
+                            <span>{{ t("owner.paymentAccountsPage.created") }}</span>
                             <span class="text-(--color-text)/80">{{ formatDate(account.created_at) }}</span>
                         </div>
                         <div class="flex justify-between"
                             v-if="account.updated_at && account.updated_at !== account.created_at">
-                            <span>Updated:</span>
+                            <span>{{ t("owner.paymentAccountsPage.updated") }}</span>
                             <span class="text-(--color-primary) font-semibold">{{ formatDate(account.updated_at)
                             }}</span>
                         </div>
@@ -228,7 +227,7 @@ const handleToggleActive = async (account) => {
 
         <div v-else
             class="text-center py-12 bg-(--color-surface) rounded-2xl border border-dashed border-(--color-border)">
-            <p class="text-(--color-muted) font-medium">No payment accounts found.</p>
+            <p class="text-(--color-muted) font-medium">{{ t("owner.paymentAccountsPage.noAccountsFound") }}</p>
         </div>
 
         <CreatePaymentAccountForm :is-open="isModalOpen" :editData="selectedEditData"
@@ -241,8 +240,7 @@ const handleToggleActive = async (account) => {
             </div>
             <template #footer>
                 <button @click="isQrModalOpen = false"
-                    class="px-4 py-2 bg-(--color-surface-soft) border border-(--color-border) text-(--color-text) rounded-xl hover:bg-(--color-surface) text-sm font-bold cursor-pointer">Close
-                    Preview</button>
+                    class="px-4 py-2 bg-(--color-surface-soft) border border-(--color-border) text-(--color-text) rounded-xl hover:bg-(--color-surface) text-sm font-bold cursor-pointer">{{ t("owner.paymentAccountsPage.closePreview") }}</button>
             </template>
         </AppModal>
 

@@ -1,10 +1,12 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import RoomFilter from "@/modules/rooms/components/RoomFilter.vue";
 import LoadingSpinner from "@/shared/components/LoadingSpinner.vue";
 import http from "@/app/api/http";
 
+const { t } = useI18n({ useScope: "global" });
 const route = useRoute();
 const router = useRouter();
 const propertyId = route.params.propertyId;
@@ -73,33 +75,33 @@ onMounted(async () => {
 });
 const filters = ref({
   priceRange: 150,
-  selectedCapacity: "2 Guests",
+  selectedCapacity: "2",
   selectedFacilities: [],
-  sortBy: "Recommended",
+  sortBy: "recommended",
 });
 
 const resetFilters = () => {
   filters.value = {
     priceRange: 150,
-    selectedCapacity: "2 Guests",
+    selectedCapacity: "2",
     selectedFacilities: [],
-    sortBy: "Recommended",
+    sortBy: "recommended",
   };
 };
 
 const filteredRooms = computed(() => {
   let result = rooms.value;
   result = result.filter((r) => r.price <= filters.value.priceRange);
-  const capMap = { "1 Guest": 1, "2 Guests": 2, "3 Guests": 3, "4+ Guests": 4 };
+  const capMap = { "1": 1, "2": 2, "3": 3, "4+": 4 };
   const minGuests = capMap[filters.value.selectedCapacity] || 0;
   result = result.filter((r) =>
-    filters.value.selectedCapacity === "4+ Guests"
+    filters.value.selectedCapacity === "4+"
       ? r.guests >= 4
       : r.guests >= minGuests,
   );
-  if (filters.value.sortBy === "Price: Low to High")
+  if (filters.value.sortBy === "price_asc")
     result = [...result].sort((a, b) => a.price - b.price);
-  else if (filters.value.sortBy === "Price: High to Low")
+  else if (filters.value.sortBy === "price_desc")
     result = [...result].sort((a, b) => b.price - a.price);
   return result;
 });
@@ -119,13 +121,13 @@ const filteredRooms = computed(() => {
         <RouterLink
           :to="{ name: 'public.home' }"
           class="hover:opacity-80 transition"
-          >Home</RouterLink
+          >{{ t("rooms.propertyRoomsPage.home") }}</RouterLink
         >
         <span>/</span>
         <RouterLink
           :to="{ name: 'public.properties' }"
           class="hover:opacity-80 transition"
-          >Properties</RouterLink
+          >{{ t("rooms.propertyRoomsPage.properties") }}</RouterLink
         >
         <span>/</span>
         <span style="color: var(--color-text)" class="font-semibold">{{
@@ -157,19 +159,19 @@ const filteredRooms = computed(() => {
             <span v-if="property?.rating > 0" class="inline-flex items-center gap-1.5">
               <span class="text-amber-400">★</span> {{ Number(property.rating).toFixed(1) }}
               <span style="color: var(--color-border)">|</span>
-              <span>{{ property.reviewsCount }} Verified Reviews</span>
+              <span>{{ t("rooms.propertyRoomsPage.verifiedReviews", { count: property.reviewsCount }) }}</span>
             </span>
             <span v-else class="inline-flex items-center gap-1">
-              <span>🌱 New Listing</span>
+              <span>🌱 {{ t("rooms.propertyRoomsPage.newListing") }}</span>
             </span>
           </div>
           <h1
             style="font-family: var(--font-secondary)"
             class="text-2xl md:text-3xl font-bold tracking-tight leading-tight"
           >
-            Available Rooms at <br />
+            {{ t("rooms.propertyRoomsPage.availableRoomsAt") }} <br />
             <span style="color: var(--color-primary)">{{
-              property?.name || "Loading..."
+              property?.name || t("rooms.propertyRoomsPage.loading")
             }}</span>
           </h1>
           <p
@@ -195,7 +197,7 @@ const filteredRooms = computed(() => {
                 d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
               />
             </svg>
-            National Road 6, Airport District, Siem Reap, Cambodia
+            {{ t("rooms.propertyRoomsPage.addressPlaceholder") }}
           </p>
         </div>
         <div
@@ -211,7 +213,7 @@ const filteredRooms = computed(() => {
                 ? `${BASE_URL}${property.image}`
                 : 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1000&q=80'
             "
-            alt="Room Cover View"
+            :alt="t('rooms.propertyRoomsPage.roomCoverAlt')"
             class="w-full h-full object-cover"
           />
         </div>
@@ -242,18 +244,15 @@ const filteredRooms = computed(() => {
               style="color: var(--color-muted)"
               class="text-[11px] font-bold uppercase tracking-wider"
             >
-              Available Configurations
+              {{ t("rooms.propertyRoomsPage.availableConfigurations") }}
             </h3>
             <p style="color: var(--color-muted)" class="text-[11px] mt-0.5">
-              {{ filteredRooms.length }} room{{
-                filteredRooms.length !== 1 ? "s" : ""
-              }}
-              found
+              {{ t("rooms.propertyRoomsPage.roomsFound", { count: filteredRooms.length }) }}
             </p>
           </div>
           <div class="relative flex items-center gap-1.5 text-xs">
             <span style="color: var(--color-muted)" class="font-medium"
-              >Sort by:</span
+              >{{ t("rooms.propertyRoomsPage.sortBy") }}</span
             >
             <select
               :value="filters.sortBy"
@@ -261,14 +260,14 @@ const filteredRooms = computed(() => {
               style="color: var(--color-text)"
               class="bg-transparent font-bold outline-none pr-4 appearance-none cursor-pointer"
             >
-              <option :style="{ backgroundColor: 'var(--color-surface)' }">
-                Recommended
+              <option value="recommended" :style="{ backgroundColor: 'var(--color-surface)' }">
+                {{ t("rooms.propertyRoomsPage.sortRecommended") }}
               </option>
-              <option :style="{ backgroundColor: 'var(--color-surface)' }">
-                Price: Low to High
+              <option value="price_asc" :style="{ backgroundColor: 'var(--color-surface)' }">
+                {{ t("rooms.propertyRoomsPage.sortPriceAsc") }}
               </option>
-              <option :style="{ backgroundColor: 'var(--color-surface)' }">
-                Price: High to Low
+              <option value="price_desc" :style="{ backgroundColor: 'var(--color-surface)' }">
+                {{ t("rooms.propertyRoomsPage.sortPriceDesc") }}
               </option>
             </select>
             <span
@@ -324,7 +323,7 @@ const filteredRooms = computed(() => {
                       class="text-[11px] font-medium mt-0.5"
                     >
                       {{
-                        [room.type, room.description || "Available room"]
+                        [room.type, room.description || t("rooms.propertyRoomsPage.availableRoomFallback")]
                           .filter(Boolean)
                           .join(" · ")
                       }}
@@ -344,7 +343,7 @@ const filteredRooms = computed(() => {
                     "
                     class="border px-2 py-1 rounded"
                   >
-                    {{ room.guests }} Guests
+                    {{ t("rooms.propertyRoomsPage.guestsCount", { count: room.guests }) }}
                   </span>
                 </div>
               </div>
@@ -355,7 +354,7 @@ const filteredRooms = computed(() => {
                   style="color: var(--color-primary)"
                   class="text-[11px] font-bold hover:opacity-80 transition flex items-center gap-1 cursor-pointer"
                 >
-                  View detailed room specs →
+                  {{ t("rooms.propertyRoomsPage.viewDetailedSpecs") }}
                 </RouterLink>
               </div>
             </div>
@@ -369,7 +368,7 @@ const filteredRooms = computed(() => {
                 <span
                   style="color: var(--color-muted)"
                   class="text-[10px] font-bold block uppercase tracking-widest"
-                  >Rate From</span
+                  >{{ t("rooms.propertyRoomsPage.rateFrom") }}</span
                 >
                 <div
                   style="color: var(--color-text)"
@@ -381,7 +380,7 @@ const filteredRooms = computed(() => {
                   style="color: var(--color-muted)"
                   class="text-[10px] font-medium"
                 >
-                  per night
+                  {{ t("rooms.propertyRoomsPage.perNight") }}
                 </div>
               </div>
               <RouterLink
@@ -392,7 +391,7 @@ const filteredRooms = computed(() => {
                 }"
                 class="w-full md:w-auto hover:opacity-90 font-bold text-xs px-5 py-2.5 rounded-lg transition-all whitespace-nowrap cursor-pointer text-center"
               >
-                Book Room
+                {{ t("rooms.propertyRoomsPage.bookRoom") }}
               </RouterLink>
             </div>
           </div>
@@ -407,14 +406,14 @@ const filteredRooms = computed(() => {
             class="border border-dashed rounded-2xl p-16 text-center"
           >
             <p style="color: var(--color-muted)" class="text-sm font-medium">
-              No rooms match your filters. Try adjusting your criteria.
+              {{ t("rooms.propertyRoomsPage.noRoomsMatch") }}
             </p>
             <button
               @click="resetFilters"
               style="color: var(--color-primary)"
               class="text-xs font-bold mt-3 hover:opacity-80 transition cursor-pointer"
             >
-              Reset Filters
+              {{ t("rooms.propertyRoomsPage.resetFilters") }}
             </button>
           </div>
         </template>

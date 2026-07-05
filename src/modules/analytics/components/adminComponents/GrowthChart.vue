@@ -14,8 +14,11 @@ import {
   Filler,
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
+import { useI18n } from 'vue-i18n'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, LineController, Title, Tooltip, Legend, Filler)
+
+const { t } = useI18n({ useScope: 'global' })
 
 const props = defineProps({
   series: {
@@ -162,9 +165,9 @@ const lineChartOptions = ref({
   <div class="dashboard-panel lg:col-span-2" :class="{ 'panel--refreshing': loading }">
     <div class="flex items-center justify-between mb-4 gap-4 flex-wrap">
       <div>
-        <h3 class="panel-title">Platform Growth Overview</h3>
+        <h3 class="panel-title">{{ t('admin.analyticsPage.growthChart.title') }}</h3>
         <p class="panel-subtitle">
-          Historical tracking of system properties, and registered users
+          {{ t('admin.analyticsPage.growthChart.subtitle') }}
         </p>
       </div>
 
@@ -186,7 +189,7 @@ const lineChartOptions = ref({
           </button>
         </div>
 
-        <button class="export-btn cursor-pointer" aria-label="Export dataset link">
+        <button class="export-btn cursor-pointer" :aria-label="t('admin.analyticsPage.growthChart.exportAriaLabel')">
           <ArrowDownTrayIcon class="h-4 w-4" />
         </button>
       </div>

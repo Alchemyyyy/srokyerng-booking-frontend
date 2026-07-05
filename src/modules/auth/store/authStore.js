@@ -101,6 +101,22 @@ export const useAuthStore = defineStore("auth", () => {
     }, "Facebook login failed");
   };
 
+  const linkGoogleAccount = async (payload) => {
+    return runWithLoading(async () => {
+      const response = await authService.linkGoogleAccount(payload);
+      user.value = response.data;
+      return user.value;
+    }, "Failed to link Google account");
+  };
+
+  const unlinkGoogleAccount = async () => {
+    return runWithLoading(async () => {
+      const response = await authService.unlinkGoogleAccount();
+      user.value = response.data;
+      return user.value;
+    }, "Failed to unlink Google account");
+  };
+
   const register = async (payload) => {
     return runWithLoading(async () => authService.register(payload), "Registration failed");
   };
@@ -206,6 +222,8 @@ export const useAuthStore = defineStore("auth", () => {
     login,
     googleLogin,
     facebookLogin,
+    linkGoogleAccount,
+    unlinkGoogleAccount,
     register,
     forgotPassword,
     resetPassword,

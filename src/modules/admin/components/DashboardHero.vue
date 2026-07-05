@@ -1,10 +1,16 @@
+<script setup>
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n({ useScope: "global" });
+</script>
+
 <template>
   <header class="dashboard-hero">
     <div>
-      <p class="dashboard-eyebrow">Approval management center</p>
-      <h1 class="text-3xl font-semibold text-(--color-text)">Property Approvals</h1>
+      <p class="dashboard-eyebrow">{{ t("admin.dashboardHero.eyebrow") }}</p>
+      <h1 class="text-3xl font-semibold text-(--color-text)">{{ t("admin.dashboardHero.title") }}</h1>
       <p class="dashboard-subtitle">
-        Review and manage platform host listings requests.
+        {{ t("admin.dashboardHero.subtitle") }}
       </p>
     </div>
   </header>

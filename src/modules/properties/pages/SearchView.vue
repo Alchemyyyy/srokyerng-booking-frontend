@@ -186,6 +186,19 @@ const cityOptions = computed(() => {
   return options;
 });
 
+// Property type chips: driven by the real categories table instead of a
+// hardcoded subset, so every category (Apartment, Guesthouse, Homestay,
+// Hostel, etc.) is actually selectable, not just Hotel/Villa/Resort.
+const dynamicCategories = ref([]);
+
+const propertyTypeOptions = computed(() => {
+  const options = [{ value: "all", label: safeT("propertiesPage.filters.allTypes", "All Types") }];
+  dynamicCategories.value.forEach((category) => {
+    options.push({ value: normalize(category), label: category });
+  });
+  return options;
+});
+
 const minimumRatings = [0, 4, 4.5, 4.8];
 
 // ── Computed stats ────────────────────────────────────────────────────────────
@@ -217,7 +230,7 @@ const filteredProperties = computed(() => {
     const matchesCity =
       filters.value.city === "all" || property.city === filters.value.city;
     const matchesType =
-      filters.value.type === "all" || property.category_name?.toLowerCase() === filters.value.type;
+      filters.value.type === "all" || property.type === filters.value.type;
     const matchesPrice = property.price >= filters.value.minPrice && property.price <= filters.value.maxPrice;
     const matchesRating = property.rating >= filters.value.minRating;
     
@@ -432,6 +445,16 @@ onMounted(async () => {
   }
 
   try {
+    const res = await propertyApi.getCategories();
+    const fetchedCategories = Array.isArray(res) ? res : (res?.data ?? []);
+    if (fetchedCategories.length > 0) {
+      dynamicCategories.value = fetchedCategories.map((c) => c.category_name || c.name || c);
+    }
+  } catch (error) {
+    console.error("Failed to load categories in SearchView", error);
+  }
+
+  try {
     await propertyStore.fetchApprovedProperties({
       search: filters.value.query,
       city: filters.value.city === "all" ? "" : filters.value.city,
@@ -542,6 +565,7 @@ onBeforeUnmount(() => {
             v-model="filters"
             :activeFilterCount="activeFilterCount"
             :cityOptions="cityOptions"
+            :propertyTypes="propertyTypeOptions"
             :minimumRatings="minimumRatings"
             :propertyCountByCity="propertyCountByCity"
             @reset="resetFilters"

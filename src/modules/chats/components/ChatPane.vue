@@ -9,10 +9,14 @@ import {
   BuildingOffice2Icon,
   MicrophoneIcon,
 } from "@heroicons/vue/24/outline";
+import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useChatStore } from "../store/chatStore";
 import { socketService } from "../services/socket.service";
 import UserAvatar from "@/shared/components/UserAvatar.vue";
+
+const { t, te } = useI18n({ useScope: "global" });
+const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
 
 const props = defineProps({
   conversationId: {
@@ -57,7 +61,7 @@ const handleRealtimeNewMessage = (msg) => {
       
       const convo = chatStore.conversations.find((c) => c.id === Number(props.conversationId));
       if (convo) {
-        convo.last_message = msg.message_body || "Sent an image";
+        convo.last_message = msg.message_body || t("chats.pane.fallback.sentImage");
         convo.last_message_at = msg.created_at;
       }
     }
@@ -158,7 +162,7 @@ const handleSend = async () => {
 };
 
 const handleUnsend = async (messageId) => {
-  if (confirm("Are you sure you want to unsend this message?")) {
+  if (confirm(t("chats.pane.confirm.unsend"))) {
     try {
       await chatStore.unsendMessage(props.conversationId, messageId);
     } catch (err) {
@@ -226,7 +230,7 @@ const startRecording = async () => {
     mediaRecorder.value.start();
   } catch (err) {
     console.error("Microphone access denied or error:", err);
-    alert("Could not access microphone. Please check permissions.");
+    alert(t("chats.pane.errors.micDenied"));
   }
 };
 
@@ -316,7 +320,7 @@ const goBack = () => {
           </h2>
           <p class="text-[10px] text-(--color-muted) font-semibold flex items-center gap-1.5 truncate">
             <BuildingOffice2Icon class="h-3.5 w-3.5 shrink-0 text-(--color-primary)" />
-            <span>{{ activeConversation.property_name || "Conversation thread" }}</span>
+            <span>{{ activeConversation.property_name || t("chats.pane.defaultPropertyName") }}</span>
           </p>
         </div>
       </div>
@@ -329,7 +333,7 @@ const goBack = () => {
     >
       <div v-if="chatStore.messagesLoading" class="flex flex-col items-center justify-center py-20">
         <div class="h-8 w-8 animate-spin rounded-full border-4 border-(--color-primary) border-t-transparent"></div>
-        <p class="text-xs text-(--color-muted) mt-3 font-semibold">Loading messages...</p>
+        <p class="text-xs text-(--color-muted) mt-3 font-semibold">{{ t("chats.pane.loading") }}</p>
       </div>
 
       <div v-else-if="groupedMessages.length === 0" class="flex flex-col items-center justify-center py-20 text-center">
@@ -338,9 +342,9 @@ const goBack = () => {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
         </div>
-        <h3 class="text-sm font-bold text-(--color-text)">No messages yet</h3>
+        <h3 class="text-sm font-bold text-(--color-text)">{{ t("chats.pane.empty.title") }}</h3>
         <p class="text-xs text-(--color-muted) mt-1 max-w-xs leading-relaxed">
-          Start the conversation by typing a message below.
+          {{ t("chats.pane.empty.subtitle") }}
         </p>
       </div>
 
@@ -380,7 +384,7 @@ const goBack = () => {
                 <div v-else class="mb-2 max-w-sm overflow-hidden rounded-xl border border-black/5">
                   <img
                     :src="getImageUrl(msg.attachment_url)"
-                    alt="Attachment"
+                    :alt="t('chats.pane.attachmentAlt')"
                     class="w-full h-auto object-cover max-h-60"
                   />
                 </div>
@@ -395,7 +399,7 @@ const goBack = () => {
               type="button"
               @click="handleUnsend(msg.id)"
               class="opacity-0 group-hover/msg:opacity-100 transition-opacity duration-150 p-1.5 rounded-full hover:bg-rose-500/10 text-rose-500 hover:text-rose-600 active:scale-90 border-none cursor-pointer flex items-center justify-center shrink-0"
-              title="Unsend Message"
+              :title="t('chats.pane.actions.unsendTitle')"
             >
               <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -408,7 +412,7 @@ const goBack = () => {
             <span>{{ formatTime(msg.created_at) }}</span>
             <span v-if="msg.sender_id === authStore.user?.id">•</span>
             <span v-if="msg.sender_id === authStore.user?.id">
-              {{ msg.is_read ? 'Read' : 'Sent' }}
+              {{ msg.is_read ? t('chats.pane.status.read') : t('chats.pane.status.sent') }}
             </span>
           </div>
         </div>
@@ -420,12 +424,12 @@ const goBack = () => {
       <!-- File Selector Preview Panel -->
       <!-- File Selector Preview Panel -->
       <div v-if="filePreviewUrl" class="relative inline-flex rounded-xl overflow-hidden border border-(--color-border) p-1 bg-(--color-page)">
-        <img v-if="!isAudioFile(selectedFile?.name)" :src="filePreviewUrl" class="h-16 w-16 object-cover rounded-lg" alt="Preview image" />
+        <img v-if="!isAudioFile(selectedFile?.name)" :src="filePreviewUrl" class="h-16 w-16 object-cover rounded-lg" :alt="t('chats.pane.previewAlt')" />
         <div v-else class="h-16 px-4 py-2 bg-(--color-surface-soft) border border-(--color-border) rounded-lg flex items-center gap-2">
           <svg class="h-5 w-5 text-(--color-primary) animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
           </svg>
-          <span class="text-xs font-bold text-(--color-text)">Voice Note Draft</span>
+          <span class="text-xs font-bold text-(--color-text)">{{ t("chats.pane.voiceNoteDraft") }}</span>
         </div>
         <button
           type="button"
@@ -441,7 +445,7 @@ const goBack = () => {
         <div class="flex items-center gap-3">
           <!-- Red pulsing dot -->
           <div class="h-2.5 w-2.5 bg-rose-600 rounded-full animate-ping"></div>
-          <span class="text-xs font-black text-rose-600 uppercase tracking-widest">Recording Voice...</span>
+          <span class="text-xs font-black text-rose-600 uppercase tracking-widest">{{ t("chats.pane.recording.label") }}</span>
           <span class="text-sm font-extrabold text-(--color-text)">{{ formatDuration(recordingDuration) }}</span>
         </div>
         <div class="flex items-center gap-3">
@@ -451,7 +455,7 @@ const goBack = () => {
             @click="cancelRecording"
             class="text-xs font-extrabold text-(--color-muted) hover:underline cursor-pointer border-none bg-transparent"
           >
-            Discard
+            {{ t("chats.pane.recording.discard") }}
           </button>
           <!-- Done/Send button -->
           <button
@@ -459,7 +463,7 @@ const goBack = () => {
             @click="stopRecording(true)"
             class="px-4 py-1.5 rounded-full bg-rose-600 hover:opacity-90 text-white text-xs font-bold shadow-md cursor-pointer border-none"
           >
-            Stop & Send
+            {{ t("chats.pane.recording.stopSend") }}
           </button>
         </div>
       </div>
@@ -479,7 +483,7 @@ const goBack = () => {
           type="button"
           @click="triggerFileInput"
           class="h-11 w-11 flex items-center justify-center rounded-full hover:bg-(--color-surface-soft) text-(--color-muted) hover:text-(--color-text) active:scale-90 transition cursor-pointer"
-          title="Add photo"
+          :title="t('chats.pane.actions.addPhoto')"
         >
           <PhotoIcon class="h-6 w-6" />
         </button>
@@ -489,7 +493,7 @@ const goBack = () => {
           type="button"
           @click="startRecording"
           class="h-11 w-11 flex items-center justify-center rounded-full hover:bg-(--color-surface-soft) text-(--color-muted) hover:text-(--color-text) active:scale-90 transition cursor-pointer"
-          title="Record voice note"
+          :title="t('chats.pane.actions.recordVoice')"
         >
           <MicrophoneIcon class="h-6 w-6" />
         </button>
@@ -499,7 +503,7 @@ const goBack = () => {
           <textarea
             v-model="messageText"
             rows="1"
-            placeholder="Type a message..."
+            :placeholder="t('chats.pane.placeholders.message')"
             class="w-full rounded-2xl border border-(--color-border) px-4 py-3 text-sm bg-(--color-page) text-(--color-text) placeholder-(--color-muted) focus:outline-hidden focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary) resize-none max-h-24 min-h-[44px]"
             @keydown.enter.prevent="handleSend"
           ></textarea>

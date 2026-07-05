@@ -21,6 +21,9 @@ import {
   SunIcon,
   CalendarDaysIcon,
   HomeIcon,
+  ChartBarIcon,
+  UsersIcon,
+  BanknotesIcon,
 } from "@heroicons/vue/24/outline";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useNotificationStore } from "@/modules/notifications/store/notificationStore";
@@ -129,6 +132,8 @@ const showListPropertyLink = computed(
   () => authStore.user?.role === "customer",
 );
 const isCustomer = computed(() => authStore.user?.role === "customer");
+const isOwner = computed(() => authStore.user?.role === "owner");
+const isAdmin = computed(() => authStore.user?.role === "admin");
 const isHosting = computed(() => route.path.startsWith("/owner"));
 
 const switchLink = computed(() => {
@@ -289,8 +294,8 @@ watch(
         aria-orientation="vertical"
         aria-labelledby="user-menu-button"
       >
-        <!-- ==================== OWNER / ADMIN DROPDOWN (Simplified) ==================== -->
-        <template v-if="authStore.user?.role === 'owner' || authStore.user?.role === 'admin'">
+        <!-- ==================== OWNER DROPDOWN (Simplified) ==================== -->
+        <template v-if="isOwner">
           <!-- Switch View Link -->
           <RouterLink
             v-if="switchLink"
@@ -312,7 +317,7 @@ watch(
             @click="closeMenu"
           >
             <Squares2X2Icon class="h-5 w-5 text-(--color-text)" />
-            <span>Dashboard</span>
+            <span>{{ t("nav.dashboard") }}</span>
           </RouterLink>
 
           <RouterLink
@@ -321,7 +326,7 @@ watch(
             @click="closeMenu"
           >
             <BuildingOffice2Icon class="h-5 w-5 text-(--color-text)" />
-            <span>My Properties</span>
+            <span>{{ t("owner.sidebar.properties") }}</span>
           </RouterLink>
 
           <RouterLink
@@ -330,16 +335,16 @@ watch(
             @click="closeMenu"
           >
             <CalendarDaysIcon class="h-5 w-5 text-(--color-text)" />
-            <span>Reservations</span>
+            <span>{{ t("owner.sidebar.reservations") }}</span>
           </RouterLink>
-          
+
           <RouterLink
             :to="{ name: 'owner.chats' }"
             class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
             @click="closeMenu"
           >
             <ChatBubbleOvalLeftIcon class="h-5 w-5 text-(--color-text)" />
-            <span>Messages</span>
+            <span>{{ t("owner.sidebar.messages") }}</span>
           </RouterLink>
 
           <RouterLink
@@ -349,7 +354,7 @@ watch(
             @click="closeMenu"
           >
             <UserCircleIcon class="h-5 w-5 text-(--color-text)" />
-            <span>Profile</span>
+            <span>{{ t("nav.profile") }}</span>
           </RouterLink>
 
           <div class="my-2 border-b border-(--color-border)"></div>
@@ -360,7 +365,77 @@ watch(
             class="w-full text-left px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer font-normal text-(--color-text) block"
             @click="handleLogout"
           >
-            Log out
+            {{ t("nav.logout") }}
+          </button>
+        </template>
+
+        <!-- ==================== ADMIN DROPDOWN ==================== -->
+        <template v-else-if="isAdmin">
+          <RouterLink
+            v-if="dashboardRoute"
+            :to="dashboardRoute"
+            class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+            @click="closeMenu"
+          >
+            <ChartBarIcon class="h-5 w-5 text-(--color-text)" />
+            <span>{{ t("admin.sidebar.analytics") }}</span>
+          </RouterLink>
+
+          <RouterLink
+            to="/admin/property-approvals"
+            class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+            @click="closeMenu"
+          >
+            <BuildingOffice2Icon class="h-5 w-5 text-(--color-text)" />
+            <span>{{ t("admin.sidebar.properties") }}</span>
+          </RouterLink>
+
+          <RouterLink
+            to="/admin/reservations"
+            class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+            @click="closeMenu"
+          >
+            <CalendarDaysIcon class="h-5 w-5 text-(--color-text)" />
+            <span>{{ t("admin.sidebar.reservations") }}</span>
+          </RouterLink>
+
+          <RouterLink
+            to="/admin/payment-verifications"
+            class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+            @click="closeMenu"
+          >
+            <BanknotesIcon class="h-5 w-5 text-(--color-text)" />
+            <span>{{ t("admin.paymentMonitorPage.title") }}</span>
+          </RouterLink>
+
+          <RouterLink
+            to="/admin/users"
+            class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+            @click="closeMenu"
+          >
+            <UsersIcon class="h-5 w-5 text-(--color-text)" />
+            <span>{{ t("admin.sidebar.users") }}</span>
+          </RouterLink>
+
+          <RouterLink
+            v-if="profileRoute"
+            :to="profileRoute"
+            class="flex items-center gap-4 px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer"
+            @click="closeMenu"
+          >
+            <UserCircleIcon class="h-5 w-5 text-(--color-text)" />
+            <span>{{ t("nav.profile") }}</span>
+          </RouterLink>
+
+          <div class="my-2 border-b border-(--color-border)"></div>
+
+          <!-- Log out -->
+          <button
+            type="button"
+            class="w-full text-left px-5 py-3 hover:bg-(--color-surface-soft) transition-colors cursor-pointer font-normal text-(--color-text) block"
+            @click="handleLogout"
+          >
+            {{ t("nav.logout") }}
           </button>
         </template>
 

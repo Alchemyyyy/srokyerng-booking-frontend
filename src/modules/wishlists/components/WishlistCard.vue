@@ -1,8 +1,11 @@
 <script setup>
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 import placeholer from "@/assets/images/properties/placeholder.png";
 import { HeartIcon as HeartSolidIcon, StarIcon } from "@heroicons/vue/24/solid";
 import { resolveAssetUrl } from "@/shared/utils/assetUrl";
+
+const { t } = useI18n({ useScope: "global" });
 
 const emit = defineEmits(["remove", "click"]);
 
@@ -23,7 +26,7 @@ const location = computed(() => {
   const city = props.item.city;
   const province = props.item.province;
   if (city && province && city !== province) return `${city}, ${province}`;
-  return city || province || "Cambodia";
+  return city || province || t("wishlists.cambodiaFallback");
 });
 </script>
 
@@ -46,7 +49,7 @@ const location = computed(() => {
         type="button"
         @click.stop="emit('remove', item.property_id)"
         class="absolute top-3 right-3 h-8 w-8 flex items-center justify-center bg-(--color-surface) border border-(--color-border) hover:opacity-90 text-(--color-wishlist) rounded-full shadow-md transition-all duration-200 active:scale-90 hover:scale-105 z-10"
-        title="Remove from wishlist"
+        :title="t('components.wishlistCard.removeFromWishlist')"
       >
         <HeartSolidIcon class="w-5 h-5 text-(--color-wishlist)" />
       </button>
@@ -61,7 +64,7 @@ const location = computed(() => {
         <div class="flex items-center gap-1 shrink-0 mt-0.5">
           <StarIcon class="w-3.5 h-3.5 text-yellow-400" />
           <span class="text-xs font-bold text-(--color-text)">
-            {{ item.average_rating ? Number(item.average_rating).toFixed(1) : "New" }}
+            {{ item.average_rating ? Number(item.average_rating).toFixed(1) : t("wishlists.newBadge") }}
           </span>
         </div>
       </div>
@@ -74,7 +77,7 @@ const location = computed(() => {
         <span class="text-[15px] font-bold text-(--color-text)">
           ${{ item.price_per_night ?? 0 }}
         </span>
-        <span class="text-sm font-normal text-(--color-muted)">night</span>
+        <span class="text-sm font-normal text-(--color-muted)">{{ t("components.wishlistCard.night") }}</span>
       </div>
     </div>
   </div>

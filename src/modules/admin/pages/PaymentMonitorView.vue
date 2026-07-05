@@ -1,7 +1,9 @@
 <script setup>
-import { onMounted } from "vue";
+import { onMounted, computed, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { usePaymentStore } from "../store/Payment.store";
 import { useSidebar } from "@/shared/composables/useSidebar";
+import TablePagination from "../components/TablePagination.vue";
 import {
   formatMoney,
   formatDate,
@@ -14,18 +16,22 @@ import {
   InboxIcon,
   EyeIcon,
 } from "@heroicons/vue/24/outline";
-import { ref } from "vue";
+
+const { t, te } = useI18n({ useScope: "global" });
+const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
+const statusLabel = (value) =>
+  safeT(`common.status.${String(value || "").toLowerCase()}`, value);
 
 const store = usePaymentStore();
 const { isSidebarOpen } = useSidebar();
 
 // ── Status tabs ───────────────────────────────────────────────────────────────
-const STATUS_TABS = [
-  { key: "all", label: "All" },
-  { key: "submitted", label: "Pending Verification" },
-  { key: "verified", label: "Verified" },
-  { key: "rejected", label: "Rejected" },
-];
+const STATUS_TABS = computed(() => [
+  { key: "all", label: t("admin.paymentMonitorPage.tabs.all") },
+  { key: "submitted", label: t("admin.paymentMonitorPage.tabs.pendingVerification") },
+  { key: "verified", label: t("admin.paymentMonitorPage.tabs.verified") },
+  { key: "rejected", label: t("admin.paymentMonitorPage.tabs.rejected") },
+]);
 
 // ── Receipt modal state ───────────────────────────────────────────────────────
 // This is the only modal left — admin can only view what was submitted,
@@ -54,10 +60,10 @@ onMounted(() => {
     <!-- Header -->
     <header class="page-header mb-6">
       <h1 class="text-2xl font-black tracking-tight text-(--color-text)">
-        Payment Monitoring
+        {{ t("admin.paymentMonitorPage.title") }}
       </h1>
       <p class="text-sm text-(--color-muted) mt-1">
-        Review payment slips submitted by customers.
+        {{ t("admin.paymentMonitorPage.subtitle") }}
       </p>
     </header>
 
@@ -108,7 +114,7 @@ onMounted(() => {
         />
         <input
           type="text"
-          placeholder="Search by customer, reference, method..."
+          :placeholder="t('admin.paymentMonitorPage.searchPlaceholder')"
           :value="store.searchQuery"
           @input="store.setSearchQuery($event.target.value)"
           class="pl-9 pr-4 py-2 text-sm rounded-xl border border-(--color-border) bg-(--color-surface) text-(--color-text) placeholder:text-(--color-muted) focus:outline-none focus:ring-2 focus:ring-(--color-primary)/30 w-full sm:w-72"
@@ -121,7 +127,7 @@ onMounted(() => {
       v-if="store.loading"
       class="py-24 text-center text-(--color-muted) text-sm"
     >
-      Loading payments...
+      {{ t("admin.paymentMonitorPage.loading") }}
     </div>
 
     <!-- Empty -->
@@ -132,7 +138,9 @@ onMounted(() => {
       <InboxIcon
         class="w-10 h-10 mx-auto mb-3 text-(--color-muted) opacity-50"
       />
-      <p class="text-sm text-(--color-muted)">No payments match this filter.</p>
+      <p class="text-sm text-(--color-muted)">
+        {{ t("admin.paymentMonitorPage.empty") }}
+      </p>
     </div>
 
     <!-- Table -->
@@ -146,20 +154,20 @@ onMounted(() => {
             <tr
               class="border-b border-(--color-border) bg-(--color-surface-soft)"
             >
-              <th class="table-th">ID</th>
-              <th class="table-th">Customer</th>
-              <th class="table-th">Reservation</th>
-              <th class="table-th">Method</th>
-              <th class="table-th">Reference</th>
-              <th class="table-th">Amount</th>
-              <th class="table-th">Submitted</th>
-              <th class="table-th">Receipt</th>
-              <th class="table-th">Status</th>
+              <th class="table-th">{{ t("admin.paymentMonitorPage.columns.id") }}</th>
+              <th class="table-th">{{ t("admin.paymentMonitorPage.columns.customer") }}</th>
+              <th class="table-th">{{ t("admin.paymentMonitorPage.columns.reservation") }}</th>
+              <th class="table-th">{{ t("admin.paymentMonitorPage.columns.method") }}</th>
+              <th class="table-th">{{ t("admin.paymentMonitorPage.columns.reference") }}</th>
+              <th class="table-th">{{ t("admin.paymentMonitorPage.columns.amount") }}</th>
+              <th class="table-th">{{ t("admin.paymentMonitorPage.columns.submitted") }}</th>
+              <th class="table-th">{{ t("admin.paymentMonitorPage.columns.receipt") }}</th>
+              <th class="table-th">{{ t("admin.paymentMonitorPage.columns.status") }}</th>
             </tr>
           </thead>
           <tbody>
             <tr
-              v-for="payment in store.filteredPayments"
+              v-for="payment in store.pagedPayments"
               :key="payment.id"
               class="border-b border-(--color-border) last:border-0 hover:bg-(--color-surface-soft)/60 transition-colors"
             >
@@ -208,14 +216,14 @@ onMounted(() => {
                   class="flex items-center gap-1 text-xs text-(--color-primary) hover:underline"
                 >
                   <EyeIcon class="w-3.5 h-3.5" />
-                  View
+                  {{ t("admin.paymentMonitorPage.receipt.view") }}
                 </button>
                 <span v-else class="text-xs text-(--color-muted)">—</span>
               </td>
 
               <td class="px-4 py-3">
                 <span :class="statusBadgeClass(payment.payment_status)">
-                  {{ payment.payment_status }}
+                  {{ statusLabel(payment.payment_status) }}
                 </span>
               </td>
             </tr>
@@ -223,6 +231,13 @@ onMounted(() => {
         </table>
       </div>
     </div>
+
+    <TablePagination
+      v-if="store.pagination.total_pages > 1"
+      :current-page="store.pagination.page"
+      :total-pages="store.pagination.total_pages"
+      @update:current-page="store.setPage($event)"
+    />
   </div>
 
   <!-- ── Receipt Image Modal ─────────────────────────────────────────────── -->
@@ -236,10 +251,11 @@ onMounted(() => {
         <div class="receipt-modal-box">
           <div class="flex items-center justify-between mb-4">
             <h3 class="modal-title mb-0">
-              Payment Receipt — #{{ receiptModal.paymentId }}
+              {{ t("admin.paymentMonitorPage.modal.title", { id: receiptModal.paymentId }) }}
             </h3>
             <button
               @click="receiptModal.open = false"
+              :aria-label="t('admin.paymentMonitorPage.receipt.close')"
               class="text-(--color-muted) hover:text-(--color-text) text-lg leading-none"
             >
               ✕
@@ -247,7 +263,7 @@ onMounted(() => {
           </div>
           <img
             :src="receiptModal.imageUrl"
-            alt="Payment receipt"
+            :alt="t('admin.paymentMonitorPage.modal.imageAlt')"
             class="w-full rounded-xl object-contain max-h-[70vh]"
           />
         </div>

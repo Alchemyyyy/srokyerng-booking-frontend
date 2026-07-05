@@ -1,4 +1,6 @@
 <script setup>
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { getInitials } from "@/shared/utils/getInitials";
 import AppSidebar from "@/shared/components/DashboardSidebar.vue";
 
@@ -13,40 +15,51 @@ import {
   UsersIcon,
 } from "@heroicons/vue/24/outline";
 
-const menuItems = [
+const { t } = useI18n({ useScope: "global" });
+
+const menuItems = computed(() => [
   {
-    name: "Analytics",
+    name: t("admin.sidebar.analytics"),
     path: "/admin/analytics",
     icon: ChartBarIcon,
     badge: null,
   },
   {
-    name: "Properties",
+    name: t("admin.sidebar.properties"),
     path: "/admin/property-approvals",
     icon: BuildingOffice2Icon,
     badge: 3,
   },
   {
-    name: "Reservations",
+    name: t("admin.sidebar.reservations"),
     path: "/admin/reservations",
     icon: CalendarDaysIcon,
     badge: 7,
   },
+  {
+    name: t("admin.paymentMonitorPage.title"),
+    path: "/admin/payment-verifications",
+    icon: CreditCardIcon,
+    badge: null,
+  },
 
-  { name: "Users", path: "/admin/users", icon: UsersIcon, badge: null },
-];
+  { name: t("admin.sidebar.users"), path: "/admin/users", icon: UsersIcon, badge: null },
+]);
 
-const bottomItems = [
-  { name: "Settings", path: "/admin/settings", icon: Cog6ToothIcon },
-];
+const bottomItems = computed(() => [
+  { name: t("admin.sidebar.settings"), path: "/admin/settings", icon: Cog6ToothIcon },
+]);
 
-const userName = "Admin Name";
+const userName = computed(() => t("admin.profile.name"));
 
-const user = {
-  initials: getInitials(userName),
-  name: userName,
-  role: "Super Admin",
-};
+const user = computed(() => ({
+  initials: getInitials(userName.value),
+  name: userName.value,
+  role: t("admin.profile.role"),
+}));
+
+const title = computed(() => t("app.name"));
+const navigationLabel = computed(() => t("admin.sidebar.navigation"));
 </script>
 
 <template>
@@ -54,8 +67,8 @@ const user = {
     :menuItems="menuItems"
     :bottomItems="bottomItems"
     :logo="logoDark"
-    title="ស្រុកយើង"
+    :title="title"
     :user="user"
-    navigationLabel="Navigation"
+    :navigation-label="navigationLabel"
   />
 </template>

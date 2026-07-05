@@ -1,5 +1,9 @@
 <!-- modules/analytics/components/QuickActions.vue -->
 <script setup>
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n({ useScope: 'global' })
+
 const props = defineProps({
   links: { type: Array, required: true },
   formatter: { type: Function, required: true }
@@ -8,10 +12,10 @@ const formattedCount = (val) => props.formatter(val)
 </script>
 
 <template>
-  <section class="quick-links" aria-label="Quick admin workflows">
+  <section class="quick-links" :aria-label="t('admin.analyticsPage.quickActions.ariaLabel')">
     <header>
-      <h2>Quick actions</h2>
-      <p>Open key admin workflows in one click.</p>
+      <h2>{{ t('admin.analyticsPage.quickActions.title') }}</h2>
+      <p>{{ t('admin.analyticsPage.quickActions.subtitle') }}</p>
     </header>
 
     <div class="quick-links-grid">

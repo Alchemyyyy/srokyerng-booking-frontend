@@ -1,5 +1,11 @@
 <script setup>
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
+
+const { t, te } = useI18n({ useScope: "global" });
+const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
+const statusLabel = (value) =>
+  safeT(`common.status.${String(value || "").toLowerCase()}`, value);
 
 const props = defineProps({
   status: {
@@ -17,27 +23,23 @@ const props = defineProps({
   },
 });
 
-const statusConfig = {
+const statusStyleConfig = {
   pending: {
-    label: "Pending",
     dot: "bg-amber-500",
     badge: "bg-amber-50 text-amber-700 border-amber-100/80",
     animate: true,
   },
   confirmed: {
-    label: "Confirmed",
     dot: "bg-emerald-500",
     badge: "bg-emerald-50 text-emerald-700 border-emerald-100/80",
     animate: true,
   },
   completed: {
-    label: "Completed",
     dot: "bg-emerald-500",
     badge: "bg-emerald-50 text-emerald-700 border-emerald-100/80",
     animate: false,
   },
   cancelled: {
-    label: "Cancelled",
     dot: "bg-rose-500",
     badge: "bg-rose-50 text-rose-700 border-rose-100/80",
     animate: false,
@@ -58,14 +60,12 @@ const dotSizeClasses = {
 
 const config = computed(() => {
   const key = String(props.status).toLowerCase();
-  return (
-    statusConfig[key] || {
-      label: props.status,
-      dot: "bg-slate-400",
-      badge: "bg-slate-100 text-slate-600 border-slate-200",
-      animate: false,
-    }
-  );
+  const style = statusStyleConfig[key] || {
+    dot: "bg-slate-400",
+    badge: "bg-slate-100 text-slate-600 border-slate-200",
+    animate: false,
+  };
+  return { ...style, label: statusLabel(props.status) };
 });
 </script>
 

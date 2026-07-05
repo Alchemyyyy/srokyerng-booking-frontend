@@ -1,5 +1,6 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { useUserStore } from "../store/userStore.js";
 import { useToastStore } from "@/shared/store/toastStore";
 import { useSidebar } from "@/shared/composables/useSidebar";
@@ -15,6 +16,13 @@ import {
   NoSymbolIcon,
   ShieldExclamationIcon,
 } from "@heroicons/vue/24/outline";
+
+const { t, te } = useI18n({ useScope: "global" });
+const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
+const statusLabel = (value) =>
+  safeT(`common.status.${String(value || "").toLowerCase()}`, value);
+const roleLabel = (value) =>
+  safeT(`admin.userManagementPage.roles.${String(value || "").toLowerCase()}`, value);
 
 const userStore = useUserStore();
 const toastStore = useToastStore();
@@ -53,10 +61,20 @@ const confirmModal = ref({
   action: null,
 });
 
-const ACTION_META = {
-  activate: { label: "Activate", status: "active", color: "btn-approve" },
-  suspend: { label: "Suspend", status: "suspended", color: "btn-suspend" },
-};
+const ACTION_META = computed(() => ({
+  activate: {
+    label: t("admin.userManagementPage.actions.activate"),
+    status: "active",
+    color: "btn-approve",
+    toast: t("admin.userManagementPage.toasts.activated"),
+  },
+  suspend: {
+    label: t("admin.userManagementPage.actions.suspend"),
+    status: "suspended",
+    color: "btn-suspend",
+    toast: t("admin.userManagementPage.toasts.suspended"),
+  },
+}));
 
 const openConfirm = (user, action) => {
   confirmModal.value = {
@@ -73,7 +91,7 @@ const closeConfirm = () => {
 
 const confirmAction = async () => {
   const { userId, action } = confirmModal.value;
-  const meta = ACTION_META[action];
+  const meta = ACTION_META.value[action];
   if (!meta || !userId) return;
 
   closeConfirm();
@@ -83,9 +101,11 @@ const confirmAction = async () => {
     if (detailModal.value.open && detailModal.value.user?.id === userId) {
       detailModal.value.user = { ...detailModal.value.user, status: meta.status };
     }
-    toastStore.success(`User ${meta.label.toLowerCase()}d successfully.`);
+    toastStore.success(meta.toast);
   } else {
-    toastStore.danger(userStore.error || "Failed to update user status.");
+    toastStore.danger(
+      userStore.error || t("admin.userManagementPage.toasts.updateFailed")
+    );
   }
 };
 
@@ -95,12 +115,12 @@ const handleDetailAction = ({ user, action }) => {
 };
 
 // ── Role tabs ─────────────────────────────────────────────────────────────────
-const roleTabs = [
-  { key: "all", label: "All" },
-  { key: "customer", label: "Customers" },
-  { key: "owner", label: "Owners" },
-  { key: "admin", label: "Admins" },
-];
+const roleTabs = computed(() => [
+  { key: "all", label: t("admin.userManagementPage.tabs.all") },
+  { key: "customer", label: t("admin.userManagementPage.tabs.customer") },
+  { key: "owner", label: t("admin.userManagementPage.tabs.owner") },
+  { key: "admin", label: t("admin.userManagementPage.tabs.admin") },
+]);
 
 // ── Badge helpers ─────────────────────────────────────────────────────────────
 const statusClass = (status) => {
@@ -138,11 +158,11 @@ onMounted(() => userStore.fetchUsers());
       <div class="flex items-center gap-3 mb-1">
         <UsersIcon class="w-6 h-6 text-(--color-primary)" />
         <h1 class="text-2xl font-black tracking-tight text-(--color-text)">
-          User Management
+          {{ t("admin.userManagementPage.title") }}
         </h1>
       </div>
       <p class="text-sm text-(--color-muted)">
-        Review accounts, roles, and account status across all users.
+        {{ t("admin.userManagementPage.subtitle") }}
       </p>
     </div>
 
@@ -167,7 +187,7 @@ onMounted(() => userStore.fetchUsers());
           :value="userStore.searchQuery"
           @input="userStore.setSearchQuery($event.target.value)"
           type="text"
-          placeholder="Search by name, email, phone..."
+          :placeholder="t('admin.userManagementPage.searchPlaceholder')"
           class="search-input"
         />
       </div>
@@ -177,16 +197,18 @@ onMounted(() => userStore.fetchUsers());
     <div v-if="userStore.error && !userStore.loading" class="state-card error-card">
       <ExclamationTriangleIcon class="state-icon text-danger" />
       <div class="state-content">
-        <h3 class="state-title">Failed to Load Users</h3>
+        <h3 class="state-title">{{ t("admin.userManagementPage.errors.loadTitle") }}</h3>
         <p class="state-desc">{{ userStore.error }}</p>
-        <button class="btn-retry" @click="userStore.fetchUsers()">Retry</button>
+        <button class="btn-retry" @click="userStore.fetchUsers()">
+          {{ t("admin.userManagementPage.errors.retry") }}
+        </button>
       </div>
     </div>
 
     <!-- Loading -->
     <div v-else-if="userStore.loading" class="state-card loading-card py-24">
       <div class="loading-spinner" />
-      <p class="state-desc mt-3">Loading users...</p>
+      <p class="state-desc mt-3">{{ t("admin.userManagementPage.loading") }}</p>
     </div>
 
     <!-- Empty -->
@@ -195,12 +217,12 @@ onMounted(() => userStore.fetchUsers());
       class="state-card empty-card"
     >
       <InboxIcon class="state-icon text-(--color-muted)" />
-      <h3 class="state-title">No Users Found</h3>
+      <h3 class="state-title">{{ t("admin.userManagementPage.empty.title") }}</h3>
       <p class="state-desc">
         {{
           userStore.searchQuery
-            ? "No users match your search."
-            : "No users in this category yet."
+            ? t("admin.userManagementPage.empty.searchDesc")
+            : t("admin.userManagementPage.empty.categoryDesc")
         }}
       </p>
     </div>
@@ -211,13 +233,13 @@ onMounted(() => userStore.fetchUsers());
       <table class="user-table">
         <thead>
           <tr>
-            <th>User</th>
-            <th>Phone</th>
-            <th>Role</th>
-            <th>Status</th>
-            <th>Last Login</th>
-            <th>Joined</th>
-            <th>Actions</th>
+            <th>{{ t("admin.userManagementPage.columns.user") }}</th>
+            <th>{{ t("admin.userManagementPage.columns.phone") }}</th>
+            <th>{{ t("admin.userManagementPage.columns.role") }}</th>
+            <th>{{ t("admin.userManagementPage.columns.status") }}</th>
+            <th>{{ t("admin.userManagementPage.columns.lastLogin") }}</th>
+            <th>{{ t("admin.userManagementPage.columns.joined") }}</th>
+            <th>{{ t("admin.userManagementPage.columns.actions") }}</th>
           </tr>
         </thead>
         <tbody>
@@ -253,18 +275,18 @@ onMounted(() => userStore.fetchUsers());
 
             <td>
               <span class="role-badge" :class="roleClass(user.role)">
-                {{ user.role }}
+                {{ roleLabel(user.role) }}
               </span>
             </td>
 
             <td>
               <span class="status-badge" :class="statusClass(user.status)">
-                {{ user.status }}
+                {{ statusLabel(user.status) }}
               </span>
             </td>
 
             <td class="text-sm text-(--color-muted)">
-              {{ user.last_login ? formatDate(user.last_login) : "Never" }}
+              {{ user.last_login ? formatDate(user.last_login) : t("admin.userManagementPage.never") }}
             </td>
 
             <td class="text-sm text-(--color-muted)">
@@ -340,17 +362,16 @@ onMounted(() => userStore.fetchUsers());
           </div>
 
           <h3 class="modal-title">
-            {{ ACTION_META[confirmModal.action]?.label }} User?
+            {{ t("admin.userManagementPage.modal.confirmTitle", { action: ACTION_META[confirmModal.action]?.label }) }}
           </h3>
           <p class="modal-desc">
-            Are you sure you want to
+            {{ t("admin.userManagementPage.modal.confirmDescPrefix") }}
             <strong>{{ ACTION_META[confirmModal.action]?.label?.toLowerCase() }}</strong>
-            <strong> {{ confirmModal.userName }}</strong>?
-            This will immediately change their account status.
+            <strong> {{ confirmModal.userName }}</strong>{{ t("admin.userManagementPage.modal.confirmDescSuffix") }}
           </p>
 
           <div class="modal-actions">
-            <button class="btn-cancel" @click="closeConfirm">Cancel</button>
+            <button class="btn-cancel" @click="closeConfirm">{{ t("admin.userManagementPage.modal.cancel") }}</button>
             <button
               class="btn-confirm"
               :class="ACTION_META[confirmModal.action]?.color"

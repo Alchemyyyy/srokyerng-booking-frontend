@@ -173,11 +173,11 @@ const getActionRoute = (notification) => {
 };
 
 const getActionLabel = (notification) => {
-  if (!notification) return "View Details";
-  if (notification.type?.startsWith("reservation")) return "View Booking";
-  if (notification.type?.startsWith("payment")) return "View Payment";
-  if (notification.type?.startsWith("property")) return "View Property";
-  return "View Details";
+  if (!notification) return t("notifications.actions.viewDetails");
+  if (notification.type?.startsWith("reservation")) return t("notifications.actions.viewBooking");
+  if (notification.type?.startsWith("payment")) return t("notifications.actions.viewPayment");
+  if (notification.type?.startsWith("property")) return t("notifications.actions.viewProperty");
+  return t("notifications.actions.viewDetails");
 };
 
 const getNotificationMetadataList = (notification) => {
@@ -186,25 +186,25 @@ const getNotificationMetadataList = (notification) => {
   const list = [];
 
   if (meta.reservation_id) {
-    list.push({ label: "Reservation ID", value: `#${meta.reservation_id}` });
+    list.push({ label: t("notifications.metadata.reservationId"), value: `#${meta.reservation_id}` });
   }
   if (meta.property_name || meta.propertyName) {
-    list.push({ label: "Property Name", value: meta.property_name || meta.propertyName });
+    list.push({ label: t("notifications.metadata.propertyName"), value: meta.property_name || meta.propertyName });
   }
   if (meta.property_id) {
-    list.push({ label: "Property ID", value: `#${meta.property_id}` });
+    list.push({ label: t("notifications.metadata.propertyId"), value: `#${meta.property_id}` });
   }
   if (meta.amount) {
-    list.push({ label: "Amount", value: `$${Number(meta.amount).toFixed(2)}` });
+    list.push({ label: t("notifications.metadata.amount"), value: `$${Number(meta.amount).toFixed(2)}` });
   }
   if (meta.check_in || meta.checkIn) {
-    list.push({ label: "Check-in Date", value: meta.check_in || meta.checkIn });
+    list.push({ label: t("notifications.metadata.checkInDate"), value: meta.check_in || meta.checkIn });
   }
   if (meta.check_out || meta.checkOut) {
-    list.push({ label: "Check-out Date", value: meta.check_out || meta.checkOut });
+    list.push({ label: t("notifications.metadata.checkOutDate"), value: meta.check_out || meta.checkOut });
   }
   if (meta.status) {
-    list.push({ label: "Status", value: String(meta.status).toUpperCase() });
+    list.push({ label: t("notifications.metadata.status"), value: String(meta.status).toUpperCase() });
   }
 
   Object.keys(meta).forEach(key => {
@@ -344,7 +344,7 @@ onMounted(async () => {
               :to="{ name: 'public.properties' }"
               class="px-7 py-3 bg-(--color-primary) hover:opacity-90 text-white !text-white text-sm font-bold rounded-full shadow-md active:scale-95 transition cursor-pointer flex items-center justify-center"
             >
-              <span class="text-white !text-white">Explore Properties</span>
+              <span class="text-white !text-white">{{ t("notifications.empty.exploreProperties") }}</span>
             </RouterLink>
           </div>
         </div>
@@ -491,7 +491,7 @@ onMounted(async () => {
             class="mb-6 rounded-2xl bg-(--color-surface-soft) p-4 border border-(--color-border)/40 text-xs space-y-2.5"
           >
             <div class="font-bold text-(--color-muted) uppercase tracking-wider text-[10px] border-b border-(--color-border)/20 pb-1.5 mb-2">
-              Notification details
+              {{ t("notifications.detailModal.title") }}
             </div>
             <div
               v-for="item in metadataList"
@@ -521,7 +521,7 @@ onMounted(async () => {
               class="!rounded-xl"
               @click="closeDetailModal"
             >
-              Close
+              {{ t("common.close") }}
             </AppButton>
           </div>
         </div>

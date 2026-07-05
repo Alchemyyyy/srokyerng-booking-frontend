@@ -8,6 +8,7 @@ import { XMarkIcon } from "@heroicons/vue/24/outline";
 import { calendarApi } from "../api/Calendar.api";
 import { useToastStore } from "@/shared/store/toastStore";
 import { useTheme } from "@/shared/composables/useTheme";
+import { useI18n } from "vue-i18n";
 
 const props = defineProps({
   roomId: { type: [Number, String], default: null },
@@ -17,6 +18,7 @@ const props = defineProps({
 
 const emit = defineEmits(["date-selected", "range-selected"]);
 const toast = useToastStore();
+const { t } = useI18n({ useScope: "global" });
 const { resolvedTheme } = useTheme();
 const isDarkTheme = computed(() => resolvedTheme.value === "dark");
 
@@ -154,7 +156,7 @@ const fetchCalendar = async () => {
       endpointNotReady.value = true;
     } else {
       error.value =
-        err?.response?.data?.message ?? "Failed to load availability.";
+        err?.response?.data?.message ?? t("components.availabilityCalendar.loadFailed");
     }
     console.error("[AvailabilityCalendar] fetch error:", err);
   } finally {
@@ -286,7 +288,7 @@ const calendarAttributes = computed(() => {
       highlight: { color: "red", fillMode: "solid" },
       dates: realBookings.map((d) => new Date(d)),
       popover: {
-        label: props.mode === "owner" ? "Booked — click for details" : "Booked",
+        label: props.mode === "owner" ? t("components.availabilityCalendar.bookedClickForDetails") : t("components.availabilityCalendar.booked"),
       },
     });
   }
@@ -298,7 +300,7 @@ const calendarAttributes = computed(() => {
       highlight: { color: "orange", fillMode: "solid" },
       dates: blockedDates.value.map((d) => new Date(d)),
       popover: {
-        label: props.mode === "owner" ? "Blocked by Owner — click to unblock" : "Unavailable",
+        label: props.mode === "owner" ? t("components.availabilityCalendar.blockedByOwner") : t("components.availabilityCalendar.unavailable"),
       },
     });
   }
@@ -349,15 +351,15 @@ const toggleBlockDate = async () => {
   try {
     if (blockedDates.value.includes(dateStr)) {
       await calendarApi.deleteRoomBlock(props.roomId, dateStr);
-      toast.success("Date unblocked successfully");
+      toast.success(t("components.availabilityCalendar.dateUnblocked"));
     } else {
       await calendarApi.createRoomBlock(props.roomId, dateStr);
-      toast.success("Date blocked successfully");
+      toast.success(t("components.availabilityCalendar.dateBlocked"));
     }
     await fetchCalendar();
   } catch (err) {
     toast.danger(
-      err?.response?.data?.message || "Failed to update block status.",
+      err?.response?.data?.message || t("components.availabilityCalendar.updateBlockFailed"),
     );
   } finally {
     blockActionLoading.value = false;
@@ -406,8 +408,7 @@ const handleDayClick = (day) => {
     });
 
     if (hasUnavailable) {
-      error.value =
-        "Your selected range includes unavailable dates. Please choose different dates.";
+      error.value = t("components.availabilityCalendar.rangeIncludesUnavailable");
       selectedRange.value = { start: null, end: null };
       return;
     }
@@ -431,7 +432,7 @@ onMounted(fetchCalendar);
         class="w-6 h-6 border-2 border-(--color-primary) border-t-transparent rounded-full animate-spin"
       />
       <span class="ml-3 text-sm text-(--color-muted) font-medium"
-        >Loading availability...</span
+        >{{ t("components.availabilityCalendar.loading") }}</span
       >
     </div>
 
@@ -440,11 +441,10 @@ onMounted(fetchCalendar);
       class="rounded-xl bg-(--color-warning-soft) border border-(--color-warning) px-4 py-6 text-center mb-4"
     >
       <p class="text-sm font-bold text-(--color-warning) mb-1">
-        Availability calendar coming soon
+        {{ t("components.availabilityCalendar.comingSoonTitle") }}
       </p>
       <p class="text-xs text-(--color-warning)">
-        The availability endpoint is not ready yet. The calendar will show here
-        once the backend is connected.
+        {{ t("components.availabilityCalendar.comingSoonDesc") }}
       </p>
     </div>
 
@@ -460,7 +460,7 @@ onMounted(fetchCalendar);
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
         <div class="rounded-xl bg-(--color-surface-soft) px-4 py-3">
           <p class="text-xs font-semibold text-(--color-muted) mb-1">
-            Available nights
+            {{ t("components.availabilityCalendar.availableNights") }}
           </p>
           <p class="text-2xl font-bold text-(--color-text)">
             {{ monthStats.available }}
@@ -468,7 +468,7 @@ onMounted(fetchCalendar);
         </div>
         <div class="rounded-xl bg-(--color-surface-soft) px-4 py-3">
           <p class="text-xs font-semibold text-(--color-muted) mb-1">
-            Booked nights
+            {{ t("components.availabilityCalendar.bookedNights") }}
           </p>
           <p class="text-2xl font-bold text-(--color-text)">
             {{ monthStats.booked }}
@@ -478,7 +478,7 @@ onMounted(fetchCalendar);
           class="rounded-xl bg-(--color-surface-soft) px-4 py-3 col-span-2 sm:col-span-1"
         >
           <p class="text-xs font-semibold text-(--color-muted) mb-1">
-            Occupancy
+            {{ t("components.availabilityCalendar.occupancy") }}
           </p>
           <p class="text-2xl font-bold text-(--color-text)">
             {{ monthStats.occupancy }}%
@@ -512,9 +512,9 @@ onMounted(fetchCalendar);
           >
             <div class="flex items-center justify-between mb-2">
               <p class="font-bold text-(--color-text)">
-                <span v-if="selectedBookings.length">Booking{{ selectedBookings.length > 1 ? "s" : "" }} —</span>
-                <span v-else-if="blockedDates.includes(selectedBookingDate)">Blocked Date —</span>
-                <span v-else>Available Date —</span>
+                <span v-if="selectedBookings.length">{{ selectedBookings.length > 1 ? t("components.availabilityCalendar.bookingsPrefix") : t("components.availabilityCalendar.bookingPrefix") }}</span>
+                <span v-else-if="blockedDates.includes(selectedBookingDate)">{{ t("components.availabilityCalendar.blockedDatePrefix") }}</span>
+                <span v-else>{{ t("components.availabilityCalendar.availableDatePrefix") }}</span>
                 {{ selectedBookingDate }}
               </p>
               <button
@@ -522,7 +522,7 @@ onMounted(fetchCalendar);
                 class="inline-flex items-center gap-1 text-xs font-semibold text-(--color-muted) hover:text-(--color-text)"
                 @click="selectedBookingDate = null"
               >
-                Close <XMarkIcon class="h-3.5 w-3.5" />
+                {{ t("components.availabilityCalendar.close") }} <XMarkIcon class="h-3.5 w-3.5" />
               </button>
             </div>
 
@@ -538,26 +538,26 @@ onMounted(fetchCalendar);
                     booking.guest_name ??
                     booking.customer_name ??
                     booking.guestName ??
-                    "Guest"
+                    t("components.availabilityCalendar.guestFallback")
                   }}
                 </p>
                 <div
                   class="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-(--color-muted)"
                 >
                   <span>
-                    Check-in:
+                    {{ t("components.availabilityCalendar.checkInLabel") }}
                     <strong class="text-(--color-text)">
                       {{ booking.check_in_date ?? booking.checkIn ?? "—" }}
                     </strong>
                   </span>
                   <span>
-                    Check-out:
+                    {{ t("components.availabilityCalendar.checkOutLabel") }}
                     <strong class="text-(--color-text)">
                       {{ booking.check_out_date ?? booking.checkOut ?? "—" }}
                     </strong>
                   </span>
                   <span v-if="booking.status ?? booking.reservation_status">
-                    Status:
+                    {{ t("components.availabilityCalendar.statusLabel") }}
                     <strong class="text-(--color-text) capitalize">
                       {{ booking.status ?? booking.reservation_status }}
                     </strong>
@@ -571,37 +571,37 @@ onMounted(fetchCalendar);
                   }"
                   class="inline-block mt-2 text-xs font-bold text-(--color-primary) hover:underline"
                 >
-                  View full reservation →
+                  {{ t("components.availabilityCalendar.viewFullReservation") }}
                 </RouterLink>
               </div>
             </div>
 
             <!-- Case 2: Blocked Date -->
             <div v-else-if="blockedDates.includes(selectedBookingDate)" class="py-2 flex items-center justify-between">
-              <p class="text-xs text-(--color-warning) font-semibold">Blocked for Maintenance / External Booking</p>
+              <p class="text-xs text-(--color-warning) font-semibold">{{ t("components.availabilityCalendar.blockedForMaintenance") }}</p>
               <button
                 v-if="roomId"
                 @click="toggleBlockDate"
                 :disabled="blockActionLoading"
                 class="px-3 py-1.5 rounded-xl bg-(--color-warning) text-white font-bold text-xs hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {{ blockActionLoading ? "…" : "Unblock Date" }}
+                {{ blockActionLoading ? "…" : t("components.availabilityCalendar.unblockDate") }}
               </button>
             </div>
 
             <!-- Case 3: Available Date -->
             <div v-else class="py-2 flex items-center justify-between">
-              <p class="text-xs text-(--color-success) font-semibold">Date is available for guest bookings</p>
+              <p class="text-xs text-(--color-success) font-semibold">{{ t("components.availabilityCalendar.dateAvailableForBookings") }}</p>
               <button
                 v-if="roomId"
                 @click="toggleBlockDate"
                 :disabled="blockActionLoading"
                 class="px-3 py-1.5 rounded-xl bg-(--color-danger) text-white font-bold text-xs hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {{ blockActionLoading ? "…" : "Block Date" }}
+                {{ blockActionLoading ? "…" : t("components.availabilityCalendar.blockDate") }}
               </button>
               <p v-else class="text-xs text-(--color-muted) italic">
-                Open a specific room's calendar to block dates
+                {{ t("components.availabilityCalendar.openRoomCalendarHint") }}
               </p>
             </div>
           </div>
@@ -610,20 +610,20 @@ onMounted(fetchCalendar);
             v-if="mode !== 'owner' && selectedRange.start"
             class="mt-4 rounded-xl border border-(--color-border) bg-(--color-surface-soft) px-4 py-3 text-sm"
           >
-            <p class="font-bold text-(--color-text) mb-1">Selected Dates</p>
+            <p class="font-bold text-(--color-text) mb-1">{{ t("components.availabilityCalendar.selectedDates") }}</p>
             <div class="flex items-center gap-3 text-(--color-muted)">
               <span>
-                Check-in:
+                {{ t("components.availabilityCalendar.checkInLabel") }}
                 <strong class="text-(--color-text)">
                   {{ selectedRange.start ? formatLocalDate(selectedRange.start) : "—" }}
                 </strong>
               </span>
               <span class="text-(--color-border)">→</span>
               <span>
-                Check-out:
+                {{ t("components.availabilityCalendar.checkOutLabel") }}
                 <strong class="text-(--color-text)">
                   {{
-                    selectedRange.end ? formatLocalDate(selectedRange.end) : "Select end date"
+                    selectedRange.end ? formatLocalDate(selectedRange.end) : t("components.availabilityCalendar.selectEndDate")
                   }}
                 </strong>
               </span>
@@ -637,23 +637,23 @@ onMounted(fetchCalendar);
               <span
                 class="w-2.5 h-2.5 rounded-full border-2 border-(--color-border-secondary)"
               />
-              Available
+              {{ t("components.availabilityCalendar.legendAvailable") }}
             </div>
             <div class="flex items-center gap-1.5">
               <span class="w-2.5 h-2.5 rounded-full bg-(--color-danger)" />
-              Booked
+              {{ t("components.availabilityCalendar.legendBooked") }}
             </div>
             <div v-if="mode === 'owner'" class="flex items-center gap-1.5">
               <span class="w-2.5 h-2.5 rounded-full bg-(--color-warning)" />
-              Blocked
+              {{ t("components.availabilityCalendar.legendBlocked") }}
             </div>
             <div v-if="mode !== 'owner'" class="flex items-center gap-1.5">
               <span class="w-2.5 h-2.5 rounded-full bg-(--color-primary)" />
-              Selected
+              {{ t("components.availabilityCalendar.legendSelected") }}
             </div>
             <div class="flex items-center gap-1.5">
               <span class="w-2.5 h-2.5 rounded-full border-2 border-(--color-muted)" />
-              Today
+              {{ t("components.availabilityCalendar.legendToday") }}
             </div>
           </div>
         </div>
@@ -663,13 +663,13 @@ onMounted(fetchCalendar);
           <p
             class="text-xs font-bold uppercase tracking-wide text-(--color-muted) mb-3"
           >
-            Upcoming stays
+            {{ t("components.availabilityCalendar.upcomingStays") }}
           </p>
           <div
             v-if="upcomingStays.length === 0"
             class="text-sm text-(--color-muted)"
           >
-            No bookings coming up this period.
+            {{ t("components.availabilityCalendar.noUpcomingBookings") }}
           </div>
           <div v-else class="flex flex-col gap-3">
             <div
@@ -681,7 +681,7 @@ onMounted(fetchCalendar);
                 {{ stay.label }}
               </p>
               <p class="text-xs text-(--color-muted)">
-                {{ stay.nights }} night{{ stay.nights > 1 ? "s" : "" }} booked
+                {{ t("components.availabilityCalendar.nightsBooked", { count: stay.nights }) }}
               </p>
             </div>
           </div>

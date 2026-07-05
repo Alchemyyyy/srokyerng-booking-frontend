@@ -1,9 +1,12 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useOwnerPaymentStore } from '../store/ownerPayment.store';
 import { useToastStore } from '@/shared/store/toastStore';
 import AppModal from '@/shared/components/AppModal.vue';
 import { CameraIcon, CheckIcon } from '@heroicons/vue/24/outline';
+
+const { t } = useI18n({ useScope: 'global' });
 
 const props = defineProps({
     isOpen: { type: Boolean, default: false },
@@ -20,11 +23,11 @@ const accountNumber = ref('');
 const qrFile = ref(null);
 const qrPreviewUrl = ref(null);
 
-const paymentMethods = [
-    { id: 1, name: 'ABA Bank' },
-    { id: 2, name: 'Acleda Bank' },
-    { id: 3, name: 'Wing Bank' },
-];
+const paymentMethods = computed(() => [
+    { id: 1, name: t('components.createPaymentAccountForm.banks.aba') },
+    { id: 2, name: t('components.createPaymentAccountForm.banks.acleda') },
+    { id: 3, name: t('components.createPaymentAccountForm.banks.wing') },
+]);
 
 const resetForm = () => {
     paymentMethodId.value = '';
@@ -62,7 +65,7 @@ const closeModal = () => {
 
 const submitForm = async () => {
     if (!paymentMethodId.value || !accountName.value || !accountNumber.value) {
-        toastStore.danger('Please fill in all required fields.', { title: 'Required Fields' });
+        toastStore.danger(t('components.createPaymentAccountForm.requiredFieldsMessage'), { title: t('components.createPaymentAccountForm.requiredFieldsTitle') });
         return;
     }
 
@@ -84,7 +87,7 @@ const submitForm = async () => {
     } else {
         // ករណី CREATE (POST): ត្រូវទាមទាររូបភាព QR ដាច់ខាត
         if (!qrFile.value) {
-            toastStore.danger('Please upload a QR Code image.', { title: 'Required QR' });
+            toastStore.danger(t('components.createPaymentAccountForm.requiredQrMessage'), { title: t('components.createPaymentAccountForm.requiredQrTitle') });
             return;
         }
         formData.append('payment_method_id', paymentMethodId.value);
@@ -92,46 +95,46 @@ const submitForm = async () => {
     }
 
     if (result.success) {
-        toastStore.success(result.message, { title: 'Success' });
+        toastStore.success(result.message, { title: t('components.createPaymentAccountForm.successTitle') });
         closeModal();
         emit('saved');
     } else {
-        toastStore.danger(result.error, { title: 'Error' });
+        toastStore.danger(result.error, { title: t('components.createPaymentAccountForm.errorTitle') });
     }
 };
 </script>
 
 <template>
-    <AppModal :open="isOpen" :title="editData ? 'Update Payment Account' : 'Add Payment Account'" panelClass="max-w-md"
+    <AppModal :open="isOpen" :title="editData ? t('components.createPaymentAccountForm.titleUpdate') : t('components.createPaymentAccountForm.titleAdd')" panelClass="max-w-md"
         @close="closeModal">
         <form id="paymentAccountForm" @submit.prevent="submitForm" class="space-y-4 pt-2">
 
             <div>
-                <label class="block text-sm font-medium text-(--color-text) mb-1">Select Bank</label>
+                <label class="block text-sm font-medium text-(--color-text) mb-1">{{ t('components.createPaymentAccountForm.selectBankLabel') }}</label>
                 <select v-model="paymentMethodId" :disabled="!!editData"
                     class="w-full border border-(--color-border) bg-(--color-input) text-(--color-text) p-2.5 rounded-xl outline-none focus:border-(--color-primary) disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer">
-                    <option value="" disabled selected>-- Choose Bank --</option>
+                    <option value="" disabled selected>{{ t('components.createPaymentAccountForm.chooseBankPlaceholder') }}</option>
                     <option v-for="method in paymentMethods" :key="method.id" :value="method.id">
                         {{ method.name }}
                     </option>
                 </select>
-                <p v-if="editData" class="text-[11px] text-(--color-muted) mt-1">Bank provider cannot be changed.</p>
+                <p v-if="editData" class="text-[11px] text-(--color-muted) mt-1">{{ t('components.createPaymentAccountForm.bankLockedHint') }}</p>
             </div>
 
             <div>
-                <label for="paymentAccountName" class="block text-sm font-medium text-(--color-text) mb-1">Account Name</label>
-                <input id="paymentAccountName" v-model="accountName" type="text" placeholder="e.g. SOK SAN"
+                <label for="paymentAccountName" class="block text-sm font-medium text-(--color-text) mb-1">{{ t('components.createPaymentAccountForm.accountNameLabel') }}</label>
+                <input id="paymentAccountName" v-model="accountName" type="text" :placeholder="t('components.createPaymentAccountForm.accountNamePlaceholder')"
                     class="w-full border border-(--color-border) bg-(--color-input) text-(--color-text) p-2.5 rounded-xl outline-none focus:border-(--color-primary)" />
             </div>
 
             <div>
-                <label for="paymentAccountNumber" class="block text-sm font-medium text-(--color-text) mb-1">Account Number</label>
-                <input id="paymentAccountNumber" v-model="accountNumber" type="text" placeholder="e.g. 000 111 222"
+                <label for="paymentAccountNumber" class="block text-sm font-medium text-(--color-text) mb-1">{{ t('components.createPaymentAccountForm.accountNumberLabel') }}</label>
+                <input id="paymentAccountNumber" v-model="accountNumber" type="text" :placeholder="t('components.createPaymentAccountForm.accountNumberPlaceholder')"
                     class="w-full border border-(--color-border) bg-(--color-input) text-(--color-text) p-2.5 rounded-xl outline-none focus:border-(--color-primary)" />
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-(--color-text) mb-1">Bank QR Code</label>
+                <label class="block text-sm font-medium text-(--color-text) mb-1">{{ t('components.createPaymentAccountForm.qrCodeLabel') }}</label>
 
                 <div
                     class="border-2 border-dashed border-(--color-border) rounded-xl p-4 text-center cursor-pointer hover:border-(--color-primary) transition relative bg-(--color-input)/5">
@@ -141,18 +144,18 @@ const submitForm = async () => {
                     <div v-if="!qrPreviewUrl" class="text-(--color-muted) py-4">
                         <div class="flex flex-col items-center gap-2">
                             <CameraIcon class="h-8 w-8 text-(--color-muted)" />
-                            <span class="text-sm font-semibold text-(--color-text)">Click to upload images</span>
-                            <span class="text-xs text-(--color-muted)">PNG, JPG up to 10MB (multiple allowed)</span>
+                            <span class="text-sm font-semibold text-(--color-text)">{{ t('components.createPaymentAccountForm.uploadImagesHint') }}</span>
+                            <span class="text-xs text-(--color-muted)">{{ t('components.createPaymentAccountForm.uploadFormatsHint') }}</span>
                         </div>
                     </div>
 
                     <div v-else class="flex flex-col items-center gap-2">
-                        <img :src="qrPreviewUrl" alt="QR Preview"
+                        <img :src="qrPreviewUrl" :alt="t('components.createPaymentAccountForm.qrPreviewAlt')"
                             class="w-32 h-32 object-contain border rounded-xl bg-white p-1 shadow-inner" />
                         <span
                             class="inline-flex items-center gap-1 text-xs text-(--color-primary) font-bold bg-(--color-primary)/10 px-2.5 py-1 rounded-lg">
                             <CheckIcon v-if="qrFile" class="h-3.5 w-3.5" />
-                            {{ qrFile ? 'New QR Selected' : 'Click to Change QR Image' }}
+                            {{ qrFile ? t('components.createPaymentAccountForm.newQrSelected') : t('components.createPaymentAccountForm.clickToChangeQr') }}
                         </span>
                     </div>
                 </div>
@@ -162,10 +165,10 @@ const submitForm = async () => {
 
         <template #footer>
             <button type="button" @click="closeModal"
-                class="px-4 py-2 border border-(--color-border) text-(--color-text) rounded-xl hover:bg-(--color-surface-soft) cursor-pointer">Cancel</button>
+                class="px-4 py-2 border border-(--color-border) text-(--color-text) rounded-xl hover:bg-(--color-surface-soft) cursor-pointer">{{ t('components.createPaymentAccountForm.cancelButton') }}</button>
             <button type="submit" form="paymentAccountForm" :disabled="paymentStore.loading"
                 class="px-4 py-2 bg-(--color-primary) text-white font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 cursor-pointer">
-                <span>{{ paymentStore.loading ? 'Saving...' : (editData ? 'Update Now' : 'Save') }}</span>
+                <span>{{ paymentStore.loading ? t('components.createPaymentAccountForm.savingButton') : (editData ? t('components.createPaymentAccountForm.updateButton') : t('components.createPaymentAccountForm.saveButton')) }}</span>
             </button>
         </template>
     </AppModal>

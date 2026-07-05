@@ -1,4 +1,9 @@
 <script setup>
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n({ useScope: "global" });
+
 const props = defineProps({
     modelValue: {
         type: String,
@@ -12,11 +17,11 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue']);
 
-const tabs = [
-    { label: 'All', value: 'all' },
-    { label: 'Active', value: 'active', accentClass: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
-    { label: 'Deactivated', value: 'deactive', accentClass: 'bg-slate-500/10 text-slate-600 border-slate-500/20' },
-];
+const tabs = computed(() => [
+    { label: t('components.paymentAccountFilter.tabs.all'), value: 'all' },
+    { label: t('components.paymentAccountFilter.tabs.active'), value: 'active', accentClass: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
+    { label: t('components.paymentAccountFilter.tabs.deactivated'), value: 'deactive', accentClass: 'bg-slate-500/10 text-slate-600 border-slate-500/20' },
+]);
 
 const getCount = (value) => {
     if (value === 'all') return props.allAccounts.length;

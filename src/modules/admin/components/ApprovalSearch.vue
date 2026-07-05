@@ -1,11 +1,16 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n({ useScope: "global" });
 
 const props = defineProps({
     modelValue: { type: String, default: '' },
-    placeholder: { type: String, default: 'Search by property name, host, or location...' }
+    placeholder: { type: String, default: '' }
 });
+
+const resolvedPlaceholder = computed(() => props.placeholder || t("components.approvalSearch.placeholder"));
 
 const emit = defineEmits(['update:modelValue', 'search']);
 
@@ -37,18 +42,18 @@ const clearSearch = () => {
     <div class="search-container">
         <div class="search-input-wrapper">
             <MagnifyingGlassIcon class="search-icon" />
-            <input 
-                v-model="searchQuery" 
-                type="text" 
-                :placeholder="placeholder" 
-                class="search-input" 
+            <input
+                v-model="searchQuery"
+                type="text"
+                :placeholder="resolvedPlaceholder"
+                class="search-input"
             />
-            <button 
-                v-if="searchQuery" 
-                @click="clearSearch" 
-                type="button" 
+            <button
+                v-if="searchQuery"
+                @click="clearSearch"
+                type="button"
                 class="clear-button"
-                title="Clear search"
+                :title="t('components.approvalSearch.clearSearch')"
             >
                 <XMarkIcon class="clear-icon" />
             </button>

@@ -54,7 +54,7 @@ const isSaved = (id) => wishlistStore.isPropertySaved(id);
 const toggleSave = async (id, e) => {
   e.stopPropagation();
   if (!authStore.isAuthenticated) {
-    toastStore.warning("Please login to save properties to your wishlist");
+    toastStore.warning(t("home.featured.loginToSave"));
     return;
   }
   const property = featuredProperties.value.find((p) => p.id === id);
@@ -65,16 +65,16 @@ const toggleSave = async (id, e) => {
     const isNowSaved = wishlistStore.isPropertySaved(id);
     if (isNowSaved) {
       toastStore.success(
-        propertyName ? `Added "${propertyName}" to your wishlist!` : "Added to wishlist!"
+        propertyName ? t("home.featured.addedToWishlist", { name: propertyName }) : t("home.featured.addedToWishlistGeneric")
       );
     } else {
       toastStore.success(
-        propertyName ? `Removed "${propertyName}" from your wishlist!` : "Removed from wishlist!"
+        propertyName ? t("home.featured.removedFromWishlist", { name: propertyName }) : t("home.featured.removedFromWishlistGeneric")
       );
     }
   } else {
     toastStore.danger(
-      propertyName ? `Failed to update wishlist for "${propertyName}"` : "Failed to update wishlist"
+      propertyName ? t("home.featured.wishlistError", { name: propertyName }) : t("home.featured.wishlistErrorGeneric")
     );
   }
 };
@@ -136,7 +136,7 @@ onMounted(() => {
         class="rounded-3xl border border-(--color-border) bg-(--color-surface-soft) px-6 py-16 text-center text-(--color-muted)"
       >
         <div class="inline-block w-6 h-6 border-2 border-(--color-primary) border-t-transparent rounded-full animate-spin mb-2"></div>
-        <p class="text-sm font-semibold">Loading featured properties...</p>
+        <p class="text-sm font-semibold">{{ t("home.featured.loading") }}</p>
       </div>
 
       <div
@@ -155,9 +155,9 @@ onMounted(() => {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 13.5a3 3 0 100-6 3 3 0 000 6z" />
             </svg>
           </div>
-          <h3 class="text-lg font-black text-(--color-text) mb-1.5">No stays available</h3>
+          <h3 class="text-lg font-black text-(--color-text) mb-1.5">{{ t("home.featured.emptyTitle") }}</h3>
           <p class="text-xs text-(--color-muted) max-w-sm leading-relaxed font-semibold">
-            There are no approved stays listed under this category at the moment. Try selecting another tab or click the explorer link to search all locations.
+            {{ t("home.featured.emptyDesc") }}
           </p>
         </div>
 
@@ -196,13 +196,13 @@ onMounted(() => {
                   class="inline-flex items-center gap-1 rounded-full bg-white/95 text-gray-900 font-extrabold px-3 py-1 text-[9px] shadow-md tracking-wider uppercase"
                 >
                   <SparklesIcon class="h-3 w-3 text-amber-500 fill-amber-500" />
-                  <span>Guest favorite</span>
+                  <span>{{ t("home.featured.guestFavorite") }}</span>
                 </span>
                 <span
                   v-else-if="!property.rating || property.rating === 0"
                   class="inline-flex items-center gap-1 rounded-full bg-emerald-500 text-white font-extrabold px-3 py-1 text-[9px] shadow-md tracking-wider uppercase"
                 >
-                  <span>New Listing</span>
+                  <span>{{ t("home.featured.newListing") }}</span>
                 </span>
               </div>
             </div>
@@ -219,7 +219,7 @@ onMounted(() => {
                     <span>{{ Number(property.rating).toFixed(1) }}</span>
                   </div>
                   <div v-else class="text-xs font-bold text-(--color-muted) shrink-0">
-                    New
+                    {{ t("home.featured.new") }}
                   </div>
                 </div>
 
@@ -230,14 +230,14 @@ onMounted(() => {
 
                 <!-- Specifications -->
                 <p class="text-xs font-semibold text-(--color-muted) mt-0.5 capitalize truncate">
-                  {{ property.category || 'Stay' }} • Free cancellation
+                  {{ property.category || t('home.featured.stay') }} • {{ t("home.featured.freeCancellation") }}
                 </p>
               </div>
 
               <!-- Price -->
               <div class="mt-2 flex items-baseline gap-1">
                 <span class="text-sm font-black text-(--color-text)">${{ property.price }}</span>
-                <span class="text-xs font-normal text-(--color-muted)">/ night</span>
+                <span class="text-xs font-normal text-(--color-muted)">/ {{ t("home.featured.perNight") }}</span>
               </div>
             </div>
           </article>

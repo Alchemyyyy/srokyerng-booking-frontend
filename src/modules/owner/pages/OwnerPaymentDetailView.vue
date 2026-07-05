@@ -13,11 +13,15 @@ import {
     XMarkIcon,
     ShieldCheckIcon,
 } from "@heroicons/vue/24/outline";
+import { useI18n } from "vue-i18n";
 
 const route = useRoute();
 const router = useRouter();
 const toastStore = useToastStore();
 const { isSidebarOpen } = useSidebar();
+const { t, te } = useI18n({ useScope: "global" });
+const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
+const statusLabel = (value) => safeT(`common.status.${String(value || "").toLowerCase()}`, value);
 
 const loading = ref(true);
 const actionLoading = ref(false);
@@ -102,8 +106,8 @@ const fetchPaymentDetails = async () => {
         const paymentData = paymentResponse?.data?.data || paymentResponse?.data || paymentResponse;
 
         if (!paymentData) {
-            error.value = "Payment record not found.";
-            toastStore.danger("Payment record not found.");
+            error.value = t("owner.paymentDetail.paymentNotFound");
+            toastStore.danger(t("owner.paymentDetail.paymentNotFound"));
             return;
         }
 
@@ -129,7 +133,7 @@ const fetchPaymentDetails = async () => {
 
         reservation.value = normalizeReservationItem(refundData || {}, paymentData);
     } catch (err) {
-        error.value = err.response?.data?.message || err.message || "Failed to load details.";
+        error.value = err.response?.data?.message || err.message || t("owner.paymentDetail.loadFailed");
         toastStore.danger(error.value);
     } finally {
         loading.value = false;
@@ -141,10 +145,10 @@ const handleApprovePayment = async () => {
     actionLoading.value = true;
     try {
         await ownerPaymentApi.verifyPayment(paymentId.value);
-        toastStore.success("Payment verified successfully!", { title: "Approved" });
+        toastStore.success(t("owner.paymentDetail.paymentVerified"), { title: t("owner.paymentDetail.approvedTitle") });
         await fetchPaymentDetails();
     } catch (err) {
-        toastStore.danger(err.response?.data?.message || "Failed to verify payment");
+        toastStore.danger(err.response?.data?.message || t("owner.paymentDetail.verifyFailed"));
     } finally {
         actionLoading.value = false;
     }
@@ -152,7 +156,7 @@ const handleApprovePayment = async () => {
 
 const handleRejectPayment = async () => {
     if (!paymentRejectReason.value.trim()) {
-        toastStore.warning("Please enter a rejection reason.", { title: "Validation Error" });
+        toastStore.warning(t("owner.paymentDetail.enterRejectionReason"), { title: t("owner.paymentDetail.validationError") });
         return;
     }
     if (!paymentId.value) return;
@@ -161,11 +165,11 @@ const handleRejectPayment = async () => {
         await ownerPaymentApi.rejectPayment(paymentId.value, {
             rejection_reason: paymentRejectReason.value.trim()
         });
-        toastStore.warning("Payment has been rejected.", { title: "Rejected" });
+        toastStore.warning(t("owner.paymentDetail.paymentRejected"), { title: t("owner.paymentDetail.rejectedTitle") });
         showRejectPaymentInput.value = false;
         await fetchPaymentDetails();
     } catch (err) {
-        toastStore.danger(err.response?.data?.message || "Failed to reject payment");
+        toastStore.danger(err.response?.data?.message || t("owner.paymentDetail.rejectFailed"));
     } finally {
         actionLoading.value = false;
     }
@@ -176,11 +180,11 @@ const handleApproveRefund = async () => {
     actionLoading.value = true;
     try {
         await ownerPaymentApi.approveRefund(refundId.value);
-        toastStore.success("Refund request approved successfully!", { title: "Approved" });
+        toastStore.success(t("owner.paymentDetail.refundApproved"), { title: t("owner.paymentDetail.approvedTitle") });
         router.back();
     } catch (err) {
         console.error("Approve error:", err);
-        toastStore.danger(err.response?.data?.message || "Failed to approve refund");
+        toastStore.danger(err.response?.data?.message || t("owner.paymentDetail.refundApproveFailed"));
     } finally {
         actionLoading.value = false;
     }
@@ -188,7 +192,7 @@ const handleApproveRefund = async () => {
 
 const handleRejectRefund = async () => {
     if (!refundRejectReason.value.trim()) {
-        toastStore.warning("Please enter a reason for rejecting this refund request.", { title: "Validation Error" });
+        toastStore.warning(t("owner.paymentDetail.enterRefundRejectionReason"), { title: t("owner.paymentDetail.validationError") });
         return;
     }
     if (!refundId.value) return;
@@ -197,12 +201,12 @@ const handleRejectRefund = async () => {
         await ownerPaymentApi.rejectRefund(refundId.value, {
             decision_note: refundRejectReason.value.trim(),
         });
-        toastStore.warning("Refund request has been rejected.", { title: "Rejected" });
+        toastStore.warning(t("owner.paymentDetail.refundRejected"), { title: t("owner.paymentDetail.rejectedTitle") });
         showRejectRefundInput.value = false;
         router.back();
     } catch (err) {
         console.error("Rejection error:", err);
-        toastStore.danger(err.response?.data?.message || "Failed to reject refund");
+        toastStore.danger(err.response?.data?.message || t("owner.paymentDetail.refundRejectFailed"));
     } finally {
         actionLoading.value = false;
     }
@@ -251,11 +255,11 @@ onMounted(fetchPaymentDetails);
             <button @click="router.back()"
                 class="inline-flex items-center gap-2 px-4 py-2 bg-(--color-surface) border border-(--color-border) rounded-xl text-xs font-bold text-(--color-text) hover:bg-(--color-surface-soft) transition cursor-pointer shadow-sm">
                 <ArrowLeftIcon class="w-4 h-4" />
-                <span>Back to List</span>
+                <span>{{ t("owner.paymentDetail.backToList") }}</span>
             </button>
         </header>
 
-        <OwnerLoadingState v-if="loading" label="Loading transaction records..." />
+        <OwnerLoadingState v-if="loading" :label="t('owner.paymentDetail.loadingRecords')" />
 
         <div v-else-if="error"
             class="p-6 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-600 text-center font-bold text-sm">
@@ -267,22 +271,20 @@ onMounted(fetchPaymentDetails);
                 class="lg:col-span-7 space-y-6 bg-(--color-surface) rounded-2xl border border-(--color-border) p-6 shadow-sm">
                 <div class="space-y-3">
                     <span
-                        class="text-xs font-bold text-(--color-muted) uppercase tracking-wider block border-b border-(--color-border) pb-1.5">Guest
-                        Information</span>
+                        class="text-xs font-bold text-(--color-muted) uppercase tracking-wider block border-b border-(--color-border) pb-1.5">{{ t("owner.paymentDetail.guestInformation") }}</span>
                     <div
                         class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-(--color-surface-soft) p-4 rounded-xl border border-(--color-border)">
                         <div>
-                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Full Name</span>
+                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.paymentDetail.fullName") }}</span>
                             <span class="font-bold text-(--color-text) text-sm">{{ reservation.guestName }}</span>
                         </div>
                         <div>
-                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Phone Number</span>
+                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.paymentDetail.phoneNumber") }}</span>
                             <span class="font-semibold text-(--color-primary) text-sm">{{ reservation.guestPhone
                                 }}</span>
                         </div>
                         <div class="overflow-hidden">
-                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Email
-                                Address</span>
+                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.paymentDetail.emailAddress") }}</span>
                             <span class="font-medium text-(--color-text) text-sm truncate block"
                                 :title="reservation.guestEmail">{{ reservation.guestEmail }}</span>
                         </div>
@@ -291,34 +293,30 @@ onMounted(fetchPaymentDetails);
 
                 <div class="space-y-3">
                     <span
-                        class="text-xs font-bold text-(--color-muted) uppercase tracking-wider block border-b border-(--color-border) pb-1.5">Stay
-                        Details</span>
+                        class="text-xs font-bold text-(--color-muted) uppercase tracking-wider block border-b border-(--color-border) pb-1.5">{{ t("owner.paymentDetail.stayDetails") }}</span>
                     <div
                         class="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-(--color-surface-soft) p-4 rounded-xl border border-(--color-border)">
                         <div class="col-span-2">
-                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Property
-                                Name</span>
+                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.paymentDetail.propertyName") }}</span>
                             <span class="font-bold text-(--color-text) text-sm truncate block">{{
                                 reservation.propertyName }}</span>
                         </div>
                         <div>
-                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Room</span>
+                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.paymentDetail.room") }}</span>
                             <span class="font-semibold text-(--color-text) text-sm">{{ reservation.roomName }}</span>
                         </div>
                         <div>
-                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Duration</span>
+                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.paymentDetail.duration") }}</span>
                             <span class="font-bold text-(--color-primary) text-sm">{{ reservation.totalNights }}
-                                Night(s)</span>
+                                {{ t("owner.paymentDetail.nightsSuffix") }}</span>
                         </div>
                         <div class="col-span-2">
-                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Check-in
-                                Date</span>
+                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.paymentDetail.checkInDate") }}</span>
                             <span class="font-medium text-(--color-text) text-xs">{{ formatDate(reservation.checkIn)
                                 }}</span>
                         </div>
                         <div class="col-span-2">
-                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Check-out
-                                Date</span>
+                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.paymentDetail.checkOutDate") }}</span>
                             <span class="font-medium text-(--color-text) text-xs">{{ formatDate(reservation.checkOut)
                                 }}</span>
                         </div>
@@ -327,57 +325,51 @@ onMounted(fetchPaymentDetails);
 
                 <div class="space-y-3">
                     <span
-                        class="text-xs font-bold text-(--color-muted) uppercase tracking-wider block border-b border-(--color-border) pb-1.5">Financial
-                        Audit</span>
+                        class="text-xs font-bold text-(--color-muted) uppercase tracking-wider block border-b border-(--color-border) pb-1.5">{{ t("owner.paymentDetail.financialAudit") }}</span>
                     <div
                         class="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-(--color-surface-soft) p-4 rounded-xl border border-(--color-border)">
                         <div>
-                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Amount
-                                Requested</span>
+                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.paymentDetail.amountRequested") }}</span>
                             <span class="font-black text-(--color-success) text-lg">
                                 {{ reservation.currency === "USD" ? "$" : "" }}{{ reservation.amount.toFixed(2) }}
                                 {{ reservation.currency !== "USD" ? reservation.currency : "" }}
                             </span>
                         </div>
                         <div>
-                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Payment
-                                Method</span>
+                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.paymentDetail.paymentMethod") }}</span>
                             <span class="font-bold text-(--color-text) text-sm mt-1 block">{{ reservation.paymentMethod
                                 }}</span>
                         </div>
                         <div class="col-span-2">
-                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Booking ID</span>
+                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.paymentDetail.bookingId") }}</span>
                             <span class="font-mono text-xs font-bold text-(--color-primary)">#{{ reservation.id
                                 }}</span>
                         </div>
                         <div class="col-span-2">
-                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Transaction
-                                Reference</span>
+                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.paymentDetail.transactionReference") }}</span>
                             <span
                                 class="font-mono text-xs text-(--color-text) bg-(--color-surface) px-2 py-1 rounded border border-(--color-border) mt-1 block truncate select-all">
                                 {{ reservation.txRef || "N/A" }}
                             </span>
                         </div>
                         <div class="col-span-2">
-                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Requested At</span>
+                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.paymentDetail.requestedAt") }}</span>
                             <span class="font-medium text-(--color-muted) text-xs">{{ formatDate(reservation.createdAt)
                                 }}</span>
                         </div>
 
                         <div>
-                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Payment
-                                Status</span>
+                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.paymentDetail.paymentStatus") }}</span>
                             <span class="inline-block text-xs font-bold uppercase px-2 py-0.5 rounded border mt-1"
                                 :class="getStatusBadgeClass(reservation.paymentStatus)">
-                                {{ reservation.paymentStatus || 'N/A' }}
+                                {{ reservation.paymentStatus ? statusLabel(reservation.paymentStatus) : 'N/A' }}
                             </span>
                         </div>
                         <div v-if="reservation.reservationStatus">
-                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">Reservation
-                                Status</span>
+                            <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.paymentDetail.reservationStatus") }}</span>
                             <span class="inline-block text-xs font-bold uppercase px-2 py-0.5 rounded border mt-1"
                                 :class="getStatusBadgeClass(reservation.reservationStatus)">
-                                {{ reservation.reservationStatus }}
+                                {{ statusLabel(reservation.reservationStatus) }}
                             </span>
                         </div>
                     </div>
@@ -387,24 +379,21 @@ onMounted(fetchPaymentDetails);
                     class="space-y-4 pt-4 border-t border-(--color-border)">
 
                     <div v-if="reservation.refundReason" class="space-y-2">
-                        <span class="text-xs font-bold text-(--color-muted) uppercase tracking-wider block">Customer
-                            Refund Request Reason</span>
+                        <span class="text-xs font-bold text-(--color-muted) uppercase tracking-wider block">{{ t("owner.paymentDetail.customerRefundReason") }}</span>
                         <div class="bg-amber-500/5 p-4 rounded-xl border border-amber-500/10">
                             <p class="text-sm font-semibold text-(--color-text)">" {{ reservation.refundReason }} "</p>
                         </div>
                     </div>
 
                     <div v-if="reservation.decisionNote" class="space-y-2">
-                        <span class="text-xs font-bold text-rose-600 tracking-wider block uppercase">Refund Rejection
-                            Reason (Owner Decision)</span>
+                        <span class="text-xs font-bold text-rose-600 tracking-wider block uppercase">{{ t("owner.paymentDetail.refundRejectionReasonOwner") }}</span>
                         <div class="bg-rose-500/5 p-4 rounded-xl border border-rose-500/10">
                             <p class="text-sm font-bold text-rose-700">" {{ reservation.decisionNote }} "</p>
                         </div>
                     </div>
 
                     <div v-if="reservation.rejectionReason && reservation.paymentStatus === 'failed'" class="space-y-2">
-                        <span class="text-xs font-bold text-red-600 uppercase tracking-wider block">Payment Rejection
-                            Reason</span>
+                        <span class="text-xs font-bold text-red-600 uppercase tracking-wider block">{{ t("owner.paymentDetail.paymentRejectionReason") }}</span>
                         <div class="bg-red-500/5 p-4 rounded-xl border border-red-500/10">
                             <p class="text-sm font-bold text-red-700">" {{ reservation.rejectionReason }} "</p>
                         </div>
@@ -412,29 +401,27 @@ onMounted(fetchPaymentDetails);
 
                     <div v-if="reservation.reservationStatus === 'cancelled' || reservation.cancellationReason"
                         class="space-y-2">
-                        <span class="text-xs font-bold text-rose-600 uppercase tracking-wider block">Cancellation
-                            Reason</span>
+                        <span class="text-xs font-bold text-rose-600 uppercase tracking-wider block">{{ t("owner.paymentDetail.cancellationReason") }}</span>
                         <div class="bg-rose-500/10 p-4 rounded-xl border border-rose-500/20">
                             <p class="text-sm font-bold text-rose-700">
-                                " {{ reservation.cancellationReason ||
-                                    'No details provided / លុបចោលដោយប្រព័ន្ធឬមិនមានបញ្ជាក់មូលហេតុ' }} "
+                                " {{ reservation.cancellationReason || t("owner.paymentDetail.noCancellationDetails") }} "
                             </p>
                         </div>
                     </div>
                 </div>
 
                 <div v-if="showRejectPaymentInput" class="space-y-2 pt-4 border-t border-(--color-border)">
-                    <label class="text-xs font-bold text-rose-600 block">Reason for Rejection Payment *</label>
+                    <label class="text-xs font-bold text-rose-600 block">{{ t("owner.paymentDetail.reasonForRejectingPayment") }}</label>
                     <textarea v-model="paymentRejectReason"
-                        placeholder="State the reason why you reject this payment..."
+                        :placeholder="t('owner.paymentDetail.stateRejectPaymentPlaceholder')"
                         class="w-full border border-(--color-border) rounded-xl p-3 text-sm bg-(--color-surface-soft) text-(--color-text) focus:outline-none focus:border-rose-500 resize-none placeholder-(--color-muted)"
                         rows="3" :disabled="actionLoading"></textarea>
                 </div>
 
                 <div v-if="showRejectRefundInput" class="space-y-2 pt-4 border-t border-(--color-border)">
-                    <label class="text-xs font-bold text-rose-600 block">Reason for Rejection Refund *</label>
+                    <label class="text-xs font-bold text-rose-600 block">{{ t("owner.paymentDetail.reasonForRejectingRefund") }}</label>
                     <textarea v-model="refundRejectReason"
-                        placeholder="State the reason why you reject this refund request..."
+                        :placeholder="t('owner.paymentDetail.stateRejectRefundPlaceholder')"
                         class="w-full border border-(--color-border) rounded-xl p-3 text-sm bg-(--color-surface-soft) text-(--color-text) focus:outline-none focus:border-rose-500 resize-none placeholder-(--color-muted)"
                         rows="3" :disabled="actionLoading"></textarea>
                 </div>
@@ -443,17 +430,16 @@ onMounted(fetchPaymentDetails);
             <div
                 class="lg:col-span-5 space-y-3 bg-(--color-surface) rounded-2xl border border-(--color-border) p-6 shadow-sm h-full flex flex-col">
                 <span
-                    class="text-xs font-bold text-(--color-muted) uppercase tracking-wider block border-b border-(--color-border) pb-1.5">Customer
-                    Submitted Proof</span>
+                    class="text-xs font-bold text-(--color-muted) uppercase tracking-wider block border-b border-(--color-border) pb-1.5">{{ t("owner.paymentDetail.customerSubmittedProof") }}</span>
 
                 <div
                     class="border border-(--color-border) rounded-xl p-3 bg-white flex justify-center items-center flex-grow min-h-[360px] shadow-inner relative group overflow-hidden">
-                    <img v-if="reservation.payment_proof_url" :src="reservation.payment_proof_url" alt="Payment Proof"
+                    <img v-if="reservation.payment_proof_url" :src="reservation.payment_proof_url" :alt="t('owner.paymentDetail.paymentProof')"
                         class="max-w-full h-auto max-h-[420px] object-contain rounded-lg shadow-sm cursor-zoom-in transition transform hover:scale-[1.02] duration-300"
-                        @click="isImageViewerOpen = true" title="Click to view full image" />
+                        @click="isImageViewerOpen = true" :title="t('owner.paymentDetail.clickToViewFull')" />
 
                     <div v-else class="text-center p-8">
-                        <img :src="defaultReceipt" alt="Placeholder graphic"
+                        <img :src="defaultReceipt" :alt="t('owner.paymentDetail.placeholderGraphic')"
                             class="h-full w-full object-contain opacity-70" />
                     </div>
                 </div>
@@ -462,10 +448,8 @@ onMounted(fetchPaymentDetails);
                     class="flex items-start gap-3 p-3.5 rounded-2xl border border-(--color-border)/50 bg-(--color-surface-soft)/40">
                     <ShieldCheckIcon class="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
                     <div>
-                        <p class="text-[10px] font-black uppercase tracking-wider text-(--color-muted)">Verification
-                            Note</p>
-                        <p class="text-sm font-bold text-(--color-text) mt-0.5">Only accept clear and valid payment
-                            proof showing transaction details.</p>
+                        <p class="text-[10px] font-black uppercase tracking-wider text-(--color-muted)">{{ t("owner.paymentDetail.verificationNote") }}</p>
+                        <p class="text-sm font-bold text-(--color-text) mt-0.5">{{ t("owner.paymentDetail.verificationNoteDesc") }}</p>
                     </div>
                 </div>
 
@@ -476,7 +460,7 @@ onMounted(fetchPaymentDetails);
                         class="absolute top-6 right-6 text-white bg-white/10 p-2 rounded-full hover:bg-white/20 transition cursor-pointer z-50">
                         <XMarkIcon class="w-6 h-6" />
                     </button>
-                    <img :src="reservation.payment_proof_url" alt="Full Payment Proof"
+                    <img :src="reservation.payment_proof_url" :alt="t('owner.paymentDetail.fullPaymentProof')"
                         class="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl cursor-zoom-out" />
                 </div>
             </div>
@@ -491,27 +475,27 @@ onMounted(fetchPaymentDetails);
                 <template v-if="showRejectPaymentInput">
                     <button type="button" @click="showRejectPaymentInput = false" :disabled="actionLoading"
                         class="px-5 py-2.5 border border-(--color-border) rounded-xl text-xs font-bold text-(--color-text) hover:bg-(--color-surface-soft) cursor-pointer transition">
-                        Back
+                        {{ t("owner.paymentDetail.back") }}
                     </button>
                     <button type="button" @click="handleRejectPayment"
                         :disabled="!paymentRejectReason.trim() || actionLoading"
                         class="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs shadow-sm disabled:opacity-50 cursor-pointer transition flex items-center gap-1.5">
-                        <LoadingSpinner v-if="actionLoading" label="Rejecting..." class="text-white text-xs" />
-                        <span v-else>Confirm Reject Payment</span>
+                        <LoadingSpinner v-if="actionLoading" :label="t('owner.paymentDetail.rejecting')" class="text-white text-xs" />
+                        <span v-else>{{ t("owner.paymentDetail.confirmRejectPayment") }}</span>
                     </button>
                 </template>
 
                 <template v-else>
                     <button type="button" @click="showRejectPaymentInput = true" :disabled="actionLoading"
                         class="inline-btn px-5 py-2.5 border border-rose-500/50 text-rose-600 hover:bg-rose-500/10 font-bold rounded-xl text-xs cursor-pointer transition">
-                        Reject Payment
+                        {{ t("owner.paymentDetail.rejectPayment") }}
                     </button>
                     <button type="button" @click="handleApprovePayment" :disabled="actionLoading"
                         class="inline-btn px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-sm cursor-pointer transition flex items-center gap-1.5">
-                        <LoadingSpinner v-if="actionLoading" label="Approving..." class="text-white text-xs" />
+                        <LoadingSpinner v-if="actionLoading" :label="t('owner.paymentDetail.approving')" class="text-white text-xs" />
                         <template v-else>
                             <CheckIcon class="w-4 h-4" />
-                            <span>Confirm Payment</span>
+                            <span>{{ t("owner.paymentDetail.confirmPayment") }}</span>
                         </template>
                     </button>
                 </template>
@@ -519,8 +503,7 @@ onMounted(fetchPaymentDetails);
 
             <template v-else-if="reservation.refundStatus === 'requested'">
                 <div class="mr-auto flex items-center gap-2">
-                    <span class="text-xs font-bold text-(--color-muted) uppercase tracking-wider block">Refund
-                        Amount</span>
+                    <span class="text-xs font-bold text-(--color-muted) uppercase tracking-wider block">{{ t("owner.paymentDetail.refundAmount") }}</span>
                     <div class="bg-emerald-500/5 rounded-xl border border-emerald-500/10 px-4 py-2">
                         <p class="text-sm font-bold text-emerald-700">${{ reservation.refundAmount.toFixed(2) }}</p>
                     </div>
@@ -529,27 +512,27 @@ onMounted(fetchPaymentDetails);
                 <template v-if="showRejectRefundInput">
                     <button type="button" @click="showRejectRefundInput = false" :disabled="actionLoading"
                         class="px-5 py-2.5 border border-(--color-border) rounded-xl text-xs font-bold text-(--color-text) hover:bg-(--color-surface-soft) cursor-pointer transition">
-                        Back
+                        {{ t("owner.paymentDetail.back") }}
                     </button>
                     <button type="button" @click="handleRejectRefund"
                         :disabled="!refundRejectReason.trim() || actionLoading"
                         class="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs shadow-sm disabled:opacity-50 cursor-pointer transition flex items-center gap-1.5">
-                        <LoadingSpinner v-if="actionLoading" label="Rejecting..." class="text-white text-xs" />
-                        <span v-else>Confirm Reject Refund</span>
+                        <LoadingSpinner v-if="actionLoading" :label="t('owner.paymentDetail.rejecting')" class="text-white text-xs" />
+                        <span v-else>{{ t("owner.paymentDetail.confirmRejectRefund") }}</span>
                     </button>
                 </template>
 
                 <template v-else>
                     <button type="button" @click="showRejectRefundInput = true" :disabled="actionLoading"
                         class="inline-btn px-5 py-2.5 border border-rose-500/50 text-rose-600 hover:bg-rose-500/10 font-bold rounded-xl text-xs cursor-pointer transition">
-                        Reject Refund
+                        {{ t("owner.paymentDetail.rejectRefund") }}
                     </button>
                     <button type="button" @click="handleApproveRefund" :disabled="actionLoading"
                         class="inline-btn px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-sm cursor-pointer transition flex items-center gap-1.5">
-                        <LoadingSpinner v-if="actionLoading" label="Approving..." class="text-white text-xs" />
+                        <LoadingSpinner v-if="actionLoading" :label="t('owner.paymentDetail.approving')" class="text-white text-xs" />
                         <template v-else>
                             <CheckIcon class="w-4 h-4" />
-                            <span>Approve Refund</span>
+                            <span>{{ t("owner.paymentDetail.approveRefund") }}</span>
                         </template>
                     </button>
                 </template>
@@ -559,18 +542,18 @@ onMounted(fetchPaymentDetails);
                 <div
                     class="flex items-center gap-4 text-sm font-medium px-4 py-2 rounded-xl border border-(--color-border) bg-(--color-surface-soft)">
                     <div class="flex items-center gap-1.5">
-                        <span class="text-(--color-muted)">Payment:</span>
+                        <span class="text-(--color-muted)">{{ t("owner.paymentDetail.paymentColon") }}</span>
                         <span class="font-bold uppercase px-2 py-0.5 rounded border text-xs"
                             :class="getStatusBadgeClass(reservation.paymentStatus)">
-                            {{ reservation.paymentStatus || 'N/A' }}
+                            {{ reservation.paymentStatus ? statusLabel(reservation.paymentStatus) : 'N/A' }}
                         </span>
                     </div>
                     <div v-if="reservation.reservationStatus"
                         class="flex items-center gap-1.5 border-l border-(--color-border) pl-4">
-                        <span class="text-(--color-muted)">Reservation:</span>
+                        <span class="text-(--color-muted)">{{ t("owner.paymentDetail.reservationColon") }}</span>
                         <span class="font-bold uppercase px-2 py-0.5 rounded border text-xs"
                             :class="getStatusBadgeClass(reservation.reservationStatus)">
-                            {{ reservation.reservationStatus }}
+                            {{ statusLabel(reservation.reservationStatus) }}
                         </span>
                     </div>
                 </div>

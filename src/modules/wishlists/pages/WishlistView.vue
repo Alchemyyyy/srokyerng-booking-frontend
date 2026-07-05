@@ -2,6 +2,7 @@
 import { ref, onMounted, watch, nextTick, onBeforeUnmount } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { useWishlistStore } from "../store/wishlistStore";
 import WishlistCard from "../components/WishlistCard.vue";
 import EmptyState from "@/shared/components/EmptyState.vue";
@@ -16,6 +17,7 @@ import placeholer from "@/assets/images/properties/placeholder.png";
 const router = useRouter();
 const wishlistStore = useWishlistStore();
 const { items, loading, error } = storeToRefs(wishlistStore);
+const { t } = useI18n({ useScope: "global" });
 
 onMounted(() => {
   wishlistStore.fetchWishlists();
@@ -101,13 +103,13 @@ const initWishlistMap = () => {
 
     const popupHtml = `
       <div class="p-2 text-left font-sans min-w-[160px]">
-        <h4 class="font-black text-sm text-(--color-text) truncate">${item.property_name || 'Property'}</h4>
-        <p class="text-xs text-(--color-muted) mt-0.5">${item.city || 'Cambodia'}</p>
+        <h4 class="font-black text-sm text-(--color-text) truncate">${item.property_name || t('wishlists.propertyFallback')}</h4>
+        <p class="text-xs text-(--color-muted) mt-0.5">${item.city || t('wishlists.cambodiaFallback')}</p>
         <div class="mt-2 flex items-baseline gap-1">
           <span class="font-black text-sm text-(--color-text)">$${item.price_per_night ?? 0}</span>
-          <span class="text-[10px] text-(--color-muted)">/ night</span>
+          <span class="text-[10px] text-(--color-muted)">${t('wishlists.perNight')}</span>
         </div>
-        <a href="/properties/${item.property_id}" class="mt-3 block text-center bg-(--color-primary) text-white font-bold text-xs py-1.5 rounded-lg shadow-sm hover:opacity-90 transition-opacity">View Details</a>
+        <a href="/properties/${item.property_id}" class="mt-3 block text-center bg-(--color-primary) text-white font-bold text-xs py-1.5 rounded-lg shadow-sm hover:opacity-90 transition-opacity">${t('wishlists.viewDetails')}</a>
       </div>
     `;
     marker.bindPopup(popupHtml, {
@@ -216,11 +218,11 @@ const goToSearch = () => {
         class="mb-6 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-4"
       >
         <div>
-          <h1 class="text-3xl sm:text-4xl font-black text-(--color-text) tracking-tight">Wishlists</h1>
-          <p class="text-(--color-muted) text-sm mt-1.5 font-medium">View, explore, and manage your saved properties</p>
+          <h1 class="text-3xl sm:text-4xl font-black text-(--color-text) tracking-tight">{{ t("wishlists.title") }}</h1>
+          <p class="text-(--color-muted) text-sm mt-1.5 font-medium">{{ t("wishlists.subtitle") }}</p>
         </div>
         <div v-if="!loading && !error && items.length > 0" class="text-sm font-bold text-(--color-text) bg-(--color-surface-soft) border border-(--color-border) px-4 py-2 rounded-full shadow-xs w-fit">
-          {{ items.length }} {{ items.length === 1 ? 'saved stay' : 'saved stays' }}
+          {{ items.length }} {{ items.length === 1 ? t('wishlists.savedStay') : t('wishlists.savedStays') }}
         </div>
       </div>
 
@@ -244,16 +246,16 @@ const goToSearch = () => {
         <div class="h-20 w-20 bg-(--color-surface-soft) rounded-full flex items-center justify-center border border-(--color-border) mb-6">
           <HeartIcon class="w-10 h-10 text-blue-600 dark:text-blue-500" />
         </div>
-        <h2 class="text-2xl sm:text-3xl font-bold text-(--color-text) tracking-tight">Your Wishlist is Empty</h2>
+        <h2 class="text-2xl sm:text-3xl font-bold text-(--color-text) tracking-tight">{{ t("wishlists.emptyTitle") }}</h2>
         <p class="text-(--color-muted) mt-3 text-base leading-relaxed">
-          You haven't saved any properties yet. Start exploring and click the heart icon on any stay to save your favorites.
+          {{ t("wishlists.emptyDesc") }}
         </p>
         <button
           type="button"
           @click="goToSearch"
           class="mt-8 px-8 py-3.5 bg-(--color-primary) hover:opacity-90 text-white text-base font-bold rounded-full shadow-md hover:shadow-lg transition-all duration-200 active:scale-95 cursor-pointer"
         >
-          Explore Properties
+          {{ t("wishlists.exploreProperties") }}
         </button>
       </div>
 
@@ -286,8 +288,8 @@ const goToSearch = () => {
         @click="toggleMap"
         class="flex items-center gap-2 px-6 py-3 rounded-full bg-gray-900 text-white dark:bg-white dark:text-gray-900 shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 font-bold text-sm border border-white/20 dark:border-black/20"
       >
-        <span v-if="showMap">Show list</span>
-        <span v-else>Show map</span>
+        <span v-if="showMap">{{ t("wishlists.showList") }}</span>
+        <span v-else>{{ t("wishlists.showMap") }}</span>
         <ListBulletIcon v-if="showMap" class="h-5 w-5" />
         <MapIcon v-else class="h-5 w-5" />
       </button>
@@ -299,7 +301,7 @@ const goToSearch = () => {
         <!-- Left Property Side Panel -->
         <div class="w-full lg:w-96 h-1/3 lg:h-full overflow-y-auto p-4 border-b lg:border-b-0 lg:border-r border-(--color-border) flex flex-col gap-4 bg-(--color-surface)">
           <div class="flex items-center justify-between border-b pb-3 border-(--color-border)">
-            <h3 class="text-lg font-black text-(--color-text)">Properties on Map</h3>
+            <h3 class="text-lg font-black text-(--color-text)">{{ t("wishlists.propertiesOnMap") }}</h3>
             <button type="button" class="p-1.5 rounded-sm hover:bg-gray-100 dark:hover:bg-neutral-800 transition active:scale-95" style="border-radius: var(--radius-sm);" @click="toggleMap">
               <XMarkIcon class="h-6 w-6 text-(--color-text)" />
             </button>
@@ -315,16 +317,16 @@ const goToSearch = () => {
               @mouseleave="hoveredPropertyId = null"
               @click="goToProperty(item.property_id)"
             >
-              <img :src="item.cover_image ? resolveAssetUrl(item.cover_image) : placeholer" class="h-20 w-20 object-cover rounded-sm shrink-0" style="border-radius: var(--radius-sm);" :alt="item.property_name || 'Property'" @error="(e) => (e.target.src = placeholer)" />
+              <img :src="item.cover_image ? resolveAssetUrl(item.cover_image) : placeholer" class="h-20 w-20 object-cover rounded-sm shrink-0" style="border-radius: var(--radius-sm);" :alt="item.property_name || t('wishlists.propertyFallback')" @error="(e) => (e.target.src = placeholer)" />
               <div class="flex flex-col justify-between min-w-0 flex-1">
                 <div>
-                  <h4 class="text-xs font-bold text-(--color-text) truncate">{{ item.property_name || 'Property' }}</h4>
-                  <p class="text-[11px] font-medium text-(--color-muted) truncate">{{ item.city || item.province || 'Cambodia' }}</p>
+                  <h4 class="text-xs font-bold text-(--color-text) truncate">{{ item.property_name || t("wishlists.propertyFallback") }}</h4>
+                  <p class="text-[11px] font-medium text-(--color-muted) truncate">{{ item.city || item.province || t("wishlists.cambodiaFallback") }}</p>
                 </div>
                 <div class="flex items-center justify-between mt-1">
-                  <span class="text-xs font-bold text-(--color-text)">${{ item.price_per_night ?? 0 }}/night</span>
+                  <span class="text-xs font-bold text-(--color-text)">${{ item.price_per_night ?? 0 }}{{ t("wishlists.perNight") }}</span>
                   <span class="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-(--color-primary) px-1.5 py-0.5 rounded-sm" style="border-radius: var(--radius-sm);">
-                    <StarIconSolid class="h-2.5 w-2.5" /> New
+                    <StarIconSolid class="h-2.5 w-2.5" /> {{ t("wishlists.newBadge") }}
                   </span>
                 </div>
               </div>

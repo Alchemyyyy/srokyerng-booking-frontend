@@ -2,7 +2,7 @@ import AdminAnalyticsView from "@/modules/analytics/pages/AdminAnalyticsView.vue
 import PropertyApprovalView from "@/modules/admin/pages/PropertyApprovalView.vue";
 import PropertyReviewDetail from "@/modules/admin/pages/PropertyReviewDetail.vue";
 import ReservationMonitorView from "@/modules/admin/pages/ReservationMonitorView.vue";
-// import PaymentMonitorView from "@/modules/admin/pages/PaymentMonitorView.vue"; // ⚡ NEW
+import PaymentMonitorView from "@/modules/admin/pages/PaymentMonitorView.vue";
 import UserManagementView from "./pages/UserManagementView.vue";
 import { ROLES } from "@/shared/constants/roles";
 
@@ -25,12 +25,12 @@ export const adminRoutes = [
     component: PropertyReviewDetail,
     meta: { requiresAuth: true, roles: [ROLES.ADMIN] },
   },
-  // {
-  //   path: "payment-verifications",
-  //   name: "admin.paymentVerifications", // ⚡ aligned with dashboard.store.js quickLinks
-  //   component: PaymentMonitorView, // ⚡ replaced ComingSoonView
-  //   meta: { requiresAuth: true, roles: [ROLES.ADMIN] },
-  // },
+  {
+    path: "payment-verifications",
+    name: "admin.paymentVerifications", // ⚡ aligned with dashboard.store.js quickLinks
+    component: PaymentMonitorView,
+    meta: { requiresAuth: true, roles: [ROLES.ADMIN] },
+  },
   {
     path: "reservations",
     name: "admin.reservations", // ⚡ aligned with dashboard.store.js quickLinks

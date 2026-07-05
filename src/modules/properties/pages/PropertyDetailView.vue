@@ -134,7 +134,7 @@ const contactHost = async () => {
   try {
     const convoData = {
       property_id: p.id,
-      initial_message: `Hi ${hostName.value}! I am interested in booking "${p.property_name}".`,
+      initial_message: `Hi ${hostName.value}! I am interested in booking "${p.name || p.property_name}".`,
     };
     
     const response = await chatService.createConversation(convoData);

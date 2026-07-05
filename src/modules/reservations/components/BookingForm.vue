@@ -1,7 +1,10 @@
 <script setup>
-import { ref } from "vue";
+import { computed, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import AppButton from "@/shared/components/AppButton.vue";
 import { getBankName, getBankLogo } from "@/modules/payments/utils/bankBranding";
+
+const { t } = useI18n({ useScope: "global" });
 
 const props = defineProps({
   room: { type: Object, default: null },
@@ -48,28 +51,32 @@ const form = ref({
   floorPreference: "",
 });
 
-const floorPreferenceLabels = {
-  ground: "Ground floor",
-  low: "Lower floor",
-  high: "Higher floor",
-};
+const floorPreferenceLabels = computed(() => ({
+  ground: t("components.bookingForm.groundFloor"),
+  low: t("components.bookingForm.lowerFloor"),
+  high: t("components.bookingForm.higherFloor"),
+}));
 
 const validateGuestInfo = () => {
   const errors = {};
   if (!form.value.firstName.trim())
-    errors.firstName = "First name is required.";
-  if (!form.value.lastName.trim()) errors.lastName = "Last name is required.";
-  if (!form.value.email.trim()) errors.email = "Email is required.";
+    errors.firstName = t("components.bookingForm.errors.firstNameRequired");
+  if (!form.value.lastName.trim())
+    errors.lastName = t("components.bookingForm.errors.lastNameRequired");
+  if (!form.value.email.trim())
+    errors.email = t("components.bookingForm.errors.emailRequired");
   else if (!/\S+@\S+\.\S+/.test(form.value.email))
-    errors.email = "Invalid email format.";
-  if (!props.checkInDate) errors.checkIn = "Check-in date is required.";
-  if (!props.checkOutDate) errors.checkOut = "Check-out date is required.";
+    errors.email = t("components.bookingForm.errors.emailInvalid");
+  if (!props.checkInDate)
+    errors.checkIn = t("components.bookingForm.errors.checkInRequired");
+  if (!props.checkOutDate)
+    errors.checkOut = t("components.bookingForm.errors.checkOutRequired");
   if (
     props.checkInDate &&
     props.checkOutDate &&
     props.checkInDate >= props.checkOutDate
   )
-    errors.checkOut = "Check-out must be after check-in.";
+    errors.checkOut = t("components.bookingForm.errors.checkOutAfterCheckIn");
   formErrors.value = errors;
   emit("date-errors", {
     checkIn: errors.checkIn || "",
@@ -80,12 +87,16 @@ const validateGuestInfo = () => {
 const handleSubmit = () => {
   if (!validateGuestInfo()) return;
   if (props.paymentAccounts.length > 0 && !props.selectedAccountId) {
-    paymentAccountError.value = "Please select a payment method.";
+    paymentAccountError.value = t(
+      "components.bookingForm.errors.paymentMethodRequired",
+    );
     return;
   }
-  const preferenceLabel = floorPreferenceLabels[form.value.floorPreference];
+  const preferenceLabel = floorPreferenceLabels.value[form.value.floorPreference];
   const special_request = [
-    preferenceLabel ? `Floor preference: ${preferenceLabel} (not guaranteed).` : "",
+    preferenceLabel
+      ? t("components.bookingForm.floorPreferenceNote", { label: preferenceLabel })
+      : "",
     form.value.notes || "",
   ]
     .filter(Boolean)
@@ -101,10 +112,10 @@ const handleSubmit = () => {
   <div>
     <div class="mb-4">
       <h2 class="text-base font-black text-(--color-text)">
-        Guest Information
+        {{ t("components.bookingForm.heading") }}
       </h2>
       <p class="text-xs text-(--color-muted) mt-0.5">
-        Enter the primary guest details for this reservation.
+        {{ t("components.bookingForm.subheading") }}
       </p>
     </div>
 
@@ -113,12 +124,12 @@ const handleSubmit = () => {
         <div class="space-y-1">
           <label
             class="block text-[11px] font-bold text-(--color-muted) uppercase tracking-wider"
-            >First Name <span class="text-rose-500">*</span></label
+            >{{ t("components.bookingForm.firstNameLabel") }} <span class="text-rose-500">*</span></label
           >
           <input
             v-model="form.firstName"
             type="text"
-            placeholder="John"
+            :placeholder="t('components.bookingForm.firstNamePlaceholder')"
             class="w-full border border-(--color-border) bg-(--color-surface-soft) focus:border-(--color-primary) rounded-xl px-3.5 py-2.5 text-sm outline-none font-semibold text-(--color-text) transition-all"
             :class="formErrors.firstName ? 'border-rose-400' : ''"
           />
@@ -131,12 +142,12 @@ const handleSubmit = () => {
         <div class="space-y-1">
           <label
             class="block text-[11px] font-bold text-(--color-muted) uppercase tracking-wider"
-            >Last Name <span class="text-rose-500">*</span></label
+            >{{ t("components.bookingForm.lastNameLabel") }} <span class="text-rose-500">*</span></label
           >
           <input
             v-model="form.lastName"
             type="text"
-            placeholder="Doe"
+            :placeholder="t('components.bookingForm.lastNamePlaceholder')"
             class="w-full border border-(--color-border) bg-(--color-surface-soft) focus:border-(--color-primary) rounded-xl px-3.5 py-2.5 text-sm outline-none font-semibold text-(--color-text) transition-all"
             :class="formErrors.lastName ? 'border-rose-400' : ''"
           />
@@ -151,12 +162,12 @@ const handleSubmit = () => {
       <div class="space-y-1">
         <label
           class="block text-[11px] font-bold text-(--color-muted) uppercase tracking-wider"
-          >Email Address <span class="text-rose-500">*</span></label
+          >{{ t("components.bookingForm.emailLabel") }} <span class="text-rose-500">*</span></label
         >
         <input
           v-model="form.email"
           type="email"
-          placeholder="john@example.com"
+          :placeholder="t('components.bookingForm.emailPlaceholder')"
           class="w-full border border-(--color-border) bg-(--color-surface-soft) focus:border-(--color-primary) rounded-xl px-3.5 py-2.5 text-sm outline-none font-semibold text-(--color-text) transition-all"
           :class="formErrors.email ? 'border-rose-400' : ''"
         />
@@ -171,19 +182,19 @@ const handleSubmit = () => {
         <label
           class="block text-[11px] font-bold text-(--color-muted) uppercase tracking-wider"
         >
-          Floor Preference
+          {{ t("components.bookingForm.floorPreferenceLabel") }}
           <span class="normal-case text-(--color-muted) font-normal"
-            >(optional, not guaranteed)</span
+            >{{ t("components.bookingForm.optionalNotGuaranteed") }}</span
           >
         </label>
         <select
           v-model="form.floorPreference"
           class="w-full border border-(--color-border) bg-(--color-surface-soft) focus:border-(--color-primary) rounded-xl px-3.5 py-2.5 text-sm outline-none font-semibold text-(--color-text) transition-all"
         >
-          <option value="">No preference</option>
-          <option value="ground">Ground floor</option>
-          <option value="low">Lower floor</option>
-          <option value="high">Higher floor</option>
+          <option value="">{{ t("components.bookingForm.noPreference") }}</option>
+          <option value="ground">{{ t("components.bookingForm.groundFloor") }}</option>
+          <option value="low">{{ t("components.bookingForm.lowerFloor") }}</option>
+          <option value="high">{{ t("components.bookingForm.higherFloor") }}</option>
         </select>
       </div>
 
@@ -191,15 +202,15 @@ const handleSubmit = () => {
         <label
           class="block text-[11px] font-bold text-(--color-muted) uppercase tracking-wider"
         >
-          Special Requests
+          {{ t("components.bookingForm.specialRequestsLabel") }}
           <span class="normal-case text-(--color-muted) font-normal"
-            >(optional)</span
+            >{{ t("components.bookingForm.optional") }}</span
           >
         </label>
         <textarea
           v-model="form.notes"
           rows="2"
-          placeholder="Any special requests or preferences..."
+          :placeholder="t('components.bookingForm.specialRequestsPlaceholder')"
           class="w-full border border-(--color-border) bg-(--color-surface-soft) focus:border-(--color-primary) rounded-xl px-3.5 py-2.5 text-sm outline-none font-semibold text-(--color-text) transition-all resize-none"
         />
       </div>
@@ -207,18 +218,18 @@ const handleSubmit = () => {
       <div class="space-y-1.5">
         <label
           class="block text-[11px] font-bold text-(--color-muted) uppercase tracking-wider"
-          >Payment Method <span class="text-rose-500">*</span></label
+          >{{ t("components.bookingForm.paymentMethodLabel") }} <span class="text-rose-500">*</span></label
         >
 
         <div v-if="loadingAccounts" class="text-sm text-(--color-muted) py-2">
-          Loading payment methods…
+          {{ t("components.bookingForm.loadingPaymentMethods") }}
         </div>
 
         <div
           v-else-if="paymentAccounts.length === 0"
           class="rounded-xl border border-dashed border-(--color-border) bg-(--color-surface-soft) px-4 py-2.5 text-sm text-(--color-muted)"
         >
-          This host hasn't set up a payment method yet. Please contact them before booking.
+          {{ t("components.bookingForm.noPaymentMethods") }}
         </div>
 
         <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -281,7 +292,7 @@ const handleSubmit = () => {
       :loading="isSubmitting"
       @click="handleSubmit"
     >
-      Confirm Booking →
+      {{ t("components.bookingForm.confirmBooking") }}
     </AppButton>
   </div>
 </template>

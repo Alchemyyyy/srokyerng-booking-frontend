@@ -1,4 +1,9 @@
 <script setup>
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n({ useScope: "global" });
+
 defineProps({
     modelValue: { type: String, required: true },
     counts: {
@@ -8,14 +13,14 @@ defineProps({
 });
 const emit = defineEmits(['update:modelValue']);
 
-const tabs = [
-    { label: 'All', value: 'all' },
-    { label: 'Pending Verification', value: 'pending', accent: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
-    { label: 'Submitted', value: 'submitted', accent: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
-    { label: 'Confirmed / Paid', value: 'confirmed', accent: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
-    { label: 'Cancelled / Failed', value: 'cancelled', accent: 'bg-rose-500/10 text-rose-600 border-rose-500/20' },
-    { label: 'Refunded', value: 'refunded', accent: 'bg-rose-500/10 text-rose-600 border-rose-500/20' },
-];
+const tabs = computed(() => [
+    { label: t('components.paymentFilterBar.tabs.all'), value: 'all' },
+    { label: t('components.paymentFilterBar.tabs.pending'), value: 'pending', accent: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
+    { label: t('components.paymentFilterBar.tabs.submitted'), value: 'submitted', accent: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
+    { label: t('components.paymentFilterBar.tabs.confirmed'), value: 'confirmed', accent: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
+    { label: t('components.paymentFilterBar.tabs.cancelled'), value: 'cancelled', accent: 'bg-rose-500/10 text-rose-600 border-rose-500/20' },
+    { label: t('components.paymentFilterBar.tabs.refunded'), value: 'refunded', accent: 'bg-rose-500/10 text-rose-600 border-rose-500/20' },
+]);
 </script>
 
 <template>

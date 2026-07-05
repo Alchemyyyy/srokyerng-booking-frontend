@@ -8,10 +8,23 @@ import {
   Legend,
 } from 'chart.js';
 import { Doughnut } from 'vue-chartjs';
+import { useI18n } from 'vue-i18n';
 
 import { useTheme } from '@/shared/composables/useTheme';
 
 ChartJS.register(ArcElement, DoughnutController, Tooltip, Legend);
+
+const { t, te } = useI18n({ useScope: 'global' });
+const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
+const statusLabel = (value) => safeT(`common.status.${String(value || '').toLowerCase()}`, value);
+
+const resolveBreakdownLabel = (label) => {
+  const normalized = String(label || '').toLowerCase();
+  if (normalized === 'all requests') {
+    return t('admin.analyticsPage.approvalDoughnut.allRequests');
+  }
+  return statusLabel(label);
+};
 
 const getCssColor = (token) => {
   if (typeof window === 'undefined') {
@@ -57,7 +70,7 @@ const chartOptions = ref({
     tooltip: {
       callbacks: {
         label: (context) => {
-          const suffix = statusViewMode.value === 'percentage' ? '%' : ' properties';
+          const suffix = statusViewMode.value === 'percentage' ? '%' : ` ${t('admin.analyticsPage.approvalDoughnut.propertiesUnit')}`;
           return `${context.label}: ${context.parsed}${suffix}`;
         },
       },
@@ -83,7 +96,7 @@ const rebuildChart = () => {
     animationFrameId = null;
   }
 
-  const labels = props.breakdown.map((status) => status.label);
+  const labels = props.breakdown.map((status) => resolveBreakdownLabel(status.label));
   const targetValues = statusChartValues.value;
   const backgroundColors = props.breakdown.map((status) => resolveStatusColor(status.bgClass));
 
@@ -138,19 +151,19 @@ onBeforeUnmount(() => {
 <template>
   <div class="dashboard-panel" :class="{ 'panel--refreshing': loading }">
     <div class="mb-4 flex items-start justify-between gap-3">
-      <h3 class="panel-title">Listing Approval Status</h3>
+      <h3 class="panel-title">{{ t('admin.analyticsPage.approvalDoughnut.title') }}</h3>
       <div class="mode-actions">
         <button type="button" class="mode-pill" :class="{ 'mode-pill--active': statusViewMode === 'count' }"
           @click="statusViewMode = 'count'">
-          Count
+          {{ t('admin.analyticsPage.approvalDoughnut.countMode') }}
         </button>
         <button type="button" class="mode-pill" :class="{ 'mode-pill--active': statusViewMode === 'percentage' }"
           @click="statusViewMode = 'percentage'">
-          %
+          {{ t('admin.analyticsPage.approvalDoughnut.percentageMode') }}
         </button>
       </div>
     </div>
-    <p class="panel-subtitle">Compliance metrics for host registration properties</p>
+    <p class="panel-subtitle">{{ t('admin.analyticsPage.approvalDoughnut.subtitle') }}</p>
 
     <div class="chart-wrapper-doughnut relative flex items-center justify-center mt-2">
       <Doughnut :key="chartKey" :data="chartData" :options="chartOptions" />
@@ -161,10 +174,10 @@ onBeforeUnmount(() => {
         <div class="flex justify-between text-xs font-medium">
           <span class="flex items-center gap-2 text-(--color-muted)">
             <span :class="['h-2 w-2 rounded-full', status.bgClass]"></span>
-            {{ status.label }}
+            {{ resolveBreakdownLabel(status.label) }}
           </span>
           <span class="text-(--color-text) font-bold">
-            {{ statusViewMode === 'count' ? `${status.count} properties` : `${((status.count / Math.max(totalProperties,
+            {{ statusViewMode === 'count' ? `${status.count} ${t('admin.analyticsPage.approvalDoughnut.propertiesUnit')}` : `${((status.count / Math.max(totalProperties,
               1)) * 100).toFixed(1)}%` }}
           </span>
         </div>

@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import {
   ChatBubbleOvalLeftIcon,
   MagnifyingGlassIcon,
@@ -13,6 +14,9 @@ import UserAvatar from "@/shared/components/UserAvatar.vue";
 import ChatPane from "../components/ChatPane.vue";
 import LoadingSpinner from "@/shared/components/LoadingSpinner.vue";
 import { useSidebar } from "@/shared/composables/useSidebar";
+
+const { t, te } = useI18n({ useScope: "global" });
+const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -85,7 +89,7 @@ const formatDate = (isoString) => {
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
   if (date.toDateString() === yesterday.toDateString()) {
-    return "Yesterday";
+    return t("chats.listPage.yesterday");
   }
 
   // Otherwise show date
@@ -110,7 +114,7 @@ const formatDate = (isoString) => {
         <div class="p-4 border-b border-(--color-border) space-y-3 shrink-0">
           <div class="flex items-center justify-between">
             <h1 class="text-2xl font-black tracking-tight text-(--color-text)">
-              Messages
+              {{ t("chats.listPage.heading") }}
             </h1>
           </div>
 
@@ -120,7 +124,7 @@ const formatDate = (isoString) => {
             <input
               v-model="searchQuery"
               type="text"
-              placeholder="Search messages"
+              :placeholder="t('chats.listPage.searchPlaceholder')"
               class="w-full pl-10 pr-4 py-2.5 bg-(--color-page) border border-(--color-border) rounded-2xl text-xs text-(--color-text) placeholder-(--color-muted) focus:outline-hidden focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary) transition font-medium"
             />
           </div>
@@ -133,7 +137,7 @@ const formatDate = (isoString) => {
               class="px-4 py-1.5 rounded-full text-xs font-bold transition cursor-pointer"
               :class="activeTab === 'all' ? 'bg-(--color-text) text-(--color-page)' : 'border border-(--color-border) text-(--color-text) hover:bg-(--color-surface-soft)'"
             >
-              All
+              {{ t("chats.listPage.tabs.all") }}
             </button>
             <button
               type="button"
@@ -141,7 +145,7 @@ const formatDate = (isoString) => {
               class="px-4 py-1.5 rounded-full text-xs font-bold transition cursor-pointer flex items-center gap-1.5"
               :class="activeTab === 'unread' ? 'bg-(--color-text) text-(--color-page)' : 'border border-(--color-border) text-(--color-text) hover:bg-(--color-surface-soft)'"
             >
-              <span>Unread</span>
+              <span>{{ t("chats.listPage.tabs.unread") }}</span>
               <span
                 v-if="chatStore.totalUnreadCount > 0"
                 class="h-2 w-2 rounded-full bg-rose-500"
@@ -153,7 +157,7 @@ const formatDate = (isoString) => {
         <!-- Scrollable conversation items list -->
         <div class="flex-1 overflow-y-auto divide-y divide-(--color-border)/50">
           <div v-if="chatStore.listLoading" class="flex flex-col items-center justify-center py-12">
-            <LoadingSpinner label="Loading conversations..." />
+            <LoadingSpinner :label="t('chats.listPage.loading')" />
           </div>
 
           <div
@@ -161,14 +165,14 @@ const formatDate = (isoString) => {
             class="p-8 text-center flex flex-col items-center justify-center h-48"
           >
             <ExclamationTriangleIcon class="h-10 w-10 text-(--color-danger) mb-3" />
-            <h3 class="text-sm font-bold text-(--color-text)">Couldn't load your messages</h3>
+            <h3 class="text-sm font-bold text-(--color-text)">{{ t("chats.listPage.errors.title") }}</h3>
             <p class="text-xs text-(--color-muted) mt-1 leading-relaxed max-w-[200px]">{{ chatStore.error }}</p>
             <button
               type="button"
               class="mt-3 text-xs font-bold text-(--color-primary) hover:underline"
               @click="chatStore.fetchConversations()"
             >
-              Try again
+              {{ t("chats.listPage.errors.retry") }}
             </button>
           </div>
 
@@ -177,9 +181,9 @@ const formatDate = (isoString) => {
             class="p-8 text-center flex flex-col items-center justify-center h-48"
           >
             <ChatBubbleOvalLeftIcon class="h-10 w-10 text-(--color-muted) mb-3" />
-            <h3 class="text-sm font-bold text-(--color-text)">No messages found</h3>
+            <h3 class="text-sm font-bold text-(--color-text)">{{ t("chats.listPage.empty.title") }}</h3>
             <p class="text-xs text-(--color-muted) mt-1 leading-relaxed max-w-[200px]">
-              {{ searchQuery ? 'Try adjusting your search criteria.' : 'When you contact owners, your chats appear here.' }}
+              {{ searchQuery ? t('chats.listPage.empty.searchHint') : t('chats.listPage.empty.noChats') }}
             </p>
           </div>
 
@@ -221,7 +225,7 @@ const formatDate = (isoString) => {
                 class="text-xs truncate max-w-[240px]"
                 :class="convo.unread_count > 0 ? 'font-black text-(--color-text)' : 'font-medium text-(--color-muted)'"
               >
-                {{ convo.last_message || "No messages yet" }}
+                {{ convo.last_message || t("chats.listPage.noMessagesYet") }}
               </p>
             </div>
 
@@ -241,9 +245,9 @@ const formatDate = (isoString) => {
         </div>
         <div v-else class="flex flex-col items-center justify-center h-full text-center p-8 bg-gradient-to-b from-transparent to-(--color-page-soft)/10">
           <ChatBubbleOvalLeftIcon class="h-16 w-16 text-(--color-muted) mb-4" />
-          <h2 class="text-lg font-black text-(--color-text)">No conversation selected</h2>
+          <h2 class="text-lg font-black text-(--color-text)">{{ t("chats.listPage.noSelection.title") }}</h2>
           <p class="text-sm text-(--color-muted) mt-1.5 max-w-xs leading-relaxed font-semibold">
-            Choose a thread from the list on the left side to review message logs.
+            {{ t("chats.listPage.noSelection.subtitle") }}
           </p>
         </div>
       </section>

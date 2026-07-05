@@ -1,6 +1,7 @@
 <script setup>
 import { computed, reactive, ref } from "vue";
 import { useRouter, RouterLink } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { ChevronRightIcon } from "@heroicons/vue/24/outline";
 import { useToastStore } from "@/shared/store/toastStore";
 import { useAuthStore } from "@/modules/auth/store/authStore";
@@ -9,6 +10,8 @@ import { userApi } from "../api/user.api";
 import PublicNavbar from "@/shared/components/PublicNavbar.vue";
 import PublicFooter from "@/shared/components/PublicFooter.vue";
 import SessionManagementCard from "../components/SessionManagementCard.vue";
+
+const { t } = useI18n({ useScope: "global" });
 
 const router = useRouter();
 const toastStore = useToastStore();
@@ -55,12 +58,12 @@ const handleSave = async () => {
   passwordErrors.confirm_password = "";
 
   if (passwordForm.new_password.length < 6) {
-    passwordErrors.new_password = "Password must be at least 6 characters long";
+    passwordErrors.new_password = t("settingsPage.loginSecurity.errors.passwordTooShort");
     return;
   }
 
   if (passwordForm.new_password !== passwordForm.confirm_password) {
-    passwordErrors.confirm_password = "Passwords do not match";
+    passwordErrors.confirm_password = t("settingsPage.loginSecurity.errors.passwordMismatch");
     return;
   }
 
@@ -70,18 +73,18 @@ const handleSave = async () => {
       current_password: passwordForm.current_password,
       new_password: passwordForm.new_password,
     });
-    
-    toastStore.success("Password changed successfully.");
+
+    toastStore.success(t("settingsPage.loginSecurity.toasts.passwordUpdated"));
     toggleEdit();
   } catch (err) {
     const errorData = err.response?.data || {};
     const backendErrors = errorData.errors || {};
-    
+
     passwordErrors.current_password = backendErrors.current_password || "";
     passwordErrors.new_password = backendErrors.new_password || "";
     passwordErrors.confirm_password = backendErrors.confirm_password || "";
-    
-    toastStore.danger(err.message || errorData.message || "Failed to change password");
+
+    toastStore.danger(err.message || errorData.message || t("settingsPage.loginSecurity.errors.updateFailed"));
   } finally {
     savingPassword.value = false;
   }
@@ -102,14 +105,14 @@ const handleSave = async () => {
       <!-- Breadcrumbs -->
       <nav class="flex items-center gap-1 text-xs font-bold text-(--color-text) mb-3">
         <RouterLink :to="{ name: `${rolePrefix}.settings` }" class="hover:underline">
-          Account
+          {{ t("settingsPage.loginSecurity.breadcrumb.account") }}
         </RouterLink>
         <ChevronRightIcon class="h-3.5 w-3.5 text-(--color-muted)" />
-        <span class="text-(--color-muted) font-semibold">Login & security</span>
+        <span class="text-(--color-muted) font-semibold">{{ t("settingsPage.loginSecurity.breadcrumb.current") }}</span>
       </nav>
 
       <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-(--color-text)">
-        Login & security
+        {{ t("settingsPage.loginSecurity.title") }}
       </h1>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 mt-12">
@@ -120,25 +123,25 @@ const handleSave = async () => {
           <div class="py-6 first:pt-0">
             <div class="flex justify-between items-start">
               <div class="flex-grow pr-4">
-                <h3 class="text-sm font-bold text-(--color-text)">Password</h3>
-                
+                <h3 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.loginSecurity.password.label") }}</h3>
+
                 <!-- Display state -->
                 <p v-if="!activeEdit" class="text-sm text-(--color-muted) mt-1 font-medium">
-                  Last updated recently
+                  {{ t("settingsPage.loginSecurity.password.lastUpdated") }}
                 </p>
-                
+
                 <!-- Edit inline form -->
                 <div v-else class="mt-5 space-y-4 max-w-md animate-fadeIn">
                   <!-- Current Password -->
                   <div>
                     <label class="block text-xs font-bold text-(--color-text) mb-1.5">
-                      Current password
+                      {{ t("settingsPage.loginSecurity.password.currentLabel") }}
                     </label>
                     <input
                       v-model="passwordForm.current_password"
                       type="password"
                       class="w-full rounded-xl border border-(--color-border) px-4 py-3 text-sm bg-(--color-page) text-(--color-text) focus:outline-hidden focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary) font-semibold"
-                      placeholder="Enter current password"
+                      :placeholder="t('settingsPage.loginSecurity.password.currentPlaceholder')"
                     />
                     <p v-if="passwordErrors.current_password" class="text-xs text-rose-500 font-bold mt-1">
                       {{ passwordErrors.current_password }}
@@ -148,13 +151,13 @@ const handleSave = async () => {
                   <!-- New Password -->
                   <div>
                     <label class="block text-xs font-bold text-(--color-text) mb-1.5">
-                      New password
+                      {{ t("settingsPage.loginSecurity.password.newLabel") }}
                     </label>
                     <input
                       v-model="passwordForm.new_password"
                       type="password"
                       class="w-full rounded-xl border border-(--color-border) px-4 py-3 text-sm bg-(--color-page) text-(--color-text) focus:outline-hidden focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary) font-semibold"
-                      placeholder="Enter new password"
+                      :placeholder="t('settingsPage.loginSecurity.password.newPlaceholder')"
                     />
                     <p v-if="passwordErrors.new_password" class="text-xs text-rose-500 font-bold mt-1">
                       {{ passwordErrors.new_password }}
@@ -164,13 +167,13 @@ const handleSave = async () => {
                   <!-- Confirm New Password -->
                   <div>
                     <label class="block text-xs font-bold text-(--color-text) mb-1.5">
-                      Confirm password
+                      {{ t("settingsPage.loginSecurity.password.confirmLabel") }}
                     </label>
                     <input
                       v-model="passwordForm.confirm_password"
                       type="password"
                       class="w-full rounded-xl border border-(--color-border) px-4 py-3 text-sm bg-(--color-page) text-(--color-text) focus:outline-hidden focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary) font-semibold"
-                      placeholder="Re-enter new password"
+                      :placeholder="t('settingsPage.loginSecurity.password.confirmPlaceholder')"
                     />
                     <p v-if="passwordErrors.confirm_password" class="text-xs text-rose-500 font-bold mt-1">
                       {{ passwordErrors.confirm_password }}
@@ -185,15 +188,15 @@ const handleSave = async () => {
                       :disabled="savingPassword || !passwordForm.current_password || !passwordForm.new_password || !passwordForm.confirm_password"
                       class="px-5 py-2.5 rounded-xl bg-(--color-text) text-(--color-page) font-bold text-xs hover:opacity-90 active:scale-95 transition disabled:opacity-50 cursor-pointer"
                     >
-                      <span v-if="savingPassword">Updating...</span>
-                      <span v-else>Update password</span>
+                      <span v-if="savingPassword">{{ t("settingsPage.loginSecurity.password.updating") }}</span>
+                      <span v-else>{{ t("settingsPage.loginSecurity.password.updateButton") }}</span>
                     </button>
                     <button
                       type="button"
                       @click="toggleEdit"
                       class="px-5 py-2.5 rounded-xl border border-(--color-border) text-(--color-text) font-bold text-xs hover:bg-(--color-surface-soft) active:scale-95 transition cursor-pointer"
                     >
-                      Cancel
+                      {{ t("settingsPage.loginSecurity.password.cancelButton") }}
                     </button>
                   </div>
                 </div>
@@ -204,14 +207,14 @@ const handleSave = async () => {
                 @click="toggleEdit"
                 class="text-sm font-extrabold text-(--color-text) underline hover:text-(--color-primary) cursor-pointer"
               >
-                {{ activeEdit ? 'Cancel' : 'Update' }}
+                {{ activeEdit ? t("settingsPage.loginSecurity.password.cancelButton") : t("settingsPage.loginSecurity.password.updateToggle") }}
               </button>
             </div>
           </div>
 
           <!-- Active Sessions Section -->
           <div class="py-6">
-            <h3 class="text-sm font-bold text-(--color-text) mb-4">Device management</h3>
+            <h3 class="text-sm font-bold text-(--color-text) mb-4">{{ t("settingsPage.loginSecurity.deviceManagement.title") }}</h3>
             <SessionManagementCard class="!border-0 !p-0 !shadow-none bg-transparent" />
           </div>
 
@@ -221,18 +224,18 @@ const handleSave = async () => {
         <div class="lg:col-span-1">
           <div class="rounded-3xl border border-(--color-border) bg-(--color-surface-soft)/40 p-7 space-y-6">
             <div>
-              <h3 class="font-extrabold text-lg text-(--color-text)">Security tips</h3>
+              <h3 class="font-extrabold text-lg text-(--color-text)">{{ t("settingsPage.loginSecurity.sidebar.tipsTitle") }}</h3>
               <p class="text-xs text-(--color-muted) mt-2 leading-relaxed font-semibold">
-                Use a password that is unique to your Srok-Yerng Booking account. Avoid reusing passwords from other online services.
+                {{ t("settingsPage.loginSecurity.sidebar.tipsDescription") }}
               </p>
             </div>
-            
+
             <div class="my-4 border-t border-(--color-border)/60"></div>
-            
+
             <div>
-              <h3 class="font-extrabold text-sm text-(--color-text)">Session activity</h3>
+              <h3 class="font-extrabold text-sm text-(--color-text)">{{ t("settingsPage.loginSecurity.sidebar.sessionActivityTitle") }}</h3>
               <p class="text-xs text-(--color-muted) mt-2 leading-relaxed font-semibold">
-                If you notice any suspicious active login or device that you do not recognize, you can revoke its token instantly under Device management.
+                {{ t("settingsPage.loginSecurity.sidebar.sessionActivityDescription") }}
               </p>
             </div>
           </div>

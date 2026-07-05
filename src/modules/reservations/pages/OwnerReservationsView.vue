@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 
 import AppTable from "@/shared/components/AppTable.vue";
 import TablePagination from "@/modules/owner/components/TablePagination.vue";
@@ -9,6 +10,9 @@ import OwnerLoadingState from "@/modules/owner/components/OwnerLoadingState.vue"
 import { reservationApi } from "../api/reservation.api";
 
 const router = useRouter();
+const { t, te } = useI18n({ useScope: "global" });
+const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
+const statusLabel = (value) => safeT(`common.status.${String(value).toLowerCase()}`, value);
 
 const loading = ref(true);
 const error = ref("");
@@ -16,14 +20,14 @@ const recentReservations = ref([]);
 const currentPage = ref(1);
 const itemsPerPage = 10;
 
-const reservationColumns = [
-  { key: "id", label: "Booking ID" },
-  { key: "guestName", label: "Guest" },
-  { key: "propertyName", label: "Property" },
-  { key: "amount", label: "Amount" },
-  { key: "checkIn", label: "Date" },
-  { key: "status", label: "Status" },
-];
+const reservationColumns = computed(() => [
+  { key: "id", label: t("owner.reservationsPage.columns.bookingId") },
+  { key: "guestName", label: t("owner.reservationsPage.columns.guest") },
+  { key: "propertyName", label: t("owner.reservationsPage.columns.property") },
+  { key: "amount", label: t("owner.reservationsPage.columns.amount") },
+  { key: "checkIn", label: t("owner.reservationsPage.columns.date") },
+  { key: "status", label: t("owner.reservationsPage.columns.status") },
+]);
 
 const stats = computed(() => {
   const totalEarnings = recentReservations.value.reduce(
@@ -90,7 +94,7 @@ const fetchReservations = async () => {
     recentReservations.value = normalizeReservations(items);
     currentPage.value = 1;
   } catch (requestError) {
-    error.value = requestError?.message || "Failed to load reservations.";
+    error.value = requestError?.message || t("owner.reservationsPage.loadError");
     recentReservations.value = [];
   } finally {
     loading.value = false;
@@ -112,9 +116,9 @@ onMounted(fetchReservations);
       class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
     >
       <div>
-        <h1 class="text-3xl font-bold tracking-tight">Reservations Summary</h1>
+        <h1 class="text-3xl font-bold tracking-tight">{{ t("owner.reservationsPage.title") }}</h1>
         <p class="mt-1 text-sm text-(--color-muted)">
-          Overview of recent reservations from the backend.
+          {{ t("owner.reservationsPage.subtitle") }}
         </p>
       </div>
 
@@ -125,7 +129,7 @@ onMounted(fetchReservations);
         @click="fetchReservations"
       >
         <LoadingSpinner v-if="loading" class="h-4 w-4" />
-        <span>{{ loading ? "Refreshing..." : "Refresh" }}</span>
+        <span>{{ loading ? t("owner.reservationsPage.refreshing") : t("owner.reservationsPage.refresh") }}</span>
       </button>
     </header>
 
@@ -136,7 +140,7 @@ onMounted(fetchReservations);
         <span
           class="text-[11px] font-bold uppercase tracking-wider text-(--color-muted)"
         >
-          Total Earnings
+          {{ t("owner.reservationsPage.totalEarnings") }}
         </span>
         <h3 class="mt-1 text-2xl font-bold">
           ${{ formatCurrency(stats.totalEarnings) }}
@@ -149,7 +153,7 @@ onMounted(fetchReservations);
         <span
           class="text-[11px] font-bold uppercase tracking-wider text-(--color-muted)"
         >
-          Total Bookings
+          {{ t("owner.reservationsPage.totalBookings") }}
         </span>
         <h3 class="mt-1 text-2xl font-bold">{{ stats.totalBookings }}</h3>
       </div>
@@ -160,7 +164,7 @@ onMounted(fetchReservations);
         <span
           class="text-[11px] font-bold uppercase tracking-wider text-(--color-muted)"
         >
-          Pending Action
+          {{ t("owner.reservationsPage.pendingAction") }}
         </span>
         <h3 class="mt-1 text-2xl font-bold">{{ stats.pendingCount }}</h3>
       </div>
@@ -174,13 +178,13 @@ onMounted(fetchReservations);
         {{ error }}
       </div>
 
-      <OwnerLoadingState v-if="loading" label="Loading reservations..." />
+      <OwnerLoadingState v-if="loading" :label="t('owner.reservationsPage.loading')" />
 
       <div
         v-else-if="recentReservations.length === 0"
         class="rounded-xl border border-dashed border-(--color-border) bg-(--color-surface) px-5 py-10 text-center text-(--color-muted)"
       >
-        No recent reservations found.
+        {{ t("owner.reservationsPage.noReservations") }}
       </div>
 
       <AppTable
@@ -212,7 +216,7 @@ onMounted(fetchReservations);
                 : '',
             ]"
           >
-            {{ value }}
+            {{ statusLabel(value) }}
           </span>
         </template>
 
@@ -220,7 +224,7 @@ onMounted(fetchReservations);
           <div class="flex flex-col">
             <span>{{ formatDate(row.checkIn) }}</span>
             <span v-if="row.checkOut" class="text-xs text-(--color-muted)">
-              to {{ formatDate(row.checkOut) }}
+              {{ t("owner.reservationsPage.to") }} {{ formatDate(row.checkOut) }}
             </span>
           </div>
         </template>

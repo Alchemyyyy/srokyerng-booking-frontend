@@ -1,6 +1,9 @@
 <script setup>
 // import AppButton from '@/shared/components/AppButton.vue'
 import { ChevronDownIcon } from '@heroicons/vue/24/outline'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n({ useScope: 'global' })
 
 defineProps({
   // loading: { type: Boolean, default: false },
@@ -14,16 +17,16 @@ const emit = defineEmits(['refresh', 'change-history'])
 <template>
   <header class="dashboard-hero">
     <div>
-      <p class="dashboard-eyebrow">Admin command center</p>
-      <h1 class="text-3xl font-semibold text-(--color-text)">Platform monitoring dashboard</h1>
+      <p class="dashboard-eyebrow">{{ t('admin.analyticsPage.hero.eyebrow') }}</p>
+      <h1 class="text-3xl font-semibold text-(--color-text)">{{ t('admin.analyticsPage.hero.title') }}</h1>
       <p class="dashboard-subtitle">
-        Track platform activity, review pending approvals, and manage users.
+        {{ t('admin.analyticsPage.hero.subtitle') }}
       </p>
     </div>
 
     <div class="hero-actions">
       <label class="history-picker" v-if="historyOptions.length > 0">
-        <p class="history-picker__label">Overview history</p>
+        <p class="history-picker__label">{{ t('admin.analyticsPage.hero.historyLabel') }}</p>
         <div class="history-picker__wrapper">
           <select class="history-picker__select" :value="selectedHistory"
             @change="emit('change-history', $event.target.value)">

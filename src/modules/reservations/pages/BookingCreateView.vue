@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { reservationApi } from "../api/reservation.api";
 import { useToastStore } from "@/shared/store/toastStore";
 import http from "@/app/api/http";
@@ -14,6 +15,11 @@ import {
   CheckCircleIcon,
 } from "@heroicons/vue/24/outline";
 import BookingForm from "../components/BookingForm.vue";
+
+const { t, te } = useI18n({ useScope: "global" });
+const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
+const statusLabel = (value) =>
+  safeT(`common.status.${String(value || "").toLowerCase()}`, value);
 
 const route = useRoute();
 const router = useRouter();
@@ -81,11 +87,11 @@ const calculatedTotal = computed(() => roomCost.value);
 
 const handleSubmit = async (formData) => {
   if (paymentAccounts.value.length > 0 && !selectedAccountId.value) {
-    toastStore.danger("Please select a payment method.");
+    toastStore.danger(t("bookingCreatePage.toasts.selectPaymentMethod"));
     return;
   }
   if (paymentAccounts.value.length === 0) {
-    toastStore.danger("This host hasn't set up a payment method yet. Please contact them before booking.");
+    toastStore.danger(t("bookingCreatePage.toasts.noPaymentMethodSetup"));
     return;
   }
 
@@ -118,7 +124,7 @@ const handleSubmit = async (formData) => {
 
     const paymentId = payment.data?.id ?? payment.id;
 
-    toastStore.success("Booking created! Please upload your receipt.");
+    toastStore.success(t("bookingCreatePage.toasts.bookingCreated"));
 
     // ── Step 3: Go to upload page ───────────────────────────
     router.push({
@@ -128,11 +134,11 @@ const handleSubmit = async (formData) => {
   } catch (err) {
     const status = err?.status || err?.statusCode;
     if (status === 409) {
-      toastStore.danger("This room is already booked for selected dates.");
+      toastStore.danger(t("bookingCreatePage.toasts.roomAlreadyBooked"));
     } else if (status === 400) {
-      toastStore.danger("Invalid booking details. Please check your dates.");
+      toastStore.danger(t("bookingCreatePage.toasts.invalidBookingDetails"));
     } else {
-      toastStore.danger(err?.message || "Failed to create booking.");
+      toastStore.danger(err?.message || t("bookingCreatePage.toasts.bookingFailed"));
     }
   } finally {
     isSubmitting.value = false;
@@ -161,7 +167,7 @@ const handleSubmit = async (formData) => {
           <ArrowLeftIcon
             class="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-0.5"
           />
-          <span class="font-semibold text-xs tracking-wide">Back to Explorer</span>
+          <span class="font-semibold text-xs tracking-wide">{{ t("bookingCreatePage.backButton") }}</span>
         </AppButton>
 
         <div
@@ -169,7 +175,7 @@ const handleSubmit = async (formData) => {
         >
           <ShieldCheckIcon class="w-3.5 h-3.5" />
           <span class="text-[10px] font-black uppercase tracking-[0.15em]"
-            >Secure Checkout</span
+            >{{ t("bookingCreatePage.secureCheckout") }}</span
           >
         </div>
       </div>
@@ -178,13 +184,12 @@ const handleSubmit = async (formData) => {
         <h1
           class="text-2xl font-black text-(--color-text) tracking-tight sm:text-3xl"
         >
-          Complete Your Booking
+          {{ t("bookingCreatePage.heading") }}
         </h1>
         <p
           class="text-xs sm:text-sm text-(--color-muted) mt-1 max-w-xl leading-relaxed"
         >
-          Review your stay details and choose a payment method to confirm
-          your reservation.
+          {{ t("bookingCreatePage.subheading") }}
         </p>
       </header>
 
@@ -225,12 +230,12 @@ const handleSubmit = async (formData) => {
                 <p
                   class="text-[10px] font-black uppercase tracking-widest text-(--color-primary) mb-1"
                 >
-                  Your Stay
+                  {{ t("bookingCreatePage.yourStayLabel") }}
                 </p>
                 <h3
                   class="text-xl font-black text-(--color-text) tracking-tight leading-tight"
                 >
-                  {{ room?.name || "Loading room…" }}
+                  {{ room?.name || t("bookingCreatePage.loadingRoom") }}
                 </h3>
                 <p
                   class="text-sm font-semibold text-(--color-muted) mt-1 flex items-center gap-1"
@@ -238,7 +243,7 @@ const handleSubmit = async (formData) => {
                   <span
                     class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"
                   ></span>
-                  {{ property?.name || "Loading property…" }}
+                  {{ property?.name || t("bookingCreatePage.loadingProperty") }}
                 </p>
               </div>
 
@@ -253,7 +258,7 @@ const handleSubmit = async (formData) => {
                     class="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-(--color-muted) mb-1"
                   >
                     <CalendarIcon class="w-3 h-3 text-(--color-primary)" />
-                    Check-In <span class="text-rose-500">*</span>
+                    {{ t("bookingCreatePage.checkInLabel") }} <span class="text-rose-500">*</span>
                   </label>
                   <input
                     v-model="checkInDate"
@@ -270,7 +275,7 @@ const handleSubmit = async (formData) => {
                     class="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-(--color-muted) mb-1"
                   >
                     <CalendarIcon class="w-3 h-3 text-sky-400" />
-                    Check-Out <span class="text-rose-500">*</span>
+                    {{ t("bookingCreatePage.checkOutLabel") }} <span class="text-rose-500">*</span>
                   </label>
                   <input
                     v-model="checkOutDate"
@@ -300,10 +305,10 @@ const handleSubmit = async (formData) => {
                     <p
                       class="text-[10px] font-bold tracking-wider uppercase text-(--color-muted)"
                     >
-                      Duration
+                      {{ t("bookingCreatePage.durationLabel") }}
                     </p>
                     <p class="text-sm font-black text-(--color-text)">
-                      {{ stayNights }} Night{{ stayNights > 1 ? "s" : "" }}
+                      {{ t("bookingCreatePage.nightsCount", { count: stayNights }) }}
                     </p>
                   </div>
                 </div>
@@ -311,12 +316,12 @@ const handleSubmit = async (formData) => {
                   <p
                     class="text-[10px] font-bold tracking-wider uppercase text-(--color-muted)"
                   >
-                    Base rate
+                    {{ t("bookingCreatePage.baseRateLabel") }}
                   </p>
                   <p class="text-sm font-black text-(--color-text)">
                     ${{ room?.price || 0 }}
                     <span class="text-[10px] font-normal text-(--color-muted)"
-                      >/ night</span
+                      >{{ t("bookingCreatePage.perNight") }}</span
                     >
                   </p>
                 </div>
@@ -326,12 +331,12 @@ const handleSubmit = async (formData) => {
                 <p
                   class="text-[10px] font-black uppercase tracking-widest text-(--color-muted) border-b border-(--color-border)/40 pb-1.5"
                 >
-                  Price Details
+                  {{ t("bookingCreatePage.priceDetailsLabel") }}
                 </p>
 
                 <div class="flex justify-between text-sm">
                   <span class="text-(--color-muted) font-medium"
-                    >Room rate ({{ stayNights }} nights)</span
+                    >{{ t("bookingCreatePage.roomRateLine", { count: stayNights }) }}</span
                   >
                   <span class="font-bold text-(--color-text)"
                     >${{ roomCost }}</span
@@ -343,7 +348,7 @@ const handleSubmit = async (formData) => {
                 >
                   <span
                     class="font-black text-base text-(--color-text) tracking-tight"
-                    >Total Amount</span
+                    >{{ t("bookingCreatePage.totalAmountLabel") }}</span
                   >
                   <span
                     class="text-2xl font-black tracking-tight bg-gradient-to-r from-(--color-primary) to-sky-500 bg-clip-text text-transparent"
@@ -359,11 +364,10 @@ const handleSubmit = async (formData) => {
                 <CheckCircleIcon class="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                 <div class="text-xs">
                   <p class="font-bold text-emerald-600 dark:text-emerald-400">
-                    Flexible Cancellation Protect
+                    {{ t("bookingCreatePage.cancellation.title") }}
                   </p>
                   <p class="text-(--color-muted) mt-0.5 leading-normal">
-                    Get a complete reimbursement guarantee up to 48 hours prior
-                    to checking in.
+                    {{ t("bookingCreatePage.cancellation.description") }}
                   </p>
                 </div>
               </div>

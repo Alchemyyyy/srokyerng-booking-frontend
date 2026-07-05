@@ -13,6 +13,10 @@ export const useReservationStore = defineStore("admin-reservations", () => {
   const statusFilter = ref("all");
   const searchQuery = ref("");
 
+  // ── Client-side pagination ────────────────────────────────────────────────
+  const PAGE_SIZE = 10;
+  const currentPage = ref(1);
+
   const filteredReservations = computed(() => {
     let result = reservations.value;
 
@@ -40,6 +44,20 @@ export const useReservationStore = defineStore("admin-reservations", () => {
 
     return result;
   });
+
+  /** Current page slice of filteredReservations — use this in the table */
+  const pagedReservations = computed(() => {
+    const start = (currentPage.value - 1) * PAGE_SIZE;
+    return filteredReservations.value.slice(start, start + PAGE_SIZE);
+  });
+
+  /** Pagination meta derived from filteredReservations (client-side) */
+  const pagination = computed(() => ({
+    page: currentPage.value,
+    limit: PAGE_SIZE,
+    total: filteredReservations.value.length,
+    total_pages: Math.max(1, Math.ceil(filteredReservations.value.length / PAGE_SIZE)),
+  }));
 
   const statusCounts = computed(() => {
     const counts = { all: reservations.value.length };
@@ -106,10 +124,16 @@ export const useReservationStore = defineStore("admin-reservations", () => {
 
   const setStatusFilter = (status) => {
     statusFilter.value = status;
+    currentPage.value = 1;
   };
 
   const setSearchQuery = (query) => {
     searchQuery.value = query;
+    currentPage.value = 1;
+  };
+
+  const setPage = (page) => {
+    currentPage.value = page;
   };
 
   return {
@@ -120,10 +144,13 @@ export const useReservationStore = defineStore("admin-reservations", () => {
     statusFilter,
     searchQuery,
     filteredReservations,
+    pagedReservations,
+    pagination,
     statusCounts,
     fetchReservations,
     updateStatus,
     setStatusFilter,
     setSearchQuery,
+    setPage,
   };
 });

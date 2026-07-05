@@ -1,6 +1,9 @@
 <script setup>
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/vue/24/outline";
+
+const { t } = useI18n({ useScope: "global" });
 
 const props = defineProps({
   currentPage: { type: Number, required: true },
@@ -19,7 +22,7 @@ const goToPage = (page) => {
 <template>
   <nav
     class="flex items-center justify-center gap-2 mt-12"
-    aria-label="Pagination"
+    :aria-label="t('components.propertyPagination.ariaLabel')"
   >
     <button
       @click="goToPage(currentPage - 1)"

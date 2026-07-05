@@ -1,5 +1,9 @@
 <!-- modules/analytics/components/ActivityFeed.vue -->
 <script setup>
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n({ useScope: 'global' })
+
 defineProps({
   activities: { type: Array, required: true }
 })
@@ -7,7 +11,7 @@ defineProps({
 
 <template>
   <div class="dashboard-panel lg:col-span-2">
-    <h3 class="panel-title mb-4">Recent System Activity</h3>
+    <h3 class="panel-title mb-4">{{ t('admin.analyticsPage.activityFeed.title') }}</h3>
     <div class="space-y-4 max-h-95 overflow-y-auto pr-1">
       <div v-for="act in activities" :key="act.id" class="flex gap-3 items-start text-xs border-b border-(--color-border) pb-3 last:border-0 last:pb-0">
         <div :class="['p-2 rounded-lg shrink-0', act.iconBg]">

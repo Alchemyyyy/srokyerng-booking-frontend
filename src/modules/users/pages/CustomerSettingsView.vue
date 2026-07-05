@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from "vue";
 import { RouterLink } from "vue-router";
+import { useI18n } from "vue-i18n";
 import {
   BellIcon,
   ShieldCheckIcon,
@@ -15,11 +16,13 @@ import { useSidebar } from "@/shared/composables/useSidebar";
 import PublicNavbar from "@/shared/components/PublicNavbar.vue";
 import PublicFooter from "@/shared/components/PublicFooter.vue";
 
+const { t } = useI18n({ useScope: "global" });
+
 const authStore = useAuthStore();
 const { isSidebarOpen } = useSidebar();
 
 const user = computed(() => authStore.user);
-const userLabel = computed(() => user.value?.full_name || user.value?.email || "Guest");
+const userLabel = computed(() => user.value?.full_name || user.value?.email || t("settingsPage.shell.guest"));
 const userEmail = computed(() => user.value?.email || "");
 const rolePrefix = computed(() => {
   const role = authStore.user?.role;
@@ -44,7 +47,7 @@ const isDashboardRole = computed(() => ["owner", "admin"].includes(authStore.use
       <!-- Title Header -->
       <div>
         <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-(--color-text)">
-          Account
+          {{ t("settingsPage.shell.title") }}
         </h1>
         <div class="text-sm font-semibold text-(--color-muted) mt-2 flex flex-wrap items-center gap-1.5">
           <span>{{ userLabel }}</span>
@@ -55,7 +58,7 @@ const isDashboardRole = computed(() => ["owner", "admin"].includes(authStore.use
             :to="{ name: `${rolePrefix}.profile` }"
             class="text-(--color-primary) hover:underline font-bold"
           >
-            Go to profile
+            {{ t("settingsPage.shell.goToProfile") }}
           </RouterLink>
         </div>
       </div>
@@ -71,10 +74,10 @@ const isDashboardRole = computed(() => ["owner", "admin"].includes(authStore.use
           <div>
             <UserIcon class="h-8 w-8 text-(--color-text) mb-4 group-hover:text-(--color-primary) transition-colors" />
             <h2 class="font-bold text-base text-(--color-text) group-hover:text-(--color-primary) transition-colors">
-              Personal info
+              {{ t("settingsPage.shell.cards.personalInfo.title") }}
             </h2>
             <p class="text-xs text-(--color-muted) mt-1.5 leading-normal font-normal">
-              Provide personal details and how we can reach you.
+              {{ t("settingsPage.shell.cards.personalInfo.description") }}
             </p>
           </div>
         </RouterLink>
@@ -87,10 +90,10 @@ const isDashboardRole = computed(() => ["owner", "admin"].includes(authStore.use
           <div>
             <ShieldCheckIcon class="h-8 w-8 text-(--color-text) mb-4 group-hover:text-(--color-primary) transition-colors" />
             <h2 class="font-bold text-base text-(--color-text) group-hover:text-(--color-primary) transition-colors">
-              Login & security
+              {{ t("settingsPage.shell.cards.loginSecurity.title") }}
             </h2>
             <p class="text-xs text-(--color-muted) mt-1.5 leading-normal font-normal">
-              Update your password and secure your account.
+              {{ t("settingsPage.shell.cards.loginSecurity.description") }}
             </p>
           </div>
         </RouterLink>
@@ -103,10 +106,10 @@ const isDashboardRole = computed(() => ["owner", "admin"].includes(authStore.use
           <div>
             <CreditCardIcon class="h-8 w-8 text-(--color-text) mb-4 group-hover:text-(--color-primary) transition-colors" />
             <h2 class="font-bold text-base text-(--color-text) group-hover:text-(--color-primary) transition-colors">
-              Payments & payouts
+              {{ t("settingsPage.shell.cards.paymentsPayouts.title") }}
             </h2>
             <p class="text-xs text-(--color-muted) mt-1.5 leading-normal font-normal">
-              Review payments, payouts, coupons, and billing info.
+              {{ t("settingsPage.shell.cards.paymentsPayouts.description") }}
             </p>
           </div>
         </RouterLink>
@@ -119,10 +122,10 @@ const isDashboardRole = computed(() => ["owner", "admin"].includes(authStore.use
           <div>
             <BellIcon class="h-8 w-8 text-(--color-text) mb-4 group-hover:text-(--color-primary) transition-colors" />
             <h2 class="font-bold text-base text-(--color-text) group-hover:text-(--color-primary) transition-colors">
-              Notifications
+              {{ t("settingsPage.shell.cards.notifications.title") }}
             </h2>
             <p class="text-xs text-(--color-muted) mt-1.5 leading-normal font-normal">
-              Choose notification preferences and how you want to be contacted.
+              {{ t("settingsPage.shell.cards.notifications.description") }}
             </p>
           </div>
         </RouterLink>
@@ -135,10 +138,10 @@ const isDashboardRole = computed(() => ["owner", "admin"].includes(authStore.use
           <div>
             <EyeIcon class="h-8 w-8 text-(--color-text) mb-4 group-hover:text-(--color-primary) transition-colors" />
             <h2 class="font-bold text-base text-(--color-text) group-hover:text-(--color-primary) transition-colors">
-              Privacy & sharing
+              {{ t("settingsPage.shell.cards.privacySharing.title") }}
             </h2>
             <p class="text-xs text-(--color-muted) mt-1.5 leading-normal font-normal">
-              Manage your personal data, sharing settings, and connected portals.
+              {{ t("settingsPage.shell.cards.privacySharing.description") }}
             </p>
           </div>
         </RouterLink>
@@ -151,10 +154,10 @@ const isDashboardRole = computed(() => ["owner", "admin"].includes(authStore.use
           <div>
             <GlobeAltIcon class="h-8 w-8 text-(--color-text) mb-4 group-hover:text-(--color-primary) transition-colors" />
             <h2 class="font-bold text-base text-(--color-text) group-hover:text-(--color-primary) transition-colors">
-              Global preferences
+              {{ t("settingsPage.shell.cards.globalPreferences.title") }}
             </h2>
             <p class="text-xs text-(--color-muted) mt-1.5 leading-normal font-normal">
-              Set your default language, currency, and time zone.
+              {{ t("settingsPage.shell.cards.globalPreferences.description") }}
             </p>
           </div>
         </RouterLink>

@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
@@ -9,6 +10,7 @@ import {
 } from "@heroicons/vue/24/outline";
 import { useToastStore } from "@/shared/store/toastStore";
 
+const { t } = useI18n({ useScope: "global" });
 const toastStore = useToastStore();
 
 const variantConfig = {
@@ -85,7 +87,7 @@ const displayedToasts = computed(() => toastStore.toasts.slice(-4));
             <button
               type="button"
               class="rounded-sm p-1 text-(--color-muted) transition hover:bg-(--color-surface-soft) hover:text-(--color-text)"
-              aria-label="Dismiss notification"
+              :aria-label="t('components.toastContainer.dismiss')"
               @click="toastStore.remove(toast.id)"
             >
               <XMarkIcon class="h-4 w-4" />

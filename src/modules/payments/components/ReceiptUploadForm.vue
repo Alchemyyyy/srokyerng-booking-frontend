@@ -13,6 +13,7 @@
  *   clear — called when the user removes the selected file
  */
 import { ref, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import {
   CloudArrowUpIcon,
   CheckCircleIcon,
@@ -20,6 +21,8 @@ import {
   DocumentIcon,
 } from "@heroicons/vue/24/outline";
 import AppButton from "@/shared/components/AppButton.vue";
+
+const { t } = useI18n({ useScope: "global" });
 
 const props = defineProps({
   loading: { type: Boolean, default: false },
@@ -40,7 +43,7 @@ function processFile(file) {
   sizeError.value = null;
   const maxBytes = props.maxSizeMb * 1024 * 1024;
   if (file.size > maxBytes) {
-    sizeError.value = `File is too large. Maximum size is ${props.maxSizeMb}MB.`;
+    sizeError.value = t("components.receiptUploadForm.fileTooLarge", { size: props.maxSizeMb });
     return;
   }
   selectedFile.value = file;
@@ -103,7 +106,7 @@ const fileSizeLabel = computed(() => {
         class="upload-zone__input"
         :accept="accept"
         @change="handleFileSelect"
-        aria-label="Upload payment receipt"
+        :aria-label="t('components.receiptUploadForm.uploadAriaLabel')"
       />
 
       <!-- Empty state -->
@@ -115,11 +118,11 @@ const fileSizeLabel = computed(() => {
           <CloudArrowUpIcon class="upload-zone__icon" />
         </div>
         <h3 class="upload-zone__heading">
-          {{ isDragging ? "Drop it here" : "Upload your receipt" }}
+          {{ isDragging ? t("components.receiptUploadForm.dropHeading") : t("components.receiptUploadForm.uploadHeading") }}
         </h3>
         <p class="upload-zone__hint">
-          Drag and drop, or click to browse.<br />
-          PNG, JPG, PDF — max {{ maxSizeMb }}MB.
+          {{ t("components.receiptUploadForm.dragDropHint") }}<br />
+          {{ t("components.receiptUploadForm.formatsHint", { size: maxSizeMb }) }}
         </p>
       </div>
 
@@ -130,7 +133,7 @@ const fileSizeLabel = computed(() => {
           <img
             :src="previewUrl"
             class="upload-zone__preview-img"
-            alt="Receipt preview"
+            :alt="t('components.receiptUploadForm.previewAlt')"
           />
           <div class="upload-zone__preview-overlay">
             <button
@@ -138,7 +141,7 @@ const fileSizeLabel = computed(() => {
               class="upload-zone__remove-btn"
               @click.stop="removeFile"
             >
-              Remove
+              {{ t("components.receiptUploadForm.removeButton") }}
             </button>
           </div>
         </div>
@@ -150,7 +153,7 @@ const fileSizeLabel = computed(() => {
             type="button"
             class="upload-zone__remove-icon"
             @click.stop="removeFile"
-            aria-label="Remove file"
+            :aria-label="t('components.receiptUploadForm.removeFileAriaLabel')"
           >
             <XMarkIcon class="w-4 h-4" />
           </button>
@@ -173,15 +176,15 @@ const fileSizeLabel = computed(() => {
     <!-- Transaction reference -->
     <div v-if="selectedFile" class="upload-form__reference">
       <label class="upload-form__reference-label" for="transaction-reference">
-        Transaction reference
-        <span class="upload-form__reference-optional">(optional)</span>
+        {{ t("components.receiptUploadForm.referenceLabel") }}
+        <span class="upload-form__reference-optional">{{ t("components.receiptUploadForm.referenceOptional") }}</span>
       </label>
       <input
         id="transaction-reference"
         v-model="transactionReference"
         type="text"
         class="upload-form__reference-input"
-        placeholder="e.g. the reference number from your bank app"
+        :placeholder="t('components.receiptUploadForm.referencePlaceholder')"
       />
     </div>
 
@@ -195,7 +198,7 @@ const fileSizeLabel = computed(() => {
       :disabled="loading"
       @click="handleSubmit"
     >
-      Submit Payment for Review
+      {{ t("components.receiptUploadForm.submitButton") }}
     </AppButton>
   </div>
 </template>

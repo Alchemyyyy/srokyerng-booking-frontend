@@ -1,5 +1,5 @@
 <template>
-  <span class="rsb" :class="[`rsb--${config.tone}`, `rsb--${size}`]" :aria-label="`Refund status: ${config.label}`">
+  <span class="rsb" :class="[`rsb--${config.tone}`, `rsb--${size}`]" :aria-label="ariaLabel">
     <span v-if="config.dot" class="rsb__dot" aria-hidden="true"/>
     <component :is="config.icon" v-else-if="config.icon" class="rsb__icon" aria-hidden="true"/>
     {{ config.label }}
@@ -8,18 +8,37 @@
 
 <script setup>
 import { computed, defineComponent, h } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t, te } = useI18n({ useScope: 'global' })
+const safeT = (key, fallback) => (te(key) ? t(key) : fallback)
+const statusLabel = (value) =>
+  safeT(`common.status.${String(value || '').toLowerCase()}`, value)
 
 const CheckIcon = defineComponent({ render: () => h('svg', { width:12, height:12, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', 'stroke-width':'2.5' }, [h('path', { d:'M20 6 9 17l-5-5' })]) })
 const CloseIcon = defineComponent({ render: () => h('svg', { width:12, height:12, viewBox:'0 0 24 24', fill:'none', stroke:'currentColor', 'stroke-width':'2.5' }, [h('path', { d:'M18 6 6 18M6 6l12 12' })]) })
 
-const STATUS_MAP = {
-  not_requested: { label: 'No Refund',      tone: 'neutral', dot: false, icon: null },
-  pending:       { label: 'Refund Pending',  tone: 'warning', dot: true,  icon: null },
-  processing:    { label: 'Processing',      tone: 'info',    dot: true,  icon: null },
-  approved:      { label: 'Refund Approved', tone: 'success', dot: false, icon: CheckIcon },
-  paid:          { label: 'Refunded',        tone: 'success', dot: false, icon: CheckIcon },
-  rejected:      { label: 'Refund Rejected', tone: 'danger',  dot: false, icon: CloseIcon },
-  cancelled:     { label: 'Cancelled',       tone: 'neutral', dot: false, icon: null },
+// Style/tone metadata is not user-facing text, kept as-is. Labels are
+// resolved separately below — most refund statuses use custom "Refund …"
+// synonyms (not plain common.status wording), except "cancelled" which
+// reuses the shared common.status namespace verbatim.
+const STATUS_STYLE = {
+  not_requested: { tone: 'neutral', dot: false, icon: null },
+  pending:       { tone: 'warning', dot: true,  icon: null },
+  processing:    { tone: 'info',    dot: true,  icon: null },
+  approved:      { tone: 'success', dot: false, icon: CheckIcon },
+  paid:          { tone: 'success', dot: false, icon: CheckIcon },
+  rejected:      { tone: 'danger',  dot: false, icon: CloseIcon },
+  cancelled:     { tone: 'neutral', dot: false, icon: null },
+}
+
+const STATUS_LABEL_KEYS = {
+  not_requested: 'components.refundStatusBadge.status.notRequested',
+  pending: 'components.refundStatusBadge.status.pending',
+  processing: 'components.refundStatusBadge.status.processing',
+  approved: 'components.refundStatusBadge.status.approved',
+  paid: 'components.refundStatusBadge.status.refunded',
+  rejected: 'components.refundStatusBadge.status.rejected',
 }
 
 const props = defineProps({
@@ -27,7 +46,21 @@ const props = defineProps({
   size:   { type: String, default: 'md', validator: v => ['sm','md'].includes(v) },
 })
 
-const config = computed(() => STATUS_MAP[props.status] ?? { label: props.status, tone: 'neutral', dot: false, icon: null })
+const config = computed(() => {
+  const style = STATUS_STYLE[props.status]
+  if (!style) {
+    return { label: statusLabel(props.status), tone: 'neutral', dot: false, icon: null }
+  }
+  const label =
+    props.status === 'cancelled'
+      ? statusLabel('cancelled')
+      : t(STATUS_LABEL_KEYS[props.status])
+  return { ...style, label }
+})
+
+const ariaLabel = computed(() =>
+  t('components.refundStatusBadge.ariaLabel', { label: config.value.label }),
+)
 </script>
 
 <style scoped>

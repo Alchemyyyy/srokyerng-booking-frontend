@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import BookingStatusBadge from "./BookingStatusBadge.vue";
 import placeholer from "@/assets/images/properties/placeholder.png";
 import {
@@ -25,6 +26,10 @@ const props = defineProps({
 
 const emit = defineEmits(["cancel", "view", "pay", "receipt"]);
 const router = useRouter();
+const { t, te } = useI18n({ useScope: "global" });
+const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
+const statusLabel = (value) =>
+  safeT(`common.status.${String(value || "").toLowerCase()}`, value);
 
 const formatDate = (dateStr) => {
   if (!dateStr || dateStr === "-") return "-";
@@ -136,13 +141,13 @@ onBeforeUnmount(()  => document.removeEventListener("click", handleOutsideClick)
       <div class="space-y-2 w-full sm:w-auto">
         <div class="flex flex-wrap items-center gap-2">
           <h4 class="text-base font-black text-(--color-text) tracking-tight">
-          {{ booking.room_name || booking.roomName || "Room" }}
+          {{ booking.room_name || booking.roomName || t("components.bookingCard.roomFallback") }}
           </h4>
           <span
             class="inline-flex items-center gap-0.5 text-[10px] text-(--color-muted) font-mono font-bold bg-(--color-surface-soft) px-1.5 py-0.5 rounded-md border border-(--color-border)/60"
           >
             <HashtagIcon class="w-2.5 h-2.5" />
-            RES-{{ booking.id }}
+            {{ t("components.bookingCard.reservationPrefix") }}-{{ booking.id }}
           </span>
           <span class="w-1.5 h-1.5 bg-(--color-border) rounded-full shrink-0"></span>
           <BookingStatusBadge :status="status" />
@@ -154,7 +159,7 @@ onBeforeUnmount(()  => document.removeEventListener("click", handleOutsideClick)
         >
           <MapPinIcon class="w-3.5 h-3.5 text-(--color-primary) shrink-0" />
           <span>{{
-            booking.property_name || booking.location || "Property"
+            booking.property_name || booking.location || t("components.bookingCard.propertyFallback")
           }}</span>
         </p>
 
@@ -166,7 +171,7 @@ onBeforeUnmount(()  => document.removeEventListener("click", handleOutsideClick)
             <CalendarIcon class="w-3 h-3 text-(--color-primary)" />
             <span
               class="text-[9px] uppercase text-(--color-muted) font-black mr-0.5"
-              >In</span
+              >{{ t("components.bookingCard.checkInLabel") }}</span
             >
             {{ checkIn }}
           </div>
@@ -181,7 +186,7 @@ onBeforeUnmount(()  => document.removeEventListener("click", handleOutsideClick)
             <CalendarIcon class="w-3 h-3 text-sky-400" />
             <span
               class="text-[9px] uppercase text-(--color-muted) font-black mr-0.5"
-              >Out</span
+              >{{ t("components.bookingCard.checkOutLabel") }}</span
             >
             {{ checkOut }}
           </div>
@@ -190,7 +195,7 @@ onBeforeUnmount(()  => document.removeEventListener("click", handleOutsideClick)
             class="inline-flex items-center gap-1 bg-gradient-to-r from-(--color-primary-soft)/40 to-sky-500/5 border border-(--color-primary-soft)/60 px-2 py-1 rounded-xl text-[10px] font-black text-(--color-primary) uppercase tracking-wide ml-0 sm:ml-1"
           >
             <MoonIcon class="w-3 h-3" />
-            {{ nights }} Night{{ nights > 1 ? "s" : "" }}
+            {{ t("components.bookingCard.nights", { count: nights }) }}
           </div>
         </div>
 
@@ -200,7 +205,7 @@ onBeforeUnmount(()  => document.removeEventListener("click", handleOutsideClick)
             :class="paymentStatusColor"
             class="border text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md"
           >
-            Payment: {{ paymentStatus }}
+            {{ t("components.bookingCard.paymentLabel", { status: statusLabel(paymentStatus) }) }}
           </span>
         </div>
       </div>
@@ -213,7 +218,7 @@ onBeforeUnmount(()  => document.removeEventListener("click", handleOutsideClick)
       <!-- Price block -->
       <div class="lg:text-right">
         <span class="text-[9px] uppercase font-black text-(--color-muted) tracking-widest block">
-          Total amount
+          {{ t("components.bookingCard.totalAmount") }}
         </span>
         <span class="text-2xl font-black text-(--color-text) tracking-tight block mt-0.5">
           ${{ Number(booking.total_amount || booking.totalPrice || 0) }}
@@ -227,7 +232,7 @@ onBeforeUnmount(()  => document.removeEventListener("click", handleOutsideClick)
         class="w-full bg-(--color-primary) hover:opacity-90 text-white font-bold text-sm px-4 py-2.5 rounded-xl shadow-sm transition duration-200 cursor-pointer flex items-center justify-center gap-2"
       >
         <component :is="paymentStatus === 'failed' ? ArrowPathIcon : CreditCardIcon" class="w-4 h-4" />
-        <span>{{ paymentStatus === "failed" ? "Re-upload" : "Pay Now" }}</span>
+        <span>{{ paymentStatus === "failed" ? t("components.bookingCard.reupload") : t("components.bookingCard.payNow") }}</span>
       </button>
 
       <button
@@ -236,7 +241,7 @@ onBeforeUnmount(()  => document.removeEventListener("click", handleOutsideClick)
         class="w-full border border-(--color-border) bg-(--color-surface-soft) hover:bg-(--color-surface-soft)/80 text-(--color-text) font-bold text-sm px-4 py-2.5 rounded-xl shadow-xs transition duration-200 cursor-pointer flex items-center justify-center gap-2"
       >
         <ArrowPathIcon class="w-4 h-4 text-(--color-muted)" />
-        <span>Book Again</span>
+        <span>{{ t("components.bookingCard.bookAgain") }}</span>
       </button>
 
       <!-- Secondary row: View Details + ⋮ menu -->
@@ -247,7 +252,7 @@ onBeforeUnmount(()  => document.removeEventListener("click", handleOutsideClick)
           class="flex-1 border border-(--color-border) bg-(--color-surface) hover:bg-(--color-surface-soft) text-(--color-text) font-bold text-sm px-3 py-2.5 rounded-xl transition duration-200 flex items-center justify-center gap-1.5"
         >
           <ArrowRightIcon class="w-4 h-4" />
-          <span>{{ showPayButton ? 'Details' : 'View Details' }}</span>
+          <span>{{ showPayButton ? t("components.bookingCard.details") : t("components.bookingCard.viewDetails") }}</span>
         </button>
 
         <!-- ⋮ dropdown trigger -->
@@ -272,7 +277,7 @@ onBeforeUnmount(()  => document.removeEventListener("click", handleOutsideClick)
               class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold transition duration-150"
             >
               <DocumentTextIcon class="w-4 h-4 shrink-0" />
-              <span>Receipt</span>
+              <span>{{ t("components.bookingCard.receipt") }}</span>
             </button>
 
             <!-- Cancel -->
@@ -282,7 +287,7 @@ onBeforeUnmount(()  => document.removeEventListener("click", handleOutsideClick)
               class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition duration-150 cursor-pointer"
             >
               <XCircleIcon class="w-4 h-4 shrink-0" />
-              <span>Cancel Booking</span>
+              <span>{{ t("components.bookingCard.cancelBooking") }}</span>
             </button>
 
             <!-- Book Again (in menu when pay button is shown) -->
@@ -292,7 +297,7 @@ onBeforeUnmount(()  => document.removeEventListener("click", handleOutsideClick)
               class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-(--color-text) hover:bg-(--color-surface-soft) transition duration-150 cursor-pointer"
             >
               <ArrowPathIcon class="w-4 h-4 shrink-0" />
-              <span>Book Again</span>
+              <span>{{ t("components.bookingCard.bookAgain") }}</span>
             </button>
           </div>
         </div>

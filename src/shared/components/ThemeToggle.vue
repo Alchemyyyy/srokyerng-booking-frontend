@@ -1,7 +1,9 @@
 <script setup>
 import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { useTheme } from "@/shared/composables/useTheme";
 
+const { t } = useI18n({ useScope: "global" });
 const { resolvedTheme, toggleTheme } = useTheme();
 const isDark = computed(() => resolvedTheme.value === "dark");
 </script>
@@ -11,7 +13,7 @@ const isDark = computed(() => resolvedTheme.value === "dark");
     type="button"
     @click="toggleTheme"
     class="h-10 w-10 rounded-full flex items-center justify-center border border-(--color-border) bg-(--color-surface) text-(--color-text) hover:bg-(--color-surface-soft) transition shadow-xs cursor-pointer active:scale-95 shrink-0"
-    :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+    :title="isDark ? t('components.themeToggle.switchToLight') : t('components.themeToggle.switchToDark')"
   >
     <!-- Moon Icon (shown in dark mode, indicating current state is dark) -->
     <svg v-if="isDark" class="h-5 w-5 text-indigo-400 fill-current" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

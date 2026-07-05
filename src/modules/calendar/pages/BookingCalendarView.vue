@@ -6,9 +6,9 @@
       class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
     >
       <div>
-        <h1 class="text-3xl font-bold tracking-tight">ប្រតិទិនការកក់</h1>
+        <h1 class="text-3xl font-bold tracking-tight">{{ t("owner.bookingCalendarPage.title") }}</h1>
         <p class="mt-1 text-sm text-(--color-muted)">
-          Property availability calendar
+          {{ t("owner.bookingCalendarPage.subtitle") }}
         </p>
       </div>
 
@@ -17,7 +17,7 @@
         :disabled="propertiesLoading || properties.length === 0"
         class="w-full sm:w-auto border border-(--color-border)/60 bg-(--color-surface) text-(--color-text) rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-(--color-primary) disabled:opacity-50"
       >
-        <option value="" disabled>Select property</option>
+        <option value="" disabled>{{ t("owner.bookingCalendarPage.selectProperty") }}</option>
         <option
           v-for="property in properties"
           :key="property.id"
@@ -36,7 +36,7 @@
         <div
           class="w-6 h-6 border-2 border-(--color-primary) border-t-transparent rounded-full animate-spin"
         />
-        <span class="ml-3 text-sm font-medium">Loading your properties...</span>
+        <span class="ml-3 text-sm font-medium">{{ t("owner.bookingCalendarPage.loadingProperties") }}</span>
       </div>
     </div>
 
@@ -46,7 +46,7 @@
     >
       {{ propertiesError }}
       <button class="ml-2 underline font-bold" @click="fetchOwnerProperties">
-        Retry
+        {{ t("owner.bookingCalendarPage.retry") }}
       </button>
     </div>
 
@@ -54,8 +54,7 @@
       v-else-if="properties.length === 0"
       class="rounded-xl border border-dashed border-(--color-border) bg-(--color-surface) px-5 py-10 text-center text-(--color-muted)"
     >
-      You don't have any properties yet. Add a property to see its booking
-      calendar here.
+      {{ t("owner.bookingCalendarPage.noProperties") }}
     </div>
 
     <section
@@ -73,8 +72,11 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
+import { useI18n } from "vue-i18n";
 import http from "@/app/api/http";
 import AvailabilityCalendar from "../components/AvailabilityCalendar.vue";
+
+const { t } = useI18n({ useScope: "global" });
 
 const properties = ref([]);
 const propertiesLoading = ref(false);
@@ -94,7 +96,7 @@ const fetchOwnerProperties = async () => {
     }
   } catch (err) {
     propertiesError.value =
-      err?.response?.data?.message ?? "Failed to load your properties.";
+      err?.response?.data?.message ?? t("owner.bookingCalendarPage.loadError");
     console.error("[OwnerCalendarView] fetchOwnerProperties:", err);
   } finally {
     propertiesLoading.value = false;

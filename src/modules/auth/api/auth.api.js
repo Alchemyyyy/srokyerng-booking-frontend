@@ -17,6 +17,14 @@ export const authApi = {
     return http.post("/auth/facebook", payload, { skipAuthRefresh: true });
   },
 
+  linkGoogleAccount(payload) {
+    return http.post("/auth/google/link", payload);
+  },
+
+  unlinkGoogleAccount() {
+    return http.delete("/auth/google/link");
+  },
+
   refreshToken() {
     return http.post("/auth/refresh-token", {}, { skipAuthRefresh: true });
   },

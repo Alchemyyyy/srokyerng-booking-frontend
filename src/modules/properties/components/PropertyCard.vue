@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import placeholer from "@/assets/images/properties/placeholder.png";
 import {
   MapPinIcon,
@@ -22,6 +23,10 @@ const props = defineProps({
 });
 
 const router = useRouter();
+const { t, te } = useI18n({ useScope: "global" });
+const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
+const statusLabel = (value) =>
+  safeT(`common.status.${String(value || "").toLowerCase()}`, value);
 
 // ── Edit-request state ────────────────────────────────────────────────────────
 const hasPendingEdit = computed(
@@ -53,13 +58,13 @@ const isPending = computed(
 const badgeConfig = computed(() => {
   if (hasPendingEdit.value)
     return {
-      label: "PENDING CHANGES",
+      label: t("components.propertyCard.badgePendingChanges"),
       bg: "bg-orange-500/10 border-orange-500/20",
       text: "text-orange-700",
     };
   if (hasRejectedEdit.value)
     return {
-      label: "REJECTED",
+      label: statusLabel("rejected"),
       bg: "bg-rose-500/10 border-rose-500/20",
       text: "text-rose-700",
     };
@@ -67,31 +72,31 @@ const badgeConfig = computed(() => {
   const s = props.property.status?.toUpperCase();
   if (s === "APPROVED")
     return {
-      label: "APPROVED",
+      label: statusLabel("approved"),
       bg: "bg-emerald-500/10 border-emerald-500/20",
       text: "text-emerald-700",
     };
   if (s === "PENDING")
     return {
-      label: "PENDING",
+      label: statusLabel("pending"),
       bg: "bg-blue-500/10 border-blue-500/20",
       text: "text-blue-700",
     };
   if (s === "REJECTED")
     return {
-      label: "REJECTED",
+      label: statusLabel("rejected"),
       bg: "bg-rose-500/10 border-rose-500/20",
       text: "text-rose-700",
     };
   if (s === "SUSPENDED")
     return {
-      label: "SUSPENDED",
+      label: statusLabel("suspended"),
       bg: "bg-(--color-surface-soft)0/10 border-gray-500/20",
       text: "text-(--color-muted)",
     };
 
   return {
-    label: s || "UNKNOWN",
+    label: s ? statusLabel(s) : t("components.propertyCard.statusUnknown"),
     bg: "bg-(--color-surface-soft)0/10 border-gray-500/20",
     text: "text-(--color-text)",
   };
@@ -187,13 +192,13 @@ const handleActivate = (e) => {
           </div>
           <div class="flex-1 min-w-0">
             <p class="text-[13px] font-bold text-(--color-text) leading-tight">
-              Waiting for admin approval
+              {{ t("components.propertyCard.waitingApproval") }}
             </p>
             <p
               v-if="property.submittedAt"
               class="text-[11px] text-(--color-muted) mt-1 font-medium"
             >
-              Submitted on {{ property.submittedAt }}
+              {{ t("components.propertyCard.submittedOn", { date: property.submittedAt }) }}
             </p>
           </div>
         </div>
@@ -208,13 +213,13 @@ const handleActivate = (e) => {
           </div>
           <div class="flex-1 min-w-0">
             <p class="text-[13px] font-bold text-(--color-text) leading-tight">
-              Rejected by admin
+              {{ t("components.propertyCard.rejectedByAdmin") }}
             </p>
             <p
               v-if="rejectionReason"
               class="text-[11px] text-(--color-muted) mt-1 truncate font-medium"
             >
-              Reason: {{ rejectionReason }}
+              {{ t("components.propertyCard.reason", { reason: rejectionReason }) }}
             </p>
           </div>
           <InformationCircleIcon
@@ -232,13 +237,13 @@ const handleActivate = (e) => {
           </div>
           <div class="flex-1 min-w-0">
             <p class="text-[13px] font-bold text-(--color-text) leading-tight">
-              Under admin review
+              {{ t("components.propertyCard.underReview") }}
             </p>
             <p
               v-if="property.submittedAt"
               class="text-[11px] text-(--color-muted) mt-1 font-medium"
             >
-              Submitted on {{ property.submittedAt }}
+              {{ t("components.propertyCard.submittedOn", { date: property.submittedAt }) }}
             </p>
           </div>
         </div>
@@ -253,7 +258,7 @@ const handleActivate = (e) => {
           </div>
           <div class="flex-1 min-w-0">
             <p class="text-[13px] font-bold text-(--color-text) leading-tight">
-              Deactivated — hidden from guests
+              {{ t("components.propertyCard.deactivatedHidden") }}
             </p>
           </div>
         </div>
@@ -274,7 +279,7 @@ const handleActivate = (e) => {
             class="flex items-center gap-1 mt-1.5 text-[13px] font-medium text-(--color-muted)"
           >
             <MapPinIcon class="w-4 h-4 shrink-0 text-(--color-muted)" />
-            {{ property.location }}, Cambodia
+            {{ property.location }}, {{ t("components.propertyCard.country") }}
           </p>
         </div>
 
@@ -282,7 +287,7 @@ const handleActivate = (e) => {
           <p
             class="text-[11px] font-semibold text-(--color-muted) uppercase tracking-wide"
           >
-            Revenue
+            {{ t("components.propertyCard.revenue") }}
           </p>
           <p class="text-[16px] font-black text-(--color-text) mt-0.5">
             ${{ property.revenue?.toLocaleString() || 0 }}
@@ -303,7 +308,7 @@ const handleActivate = (e) => {
             >
             <span
               class="block text-[11px] font-medium text-(--color-muted) mt-1 leading-none"
-              >Rooms</span
+              >{{ t("components.propertyCard.rooms") }}</span
             >
           </div>
         </div>
@@ -321,7 +326,7 @@ const handleActivate = (e) => {
             >
             <span
               class="block text-[11px] font-medium text-(--color-muted) mt-1 leading-none"
-              >Bookings</span
+              >{{ t("components.propertyCard.bookings") }}</span
             >
           </div>
         </div>
@@ -336,7 +341,7 @@ const handleActivate = (e) => {
           @click.stop
         >
           <BuildingOffice2Icon class="w-4 h-4" />
-          Rooms
+          {{ t("components.propertyCard.rooms") }}
         </RouterLink>
 
         <!-- Edit -->
@@ -347,7 +352,7 @@ const handleActivate = (e) => {
           @click.stop="emit('edit', property)"
         >
           <PencilSquareIcon class="w-4 h-4" />
-          Edit
+          {{ t("components.propertyCard.edit") }}
         </button>
 
         <!-- ── "..." More Menu ──────────────────────────────────────────── -->
@@ -360,7 +365,7 @@ const handleActivate = (e) => {
                 : 'bg-(--color-surface-soft) hover:bg-(--color-border) text-(--color-muted)'
             "
             @click="openMenu"
-            title="More options"
+            :title="t('components.propertyCard.moreOptions')"
           >
             <EllipsisHorizontalIcon class="w-5 h-5" />
           </button>
@@ -386,7 +391,7 @@ const handleActivate = (e) => {
                 class="flex items-center gap-3 w-full px-4 py-3 text-sm font-semibold text-amber-700 hover:bg-amber-50 transition-colors text-left"
               >
                 <PauseCircleIcon class="w-4 h-4 text-amber-500 shrink-0" />
-                Deactivate
+                {{ t("components.propertyCard.deactivate") }}
               </button>
 
               <!-- Activate — only if suspended -->
@@ -396,7 +401,7 @@ const handleActivate = (e) => {
                 class="flex items-center gap-3 w-full px-4 py-3 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 transition-colors text-left"
               >
                 <PlayCircleIcon class="w-4 h-4 text-emerald-500 shrink-0" />
-                Activate
+                {{ t("components.propertyCard.activate") }}
               </button>
             </div>
           </Transition>

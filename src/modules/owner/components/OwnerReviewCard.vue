@@ -189,14 +189,14 @@ const deleteReply = () => {
         rows="4"
         :placeholder="
           isEditing
-            ? 'Update your reply…'
-            : 'Thank the guest, address their comments…'
+            ? t('owner.reviews.card.updatePlaceholder')
+            : t('owner.reviews.card.replyPlaceholder')
         "
         autofocus
       />
       <div class="compose-actions">
         <button class="btn-cancel" @click="cancel">
-          <XMarkIcon class="w-3.5 h-3.5" /> Cancel
+          <XMarkIcon class="w-3.5 h-3.5" /> {{ t("owner.reviews.card.cancel") }}
         </button>
         <button
           class="btn-post"

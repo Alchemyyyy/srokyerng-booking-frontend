@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import { RouterLink } from "vue-router";
+import { useI18n } from "vue-i18n";
 import {
   ChevronRightIcon,
   InformationCircleIcon,
@@ -10,6 +11,8 @@ import { useToastStore } from "@/shared/store/toastStore";
 import { useSidebar } from "@/shared/composables/useSidebar";
 import PublicNavbar from "@/shared/components/PublicNavbar.vue";
 import PublicFooter from "@/shared/components/PublicFooter.vue";
+
+const { t } = useI18n({ useScope: "global" });
 
 const authStore = useAuthStore();
 const toastStore = useToastStore();
@@ -56,10 +59,10 @@ const handleSave = () => {
   saving.value = true;
   const userId = authStore.user?.id || "guest";
   localStorage.setItem(`notification_prefs_${userId}`, JSON.stringify(preferences));
-  
+
   setTimeout(() => {
     saving.value = false;
-    toastStore.success("Notification preferences updated successfully.");
+    toastStore.success(t("settingsPage.notifications.toasts.updated"));
   }, 500);
 };
 
@@ -82,14 +85,14 @@ onMounted(() => {
       <!-- Breadcrumbs -->
       <nav class="flex items-center gap-1 text-xs font-bold text-(--color-text) mb-3">
         <RouterLink :to="{ name: `${rolePrefix}.settings` }" class="hover:underline">
-          Account
+          {{ t("settingsPage.notifications.breadcrumb.account") }}
         </RouterLink>
         <ChevronRightIcon class="h-3.5 w-3.5 text-(--color-muted)" />
-        <span class="text-(--color-muted) font-semibold">Notifications</span>
+        <span class="text-(--color-muted) font-semibold">{{ t("settingsPage.notifications.breadcrumb.current") }}</span>
       </nav>
 
       <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-(--color-text)">
-        Notification settings
+        {{ t("settingsPage.notifications.title") }}
       </h1>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 mt-12">
@@ -98,17 +101,17 @@ onMounted(() => {
           
           <!-- Section 1: Bookings and Stays -->
           <div class="py-6 first:pt-0">
-            <h2 class="text-lg font-extrabold text-(--color-text)">Stays & reservations</h2>
+            <h2 class="text-lg font-extrabold text-(--color-text)">{{ t("settingsPage.notifications.sections.stays.title") }}</h2>
             <p class="text-xs text-(--color-muted) mt-1 font-medium leading-relaxed">
-              Updates about your booking activity, check-in information, and host notifications.
+              {{ t("settingsPage.notifications.sections.stays.description") }}
             </p>
 
             <div class="mt-6 space-y-4">
               <!-- Email Toggle -->
               <div class="flex items-center justify-between py-2">
                 <div>
-                  <h4 class="text-sm font-bold text-(--color-text)">Email notifications</h4>
-                  <p class="text-xs text-(--color-muted) font-medium mt-0.5">Receive booking receipts and check-in details.</p>
+                  <h4 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.notifications.sections.stays.emailTitle") }}</h4>
+                  <p class="text-xs text-(--color-muted) font-medium mt-0.5">{{ t("settingsPage.notifications.sections.stays.emailDescription") }}</p>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer select-none">
                   <input type="checkbox" v-model="preferences.booking_email" @change="handleSave" class="sr-only peer" />
@@ -119,8 +122,8 @@ onMounted(() => {
               <!-- SMS Toggle -->
               <div class="flex items-center justify-between py-2">
                 <div>
-                  <h4 class="text-sm font-bold text-(--color-text)">SMS text messages</h4>
-                  <p class="text-xs text-(--color-muted) font-medium mt-0.5">Get instant texts when checking in.</p>
+                  <h4 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.notifications.sections.stays.smsTitle") }}</h4>
+                  <p class="text-xs text-(--color-muted) font-medium mt-0.5">{{ t("settingsPage.notifications.sections.stays.smsDescription") }}</p>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer select-none">
                   <input type="checkbox" v-model="preferences.booking_sms" @change="handleSave" class="sr-only peer" />
@@ -131,8 +134,8 @@ onMounted(() => {
               <!-- Push Toggle -->
               <div class="flex items-center justify-between py-2">
                 <div>
-                  <h4 class="text-sm font-bold text-(--color-text)">Mobile push alerts</h4>
-                  <p class="text-xs text-(--color-muted) font-medium mt-0.5">Alerts on stay updates, host reminders, and check-outs.</p>
+                  <h4 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.notifications.sections.stays.pushTitle") }}</h4>
+                  <p class="text-xs text-(--color-muted) font-medium mt-0.5">{{ t("settingsPage.notifications.sections.stays.pushDescription") }}</p>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer select-none">
                   <input type="checkbox" v-model="preferences.booking_push" @change="handleSave" class="sr-only peer" />
@@ -144,17 +147,17 @@ onMounted(() => {
 
           <!-- Section 2: Messages -->
           <div class="py-6">
-            <h2 class="text-lg font-extrabold text-(--color-text)">Messages from hosts</h2>
+            <h2 class="text-lg font-extrabold text-(--color-text)">{{ t("settingsPage.notifications.sections.messages.title") }}</h2>
             <p class="text-xs text-(--color-muted) mt-1 font-medium leading-relaxed">
-              Updates about active chats, unread messages, and conversation threads.
+              {{ t("settingsPage.notifications.sections.messages.description") }}
             </p>
 
             <div class="mt-6 space-y-4">
               <!-- Email Toggle -->
               <div class="flex items-center justify-between py-2">
                 <div>
-                  <h4 class="text-sm font-bold text-(--color-text)">Email notifications</h4>
-                  <p class="text-xs text-(--color-muted) font-medium mt-0.5">Get emails when you receive offline messages.</p>
+                  <h4 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.notifications.sections.messages.emailTitle") }}</h4>
+                  <p class="text-xs text-(--color-muted) font-medium mt-0.5">{{ t("settingsPage.notifications.sections.messages.emailDescription") }}</p>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer select-none">
                   <input type="checkbox" v-model="preferences.messages_email" @change="handleSave" class="sr-only peer" />
@@ -165,8 +168,8 @@ onMounted(() => {
               <!-- Push Toggle -->
               <div class="flex items-center justify-between py-2">
                 <div>
-                  <h4 class="text-sm font-bold text-(--color-text)">Mobile push alerts</h4>
-                  <p class="text-xs text-(--color-muted) font-medium mt-0.5">Direct push notification when host sends a message.</p>
+                  <h4 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.notifications.sections.messages.pushTitle") }}</h4>
+                  <p class="text-xs text-(--color-muted) font-medium mt-0.5">{{ t("settingsPage.notifications.sections.messages.pushDescription") }}</p>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer select-none">
                   <input type="checkbox" v-model="preferences.messages_push" @change="handleSave" class="sr-only peer" />
@@ -178,17 +181,17 @@ onMounted(() => {
 
           <!-- Section 3: Account security -->
           <div class="py-6">
-            <h2 class="text-lg font-extrabold text-(--color-text)">Account security alerts</h2>
+            <h2 class="text-lg font-extrabold text-(--color-text)">{{ t("settingsPage.notifications.sections.security.title") }}</h2>
             <p class="text-xs text-(--color-muted) mt-1 font-medium leading-relaxed">
-              Updates regarding login activity, password modifications, and security verification.
+              {{ t("settingsPage.notifications.sections.security.description") }}
             </p>
 
             <div class="mt-6 space-y-4">
               <!-- Email Toggle -->
               <div class="flex items-center justify-between py-2">
                 <div>
-                  <h4 class="text-sm font-bold text-(--color-text)">Email security alerts</h4>
-                  <p class="text-xs text-(--color-muted) font-medium mt-0.5">Receive immediate warnings of password changes and new device logins.</p>
+                  <h4 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.notifications.sections.security.emailTitle") }}</h4>
+                  <p class="text-xs text-(--color-muted) font-medium mt-0.5">{{ t("settingsPage.notifications.sections.security.emailDescription") }}</p>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer select-none">
                   <input type="checkbox" v-model="preferences.security_email" disabled class="sr-only peer" />
@@ -196,7 +199,7 @@ onMounted(() => {
                 </label>
               </div>
               <p class="text-[10px] text-(--color-muted) font-semibold mt-1">
-                For security compliance, critical account logins and alerts are always delivered to your primary email address and cannot be turned off.
+                {{ t("settingsPage.notifications.sections.security.complianceNote") }}
               </p>
             </div>
           </div>
@@ -209,9 +212,9 @@ onMounted(() => {
             <div class="flex gap-2">
               <InformationCircleIcon class="h-5 w-5 text-(--color-primary) shrink-0 mt-0.5" />
               <div>
-                <h3 class="font-extrabold text-sm text-(--color-text)">Custom preferences</h3>
+                <h3 class="font-extrabold text-sm text-(--color-text)">{{ t("settingsPage.notifications.sidebar.title") }}</h3>
                 <p class="text-xs text-(--color-muted) mt-1.5 leading-relaxed font-semibold">
-                  Toggles save automatically when changed. You can return to modify email, SMS, and device notifications preferences at any time.
+                  {{ t("settingsPage.notifications.sidebar.description") }}
                 </p>
               </div>
             </div>

@@ -8,11 +8,13 @@ import {
   BuildingOffice2Icon,
 } from "@heroicons/vue/24/outline";
 import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoomStore } from "../store/roomStore";
 import { useRouter } from "vue-router";
 
 const roomStore = useRoomStore();
 const router = useRouter();
+const { t } = useI18n({ useScope: "global" });
 
 const props = defineProps({
   room: {
@@ -92,7 +94,7 @@ onMounted(async () => {
         "
         class="absolute top-2.5 left-2.5 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase opacity-90"
       >
-        ID: {{ room.id }}
+        {{ t("components.roomCard.idBadge", { id: room.id }) }}
       </span>
 
       <!-- Loading indicator -->
@@ -131,7 +133,7 @@ onMounted(async () => {
         >
           <span class="flex items-center gap-1.5">
             <UserGroupIcon class="h-4 w-4 opacity-70" aria-hidden="true" />
-            {{ status.guests }} guests
+            {{ t("components.roomCard.guests", { count: status.guests }) }}
           </span>
           <span
             v-if="status.size && status.size !== '-'"
@@ -148,17 +150,17 @@ onMounted(async () => {
               class="h-4 w-4 opacity-70"
               aria-hidden="true"
             />
-            Floor {{ room.floor_number }}
+            {{ t("components.roomCard.floor", { number: room.floor_number }) }}
           </span>
         </div>
 
         <div class="flex items-center gap-1.5 text-xs text-(--color-muted)">
           <BanknotesIcon class="h-4 w-4 opacity-70" aria-hidden="true" />
-          <span class="font-medium">Base Rate:</span>
+          <span class="font-medium">{{ t("components.roomCard.baseRate") }}</span>
           <strong class="text-(--color-text) font-bold text-sm">
             ${{ room.basePrice }}
             <span class="text-xs font-medium text-(--color-muted)"
-              >/ night</span
+              >{{ t("components.roomCard.perNight") }}</span
             >
           </strong>
         </div>
@@ -179,14 +181,14 @@ onMounted(async () => {
           class="inline-flex items-center justify-center px-3 py-1 rounded-lg border border-(--color-border) bg-(--color-surface) text-(--color-primary) hover:bg-(--color-surface-soft) transition-all gap-1.5 cursor-pointer"
         >
           <PencilSquareIcon class="h-3.5 w-3.5" aria-hidden="true" />
-          <span class="text-xs font-semibold">Edit Room</span>
+          <span class="text-xs font-semibold">{{ t("components.roomCard.editRoom") }}</span>
         </button>
 
         <button
           type="button"
           @click.stop="$emit('delete', room)"
           class="p-1.5 text-rose-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all cursor-pointer"
-          title="Delete room"
+          :title="t('components.roomCard.deleteRoom')"
         >
           <TrashIcon class="h-4 w-4" aria-hidden="true" />
         </button>

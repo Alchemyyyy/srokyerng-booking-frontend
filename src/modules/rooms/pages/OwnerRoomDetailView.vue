@@ -13,6 +13,7 @@ import {
   XMarkIcon,
   CheckCircleIcon,
 } from "@heroicons/vue/24/outline";
+import { useI18n } from "vue-i18n";
 import http from "@/app/api/http";
 import { reservationApi } from "@/modules/reservations/api/reservation.api";
 import AvailabilityCalendar from "@/modules/calendar/components/AvailabilityCalendar.vue";
@@ -26,6 +27,9 @@ const roomStore = useRoomStore();
 const route = useRoute();
 const router = useRouter();
 const toast = useToastStore();
+const { t, te } = useI18n({ useScope: "global" });
+const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
+const statusLabel = (value) => safeT(`common.status.${String(value || "").toLowerCase()}`, value);
 
 const BASE_URL = (
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5001/api"
@@ -70,7 +74,7 @@ const fetchRoom = async () => {
     room.value = res?.data?.data ?? res?.data ?? res;
   } catch (err) {
     error.value =
-      err?.response?.data?.message ?? "Failed to load room details.";
+      err?.response?.data?.message ?? t("owner.roomDetailPage.loadError");
     console.error("[OwnerRoomDetail] fetchRoom:", err);
   } finally {
     loading.value = false;
@@ -171,8 +175,8 @@ const handleEditRoom = async (formData) => {
   editFormErrors.value = {};
 
   const errors = {};
-  if (!formData.propertyId) errors.propertyId = "Please choose a property.";
-  if (!formData.type) errors.type = "Room type is required.";
+  if (!formData.propertyId) errors.propertyId = t("owner.manageRoomsPage.errors.chooseProperty");
+  if (!formData.type) errors.type = t("owner.manageRoomsPage.errors.typeRequired");
   editFormErrors.value = errors;
   if (Object.keys(errors).length > 0) return;
 
@@ -194,7 +198,7 @@ const handleEditRoom = async (formData) => {
           await roomStore.deleteRoomImage(roomId.value, imageId);
         } catch (delErr) {
           console.error(`Failed to delete image ${imageId}:`, delErr);
-          toast.danger("Some images could not be removed. Please try again.");
+          toast.danger(t("owner.manageRoomsPage.toasts.imageRemoveFailed"));
         }
       }
     }
@@ -207,20 +211,20 @@ const handleEditRoom = async (formData) => {
         await roomStore.uploadRoomImages(roomId.value, fd);
       } catch (imgErr) {
         console.error("Image upload failed:", imgErr);
-        toast.danger("Room updated, but new images failed to upload.");
+        toast.danger(t("owner.manageRoomsPage.toasts.imageUploadFailed"));
       }
     }
 
     closeEditRoomModal();
-    toast.success("Room updated successfully.", { title: "Updated" });
+    toast.success(t("owner.manageRoomsPage.toasts.roomUpdated"), { title: t("owner.roomDetailPage.updatedTitle") });
 
     // Refresh this page's own data so the header, stats, and image
     // gallery immediately reflect the edit instead of waiting for a
     // manual refresh.
     await Promise.all([fetchRoom(), fetchImages()]);
   } catch (err) {
-    toast.danger(err?.response?.data?.message ?? "Failed to update room.", {
-      title: "Update Failed",
+    toast.danger(err?.response?.data?.message ?? t("owner.roomDetailPage.updateFailed"), {
+      title: t("owner.roomDetailPage.updateFailedTitle"),
     });
   }
 };
@@ -238,10 +242,10 @@ const handleImageUpload = async (event) => {
       headers: { "Content-Type": "multipart/form-data" },
     });
     await fetchImages();
-    toast.success("Images uploaded successfully.", { title: "Uploaded" });
+    toast.success(t("owner.roomDetailPage.imagesUploaded"), { title: t("owner.roomDetailPage.uploadedTitle") });
   } catch (err) {
-    toast.danger(err?.response?.data?.message ?? "Failed to upload images.", {
-      title: "Upload Failed",
+    toast.danger(err?.response?.data?.message ?? t("owner.roomDetailPage.imagesUploadFailed"), {
+      title: t("owner.roomDetailPage.uploadFailedTitle"),
     });
   } finally {
     uploadingImages.value = false;
@@ -254,10 +258,10 @@ const handleDeleteImage = async (imageId) => {
   try {
     await http.delete(`/rooms/${roomId.value}/images/${imageId}`);
     images.value = images.value.filter((i) => i.id !== imageId);
-    toast.success("Image deleted.", { title: "Deleted" });
+    toast.success(t("owner.roomDetailPage.imageDeleted"), { title: t("owner.roomDetailPage.deletedTitle") });
   } catch (err) {
-    toast.danger(err?.response?.data?.message ?? "Failed to delete image.", {
-      title: "Delete Failed",
+    toast.danger(err?.response?.data?.message ?? t("owner.roomDetailPage.imageDeleteFailed"), {
+      title: t("owner.roomDetailPage.deleteFailedTitle"),
     });
   } finally {
     deletingImageId.value = null;
@@ -272,9 +276,9 @@ const handleSetCover = async (imageId) => {
       ...i,
       is_cover: i.id === imageId ? 1 : 0,
     }));
-    toast.success("Cover image updated.", { title: "Updated" });
+    toast.success(t("owner.roomDetailPage.coverUpdated"), { title: t("owner.roomDetailPage.updatedTitle") });
   } catch (err) {
-    toast.danger("Failed to set cover image.", { title: "Error" });
+    toast.danger(t("owner.roomDetailPage.coverUpdateFailed"), { title: t("owner.roomDetailPage.errorTitle") });
   }
 };
 
@@ -326,7 +330,7 @@ onMounted(async () => {
     class="min-h-screen bg-(--color-page) text-(--color-text) antialiased pb-24 ml-64 px-6 mt-25"
   >
     <!-- Loading -->
-    <OwnerLoadingState v-if="loading" label="Loading room details..." />
+    <OwnerLoadingState v-if="loading" :label="t('owner.roomDetailPage.loading')" />
 
     <!-- Error -->
     <div
@@ -339,7 +343,7 @@ onMounted(async () => {
           @click="fetchRoom"
           class="text-xs font-black text-(--color-primary) uppercase tracking-widest hover:underline"
         >
-          Retry
+          {{ t("owner.roomDetailPage.retry") }}
         </button>
       </div>
     </div>
@@ -355,7 +359,7 @@ onMounted(async () => {
           <ArrowLeftIcon
             class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform"
           />
-          Back to Rooms
+          {{ t("owner.roomDetailPage.backToRooms") }}
         </button>
 
         <div
@@ -365,7 +369,7 @@ onMounted(async () => {
             <p
               class="text-[10px] font-black uppercase tracking-widest text-(--color-muted) mb-1"
             >
-              Room Detail
+              {{ t("owner.roomDetailPage.roomDetail") }}
             </p>
             <h1 class="text-3xl font-black tracking-tight text-(--color-text)">
               {{ room.room_name }}
@@ -381,7 +385,7 @@ onMounted(async () => {
             class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-(--color-primary) hover:bg-(--color-primary-strong) text-white text-xs font-black uppercase tracking-widest transition-colors shadow-md"
           >
             <PencilSquareIcon class="w-4 h-4" />
-            Edit Room
+            {{ t("owner.manageRoomsPage.editRoom") }}
           </button>
         </div>
       </div>
@@ -413,7 +417,7 @@ onMounted(async () => {
               class="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-black/60 backdrop-blur-sm px-3 py-1.5 text-xs font-bold text-white shadow-md"
             >
               <PhotoIcon class="w-3.5 h-3.5" />
-              {{ images.length }} Photos
+              {{ t("owner.roomDetailPage.photosCount", { count: images.length }) }}
             </span>
           </div>
         </div>
@@ -431,7 +435,7 @@ onMounted(async () => {
             <p
               class="text-[10px] font-black uppercase tracking-widest text-(--color-muted)"
             >
-              Price / Night
+              {{ t("owner.roomDetailPage.pricePerNight") }}
             </p>
             <p class="text-2xl font-black text-(--color-primary) mt-1">
               ${{ Number(room.price_per_night).toFixed(2) }}
@@ -449,7 +453,7 @@ onMounted(async () => {
             <p
               class="text-[10px] font-black uppercase tracking-widest text-(--color-muted)"
             >
-              Max Guests
+              {{ t("owner.roomDetailPage.maxGuests") }}
             </p>
             <p class="text-2xl font-black text-(--color-text) mt-1">
               {{ room.max_guests }}
@@ -467,7 +471,7 @@ onMounted(async () => {
             <p
               class="text-[10px] font-black uppercase tracking-widest text-(--color-muted)"
             >
-              Total Rooms
+              {{ t("owner.roomDetailPage.totalRooms") }}
             </p>
             <p class="text-2xl font-black text-(--color-text) mt-1">
               {{ room.total_rooms }}
@@ -480,10 +484,10 @@ onMounted(async () => {
             <p
               class="text-[10px] font-black uppercase tracking-widest text-(--color-muted) mb-2"
             >
-              Description
+              {{ t("owner.roomDetailPage.description") }}
             </p>
             <p class="text-sm text-(--color-muted) font-medium leading-relaxed">
-              {{ room.description || "No description provided." }}
+              {{ room.description || t("owner.roomDetailPage.noDescription") }}
             </p>
           </div>
         </div>
@@ -494,9 +498,9 @@ onMounted(async () => {
         <div class="flex items-center gap-1">
           <button
             v-for="tab in [
-              { id: 'calendar', label: 'Availability', icon: CalendarDaysIcon },
-              { id: 'bookings', label: 'Bookings', icon: UsersIcon },
-              { id: 'images', label: 'Images', icon: PhotoIcon },
+              { id: 'calendar', label: t('owner.roomDetailPage.tabAvailability'), icon: CalendarDaysIcon },
+              { id: 'bookings', label: t('owner.roomDetailPage.tabBookings'), icon: UsersIcon },
+              { id: 'images', label: t('owner.roomDetailPage.tabImages'), icon: PhotoIcon },
             ]"
             :key="tab.id"
             @click="switchTab(tab.id)"
@@ -521,7 +525,7 @@ onMounted(async () => {
           <h2
             class="text-xs font-black uppercase tracking-widest text-(--color-muted) mb-4"
           >
-            Room Availability Calendar
+            {{ t("owner.roomDetailPage.availabilityCalendar") }}
           </h2>
           <AvailabilityCalendar :room-id="room.id" mode="owner" />
         </div>
@@ -535,7 +539,7 @@ onMounted(async () => {
             class="w-6 h-6 border-2 border-(--color-primary) border-t-transparent rounded-full animate-spin mx-auto mb-3"
           />
           <p class="text-sm text-(--color-muted) font-medium">
-            Loading bookings...
+            {{ t("owner.roomDetailPage.loadingBookings") }}
           </p>
         </div>
 
@@ -547,9 +551,9 @@ onMounted(async () => {
           <CalendarDaysIcon
             class="w-10 h-10 text-(--color-border) mx-auto mb-3"
           />
-          <p class="text-sm font-bold text-(--color-text)">No bookings yet</p>
+          <p class="text-sm font-bold text-(--color-text)">{{ t("owner.roomDetailPage.noBookings") }}</p>
           <p class="text-xs text-(--color-muted) mt-1">
-            Bookings for this room will appear here.
+            {{ t("owner.roomDetailPage.noBookingsDesc") }}
           </p>
         </div>
 
@@ -563,13 +567,13 @@ onMounted(async () => {
             <div class="space-y-1">
               <div class="flex items-center gap-2">
                 <p class="text-sm font-black text-(--color-text)">
-                  {{ booking.customer_name || "Guest" }}
+                  {{ booking.customer_name || t("owner.roomDetailPage.guest") }}
                 </p>
                 <span
                   class="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border"
                   :class="getBookingStatusColor(booking.reservation_status)"
                 >
-                  {{ booking.reservation_status }}
+                  {{ statusLabel(booking.reservation_status) }}
                 </span>
               </div>
               <p class="text-xs text-(--color-muted) font-medium">
@@ -579,23 +583,21 @@ onMounted(async () => {
                 class="flex items-center gap-3 text-xs text-(--color-muted) pt-1"
               >
                 <span
-                  >Check-in:
+                  >{{ t("owner.roomDetailPage.checkIn") }}:
                   <strong class="text-(--color-text)">{{
                     formatDate(booking.check_in_date)
                   }}</strong></span
                 >
                 <span>→</span>
                 <span
-                  >Check-out:
+                  >{{ t("owner.roomDetailPage.checkOut") }}:
                   <strong class="text-(--color-text)">{{
                     formatDate(booking.check_out_date)
                   }}</strong></span
                 >
                 <span>·</span>
                 <span
-                  >{{ booking.total_nights }} night{{
-                    booking.total_nights > 1 ? "s" : ""
-                  }}</span
+                  >{{ t("owner.roomDetailPage.nightsCount", { count: booking.total_nights }) }}</span
                 >
               </div>
             </div>
@@ -604,7 +606,7 @@ onMounted(async () => {
               <p
                 class="text-[9px] font-black uppercase tracking-widest text-(--color-muted)"
               >
-                Total
+                {{ t("owner.roomDetailPage.total") }}
               </p>
               <p class="text-xl font-black text-(--color-primary)">
                 ${{ booking.total_amount }}
@@ -622,13 +624,13 @@ onMounted(async () => {
             <p
               class="text-xs font-black uppercase tracking-widest text-(--color-muted)"
             >
-              {{ images.length }} image{{ images.length !== 1 ? "s" : "" }}
+              {{ t("owner.roomDetailPage.imagesCount", { count: images.length }) }}
             </p>
             <label
               class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-(--color-primary) hover:bg-(--color-primary-strong) text-white text-xs font-black uppercase tracking-widest transition-colors cursor-pointer shadow-md"
             >
               <PhotoIcon class="w-4 h-4" />
-              {{ uploadingImages ? "Uploading..." : "Upload Images" }}
+              {{ uploadingImages ? t("owner.roomDetailPage.uploading") : t("owner.roomDetailPage.uploadImages") }}
               <input
                 type="file"
                 multiple
@@ -646,9 +648,9 @@ onMounted(async () => {
             class="text-center py-16 border border-dashed border-(--color-border) rounded-[24px]"
           >
             <PhotoIcon class="w-10 h-10 text-(--color-border) mx-auto mb-3" />
-            <p class="text-sm font-bold text-(--color-text)">No images yet</p>
+            <p class="text-sm font-bold text-(--color-text)">{{ t("owner.roomDetailPage.noImages") }}</p>
             <p class="text-xs text-(--color-muted) mt-1">
-              Upload images to showcase this room.
+              {{ t("owner.roomDetailPage.noImagesDesc") }}
             </p>
           </div>
 
@@ -673,7 +675,7 @@ onMounted(async () => {
                 v-if="image.is_cover === 1"
                 class="absolute top-2 left-2 bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"
               >
-                Cover
+                {{ t("owner.roomDetailPage.cover") }}
               </div>
 
               <!-- Actions overlay -->
@@ -685,7 +687,7 @@ onMounted(async () => {
                   v-if="image.is_cover !== 1"
                   @click="handleSetCover(image.id)"
                   class="p-2 rounded-lg bg-white/20 hover:bg-white/30 text-white transition"
-                  title="Set as cover"
+                  :title="t('owner.roomDetailPage.setAsCover')"
                 >
                   <CheckCircleIcon class="w-4 h-4" />
                 </button>
@@ -695,7 +697,7 @@ onMounted(async () => {
                   @click="handleDeleteImage(image.id)"
                   :disabled="deletingImageId === image.id"
                   class="p-2 rounded-lg bg-rose-500/80 hover:bg-rose-600 text-white transition disabled:opacity-50"
-                  title="Delete image"
+                  :title="t('owner.roomDetailPage.deleteImage')"
                 >
                   <TrashIcon class="w-4 h-4" />
                 </button>
@@ -708,11 +710,11 @@ onMounted(async () => {
 
     <RoomFormModal
       :open="isEditRoomModalOpen"
-      title="Edit Room"
+      :title="t('owner.manageRoomsPage.editRoom')"
       :model-value="editRoomForm"
       :properties="ownerProperties"
       :errors="editFormErrors"
-      submit-label="Save Changes"
+      :submit-label="t('owner.manageRoomsPage.saveChanges')"
       @close="closeEditRoomModal"
       @submit="(data) => handleEditRoom(data)"
     />

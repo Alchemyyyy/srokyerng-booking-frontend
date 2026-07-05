@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
 const { t } = useI18n({ useScope: "global" });
@@ -31,16 +32,21 @@ const toggleFacility = (facility) => {
   updateFilter("selectedFacilities", updated);
 };
 
-const capacityOptions = ["1 Guest", "2 Guests", "3 Guests", "4+ Guests"];
+const capacityOptions = computed(() => [
+  { value: "1", label: t("components.roomFilter.capacity.oneGuest") },
+  { value: "2", label: t("components.roomFilter.capacity.twoGuests") },
+  { value: "3", label: t("components.roomFilter.capacity.threeGuests") },
+  { value: "4+", label: t("components.roomFilter.capacity.fourPlusGuests") },
+]);
 
-const facilityOptions = [
-  "Free WiFi",
-  "Air Conditioning",
-  "Breakfast Included",
-  "Smart TV",
-  "Balcony",
-  "Private Bathroom",
-];
+const facilityOptions = computed(() => [
+  { value: "wifi", label: t("components.roomFilter.facilities.wifi") },
+  { value: "ac", label: t("components.roomFilter.facilities.ac") },
+  { value: "breakfast", label: t("components.roomFilter.facilities.breakfast") },
+  { value: "smartTv", label: t("components.roomFilter.facilities.smartTv") },
+  { value: "balcony", label: t("components.roomFilter.facilities.balcony") },
+  { value: "privateBathroom", label: t("components.roomFilter.facilities.privateBathroom") },
+]);
 </script>
 
 <template>
@@ -62,14 +68,14 @@ const facilityOptions = [
         style="color: var(--color-text)"
         class="text-xs font-bold uppercase tracking-wider"
       >
-        Filters
+        {{ t("components.roomFilter.filters") }}
       </h2>
       <button
         style="color: var(--color-muted)"
         class="text-[11px] hover:opacity-80 font-medium transition cursor-pointer"
         @click="$emit('reset')"
       >
-        Reset All
+        {{ t("components.roomFilter.resetAll") }}
       </button>
     </div>
 
@@ -79,7 +85,7 @@ const facilityOptions = [
         style="color: var(--color-muted)"
         class="block text-[11px] font-bold uppercase tracking-wider"
       >
-        Max Nightly Budget
+        {{ t("components.roomFilter.maxNightlyBudget") }}
       </label>
       <div
         style="
@@ -116,15 +122,15 @@ const facilityOptions = [
         style="color: var(--color-muted)"
         class="block text-[11px] font-bold uppercase tracking-wider"
       >
-        Room Capacity
+        {{ t("components.roomFilter.roomCapacity") }}
       </label>
       <div class="grid grid-cols-2 gap-1.5">
         <button
           v-for="cap in capacityOptions"
-          :key="cap"
+          :key="cap.value"
           type="button"
           :style="
-            modelValue.selectedCapacity === cap
+            modelValue.selectedCapacity === cap.value
               ? {
                   backgroundColor: 'var(--color-primary-strong)',
                   color: 'var(--color-text-inverse)',
@@ -137,9 +143,9 @@ const facilityOptions = [
                 }
           "
           class="border rounded-lg py-2 text-center text-[11px] font-medium transition cursor-pointer"
-          @click="updateFilter('selectedCapacity', cap)"
+          @click="updateFilter('selectedCapacity', cap.value)"
         >
-          {{ cap }}
+          {{ cap.label }}
         </button>
       </div>
     </div>
@@ -150,15 +156,15 @@ const facilityOptions = [
         style="color: var(--color-muted)"
         class="block text-[11px] font-bold uppercase tracking-wider"
       >
-        Facilities & Amenities
+        {{ t("components.roomFilter.facilitiesAmenities") }}
       </label>
       <div class="flex flex-wrap gap-1">
         <button
           v-for="fac in facilityOptions"
-          :key="fac"
+          :key="fac.value"
           type="button"
           :style="
-            modelValue.selectedFacilities.includes(fac)
+            modelValue.selectedFacilities.includes(fac.value)
               ? {
                   borderColor: 'var(--color-primary)',
                   backgroundColor: 'var(--color-primary-soft)',
@@ -171,9 +177,9 @@ const facilityOptions = [
                 }
           "
           class="border rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition cursor-pointer"
-          @click="toggleFacility(fac)"
+          @click="toggleFacility(fac.value)"
         >
-          {{ fac }}
+          {{ fac.label }}
         </button>
       </div>
     </div>

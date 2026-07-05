@@ -24,6 +24,7 @@ const props = defineProps({
   modelValue: { type: Object, required: true },
   activeFilterCount: { type: Number, default: 0 },
   cityOptions: { type: Array, required: true },
+  propertyTypes: { type: Array, default: () => [] },
   minimumRatings: { type: Array, required: true },
   propertyCountByCity: { type: Function, required: true },
 });
@@ -63,12 +64,25 @@ const onMaxInput = (e) => {
 };
 
 // --- Amenities & Types ---
-const propertyTypes = [
-  { value: "all", label: "All Types", icon: HomeIcon },
-  { value: "hotel", label: "Hotel", icon: BuildingOfficeIcon },
-  { value: "villa", label: "Villa", icon: SunIcon },
-  { value: "resort", label: "Resort", icon: SparklesIcon },
-];
+// Icons are cosmetic-only and keyed by category name; any category from the
+// database without a specific icon here just falls back to HomeIcon.
+const typeIcons = {
+  all: HomeIcon,
+  hotel: BuildingOfficeIcon,
+  villa: SunIcon,
+  resort: SparklesIcon,
+  apartment: BuildingOfficeIcon,
+  guesthouse: HomeIcon,
+  homestay: HomeIcon,
+  hostel: HomeIcon,
+};
+
+const propertyTypes = computed(() =>
+  props.propertyTypes.map((type) => ({
+    ...type,
+    icon: typeIcons[type.value] || HomeIcon,
+  })),
+);
 
 const amenitiesList = [
   { value: "wifi", label: "Wi-Fi" },

@@ -11,15 +11,25 @@
  *   methodName    : string  — bank/method name, e.g. "ABA"
  *   accountNumber : string  — manual-transfer fallback when no QR is set
  */
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { QrCodeIcon } from "@heroicons/vue/24/outline";
 
-defineProps({
+const { t } = useI18n({ useScope: "global" });
+
+const props = defineProps({
   accountName: { type: String, default: "" },
   qrImageUrl: { type: String, default: null },
   bakongId: { type: String, default: "" },
   methodName: { type: String, default: "" },
   accountNumber: { type: String, default: "" },
 });
+
+const subLabel = computed(() =>
+  props.methodName
+    ? t("components.paymentMethodCard.khqrWithMethod", { method: props.methodName })
+    : t("components.paymentMethodCard.khqrOnly")
+);
 </script>
 
 <template>
@@ -30,8 +40,8 @@ defineProps({
         <QrCodeIcon class="qr-card__icon" />
       </div>
       <div>
-        <p class="qr-card__label">Scan to Pay</p>
-        <p class="qr-card__sub">{{ methodName ? `KHQR · ${methodName}` : "KHQR" }}</p>
+        <p class="qr-card__label">{{ t("components.paymentMethodCard.scanToPay") }}</p>
+        <p class="qr-card__sub">{{ subLabel }}</p>
       </div>
     </div>
 
@@ -40,33 +50,33 @@ defineProps({
       <img
         v-if="qrImageUrl"
         :src="qrImageUrl"
-        alt="Bakong KHQR code"
+        :alt="t('components.paymentMethodCard.qrAlt')"
         class="qr-card__qr-img"
       />
       <div v-else class="qr-card__qr-placeholder">
         <QrCodeIcon class="qr-card__placeholder-icon" />
-        <span>QR not configured</span>
+        <span>{{ t("components.paymentMethodCard.qrNotConfigured") }}</span>
       </div>
     </div>
 
     <!-- Account details -->
     <div class="qr-card__details">
       <div class="qr-card__detail-row" v-if="methodName">
-        <span class="qr-card__detail-label">Bank</span>
+        <span class="qr-card__detail-label">{{ t("components.paymentMethodCard.bank") }}</span>
         <span class="qr-card__detail-value">{{ methodName }}</span>
       </div>
       <div class="qr-card__detail-row" v-if="accountName">
-        <span class="qr-card__detail-label">Merchant</span>
+        <span class="qr-card__detail-label">{{ t("components.paymentMethodCard.merchant") }}</span>
         <span class="qr-card__detail-value">{{ accountName }}</span>
       </div>
       <div class="qr-card__detail-row" v-if="accountNumber">
-        <span class="qr-card__detail-label">Account Number</span>
+        <span class="qr-card__detail-label">{{ t("components.paymentMethodCard.accountNumber") }}</span>
         <span class="qr-card__detail-value qr-card__detail-value--mono">{{
           accountNumber
         }}</span>
       </div>
       <div class="qr-card__detail-row" v-if="bakongId">
-        <span class="qr-card__detail-label">Bakong ID</span>
+        <span class="qr-card__detail-label">{{ t("components.paymentMethodCard.bakongId") }}</span>
         <span class="qr-card__detail-value qr-card__detail-value--mono">{{
           bakongId
         }}</span>
@@ -75,12 +85,12 @@ defineProps({
 
     <!-- Manual transfer fallback note -->
     <p v-if="!qrImageUrl && accountNumber" class="qr-card__manual-hint">
-      No QR code yet? Transfer manually to the account number above.
+      {{ t("components.paymentMethodCard.manualHint") }}
     </p>
 
     <!-- Instruction -->
     <p class="qr-card__hint">
-      Open your banking app · Scan this QR · Transfer the exact amount
+      {{ t("components.paymentMethodCard.instructionHint") }}
     </p>
   </div>
 </template>

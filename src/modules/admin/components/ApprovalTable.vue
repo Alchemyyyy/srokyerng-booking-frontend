@@ -3,6 +3,11 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter, } from 'vue-router';
 import { CheckIcon, XMarkIcon, ChevronDownIcon } from '@heroicons/vue/24/solid';
+import { useI18n } from 'vue-i18n';
+
+const { t, te } = useI18n({ useScope: "global" });
+const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
+const statusLabel = (value) => safeT(`common.status.${String(value || "").toLowerCase()}`, value);
 
 defineProps({
     items: { type: Array, required: true },
@@ -67,30 +72,30 @@ const handleRowClick = (event, itemId) => {
         <table class="approval-table">
             <thead>
                 <tr>
-                    <th>Property Detail</th>
-                    <th>Host / Owner</th>
-                    <th>Geographic Location</th>
-                    <th>Audit Status</th>
-                    <th class="text-right">Actions</th>
+                    <th>{{ t("components.approvalTable.propertyDetail") }}</th>
+                    <th>{{ t("components.approvalTable.hostOwner") }}</th>
+                    <th>{{ t("components.approvalTable.geographicLocation") }}</th>
+                    <th>{{ t("components.approvalTable.auditStatus") }}</th>
+                    <th class="text-right">{{ t("components.approvalTable.actions") }}</th>
                 </tr>
             </thead>
             <tbody>
                 <tr v-for="item in items" :key="item.id"
                     @click="handleRowClick($event, item.id)" style="cursor: pointer;">
                     <td>
-                        <div class="property-name">{{ item.property_name || 'Unnamed Property' }}</div>
-                        <div class="property-category">{{ item.category?.category_name || 'Standard Listing' }}</div>
+                        <div class="property-name">{{ item.property_name || t("components.approvalTable.unnamedProperty") }}</div>
+                        <div class="property-category">{{ item.category?.category_name || t("components.approvalTable.standardListing") }}</div>
                     </td>
 
                     <td>
-                        <div class="owner-name">{{ item.owner?.owner_name || 'Unknown Host' }}</div>
-                        <div class="owner-email">{{ item.owner?.owner_email || 'No email provided' }}</div>
+                        <div class="owner-name">{{ item.owner?.owner_name || t("components.approvalTable.unknownHost") }}</div>
+                        <div class="owner-email">{{ item.owner?.owner_email || t("components.approvalTable.noEmailProvided") }}</div>
                     </td>
 
                     <td>
                         <div class="location-wrapper">
                             <span v-if="item.address">{{ item.address }}, </span>
-                            <span>{{ item.city?.city_name || item.province?.province_name || 'Cambodia' }}</span>
+                            <span>{{ item.city?.city_name || item.province?.province_name || t("components.approvalTable.cambodia") }}</span>
                         </div>
                     </td>
 
@@ -102,7 +107,7 @@ const handleRowClick = (event, itemId) => {
                                 'status-approved': item.status?.status_name?.toLowerCase() === 'approved' || item.status?.status_id === 2,
                                 'status-rejected': item.status?.status_name?.toLowerCase() === 'rejected' || item.status?.status_id === 3
                             }
-                        ]">{{ item.status?.status_name || 'Pending' }}</span>
+                        ]">{{ statusLabel(item.status?.status_name || 'pending') }}</span>
                     </td>
 
                     <td class="text-right">
@@ -110,11 +115,11 @@ const handleRowClick = (event, itemId) => {
                             <template v-if="item.status?.status_id === 1 || item.status?.status_name?.toLowerCase() === 'pending'">
                                 <button @click="emit('approve', item.id)" :disabled="isProcessing"
                                     class="action-inline-btn btn-approve-sm">
-                                    <CheckIcon class="btn-icon-sm" /> Approve
+                                    <CheckIcon class="btn-icon-sm" /> {{ t("components.approvalTable.approve") }}
                                 </button>
                                 <button @click="emit('reject', item.id)" :disabled="isProcessing"
                                     class="action-inline-btn btn-reject-sm">
-                                    <XMarkIcon class="btn-icon-sm" /> Reject
+                                    <XMarkIcon class="btn-icon-sm" /> {{ t("components.approvalTable.reject") }}
                                 </button>
                             </template>
 
@@ -122,7 +127,7 @@ const handleRowClick = (event, itemId) => {
                                 <div class="dropdown-menu-wrapper">
                                     <button @click="toggleDropdown($event, item.id)"
                                         :disabled="isProcessing" class="action-inline-btn btn-edit-sm">
-                                        Edit Status
+                                        {{ t("components.approvalTable.editStatus") }}
                                         <ChevronDownIcon class="btn-icon-sm ml-1" />
                                     </button>
 
@@ -130,13 +135,13 @@ const handleRowClick = (event, itemId) => {
                                         class="dropdown-popover" :class="{ 'open-upward': isDropup }">
                                         <button v-if="item.status?.status_id !== 1"
                                             @click.stop="handleSelectStatus(item.id, 'pending')"
-                                            class="dropdown-item text-warning-item">Set to Pending</button>
+                                            class="dropdown-item text-warning-item">{{ t("components.approvalTable.setToPending") }}</button>
                                         <button v-if="item.status?.status_id !== 2"
                                             @click.stop="handleSelectStatus(item.id, 'approve')"
-                                            class="dropdown-item text-success-item">Approve Listing</button>
+                                            class="dropdown-item text-success-item">{{ t("components.approvalTable.approveListing") }}</button>
                                         <button v-if="item.status?.status_id !== 3"
                                             @click.stop="handleSelectStatus(item.id, 'reject')"
-                                            class="dropdown-item text-danger-item">Reject Listing</button>
+                                            class="dropdown-item text-danger-item">{{ t("components.approvalTable.rejectListing") }}</button>
                                     </div>
                                 </div>
                             </template>

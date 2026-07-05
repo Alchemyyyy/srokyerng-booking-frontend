@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useI18n } from 'vue-i18n'
 import { useSidebar } from '@/shared/composables/useSidebar'
 import { useAdminAnalyticsStore } from '../stores/AdminAnalyticsStore'
 
@@ -12,6 +13,8 @@ import ActivityFeed from '../components/adminComponents/ActivityFeed.vue'
 import PipelineTable from '../components/adminComponents/PipelineTable.vue'
 import QuickActions from '../components/adminComponents/QuickActions.vue'
 import LoadingSpinner from '@/shared/components/LoadingSpinner.vue'
+
+const { t } = useI18n({ useScope: "global" })
 
 const { isSidebarOpen } = useSidebar()
 
@@ -38,8 +41,8 @@ const handleRefresh = () => {
   <div class="admin-dashboard-container my-25 space-y-6" :class="isSidebarOpen ? 'ml-64' : 'ml-20'">
 
     <div v-if="error" class="error-alert-banner">
-      <p class="text-sm font-semibold">Error: {{ error }}</p>
-      <button @click="handleRefresh" class="retry-action-btn">Retry</button>
+      <p class="text-sm font-semibold">{{ t("admin.analyticsPage.errorMessage", { message: error }) }}</p>
+      <button @click="handleRefresh" class="retry-action-btn">{{ t("admin.analyticsPage.retry") }}</button>
     </div>
 
     <DashboardHero :loading="loading" :history-options="historyOptions" :selected-history="selectedHistory"
@@ -63,19 +66,17 @@ const handleRefresh = () => {
         <ActivityFeed v-if="systemActivities.length > 0" :activities="systemActivities" />
         <div v-else class="empty-panel lg:col-span-2">
           <LoadingSpinner v-if="loading" />
-          <span v-else>No system activities found.</span>
+          <span v-else>{{ t("admin.analyticsPage.noActivities") }}</span>
         </div>
 
-        <!-- <PipelineTable v-if="propertiesPipeline.length > 0" :properties="propertiesPipeline" />
+        <PipelineTable v-if="propertiesPipeline.length > 0" :properties="propertiesPipeline" />
         <div v-else class="empty-panel lg:col-span-3">
           <LoadingSpinner v-if="loading" />
-          <span v-else>No pending property pipeline recorded.</span>
-        </div> -->
-        <div class="lg:col-span-3">
-          <QuickActions :links="quickLinks" :formatter="(v) => new Intl.NumberFormat('en-US').format(v)" />
+          <span v-else>{{ t("admin.analyticsPage.noPipeline") }}</span>
         </div>
       </section>
 
+      <QuickActions :links="quickLinks" :formatter="(v) => new Intl.NumberFormat('en-US').format(v)" />
     </template>
   </div>
 </template>

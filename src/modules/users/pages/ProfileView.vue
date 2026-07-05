@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import {
   ArrowLeftIcon,
   CalendarDaysIcon,
@@ -56,45 +56,92 @@ const pendingLeaveResolver = ref(null);
 const allowNextNavigation = ref(false);
 const activeAccountTab = ref("personal");
 
-// Social connections state and simulation logic
-// Keys are scoped per-user (matching the pattern used by e.g. shared/utils/currency.js)
-// so one browser profile can't inherit another logged-in user's connected status.
-const connKey = (provider) => `conn_${provider}_${authStore.user?.id ?? "anon"}`;
-const googleConnected = ref(localStorage.getItem(connKey("google")) === "true" || !!authStore.user?.google_id);
-const facebookConnected = ref(localStorage.getItem(connKey("facebook")) === "true");
+// Google account connection is real: state comes from the backend
+// (authStore.user.google_linked), set via POST/DELETE /auth/google/link.
+// Facebook linking isn't implemented yet — shown as a "coming soon" state
+// instead of faking a connection.
+const googleConnected = computed(() => Boolean(authStore.user?.google_linked));
+const googleButtonRef = ref(null);
 const connectingProvider = ref(null);
 const disconnectingProvider = ref(null);
+const GOOGLE_SCRIPT_SRC = "https://accounts.google.com/gsi/client";
+let googleScriptPromise = null;
 
-const handleConnect = (provider) => {
-  connectingProvider.value = provider;
-  setTimeout(() => {
-    if (provider === "google") {
-      googleConnected.value = true;
-      localStorage.setItem(connKey("google"), "true");
-    } else {
-      facebookConnected.value = true;
-      localStorage.setItem(connKey("facebook"), "true");
+const loadGoogleScript = () => {
+  if (window.google?.accounts?.id) return Promise.resolve();
+  if (googleScriptPromise) return googleScriptPromise;
+
+  googleScriptPromise = new Promise((resolve, reject) => {
+    const existingScript = document.querySelector(`script[src="${GOOGLE_SCRIPT_SRC}"]`);
+    if (existingScript) {
+      existingScript.addEventListener("load", resolve, { once: true });
+      existingScript.addEventListener("error", reject, { once: true });
+      return;
     }
+    const script = document.createElement("script");
+    script.src = GOOGLE_SCRIPT_SRC;
+    script.async = true;
+    script.defer = true;
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+
+  return googleScriptPromise;
+};
+
+const handleGoogleLinkCredential = async (response) => {
+  if (!response?.credential) return;
+  connectingProvider.value = "google";
+  try {
+    await authStore.linkGoogleAccount({ credential: response.credential });
+    toastStore.success(t("profile.connections.connectSuccess", { provider: "Google" }));
+  } catch (err) {
+    toastStore.danger(err?.message || t("auth.googleLoginFailed"));
+  } finally {
     connectingProvider.value = null;
-    toastStore.success(`${provider.charAt(0).toUpperCase() + provider.slice(1)} account connected successfully!`);
-  }, 1200);
+  }
+};
+
+const renderGoogleButton = async () => {
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  if (!googleClientId || googleConnected.value || !googleButtonRef.value) return;
+
+  try {
+    await loadGoogleScript();
+    googleButtonRef.value.innerHTML = "";
+    window.google.accounts.id.initialize({
+      client_id: googleClientId,
+      callback: handleGoogleLinkCredential,
+    });
+    window.google.accounts.id.renderButton(googleButtonRef.value, {
+      theme: "outline",
+      size: "medium",
+      shape: "pill",
+      text: "continue_with",
+    });
+  } catch {
+    // Button stays empty; the card's "Connect" affordance simply won't render.
+  }
 };
 
 const triggerDisconnect = (provider) => {
   disconnectingProvider.value = provider;
 };
 
-const confirmDisconnect = () => {
+const confirmDisconnect = async () => {
   const provider = disconnectingProvider.value;
-  if (provider === "google") {
-    googleConnected.value = false;
-    localStorage.setItem(connKey("google"), "false");
-  } else {
-    facebookConnected.value = false;
-    localStorage.setItem(connKey("facebook"), "false");
-  }
   disconnectingProvider.value = null;
-  toastStore.success(`${provider.charAt(0).toUpperCase() + provider.slice(1)} account disconnected.`);
+
+  if (provider !== "google") return;
+
+  try {
+    await authStore.unlinkGoogleAccount();
+    toastStore.success(t("profile.connections.disconnectSuccess", { provider: "Google" }));
+    await renderGoogleButton();
+  } catch (err) {
+    toastStore.danger(err?.message || t("profile.errors.updateProfile"));
+  }
 };
 const isEditing = ref(false);
 
@@ -405,9 +452,19 @@ onBeforeRouteLeave(async () => {
   return requestLeaveConfirmation();
 });
 
+watch(activeAccountTab, async (tab) => {
+  if (tab === "connections") {
+    await nextTick();
+    renderGoogleButton();
+  }
+});
+
 onMounted(() => {
   loadProfile();
   window.addEventListener("beforeunload", handleBeforeUnload);
+  if (activeAccountTab.value === "connections") {
+    nextTick(renderGoogleButton);
+  }
 });
 
 onUnmounted(() => {
@@ -455,7 +512,7 @@ onUnmounted(() => {
         <!-- Left Navigation Sidebar -->
         <aside class="lg:sticky lg:top-28 lg:self-start space-y-6 pr-4 lg:border-r border-(--color-border) lg:min-h-[60vh]">
           <h1 class="text-3xl font-bold tracking-tight text-(--color-text) mb-8">
-            Profile
+            {{ t("profile.title") }}
           </h1>
 
           <nav class="space-y-2" aria-label="Profile navigation">
@@ -469,7 +526,7 @@ onUnmounted(() => {
               <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-pink-100 text-rose-600 font-bold text-sm shadow-xs">
                 {{ userInitial }}
               </span>
-              <span>About me</span>
+              <span>{{ t("profile.tabs.aboutMe") }}</span>
             </button>
 
             <!-- Past trips -->
@@ -483,7 +540,7 @@ onUnmounted(() => {
               <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-(--color-warning-soft) text-(--color-warning) shadow-xs group-hover:scale-105 transition-transform">
                 <BriefcaseIcon class="h-4 w-4" />
               </span>
-              <span>Past trips</span>
+              <span>{{ t("profile.tabs.pastTrips") }}</span>
             </button>
 
             <!-- Connections -->
@@ -496,7 +553,7 @@ onUnmounted(() => {
               <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-(--color-primary-soft) text-(--color-primary) shadow-xs group-hover:scale-105 transition-transform">
                 <UsersIcon class="h-4 w-4" />
               </span>
-              <span>Connections</span>
+              <span>{{ t("profile.tabs.connections") }}</span>
             </button>
 
           </nav>
@@ -540,13 +597,13 @@ onUnmounted(() => {
           <!-- Personal / About me view -->
           <section v-if="activeAccountTab === 'personal'" id="personal-details">
             <div class="flex items-center gap-4 mb-10">
-              <h1 class="text-3xl font-bold text-(--color-text)">About me</h1>
+              <h1 class="text-3xl font-bold text-(--color-text)">{{ t("profile.tabs.aboutMe") }}</h1>
               <button
                 type="button"
                 class="bg-(--color-surface-soft) hover:opacity-90 text-(--color-text) text-xs font-bold px-4 py-1.5 rounded-full transition-all duration-200 cursor-pointer"
                 @click="isEditing = !isEditing"
               >
-                {{ isEditing ? 'Cancel' : 'Edit' }}
+                {{ isEditing ? t('common.cancel') : t('common.edit') }}
               </button>
             </div>
 
@@ -575,16 +632,16 @@ onUnmounted(() => {
 
                 <!-- Complete your profile callout -->
                 <div class="flex-1 max-w-md py-4">
-                  <h3 class="text-2xl font-bold text-(--color-text) mb-3">Complete your profile</h3>
+                  <h3 class="text-2xl font-bold text-(--color-text) mb-3">{{ t("profile.completeProfile.title") }}</h3>
                   <p class="text-sm text-(--color-muted) leading-relaxed mb-6 font-normal">
-                    Your Airbnb profile is an important part of every reservation. Complete yours to help other hosts and guests get to know you.
+                    {{ t("profile.completeProfile.description") }}
                   </p>
                   <button
                     type="button"
                     class="bg-(--color-primary) hover:opacity-90 text-white font-bold px-7 py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 active:scale-95 text-sm cursor-pointer"
                     @click="isEditing = true"
                   >
-                    Get started
+                    {{ t("profile.completeProfile.getStarted") }}
                   </button>
                 </div>
               </div>
@@ -599,7 +656,7 @@ onUnmounted(() => {
                 class="flex items-center gap-4 text-base font-semibold text-(--color-text) hover:underline cursor-pointer py-2 group"
               >
                 <ChatBubbleLeftEllipsisIcon class="h-6 w-6 text-(--color-muted) group-hover:text-(--color-wishlist) transition-colors" />
-                <span>{{ isCustomerAccount ? "Show reviews I've written" : "Show reviews about my properties" }}</span>
+                <span>{{ isCustomerAccount ? t("profile.reviews.customer") : t("profile.reviews.owner") }}</span>
               </RouterLink>
             </div>
 
@@ -630,9 +687,9 @@ onUnmounted(() => {
           <!-- Connections view -->
           <section v-else-if="activeAccountTab === 'connections'" id="connections" class="space-y-8 animate-fadeIn max-w-2xl">
             <div>
-              <h2 class="text-3xl font-black tracking-tight text-(--color-text)">Social Connections</h2>
+              <h2 class="text-3xl font-black tracking-tight text-(--color-text)">{{ t("profile.connections.title") }}</h2>
               <p class="mt-2 text-sm leading-relaxed text-(--color-muted) font-semibold">
-                Manage your connected accounts. Log in instantly and secure your Srok-Yerng Booking account.
+                {{ t("profile.connections.description") }}
               </p>
             </div>
 
@@ -646,13 +703,13 @@ onUnmounted(() => {
                     </svg>
                   </div>
                   <div>
-                    <h3 class="text-base font-bold text-(--color-text)">Google Account</h3>
+                    <h3 class="text-base font-bold text-(--color-text)">{{ t("profile.connections.googleTitle") }}</h3>
                     <p class="text-xs text-(--color-muted) mt-1 font-semibold leading-relaxed">
-                      Allows one-tap login and registration. Safe and secure.
+                      {{ t("profile.connections.googleDesc") }}
                     </p>
                     <div v-if="googleConnected" class="inline-flex items-center gap-1.5 mt-2 text-xs font-bold text-emerald-600 dark:text-emerald-500 bg-emerald-500/5 px-2.5 py-1 rounded-full border border-emerald-500/10">
                       <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                      Connected
+                      {{ t("profile.connections.connected") }}
                     </div>
                   </div>
                 </div>
@@ -664,23 +721,14 @@ onUnmounted(() => {
                     @click="triggerDisconnect('google')"
                     class="px-4 py-2 border border-(--color-border) hover:bg-(--color-surface-soft) text-(--color-text) text-xs font-bold rounded-xl transition cursor-pointer"
                   >
-                    Disconnect
+                    {{ t("profile.connections.disconnect") }}
                   </button>
-                  <button
-                    v-else
-                    type="button"
-                    :disabled="connectingProvider === 'google'"
-                    @click="handleConnect('google')"
-                    class="px-5 py-2.5 bg-(--color-primary) hover:opacity-90 text-white text-xs font-bold rounded-xl shadow-xs transition active:scale-95 cursor-pointer flex items-center gap-1.5"
-                  >
-                    <span v-if="connectingProvider === 'google'" class="h-3 w-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    <span>{{ connectingProvider === 'google' ? 'Connecting...' : 'Connect' }}</span>
-                  </button>
+                  <div v-else ref="googleButtonRef" class="min-h-9 min-w-32"></div>
                 </div>
               </div>
 
-              <!-- Facebook Account Card -->
-              <div class="p-6 flex items-start justify-between gap-6">
+              <!-- Facebook Account Card (not built yet) -->
+              <div class="p-6 flex items-start justify-between gap-6 opacity-60">
                 <div class="flex items-start gap-4">
                   <div class="h-10 w-10 shrink-0 bg-blue-600/5 dark:bg-blue-600/10 rounded-full flex items-center justify-center border border-blue-600/10">
                     <svg class="h-5 w-5 text-blue-600 fill-current" viewBox="0 0 24 24">
@@ -688,36 +736,17 @@ onUnmounted(() => {
                     </svg>
                   </div>
                   <div>
-                    <h3 class="text-base font-bold text-(--color-text)">Facebook Account</h3>
+                    <h3 class="text-base font-bold text-(--color-text)">{{ t("profile.connections.facebookTitle") }}</h3>
                     <p class="text-xs text-(--color-muted) mt-1 font-semibold leading-relaxed">
-                      Link your Facebook profile to instantly log into your bookings.
+                      {{ t("profile.connections.facebookComingSoon") }}
                     </p>
-                    <div v-if="facebookConnected" class="inline-flex items-center gap-1.5 mt-2 text-xs font-bold text-emerald-600 dark:text-emerald-500 bg-emerald-500/5 px-2.5 py-1 rounded-full border border-emerald-500/10">
-                      <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                      Connected
-                    </div>
                   </div>
                 </div>
-                
+
                 <div>
-                  <button
-                    v-if="facebookConnected"
-                    type="button"
-                    @click="triggerDisconnect('facebook')"
-                    class="px-4 py-2 border border-(--color-border) hover:bg-(--color-surface-soft) text-(--color-text) text-xs font-bold rounded-xl transition cursor-pointer"
-                  >
-                    Disconnect
-                  </button>
-                  <button
-                    v-else
-                    type="button"
-                    :disabled="connectingProvider === 'facebook'"
-                    @click="handleConnect('facebook')"
-                    class="px-5 py-2.5 bg-(--color-primary) hover:opacity-90 text-white text-xs font-bold rounded-xl shadow-xs transition active:scale-95 cursor-pointer flex items-center gap-1.5"
-                  >
-                    <span v-if="connectingProvider === 'facebook'" class="h-3 w-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                    <span>{{ connectingProvider === 'facebook' ? 'Connecting...' : 'Connect' }}</span>
-                  </button>
+                  <span class="px-4 py-2 border border-dashed border-(--color-border) text-(--color-muted) text-xs font-bold rounded-xl">
+                    {{ t("profile.connections.comingSoon") }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -802,12 +831,12 @@ onUnmounted(() => {
     <!-- Disconnect Social Confirmation Modal -->
     <AppModal
       :open="!!disconnectingProvider"
-      title="Disconnect account?"
+      :title="t('profile.connections.disconnectTitle')"
       panel-class="!rounded-3xl border border-(--color-border) shadow-2xl backdrop-blur-2xl bg-(--color-surface) max-w-sm"
       @close="disconnectingProvider = null"
     >
       <p class="text-base leading-relaxed text-(--color-muted) font-medium py-2">
-        Are you sure you want to disconnect your Srok-Yerng Booking account from this {{ disconnectingProvider }} account? You will no longer be able to log in using it.
+        {{ t("profile.connections.disconnectConfirm", { provider: disconnectingProvider }) }}
       </p>
 
       <template #footer>
@@ -817,7 +846,7 @@ onUnmounted(() => {
           class="!rounded-2xl font-bold px-6 py-3.5 shadow-xs hover:scale-105 active:scale-95 transition-all duration-200"
           @click="disconnectingProvider = null"
         >
-          Cancel
+          {{ t("common.cancel") }}
         </AppButton>
         <AppButton
           type="button"
@@ -825,7 +854,7 @@ onUnmounted(() => {
           class="!rounded-2xl font-bold px-6 py-3.5 shadow-md hover:scale-105 active:scale-95 transition-all duration-200 bg-(--color-wishlist) hover:bg-(--color-wishlist-strong) text-white"
           @click="confirmDisconnect"
         >
-          Disconnect
+          {{ t("profile.connections.disconnect") }}
         </AppButton>
       </template>
     </AppModal>

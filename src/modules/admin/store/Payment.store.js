@@ -18,6 +18,10 @@ export const usePaymentStore = defineStore("admin-payments", () => {
   const statusFilter = ref("all");
   const searchQuery = ref("");
 
+  // ── Client-side pagination ────────────────────────────────────────────────
+  const PAGE_SIZE = 10;
+  const currentPage = ref(1);
+
   // ── Computed ──────────────────────────────────────────────────────────────
   const filteredPayments = computed(() => {
     let result = payments.value;
@@ -45,6 +49,20 @@ export const usePaymentStore = defineStore("admin-payments", () => {
 
     return result;
   });
+
+  /** Current page slice of filteredPayments — use this in the table */
+  const pagedPayments = computed(() => {
+    const start = (currentPage.value - 1) * PAGE_SIZE;
+    return filteredPayments.value.slice(start, start + PAGE_SIZE);
+  });
+
+  /** Pagination meta derived from filteredPayments (client-side) */
+  const pagination = computed(() => ({
+    page: currentPage.value,
+    limit: PAGE_SIZE,
+    total: filteredPayments.value.length,
+    total_pages: Math.max(1, Math.ceil(filteredPayments.value.length / PAGE_SIZE)),
+  }));
 
   const statusCounts = computed(() => {
     const counts = { all: payments.value.length };
@@ -224,9 +242,14 @@ export const usePaymentStore = defineStore("admin-payments", () => {
   // ── Filter helpers ────────────────────────────────────────────────────────
   const setStatusFilter = (status) => {
     statusFilter.value = status;
+    currentPage.value = 1;
   };
   const setSearchQuery = (query) => {
     searchQuery.value = query;
+    currentPage.value = 1;
+  };
+  const setPage = (page) => {
+    currentPage.value = page;
   };
 
   // ── Internal helpers ──────────────────────────────────────────────────────
@@ -254,6 +277,8 @@ export const usePaymentStore = defineStore("admin-payments", () => {
 
     // Computed
     filteredPayments,
+    pagedPayments,
+    pagination,
     statusCounts,
     pendingCount,
 
@@ -266,5 +291,6 @@ export const usePaymentStore = defineStore("admin-payments", () => {
     rejectPayment,
     setStatusFilter,
     setSearchQuery,
+    setPage,
   };
 });

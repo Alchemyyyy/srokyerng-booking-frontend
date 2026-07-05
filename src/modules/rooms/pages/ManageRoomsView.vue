@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
+import { useI18n } from "vue-i18n";
 
 import AppButton from "@/shared/components/AppButton.vue";
 import EmptyState from "@/shared/components/EmptyState.vue";
@@ -18,6 +19,7 @@ import {
   XMarkIcon,
 } from "@heroicons/vue/24/outline";
 
+const { t } = useI18n({ useScope: "global" });
 const toastStore = useToastStore();
 
 const roomStore = useRoomStore();
@@ -75,13 +77,13 @@ const paginatedRooms = computed(() => {
 });
 
 const sortBy = ref("default");
-const sortOptions = [
-  { value: "default", label: "Default order" },
-  { value: "price_low", label: "Price: Low to High" },
-  { value: "price_high", label: "Price: High to Low" },
-  { value: "newest", label: "Newest first" },
-  { value: "id_asc", label: "Room ID (ascending)" },
-];
+const sortOptions = computed(() => [
+  { value: "default", label: t("owner.manageRoomsPage.sort.default") },
+  { value: "price_low", label: t("owner.manageRoomsPage.sort.priceLow") },
+  { value: "price_high", label: t("owner.manageRoomsPage.sort.priceHigh") },
+  { value: "newest", label: t("owner.manageRoomsPage.sort.newest") },
+  { value: "id_asc", label: t("owner.manageRoomsPage.sort.idAsc") },
+]);
 
 // Sort layers on top of the search results, so all three filters
 // (property tab, search text, sort order) compose together.
@@ -174,16 +176,16 @@ const validateFloorNumber = (value, { required = false } = {}) => {
 
   if (isEmpty) {
     return required
-      ? "This property already has rooms on different floors — please set the floor for this room."
+      ? t("owner.manageRoomsPage.errors.floorRequired")
       : null;
   }
 
   const num = Number(value);
-  if (Number.isNaN(num)) return "Floor number must be a number.";
+  if (Number.isNaN(num)) return t("owner.manageRoomsPage.errors.floorNotNumber");
   if (!Number.isInteger(num))
-    return "Floor number must be a whole number (no decimals).";
-  if (num < FLOOR_MIN) return `Floor number can't be less than ${FLOOR_MIN}.`;
-  if (num > FLOOR_MAX) return `Floor number seems too high — double check it.`;
+    return t("owner.manageRoomsPage.errors.floorNotInteger");
+  if (num < FLOOR_MIN) return t("owner.manageRoomsPage.errors.floorTooLow", { min: FLOOR_MIN });
+  if (num > FLOOR_MAX) return t("owner.manageRoomsPage.errors.floorTooHigh");
 
   return null;
 };
@@ -285,12 +287,12 @@ const handleAddRoom = async (formData) => {
 
   const errors = {};
   if (!addRoomForm.value.propertyId)
-    errors.propertyId = "Please choose a property.";
-  if (!addRoomForm.value.type) errors.type = "Room type is required.";
+    errors.propertyId = t("owner.manageRoomsPage.errors.chooseProperty");
+  if (!addRoomForm.value.type) errors.type = t("owner.manageRoomsPage.errors.typeRequired");
   if (!addRoomForm.value.roomName?.trim())
-    errors.roomName = "Room name is required.";
+    errors.roomName = t("owner.manageRoomsPage.errors.nameRequired");
   if (!addRoomForm.value.basePrice || addRoomForm.value.basePrice <= 0)
-    errors.basePrice = "Price is required.";
+    errors.basePrice = t("owner.manageRoomsPage.errors.priceRequired");
 
   const floorRequired = isKnownMultiFloorProperty(selectedProperty?.id);
   const floorError = validateFloorNumber(addRoomForm.value.floorNumber, {
@@ -318,7 +320,7 @@ const handleAddRoom = async (formData) => {
     const newRoom = response?.data || response;
 
     closeAddRoomModal();
-    toastStore.success("Room added successfully.");
+    toastStore.success(t("owner.manageRoomsPage.toasts.roomAdded"));
     await fetchRoomsData();
   } catch (err) {
     console.error("❌ Create room failed:", err.response?.data || err);
@@ -339,8 +341,8 @@ const handleEditRoom = async (formData) => {
   editFormErrors.value = {};
 
   const errors = {};
-  if (!formData.propertyId) errors.propertyId = "Please choose a property.";
-  if (!formData.type) errors.type = "Room type is required.";
+  if (!formData.propertyId) errors.propertyId = t("owner.manageRoomsPage.errors.chooseProperty");
+  if (!formData.type) errors.type = t("owner.manageRoomsPage.errors.typeRequired");
 
   const floorRequired = isKnownMultiFloorProperty(formData.propertyId);
   const floorError = validateFloorNumber(formData.floorNumber, {
@@ -372,7 +374,7 @@ const handleEditRoom = async (formData) => {
         } catch (delErr) {
           console.error(`Failed to delete image ${imageId}:`, delErr);
           toastStore.danger(
-            "Some images could not be removed. Please try again.",
+            t("owner.manageRoomsPage.toasts.imageRemoveFailed"),
           );
         }
       }
@@ -386,12 +388,12 @@ const handleEditRoom = async (formData) => {
         await roomStore.uploadRoomImages(editingRoomId.value, fd);
       } catch (imgErr) {
         console.error("Image upload failed:", imgErr);
-        toastStore.danger("Room updated, but new images failed to upload.");
+        toastStore.danger(t("owner.manageRoomsPage.toasts.imageUploadFailed"));
       }
     }
 
     closeEditRoomModal();
-    toastStore.success("Room updated successfully.");
+    toastStore.success(t("owner.manageRoomsPage.toasts.roomUpdated"));
     await fetchRoomsData();
   } catch {
     // error handled in store
@@ -403,9 +405,9 @@ const handleDeleteRoom = async () => {
   try {
     await deleteRoom(deletingRoom.value.property_id, deletingRoom.value.id);
     closeDeleteRoomModal();
-    toastStore.success("Room deleted successfully.");
+    toastStore.success(t("owner.manageRoomsPage.toasts.roomDeleted"));
   } catch {
-    toastStore.danger("Failed to delete room. Please try again.");
+    toastStore.danger(t("owner.manageRoomsPage.toasts.roomDeleteFailed"));
   }
 };
 
@@ -427,9 +429,9 @@ onMounted(async () => {
       class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
     >
       <div>
-        <h1 class="text-3xl font-bold tracking-tight">Rooms</h1>
+        <h1 class="text-3xl font-bold tracking-tight">{{ t("owner.manageRoomsPage.title") }}</h1>
         <p class="text-sm text-(--color-muted) mt-1">
-          Manage rooms across all your properties.
+          {{ t("owner.manageRoomsPage.subtitle") }}
         </p>
       </div>
       <AppButton
@@ -437,7 +439,7 @@ onMounted(async () => {
         @click="openAddRoomModal"
       >
         <PlusIcon class="h-4 w-4" aria-hidden="true" />
-        <span>Add Room</span>
+        <span>{{ t("owner.manageRoomsPage.addRoom") }}</span>
       </AppButton>
     </header>
 
@@ -476,7 +478,7 @@ onMounted(async () => {
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Search by room name, type, or property..."
+          :placeholder="t('owner.manageRoomsPage.searchPlaceholder')"
           class="w-full rounded-xl border border-(--color-border) bg-(--color-surface) pl-9 pr-9 py-2.5 text-sm text-(--color-text) placeholder:text-(--color-muted) outline-none focus:border-(--color-primary) transition-colors"
         />
         <button
@@ -484,7 +486,7 @@ onMounted(async () => {
           type="button"
           @click="clearSearch"
           class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded-full text-(--color-muted) hover:text-(--color-text) hover:bg-(--color-surface-soft) transition-colors"
-          aria-label="Clear search"
+          :aria-label="t('owner.manageRoomsPage.clearSearch')"
         >
           <XMarkIcon class="h-3.5 w-3.5" aria-hidden="true" />
         </button>
@@ -510,7 +512,7 @@ onMounted(async () => {
         class="inline-flex items-center gap-1.5 px-3.5 py-2.5 text-sm font-medium text-(--color-muted) hover:text-(--color-text) rounded-xl border border-(--color-border) bg-(--color-surface) hover:bg-(--color-surface-soft) transition-colors whitespace-nowrap"
       >
         <XMarkIcon class="h-3.5 w-3.5" aria-hidden="true" />
-        Reset filters
+        {{ t("owner.manageRoomsPage.resetFilters") }}
       </button>
     </div>
 
@@ -525,7 +527,7 @@ onMounted(async () => {
           class="text-xs font-semibold uppercase tracking-wide"
           @click="clearNotice"
         >
-          Dismiss
+          {{ t("owner.manageRoomsPage.dismiss") }}
         </button>
       </div>
 
@@ -542,17 +544,17 @@ onMounted(async () => {
 
       <EmptyState
         v-else-if="sortedRooms.length === 0"
-        :title="searchQuery ? 'No rooms found' : 'No Rooms Found'"
+        :title="searchQuery ? t('owner.manageRoomsPage.noRoomsFoundTitle') : t('owner.manageRoomsPage.noRoomsTitle')"
         :message="
           searchQuery
-            ? 'Try a different search term or clear the filter.'
-            : 'No rooms have been added yet. Click Add Room to get started.'
+            ? t('owner.manageRoomsPage.noRoomsFoundMessage')
+            : t('owner.manageRoomsPage.noRoomsMessage')
         "
       >
         <template #action>
           <AppButton @click="openAddRoomModal">
             <PlusIcon class="h-4 w-4" />
-            Add Room
+            {{ t("owner.manageRoomsPage.addRoom") }}
           </AppButton>
         </template>
       </EmptyState>
@@ -578,7 +580,7 @@ onMounted(async () => {
           :disabled="currentPage === 1"
           @click="currentPage--"
         >
-          Previous
+          {{ t("owner.manageRoomsPage.previous") }}
         </AppButton>
 
         <button
@@ -601,29 +603,29 @@ onMounted(async () => {
           :disabled="currentPage === totalPages"
           @click="currentPage++"
         >
-          Next
+          {{ t("owner.manageRoomsPage.next") }}
         </AppButton>
       </div>
     </main>
 
     <RoomFormModal
       :open="isAddRoomModalOpen"
-      title="Add Room"
+      :title="t('owner.manageRoomsPage.addRoom')"
       :model-value="addRoomForm"
       :properties="availableProperties"
       :errors="addFormErrors"
-      submit-label="Save Room"
+      :submit-label="t('owner.manageRoomsPage.saveRoom')"
       @close="closeAddRoomModal"
       @submit="(data) => handleAddRoom(data)"
     />
 
     <RoomFormModal
       :open="isEditRoomModalOpen"
-      title="Edit Room"
+      :title="t('owner.manageRoomsPage.editRoom')"
       :model-value="editRoomForm"
       :properties="availableProperties"
       :errors="editFormErrors"
-      submit-label="Save Changes"
+      :submit-label="t('owner.manageRoomsPage.saveChanges')"
       @close="closeEditRoomModal"
       @submit="(data) => handleEditRoom(data)"
     />
