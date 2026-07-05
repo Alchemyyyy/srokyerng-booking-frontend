@@ -337,7 +337,7 @@
       "lastNameLabel": "Last Name",
       "lastNamePlaceholder": "Doe",
       "emailLabel": "Email Address",
-      "emailPlaceholder": "john@example.com",
+      "emailPlaceholder": "john{'@'}example.com",
       "floorPreferenceLabel": "Floor Preference",
       "optionalNotGuaranteed": "(optional, not guaranteed)",
       "noPreference": "No preference",
@@ -766,10 +766,9 @@
       "googleTitle": "Google Account",
       "googleDesc": "Allows one-tap login and registration. Safe and secure.",
       "facebookTitle": "Facebook Account",
-      "facebookDesc": "Link your Facebook profile to instantly log into your bookings.",
+      "facebookComingSoon": "Facebook linking isn't available yet.",
+      "comingSoon": "Coming soon",
       "connected": "Connected",
-      "connect": "Connect",
-      "connecting": "Connecting...",
       "disconnect": "Disconnect",
       "disconnectTitle": "Disconnect account?",
       "disconnectConfirm": "Are you sure you want to disconnect your Srok-Yerng Booking account from this {provider} account? You will no longer be able to log in using it.",
@@ -1408,7 +1407,15 @@
       "recommended": "Recommended",
       "priceLow": "Price: Low to High",
       "priceHigh": "Price: High to Low",
-      "guestRating": "Guest Rating"
+      "guestRating": "Guest Rating",
+      "options": {
+        "newest": "Newest Added",
+        "priceAsc": "Price: Low to High",
+        "priceDesc": "Price: High to Low",
+        "ratingDesc": "Highest Rated"
+      },
+      "switchToGrid": "Switch to grid view",
+      "switchToList": "Switch to list view"
     },
     "actions": {
       "reset": "Reset",
@@ -1667,6 +1674,7 @@
     "adult3": "3 Adult Guests",
     "adult4": "4 Adult Guests",
     "baseStayRate": "Base Stay Rate",
+    "nights": "{count} night(s)",
     "resortSurcharges": "Resort Surcharges & Cleaning",
     "included": "INCLUDED",
     "aggregateTotal": "Aggregate Total Due",
@@ -2034,7 +2042,7 @@
           "phoneLabel": "Contact Phone",
           "phonePlaceholder": "e.g. +855 12 345 678",
           "emailLabel": "Contact Email",
-          "emailPlaceholder": "e.g. desks@property.com",
+          "emailPlaceholder": "e.g. desks{'@'}property.com",
           "floorsLabel": "Number of Floors",
           "floorsPlaceholder": "1",
           "descriptionLabel": "Property Description",
@@ -2206,7 +2214,7 @@
           "phoneLabel": "Contact Phone *",
           "phonePlaceholder": "+855 12 345 678",
           "emailLabel": "Contact Email *",
-          "emailPlaceholder": "contact@example.com",
+          "emailPlaceholder": "contact{'@'}example.com",
           "addressLabel": "Address *",
           "addressPlaceholder": "Street address",
           "descriptionLabel": "Description",
@@ -2419,7 +2427,10 @@
       "myProperties": "My Properties"
     },
     "catalogue": {
-      "loading": "Loading amenities..."
+      "loading": "Loading amenities...",
+      "selectProperty": "Property",
+      "selectPropertyPlaceholder": "Select a property...",
+      "noPropertySelected": "Select a property above to view and edit its amenities."
     },
     "myProperties": {
       "subtitle": "Select a property to view and edit its amenities.",

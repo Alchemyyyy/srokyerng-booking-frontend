@@ -187,7 +187,10 @@ const formatDuration = (secs) => {
 
 const isAudioFile = (url) => {
   if (!url) return false;
-  return url.toLowerCase().match(/\.(webm|mp3|ogg|wav|m4a|aac|opus|mp4)$/) || url.includes("voice_note") || url.includes("audio");
+  // Signed attachment URLs append `?exp=...&sig=...` after the extension,
+  // so the extension check must run against the path only, not the query string.
+  const path = url.split("?")[0].toLowerCase();
+  return /\.(webm|mp3|ogg|wav|m4a|aac|opus|mp4)$/.test(path) || path.includes("voice_note") || path.includes("audio");
 };
 
 const startRecording = async () => {

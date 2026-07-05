@@ -52,7 +52,51 @@
           :label="$t('amenityManagement.catalogue.loading')"
         />
         <template v-else>
-          <AmenitySelector :amenities="amenities" v-model="selectedAmenities" />
+          <div v-if="myProperties.length === 0 && !loadingProperties" class="catalogue-property-picker empty-state">
+            <HomeIcon class="empty-icon" />
+            <h3>{{ $t("amenityManagement.myProperties.empty.title") }}</h3>
+            <p>{{ $t("amenityManagement.myProperties.empty.description") }}</p>
+            <button class="btn-primary" @click="router.push({ name: 'owner.properties' })">
+              {{ $t("amenityManagement.myProperties.empty.button") }}
+            </button>
+          </div>
+
+          <template v-else>
+            <div class="catalogue-property-picker">
+              <label for="catalogue-property-select" class="picker-label">
+                {{ $t("amenityManagement.catalogue.selectProperty") }}
+              </label>
+              <select
+                id="catalogue-property-select"
+                class="picker-select"
+                v-model="selectedPropertyId"
+              >
+                <option :value="null" disabled>
+                  {{ $t("amenityManagement.catalogue.selectPropertyPlaceholder") }}
+                </option>
+                <option
+                  v-for="property in myProperties"
+                  :key="property.id"
+                  :value="property.id"
+                >
+                  {{ property.name }}
+                </option>
+              </select>
+            </div>
+
+            <OwnerLoadingState
+              v-if="loadingCatalogueAmenities"
+              :label="$t('amenityManagement.catalogue.loading')"
+            />
+            <p v-else-if="!selectedPropertyId" class="picker-hint">
+              {{ $t("amenityManagement.catalogue.noPropertySelected") }}
+            </p>
+            <AmenitySelector
+              v-else
+              :amenities="amenities"
+              v-model="selectedAmenities"
+            />
+          </template>
         </template>
       </template>
 
@@ -241,7 +285,7 @@
 
     <!-- SAVE BAR -->
     <transition name="slide-up">
-      <div v-if="isDirty && viewMode === 'catalogue'" class="save-bar">
+      <div v-if="isDirty && viewMode === 'catalogue' && selectedPropertyId" class="save-bar">
         <div>
           {{
             $t("amenityManagement.saveBar.selected", {
@@ -341,7 +385,6 @@ const BASE_URL = (
 
 const route = useRoute();
 const router = useRouter();
-const propertyId = computed(() => route.params.id);
 
 const amenities = ref([]);
 const selectedAmenities = ref([]);
@@ -353,6 +396,12 @@ const saveSuccess = ref(false);
 const viewMode = ref("catalogue");
 const myProperties = ref([]);
 const loadingProperties = ref(false);
+
+// Catalogue tab needs an explicit property to save amenity selections
+// against — the route itself carries no property id, so this is picked
+// from a dropdown populated from the owner's own properties.
+const selectedPropertyId = ref(route.params.id ? Number(route.params.id) : null);
+const loadingCatalogueAmenities = ref(false);
 const { isSidebarOpen } = useSidebar();
 
 const isMobile = ref(window.innerWidth < 768);
@@ -589,14 +638,49 @@ const fetchAmenities = async () => {
   }
 };
 
+// ─── Catalogue: load the selected property's current amenities ─────────
+const loadCatalogueAmenitiesForProperty = async (id) => {
+  if (!id) {
+    selectedAmenities.value = [];
+    originalSelected.value = [];
+    return;
+  }
+  loadingCatalogueAmenities.value = true;
+  error.value = null;
+  try {
+    const propertyAmenities = await getPropertyAmenities(id);
+    const ids = (propertyAmenities || []).map((a) => a.id);
+    selectedAmenities.value = [...ids];
+    originalSelected.value = [...ids];
+  } catch (err) {
+    error.value =
+      err?.response?.data?.message || "Failed to load this property's amenities.";
+  } finally {
+    loadingCatalogueAmenities.value = false;
+  }
+};
+
+watch(selectedPropertyId, (id) => {
+  loadCatalogueAmenitiesForProperty(id);
+});
+
 // ─── Catalogue save ──────────────────────────────────────
 const saveAmenities = async () => {
-  if (!propertyId.value) return;
+  if (!selectedPropertyId.value) return;
   saving.value = true;
   try {
-    await updatePropertyAmenities(propertyId.value, selectedAmenities.value);
+    await updatePropertyAmenities(selectedPropertyId.value, selectedAmenities.value);
     originalSelected.value = [...selectedAmenities.value];
     saveSuccess.value = true;
+
+    // Keep the "My Properties" tab's chip list consistent if it's already loaded.
+    const property = myProperties.value.find(
+      (p) => p.id === selectedPropertyId.value,
+    );
+    if (property) {
+      property.amenities = await getPropertyAmenities(selectedPropertyId.value);
+    }
+
     setTimeout(() => {
       saveSuccess.value = false;
     }, 2000);
@@ -666,8 +750,17 @@ const fetchMyProperties = async () => {
 };
 
 // ─── Lifecycle ───────────────────────────────────────────
-onMounted(() => {
+onMounted(async () => {
   fetchAmenities();
+  await fetchMyProperties();
+
+  // Auto-pick the property when there's only one, or when the (legacy)
+  // /owner/amenities/:id route actually carries an id.
+  if (!selectedPropertyId.value && myProperties.value.length === 1) {
+    selectedPropertyId.value = myProperties.value[0].id;
+  } else if (selectedPropertyId.value) {
+    loadCatalogueAmenitiesForProperty(selectedPropertyId.value);
+  }
 });
 
 watch(viewMode, (value) => {
@@ -677,7 +770,10 @@ watch(viewMode, (value) => {
 watch(
   () => route.params.id,
   (newId, oldId) => {
-    if (newId !== oldId) fetchAmenities();
+    if (newId !== oldId) {
+      selectedPropertyId.value = newId ? Number(newId) : null;
+      fetchAmenities();
+    }
   },
 );
 </script>
@@ -790,6 +886,47 @@ watch(
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+}
+
+.catalogue-property-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+  max-width: 360px;
+}
+
+.catalogue-property-picker.empty-state {
+  max-width: none;
+}
+
+.picker-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.picker-select {
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.picker-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.picker-hint {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--color-muted);
+  font-size: 15px;
 }
 
 .myprops-subtitle {

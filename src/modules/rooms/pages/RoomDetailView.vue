@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, nextTick } from "vue";
+import { ref, computed, onMounted, watch, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import {
@@ -174,6 +174,19 @@ watch(showMapModal, async (isOpen) => {
     }
   }
 });
+
+// ── Nights & total price (mirrors BookingCreateView's stayNights logic) ──────
+const stayNights = computed(() => {
+  if (!checkInDate.value || !checkOutDate.value) return 1;
+  const start = new Date(checkInDate.value);
+  const end = new Date(checkOutDate.value);
+  const diff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+  return diff > 0 ? diff : 1;
+});
+
+const totalPrice = computed(
+  () => (room.value?.basePrice || 0) * stayNights.value,
+);
 
 // ── Auto-fill booking form when customer picks a date range ──────────────────
 const handleRangeSelected = ({ start, end }) => {
@@ -621,10 +634,10 @@ onMounted(fetchRoom);
                       >{{ t("roomDetail.baseStayRate") }} (${{
                         room.basePrice
                       }}
-                      × 1 {{ t("roomDetail.breadcrumb.rooms") }})</span
+                      × {{ t("roomDetail.nights", { count: stayNights }) }})</span
                     >
                     <span class="font-black text-(--color-text)"
-                      >${{ room.basePrice.toFixed(2) }}</span
+                      >${{ totalPrice.toFixed(2) }}</span
                     >
                   </div>
                   <div
@@ -646,7 +659,7 @@ onMounted(fetchRoom);
                     >
                     <span
                       class="text-xl text-(--color-primary) font-black tracking-tight"
-                      >${{ room.basePrice.toFixed(2) }}</span
+                      >${{ totalPrice.toFixed(2) }}</span
                     >
                   </div>
                 </div>

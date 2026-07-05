@@ -24,6 +24,23 @@ const { t, locale } = useI18n({ useScope: "global" });
 
 const dropdownOpen = ref(false);
 const bellRef = ref(null);
+const dropdownRef = ref(null);
+
+// The dropdown is teleported to <body> so it can never get visually
+// trapped under a higher-stacked ancestor (e.g. the dashboard sidebar,
+// which sits above the fixed header this bell lives in). Since it's no
+// longer positioned relative to the button, its coordinates are computed
+// from the button's own bounding box instead of CSS `absolute` offsets.
+const dropdownStyle = ref({ top: "0px", right: "0px" });
+
+const updateDropdownPosition = () => {
+  if (!bellRef.value) return;
+  const rect = bellRef.value.getBoundingClientRect();
+  dropdownStyle.value = {
+    top: `${rect.bottom + 12}px`,
+    right: `${window.innerWidth - rect.right}px`,
+  };
+};
 
 const notificationRoute = computed(() => getNotificationRouteByRole(authStore.user?.role));
 const latestNotifications = computed(() => notificationStore.notifications.slice(0, 5));
@@ -73,12 +90,17 @@ const loadDropdownNotifications = async () => {
 };
 
 const openDropdown = async () => {
+  updateDropdownPosition();
   dropdownOpen.value = true;
+  window.addEventListener("scroll", updateDropdownPosition, true);
+  window.addEventListener("resize", updateDropdownPosition);
   await loadDropdownNotifications();
 };
 
 const closeDropdown = () => {
   dropdownOpen.value = false;
+  window.removeEventListener("scroll", updateDropdownPosition, true);
+  window.removeEventListener("resize", updateDropdownPosition);
 };
 
 const toggleDropdown = async () => {
@@ -216,7 +238,9 @@ const markAllAsRead = async () => {
 };
 
 const handleDocumentClick = (event) => {
-  if (!bellRef.value?.contains(event.target)) {
+  const insideBell = bellRef.value?.contains(event.target);
+  const insideDropdown = dropdownRef.value?.contains(event.target);
+  if (!insideBell && !insideDropdown) {
     closeDropdown();
   }
 };
@@ -228,6 +252,8 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener("click", handleDocumentClick);
+  window.removeEventListener("scroll", updateDropdownPosition, true);
+  window.removeEventListener("resize", updateDropdownPosition);
 });
 
 watch(
@@ -261,10 +287,13 @@ watch(
       </span>
     </button>
 
+    <Teleport to="body">
     <Transition name="notification-popup">
       <div
         v-if="dropdownOpen"
-        class="absolute right-0 mt-3 hidden w-[400px] overflow-hidden rounded-2xl border border-(--color-border)/60 bg-(--color-surface)/95 backdrop-blur-xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] ring-1 ring-black/5 lg:block z-50"
+        ref="dropdownRef"
+        :style="dropdownStyle"
+        class="fixed hidden w-[400px] overflow-hidden rounded-2xl border border-(--color-border)/60 bg-(--color-surface)/95 backdrop-blur-xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] ring-1 ring-black/5 lg:block z-50"
       >
         <div class="relative overflow-hidden border-b border-(--color-border)/60 bg-gradient-to-r from-(--color-surface-soft) to-(--color-surface) px-5 py-4">
           <!-- Ambient glow -->
@@ -367,6 +396,7 @@ watch(
         </div>
       </div>
     </Transition>
+    </Teleport>
 
     <RouterLink
       :to="notificationRoute"

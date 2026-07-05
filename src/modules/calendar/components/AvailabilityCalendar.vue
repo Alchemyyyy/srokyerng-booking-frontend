@@ -112,44 +112,18 @@ const fetchCalendar = async () => {
 
     const data = res?.data?.data ?? res?.data ?? res;
 
-    if (Array.isArray(data?.reservations)) {
-      // Property-level response: { reservations, blocked_dates }
-      reservations.value = data.reservations;
-      blockedDates.value = data.blocked_dates ?? [];
+    // Both room-level and property-level responses now share the same
+    // inventory-aware shape: { available_dates, unavailable_dates, blocked_dates }.
+    // A date is only unavailable once bookings reach the room's total_rooms
+    // (room-level) or every room in the property is booked out (property-level) —
+    // NOT just because any single reservation exists that day.
+    blockedDates.value = data?.blocked_dates ?? [];
+    unavailableDates.value = data?.unavailable_dates ?? [];
+    availableDates.value = data?.available_dates ?? [];
 
-      const unavailable = [];
-      data.reservations.forEach((reservation) => {
-        const checkIn = reservation.check_in_date ?? reservation.checkIn;
-        const checkOut = reservation.check_out_date ?? reservation.checkOut;
-        if (!checkIn || !checkOut) return;
-
-        const cursor = new Date(checkIn);
-        const end = new Date(checkOut);
-        while (cursor < end) {
-          unavailable.push(formatLocalDate(cursor));
-          cursor.setDate(cursor.getDate() + 1);
-        }
-      });
-
-      unavailableDates.value = [...new Set([...unavailable, ...blockedDates.value])];
-
-      const allDates = [];
-      const cursor = new Date(startDate.value);
-      const rangeEnd = new Date(endDate.value);
-      while (cursor <= rangeEnd) {
-        allDates.push(formatLocalDate(cursor));
-        cursor.setDate(cursor.getDate() + 1);
-      }
-      availableDates.value = allDates.filter(
-        (d) => !unavailableDates.value.includes(d),
-      );
-    } else {
-      // Room-level response: { available_dates, unavailable_dates, blocked_dates }
-      reservations.value = [];
-      blockedDates.value = data?.blocked_dates ?? [];
-      unavailableDates.value = data?.unavailable_dates ?? [];
-      availableDates.value = data?.available_dates ?? [];
-    }
+    // Property-level responses additionally include the raw reservation rows,
+    // used only by owner mode's "click a day to see who booked it" panel.
+    reservations.value = Array.isArray(data?.reservations) ? data.reservations : [];
   } catch (err) {
     const status = err?.response?.status;
     if (status === 404 || status === 500) {

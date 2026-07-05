@@ -80,8 +80,13 @@ export const useChatStore = defineStore("chat", {
         const response = await chatService.sendMessage(conversationId, payload);
         const newMessage = response.data || response;
 
-        // Push new message directly to display list
-        this.messages.push(newMessage);
+        // Push new message directly to display list — unless the realtime
+        // socket "new-message" event (broadcast to the whole room, including
+        // the sender) already delivered this same message first.
+        const alreadyReceived = this.messages.some((m) => m.id === newMessage.id);
+        if (!alreadyReceived) {
+          this.messages.push(newMessage);
+        }
 
         // Update local conversation item to reflect last message
         const convo = this.conversations.find((c) => c.id === Number(conversationId));

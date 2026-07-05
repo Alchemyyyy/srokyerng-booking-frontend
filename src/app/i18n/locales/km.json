@@ -337,7 +337,7 @@
       "lastNameLabel": "នាមត្រកូល",
       "lastNamePlaceholder": "Doe",
       "emailLabel": "អាសយដ្ឋានអ៊ីមែល",
-      "emailPlaceholder": "john@example.com",
+      "emailPlaceholder": "john{'@'}example.com",
       "floorPreferenceLabel": "ចំណូលចិត្តជាន់",
       "optionalNotGuaranteed": "(មិនចាំបាច់ មិនធានា)",
       "noPreference": "គ្មានចំណូលចិត្ត",
@@ -766,10 +766,9 @@
       "googleTitle": "គណនី Google",
       "googleDesc": "អនុញ្ញាតឱ្យចូលមួយចុច និងចុះឈ្មោះ។ សុវត្ថិភាព និងមានសន្តិសុខ។",
       "facebookTitle": "គណនី Facebook",
-      "facebookDesc": "ភ្ជាប់ប្រវត្តិរូប Facebook របស់អ្នក ដើម្បីចូលការកក់ភ្លាមៗ។",
+      "facebookComingSoon": "ការភ្ជាប់ Facebook មិនទាន់អាចប្រើបានទេ។",
+      "comingSoon": "មកដល់ឆាប់ៗនេះ",
       "connected": "បានភ្ជាប់",
-      "connect": "ភ្ជាប់",
-      "connecting": "កំពុងភ្ជាប់...",
       "disconnect": "ផ្ដាច់",
       "disconnectTitle": "ផ្ដាច់គណនី?",
       "disconnectConfirm": "តើអ្នកប្រាកដថាចង់ផ្ដាច់គណនីស្រុកយើង Booking ពីគណនី {provider} នេះទេ? អ្នកនឹងមិនអាចចូលដោយប្រើវាបានទៀតទេ។",
@@ -1409,7 +1408,15 @@
       "recommended": "ណែនាំ",
       "priceLow": "តម្លៃ៖ ទាបទៅខ្ពស់",
       "priceHigh": "តម្លៃ៖ ខ្ពស់ទៅទាប",
-      "guestRating": "ពិន្ទុភ្ញៀវ"
+      "guestRating": "ពិន្ទុភ្ញៀវ",
+      "options": {
+        "newest": "បន្ថែមថ្មីៗ",
+        "priceAsc": "តម្លៃ៖ ទាបទៅខ្ពស់",
+        "priceDesc": "តម្លៃ៖ ខ្ពស់ទៅទាប",
+        "ratingDesc": "ការវាយតម្លៃខ្ពស់បំផុត"
+      },
+      "switchToGrid": "ប្តូរទៅទិដ្ឋភាពក្រឡា",
+      "switchToList": "ប្តូរទៅទិដ្ឋភាពបញ្ជី"
     },
     "actions": {
       "reset": "កំណត់ឡើងវិញ",
@@ -1668,6 +1675,7 @@
     "adult3": "មនុស្សពេញវ័យ ៣ នាក់",
     "adult4": "មនុស្សពេញវ័យ ៤ នាក់",
     "baseStayRate": "តម្លៃស្នាក់នៅមូលដ្ឋាន",
+    "nights": "{count} យប់",
     "resortSurcharges": "ថ្លៃបន្ថែម និងសំអាត",
     "included": "រួមបញ្ចូលហើយ",
     "aggregateTotal": "ចំនួនសរុបត្រូវបង់",
@@ -2035,7 +2043,7 @@
           "phoneLabel": "លេខទូរស័ព្ទទំនាក់ទំនង",
           "phonePlaceholder": "ឧ. +855 12 345 678",
           "emailLabel": "អ៊ីមែលទំនាក់ទំនង",
-          "emailPlaceholder": "ឧ. desks@property.com",
+          "emailPlaceholder": "ឧ. desks{'@'}property.com",
           "floorsLabel": "ចំនួនជាន់",
           "floorsPlaceholder": "1",
           "descriptionLabel": "ការពិពណ៌នាអចលនទ្រព្យ",
@@ -2207,7 +2215,7 @@
           "phoneLabel": "លេខទូរស័ព្ទទំនាក់ទំនង *",
           "phonePlaceholder": "+855 12 345 678",
           "emailLabel": "អ៊ីមែលទំនាក់ទំនង *",
-          "emailPlaceholder": "contact@example.com",
+          "emailPlaceholder": "contact{'@'}example.com",
           "addressLabel": "អាសយដ្ឋាន *",
           "addressPlaceholder": "អាសយដ្ឋានផ្លូវ",
           "descriptionLabel": "ការពិពណ៌នា",
@@ -2420,7 +2428,10 @@
       "myProperties": "អចលនទ្រព្យរបស់ខ្ញុំ"
     },
     "catalogue": {
-      "loading": "កំពុងផ្ទុកសម្ភារៈ..."
+      "loading": "កំពុងផ្ទុកសម្ភារៈ...",
+      "selectProperty": "អចលនទ្រព្យ",
+      "selectPropertyPlaceholder": "ជ្រើសរើសអចលនទ្រព្យ...",
+      "noPropertySelected": "ជ្រើសរើសអចលនទ្រព្យខាងលើដើម្បីមើល និងកែសម្រួលសម្ភារៈរបស់វា។"
     },
     "myProperties": {
       "subtitle": "ជ្រើសរើសអចលនទ្រព្យដើម្បីមើល និងកែប្រែសម្ភារៈ។",
