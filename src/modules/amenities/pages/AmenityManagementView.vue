@@ -747,9 +747,10 @@ onMounted(async () => {
   fetchAmenities();
   await fetchMyProperties();
 
-  // Auto-pick the property when there's only one, or when the (legacy)
-  // /owner/amenities/:id route actually carries an id.
-  if (!selectedPropertyId.value && myProperties.value.length === 1) {
+  // Auto-pick the first property so the catalogue shows data immediately on
+  // first open, instead of an empty "select a property" placeholder — unless
+  // the (legacy) /owner/amenities/:id route already carries an id.
+  if (!selectedPropertyId.value && myProperties.value.length > 0) {
     selectedPropertyId.value = myProperties.value[0].id;
   } else if (selectedPropertyId.value) {
     loadCatalogueAmenitiesForProperty(selectedPropertyId.value);

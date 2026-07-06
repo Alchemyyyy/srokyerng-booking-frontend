@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import AppButton from "@/shared/components/AppButton.vue";
 import { useI18n } from "vue-i18n";
+import { currentCurrency } from "@/shared/utils/currency";
 import {
   MapPinIcon,
   CalendarDaysIcon,
@@ -35,7 +36,7 @@ const updateFilter = (key, value) => {
   emit("update:modelValue", { ...props.modelValue, [key]: value });
 };
 
-const formatPrice = (value) => `$${value}`;
+const currencySymbol = computed(() => (currentCurrency.value === "KHR" ? "៛" : "$"));
 
 // --- Dual Price Slider Logic ---
 const minLimit = 10;
@@ -296,7 +297,7 @@ const handleCheckInChange = (e) => {
         <div class="flex-1 rounded-sm border border-(--color-border)/60 bg-(--color-surface-soft) px-2.5 py-1.5" style="border-radius: var(--radius-sm);">
           <span class="text-[9px] font-black uppercase text-(--color-muted)">Min</span>
           <div class="flex items-center text-xs font-bold text-(--color-text)">
-            <span class="mr-0.5">$</span>
+            <span class="mr-0.5">{{ currencySymbol }}</span>
             <input type="number" :value="modelValue.minPrice" @change="onMinInput" class="w-full bg-transparent border-none p-0 outline-none focus:ring-0" />
           </div>
         </div>
@@ -304,7 +305,7 @@ const handleCheckInChange = (e) => {
         <div class="flex-1 rounded-sm border border-(--color-border)/60 bg-(--color-surface-soft) px-2.5 py-1.5" style="border-radius: var(--radius-sm);">
           <span class="text-[9px] font-black uppercase text-(--color-muted)">Max</span>
           <div class="flex items-center text-xs font-bold text-(--color-text)">
-            <span class="mr-0.5">$</span>
+            <span class="mr-0.5">{{ currencySymbol }}</span>
             <input type="number" :value="modelValue.maxPrice" @change="onMaxInput" class="w-full bg-transparent border-none p-0 outline-none focus:ring-0" />
           </div>
         </div>

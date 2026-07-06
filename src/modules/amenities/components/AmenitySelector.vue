@@ -126,20 +126,6 @@
       <MagnifyingGlassIcon class="empty-icon" />
       <p>{{ $t("amenityManagement.selector.noResults") }}</p>
     </div>
-
-    <!-- Footer -->
-    <div class="selection-footer" v-if="selectedAmenities.length">
-      <span class="selected-count">
-        {{
-          $t("amenityManagement.selector.selected", {
-            count: selectedAmenities.length,
-          })
-        }}
-      </span>
-      <button type="button" class="clear-all-btn" @click="clearAll">
-        {{ $t("amenityManagement.saveBar.discard") }}
-      </button>
-    </div>
   </div>
 </template>
 
@@ -417,10 +403,6 @@ const toggleAmenity = (id) => {
   if (index === -1) selectedAmenities.value.push(id);
   else selectedAmenities.value.splice(index, 1);
 };
-
-const clearAll = () => {
-  selectedAmenities.value = [];
-};
 </script>
 
 <style scoped>
@@ -676,35 +658,6 @@ const clearAll = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.selection-footer {
-  position: sticky;
-  bottom: 20px;
-  background: var(--color-surface);
-  border: 1.5px solid var(--color-border);
-  border-radius: 16px;
-  padding: 14px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: var(--shadow-panel);
-}
-
-.selected-count {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--color-text);
-}
-
-.clear-all-btn {
-  border: none;
-  background: transparent;
-  color: var(--color-danger);
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  padding: 0;
 }
 
 .empty-state {

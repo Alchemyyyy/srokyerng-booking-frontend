@@ -150,7 +150,10 @@ const reservationsByDate = computed(() => {
     const cursor = new Date(checkIn);
     const end = new Date(checkOut);
     while (cursor < end) {
-      const key = cursor.toISOString().split("T")[0];
+      // Local-time key (not toISOString/UTC) so it matches v-calendar's
+      // day.id, which is a local-time YYYY-MM-DD string — using UTC here
+      // rolled every booking back a day for any server timezone ahead of UTC.
+      const key = cursor.toLocaleDateString("en-CA");
       if (!map[key]) map[key] = [];
       map[key].push(reservation);
       cursor.setDate(cursor.getDate() + 1);

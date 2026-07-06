@@ -421,7 +421,7 @@ onMounted(async () => {
 });
 </script>
 
-<template> <div class=" text-(--color-text) owner-dashboard ">
+<template> <div class="flex flex-col gap-5 text-(--color-text)">
     <header
       class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
     >

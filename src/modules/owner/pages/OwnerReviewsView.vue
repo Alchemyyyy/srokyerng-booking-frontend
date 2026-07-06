@@ -135,7 +135,7 @@ onMounted(fetchReviews)
 <template> <div class="owner-reviews ">
 
     <!-- Header -->
-    <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-2">
+    <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 class="text-3xl font-bold tracking-tight text-(--color-text)">{{ $t("owner.reviews.title") }}</h1>
         <p class="mt-1 text-sm text-(--color-muted)">{{ $t("owner.reviews.subtitle") }}</p>
@@ -298,6 +298,9 @@ onMounted(fetchReviews)
 .owner-reviews {
   padding: 0 24px 80px;
   background: var(--color-page);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 .stat-card {
   background: var(--color-surface);

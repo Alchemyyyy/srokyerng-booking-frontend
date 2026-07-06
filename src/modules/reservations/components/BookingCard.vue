@@ -33,7 +33,11 @@ const statusLabel = (value) =>
 
 const formatDate = (dateStr) => {
   if (!dateStr || dateStr === "-") return "-";
-  return new Date(dateStr).toISOString().split("T")[0];
+  // Use local-time formatting (not toISOString, which is UTC) — the backend
+  // sends check-in/check-out as UTC timestamps derived from a plain DATE
+  // column, so converting back via UTC rolls the date back a day for any
+  // server timezone ahead of UTC. en-CA locale conveniently yields YYYY-MM-DD.
+  return new Date(dateStr).toLocaleDateString("en-CA");
 };
 
 const checkIn = computed(() =>

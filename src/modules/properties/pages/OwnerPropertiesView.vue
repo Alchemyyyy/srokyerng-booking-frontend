@@ -1087,6 +1087,7 @@ onMounted(async () => {
           ? t('owner.propertiesPage.modal.detailsTitle')
           : t('owner.propertiesPage.modal.imagesTitle')
       "
+      :close-on-backdrop="false"
       @close="closeAddModal"
     >
       <div
@@ -1329,13 +1330,6 @@ onMounted(async () => {
         <div
           class="flex items-center justify-end gap-2 border-t border-(--color-border) pt-4"
         >
-          <button
-            :disabled="uploadingImages"
-            @click="closeAddModal"
-            class="px-5 py-2.5 rounded-xl border border-(--color-border) text-sm font-bold text-(--color-muted) hover:bg-(--color-surface-soft) transition disabled:opacity-50"
-          >
-            {{ t("owner.propertiesPage.modal.images.skipForNow") }}
-          </button>
           <button
             :disabled="uploadingImages || !selectedImages.length"
             @click="handleUploadImages"

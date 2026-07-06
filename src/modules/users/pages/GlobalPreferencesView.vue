@@ -6,7 +6,6 @@ import {
   ChevronRightIcon,
   GlobeAltIcon,
   CurrencyDollarIcon,
-  ClockIcon,
 } from "@heroicons/vue/24/outline";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useToastStore } from "@/shared/store/toastStore";
@@ -33,49 +32,34 @@ const isDashboardRole = computed(() => ["owner", "admin"].includes(authStore.use
 // Selection states
 const selectedLanguage = ref(locale.value);
 const selectedCurrency = ref(currentCurrency.value);
-const selectedTimezone = ref("Asia/Phnom_Penh");
 
 const loadPreferences = () => {
   // Load Language from i18n
   selectedLanguage.value = locale.value;
-  
+
   // Load Currency
   selectedCurrency.value = currentCurrency.value;
-
-  // Load Timezone
-  const savedTimezone = localStorage.getItem(`pref_timezone_${authStore.user?.id || 'guest'}`);
-  if (savedTimezone) {
-    selectedTimezone.value = savedTimezone;
-  }
 };
 
 const handleLanguageChange = () => {
   saving.value = true;
   setLocale(selectedLanguage.value);
-  
+
   setTimeout(() => {
     saving.value = false;
-    toastStore.success("Language preference updated.");
+    toastStore.success(t("globalPreferencesPage.toast.languageUpdated"));
   }, 400);
 };
 
 const handleCurrencyChange = () => {
   saving.value = true;
   updateCurrency(selectedCurrency.value);
-  
-  setTimeout(() => {
-    saving.value = false;
-    toastStore.success(`Currency updated to ${selectedCurrency.value}.`);
-  }, 400);
-};
 
-const handleTimezoneChange = () => {
-  saving.value = true;
-  localStorage.setItem(`pref_timezone_${authStore.user?.id || 'guest'}`, selectedTimezone.value);
-  
   setTimeout(() => {
     saving.value = false;
-    toastStore.success("Time zone preference updated.");
+    toastStore.success(
+      t("globalPreferencesPage.toast.currencyUpdated", { currency: selectedCurrency.value }),
+    );
   }, 400);
 };
 
@@ -98,20 +82,20 @@ onMounted(() => {
       <!-- Breadcrumbs -->
       <nav class="flex items-center gap-1 text-xs font-bold text-(--color-text) mb-3">
         <RouterLink :to="{ name: `${rolePrefix}.settings` }" class="hover:underline">
-          Account
+          {{ t("globalPreferencesPage.breadcrumb.account") }}
         </RouterLink>
         <ChevronRightIcon class="h-3.5 w-3.5 text-(--color-muted)" />
-        <span class="text-(--color-muted) font-semibold">Global preferences</span>
+        <span class="text-(--color-muted) font-semibold">{{ t("globalPreferencesPage.breadcrumb.current") }}</span>
       </nav>
 
       <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-(--color-text)">
-        Global preferences
+        {{ t("globalPreferencesPage.title") }}
       </h1>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 mt-12">
         <!-- Left Panel: Option selection fields -->
         <div class="lg:col-span-2 space-y-8 divide-y divide-(--color-border)">
-          
+
           <!-- Language Select -->
           <div class="py-6 first:pt-0 space-y-4">
             <div class="flex items-start gap-4">
@@ -119,19 +103,19 @@ onMounted(() => {
                 <GlobeAltIcon class="h-5 w-5" />
               </span>
               <div class="flex-1">
-                <h3 class="text-sm font-bold text-(--color-text)">Preferred language</h3>
+                <h3 class="text-sm font-bold text-(--color-text)">{{ t("globalPreferencesPage.language.title") }}</h3>
                 <p class="text-xs text-(--color-muted) font-medium mt-0.5">
-                  Select the default translation display for content and descriptions.
+                  {{ t("globalPreferencesPage.language.description") }}
                 </p>
-                
+
                 <div class="mt-4 max-w-xs">
                   <select
                     v-model="selectedLanguage"
                     @change="handleLanguageChange"
                     class="w-full rounded-xl border border-(--color-border) px-4 py-2.5 text-xs bg-(--color-surface) text-(--color-text) font-semibold focus:outline-hidden focus:border-(--color-primary) cursor-pointer"
                   >
-                    <option value="en">English (US)</option>
-                    <option value="km">ខ្មែរ (Cambodia)</option>
+                    <option value="en">{{ t("globalPreferencesPage.language.en") }}</option>
+                    <option value="km">{{ t("globalPreferencesPage.language.km") }}</option>
                   </select>
                 </div>
               </div>
@@ -145,46 +129,19 @@ onMounted(() => {
                 <CurrencyDollarIcon class="h-5 w-5" />
               </span>
               <div class="flex-1">
-                <h3 class="text-sm font-bold text-(--color-text)">Preferred currency</h3>
+                <h3 class="text-sm font-bold text-(--color-text)">{{ t("globalPreferencesPage.currency.title") }}</h3>
                 <p class="text-xs text-(--color-muted) font-medium mt-0.5">
-                  Default currency format used to display room stay pricing lists.
+                  {{ t("globalPreferencesPage.currency.description") }}
                 </p>
-                
+
                 <div class="mt-4 max-w-xs">
                   <select
                     v-model="selectedCurrency"
                     @change="handleCurrencyChange"
                     class="w-full rounded-xl border border-(--color-border) px-4 py-2.5 text-xs bg-(--color-surface) text-(--color-text) font-semibold focus:outline-hidden focus:border-(--color-primary) cursor-pointer"
                   >
-                    <option value="USD">USD ($ - US Dollar)</option>
-                    <option value="KHR">KHR (៛ - Cambodian Riel)</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Timezone Select -->
-          <div class="py-6 space-y-4">
-            <div class="flex items-start gap-4">
-              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600">
-                <ClockIcon class="h-5 w-5" />
-              </span>
-              <div class="flex-1">
-                <h3 class="text-sm font-bold text-(--color-text)">Time zone</h3>
-                <p class="text-xs text-(--color-muted) font-medium mt-0.5">
-                  Used for checkout dates, booking reminders, and chat message timestamps.
-                </p>
-                
-                <div class="mt-4 max-w-xs">
-                  <select
-                    v-model="selectedTimezone"
-                    @change="handleTimezoneChange"
-                    class="w-full rounded-xl border border-(--color-border) px-4 py-2.5 text-xs bg-(--color-surface) text-(--color-text) font-semibold focus:outline-hidden focus:border-(--color-primary) cursor-pointer"
-                  >
-                    <option value="Asia/Phnom_Penh">(GMT+07:00) Phnom Penh</option>
-                    <option value="Asia/Singapore">(GMT+08:00) Singapore</option>
-                    <option value="UTC">(GMT+00:00) Coordinated Universal Time (UTC)</option>
+                    <option value="USD">{{ t("globalPreferencesPage.currency.usd") }}</option>
+                    <option value="KHR">{{ t("globalPreferencesPage.currency.khr") }}</option>
                   </select>
                 </div>
               </div>
@@ -196,12 +153,12 @@ onMounted(() => {
         <!-- Right Side: Info Guide Box -->
         <div class="lg:col-span-1">
           <div class="rounded-3xl border border-(--color-border) bg-(--color-surface-soft)/40 p-7 space-y-6">
-            <h3 class="font-extrabold text-sm text-(--color-text)">About preferences</h3>
+            <h3 class="font-extrabold text-sm text-(--color-text)">{{ t("globalPreferencesPage.sidebar.title") }}</h3>
             <p class="text-xs text-(--color-muted) leading-relaxed font-semibold">
-              Global configurations like language and currency are loaded dynamically to tailor your user interface. 
+              {{ t("globalPreferencesPage.sidebar.paragraph1") }}
             </p>
             <p class="text-xs text-(--color-muted) leading-relaxed font-semibold">
-              Khmer language translates all core dashboards, lists, and settings. Changing currency formats the pricing values to approximate currency conversion rates.
+              {{ t("globalPreferencesPage.sidebar.paragraph2") }}
             </p>
           </div>
         </div>

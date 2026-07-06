@@ -3,25 +3,33 @@ import { ref, computed, onMounted, watch, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import {
-  UsersIcon,
-  TableCellsIcon,
   Squares2X2Icon,
-  PhotoIcon,
-  ShieldCheckIcon,
   XMarkIcon,
+  HeartIcon,
 } from "@heroicons/vue/24/outline";
+import { HeartIcon as HeartIconSolid } from "@heroicons/vue/24/solid";
 import http from "@/app/api/http";
+import { propertyApi } from "@/modules/properties/api/property.api";
+import { useWishlistStore } from "@/modules/wishlists/store/wishlistStore";
+import { useToastStore } from "@/shared/store/toastStore";
+import { useAuthStore } from "@/modules/auth/store/authStore";
 import AvailabilityCalendar from "@/modules/calendar/components/AvailabilityCalendar.vue";
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
+const wishlistStore = useWishlistStore();
+const toastStore = useToastStore();
+const authStore = useAuthStore();
 
 const room = ref(null);
 const loading = ref(true);
 const checkInDate = ref("");
 const checkOutDate = ref("");
 const guestCount = ref(1);
+const isDescriptionExpanded = ref(false);
+const showPhotosModal = ref(false);
+const reviewSummary = ref({ average: 0, total: 0 });
 
 const BASE_URL = (
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5001/api"
@@ -122,6 +130,22 @@ const fetchRoom = async () => {
   } finally {
     loading.value = false;
   }
+
+  if (room.value?.propertyId) {
+    wishlistStore.checkStatus(room.value.propertyId);
+
+    try {
+      const reviewsRes = await propertyApi.getPropertyReviews(room.value.propertyId);
+      const reviews = reviewsRes?.data?.data || reviewsRes?.data || [];
+      const total = reviews.length;
+      const average = total
+        ? reviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) / total
+        : 0;
+      reviewSummary.value = { average: Number(average.toFixed(2)), total };
+    } catch (reviewErr) {
+      console.warn("Could not load reviews:", reviewErr);
+    }
+  }
 };
 
 const initDetailMap = () => {
@@ -207,6 +231,25 @@ const goToBooking = () => {
   });
 };
 
+const isSaved = computed(() => wishlistStore.isPropertySaved(room.value?.propertyId));
+
+const handleSave = async () => {
+  if (!authStore.isAuthenticated) {
+    toastStore.warning(t("roomDetail.loginToSave", "Please log in to save listings."));
+    return;
+  }
+  if (room.value?.propertyId) {
+    await wishlistStore.toggleWishlist(room.value.propertyId);
+  }
+};
+
+const handleShare = () => {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(window.location.href);
+    toastStore.success(t("propertyDetail.shareSuccess", "Property link copied to clipboard!"));
+  }
+};
+
 onMounted(fetchRoom);
 </script>
 
@@ -239,38 +282,38 @@ onMounted(fetchRoom);
           class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between text-xs font-semibold"
         >
           <div class="flex items-center gap-2.5 text-(--color-muted)">
-            <a
-              href="#"
+            <RouterLink
+              :to="{ name: 'public.home' }"
               class="hover:text-(--color-primary) transition duration-300"
             >
               {{ t("roomDetail.breadcrumb.home") }}
-            </a>
+            </RouterLink>
             <span class="text-(--color-border) text-[10px] font-light">/</span>
-            <a
-              href="#"
+            <RouterLink
+              :to="{ name: 'public.properties' }"
               class="hover:text-(--color-primary) transition duration-300"
             >
               {{ t("roomDetail.breadcrumb.properties") }}
-            </a>
+            </RouterLink>
             <span class="text-(--color-border) text-[10px] font-light">/</span>
-            <a
-              href="#"
+            <RouterLink
+              :to="{ name: 'public.property-rooms', params: { propertyId: room.propertyId } }"
               class="hover:text-(--color-primary) transition duration-300"
             >
               {{ t("roomDetail.breadcrumb.rooms") }}
-            </a>
+            </RouterLink>
             <span class="text-(--color-border) text-[10px] font-light">/</span>
             <span class="text-(--color-text) font-bold tracking-tight">{{
               room.type
             }}</span>
           </div>
           <div
-            class="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full text-[11px] font-bold border border-emerald-100/80 shadow-sm"
+            class="inline-flex items-center gap-2 bg-(--color-success-soft) text-(--color-success) px-3 py-1.5 rounded-full text-[11px] font-bold border border-(--color-success)/20 shadow-sm"
           >
             <span
-              class="w-2 h-2 bg-emerald-500 rounded-full animate-ping"
+              class="w-2 h-2 bg-(--color-success) rounded-full animate-ping"
             ></span>
-            <span class="w-2 h-2 bg-emerald-500 rounded-full absolute"></span>
+            <span class="w-2 h-2 bg-(--color-success) rounded-full absolute"></span>
             {{ t("roomDetail.liveAvailability") }}
           </div>
         </div>
@@ -286,50 +329,68 @@ onMounted(fetchRoom);
           </h1>
           <div class="flex items-center justify-between text-sm font-medium text-(--color-muted)">
             <div class="flex items-center gap-2">
-              <span class="flex items-center gap-1 text-(--color-text) font-semibold">
-                ★ 4.96
+              <span
+                v-if="reviewSummary.total > 0"
+                class="flex items-center gap-1 text-(--color-text) font-semibold"
+              >
+                ★ {{ reviewSummary.average.toFixed(2) }} · {{ reviewSummary.total }} {{ reviewSummary.total === 1 ? "review" : "reviews" }}
               </span>
+              <span v-else class="text-(--color-muted)">{{ t("roomDetail.noReviewsYet", "No reviews yet") }}</span>
               <span>·</span>
               <span class="underline cursor-pointer font-medium" @click="showMapModal = true">{{ room.propertyName }}</span>
             </div>
             <div class="flex items-center gap-4 text-(--color-text)">
-              <button class="flex items-center gap-2 hover:bg-(--color-surface-soft) px-2 py-1 rounded-md transition underline font-semibold cursor-pointer">
+              <button
+                type="button"
+                class="flex items-center gap-2 hover:bg-(--color-surface-soft) px-2 py-1 rounded-md transition underline font-semibold cursor-pointer"
+                @click="handleShare"
+              >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
                 Share
               </button>
-              <button class="flex items-center gap-2 hover:bg-(--color-surface-soft) px-2 py-1 rounded-md transition underline font-semibold cursor-pointer">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                Save
+              <button
+                type="button"
+                class="flex items-center gap-2 hover:bg-(--color-surface-soft) px-2 py-1 rounded-md transition underline font-semibold cursor-pointer"
+                @click="handleSave"
+              >
+                <HeartIconSolid v-if="isSaved" class="w-4 h-4 text-(--color-wishlist)" />
+                <HeartIcon v-else class="w-4 h-4" />
+                {{ isSaved ? "Saved" : "Save" }}
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Airbnb Photo Gallery -->
+        <!-- Photo Gallery -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-2 h-[300px] md:h-[400px] lg:h-[450px] rounded-[16px] overflow-hidden relative mb-10">
-          <div class="md:col-span-2 h-full cursor-pointer group relative">
+          <div class="md:col-span-2 h-full cursor-pointer group relative" @click="showPhotosModal = true">
             <img :src="room.image" class="w-full h-full object-cover group-hover:brightness-90 transition duration-300" />
             <div class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
           </div>
           <div class="hidden md:grid grid-rows-2 gap-2 h-full">
-            <div class="w-full h-full cursor-pointer group relative">
+            <div class="w-full h-full cursor-pointer group relative" @click="showPhotosModal = true">
               <img :src="room.images[1] || room.images[0]" class="w-full h-full object-cover group-hover:brightness-90 transition duration-300" />
               <div class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </div>
-            <div class="w-full h-full cursor-pointer group relative">
+            <div class="w-full h-full cursor-pointer group relative" @click="showPhotosModal = true">
               <img :src="room.images[2] || room.images[0]" class="w-full h-full object-cover group-hover:brightness-90 transition duration-300" />
               <div class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </div>
           </div>
           <div class="hidden md:grid grid-rows-2 gap-2 h-full">
-            <div class="w-full h-full cursor-pointer group relative">
+            <div class="w-full h-full cursor-pointer group relative" @click="showPhotosModal = true">
               <img :src="room.images[3] || room.images[0]" class="w-full h-full object-cover group-hover:brightness-90 transition duration-300" />
               <div class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </div>
-            <div class="w-full h-full cursor-pointer group relative">
+            <div class="w-full h-full cursor-pointer group relative" @click="showPhotosModal = true">
               <img :src="room.images[4] || room.images[0]" class="w-full h-full object-cover group-hover:brightness-90 transition duration-300" />
               <div class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <button class="absolute bottom-4 right-4 bg-(--color-surface) border border-(--color-text) text-(--color-text) px-4 py-1.5 rounded-lg text-sm font-semibold shadow-[0_2px_4px_rgba(0,0,0,0.18)] hover:bg-(--color-surface-soft) flex items-center gap-2 transition cursor-pointer">
+              <button
+                v-if="room.images.length > 1"
+                type="button"
+                class="absolute bottom-4 right-4 bg-(--color-surface) border border-(--color-text) text-(--color-text) px-4 py-1.5 rounded-lg text-sm font-semibold shadow-[0_2px_4px_rgba(0,0,0,0.18)] hover:bg-(--color-surface-soft) flex items-center gap-2 transition cursor-pointer"
+                @click="showPhotosModal = true"
+              >
                 <Squares2X2Icon class="w-4 h-4" />
                 Show all photos
               </button>
@@ -354,37 +415,21 @@ onMounted(fetchRoom);
               </div>
             </div>
 
-            <!-- Highlights -->
-            <div class="border-b border-(--color-border) pb-6 space-y-5">
-              <div class="flex items-start gap-4">
-                <ShieldCheckIcon class="w-7 h-7 text-(--color-text) shrink-0" />
-                <div>
-                  <h3 class="text-base font-semibold text-(--color-text)">Self check-in</h3>
-                  <p class="text-sm text-(--color-muted)">Check yourself in with the lockbox.</p>
-                </div>
-              </div>
-              <div class="flex items-start gap-4">
-                <UsersIcon class="w-7 h-7 text-(--color-text) shrink-0" />
-                <div>
-                  <h3 class="text-base font-semibold text-(--color-text)">Superhost</h3>
-                  <p class="text-sm text-(--color-muted)">Superhosts are experienced, highly rated hosts.</p>
-                </div>
-              </div>
-            </div>
-
             <!-- Description -->
             <div class="border-b border-(--color-border) pb-6">
-              <div class="mb-5">
-                <img src="https://a0.muscache.com/pictures/aircover/aircover-logo/original/56683a2f-f11b-43f6-8af7-a1a3828c27ad.svg" alt="AirCover" class="h-6 dark:invert" />
-                <p class="text-sm text-(--color-muted) mt-3 leading-relaxed">
-                  Every booking includes free protection from Host cancellations, listing inaccuracies, and other issues like trouble checking in.
-                </p>
-              </div>
-              <p class="text-base text-(--color-text) font-normal leading-relaxed text-left line-clamp-4">
+              <p
+                class="text-base text-(--color-text) font-normal leading-relaxed text-left"
+                :class="{ 'line-clamp-4': !isDescriptionExpanded }"
+              >
                 {{ room.description }}
               </p>
-              <button class="text-base font-semibold underline mt-4 flex items-center gap-1 hover:text-(--color-muted) cursor-pointer">
-                Show more <span aria-hidden="true">&gt;</span>
+              <button
+                v-if="room.description && room.description.length > 220"
+                type="button"
+                class="text-base font-semibold underline mt-4 flex items-center gap-1 hover:text-(--color-muted) cursor-pointer"
+                @click="isDescriptionExpanded = !isDescriptionExpanded"
+              >
+                {{ isDescriptionExpanded ? "Show less" : "Show more" }} <span aria-hidden="true">{{ isDescriptionExpanded ? "^" : ">" }}</span>
               </button>
             </div>
 
@@ -399,9 +444,6 @@ onMounted(fetchRoom);
                   <span class="text-base font-normal text-(--color-text)">{{ amenity }}</span>
                 </div>
               </div>
-              <button class="mt-8 border border-(--color-text) text-(--color-text) px-6 py-3 rounded-lg text-base font-semibold hover:bg-(--color-surface-soft) transition bg-(--color-surface) cursor-pointer shadow-sm">
-                Show all amenities
-              </button>
             </div>
 
             <!-- Availability Calendar -->
@@ -502,19 +544,31 @@ onMounted(fetchRoom);
                   </div>
                 </div>
               </div>
-              
-              <!-- Report Listing -->
-              <div class="text-center flex justify-center gap-3 items-center">
-                <span class="text-(--color-muted)">
-                  <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="presentation" focusable="false" style="display: block; height: 16px; width: 16px; fill: currentcolor;"><path d="M28 6H17V4a2 2 0 0 0-2-2H3v28h2V18h10v2a2 2 0 0 0 2 2h11l.115-.006a1 1 0 0 0 .885-.994l.001-14.996L29 6a1 1 0 0 0-1-1zm-1 14h-9.999v-2a2 2 0 0 0-2-2H5V4h9.999v2a2 2 0 0 0 2 2H27z"></path></svg>
-                </span>
-                <span class="text-sm text-(--color-muted) underline cursor-pointer hover:text-(--color-text)">Report this listing</span>
-              </div>
             </div>
           </div>
         </div>
       </div>
     </template>
+
+    <!-- ── Photos Modal ── -->
+    <div v-if="showPhotosModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 sm:p-6 transition-all duration-300" @click.self="showPhotosModal = false">
+      <div class="flex max-h-[85vh] h-full w-full max-w-4xl overflow-hidden rounded-sm bg-(--color-page) text-(--color-text) shadow-2xl border border-(--color-border) animate-scaleUp flex-col" style="border-radius: var(--radius-sm);">
+        <div class="flex items-center justify-between p-4 border-b border-(--color-border) bg-(--color-surface)">
+          <h3 class="text-lg font-black text-(--color-text)">{{ room?.type }} — {{ room?.images?.length || 0 }} photos</h3>
+          <button type="button" class="p-1.5 rounded-sm hover:bg-(--color-surface-soft) dark:hover:bg-neutral-800 transition active:scale-95 cursor-pointer" style="border-radius: var(--radius-sm);" @click="showPhotosModal = false">
+            <XMarkIcon class="h-6 w-6 text-(--color-text)" />
+          </button>
+        </div>
+        <div class="flex-1 overflow-y-auto p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <img
+            v-for="(img, idx) in room?.images"
+            :key="idx"
+            :src="img"
+            class="w-full h-64 object-cover rounded-lg"
+          />
+        </div>
+      </div>
+    </div>
 
     <!-- ── Map Modal ── -->
     <div v-if="showMapModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 sm:p-6 transition-all duration-300" @click.self="showMapModal = false">

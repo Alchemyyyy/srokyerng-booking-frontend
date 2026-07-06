@@ -1690,6 +1690,34 @@
     "noDeposit": "No upfront deposit required today.",
     "hotel": "Angkor Palace Luxury Hotel Resort"
   },
+  "globalPreferencesPage": {
+    "breadcrumb": {
+      "account": "Account",
+      "current": "Global preferences"
+    },
+    "title": "Global preferences",
+    "language": {
+      "title": "Preferred language",
+      "description": "Select the default translation display for content and descriptions.",
+      "en": "English (US)",
+      "km": "ខ្មែរ (Cambodia)"
+    },
+    "currency": {
+      "title": "Preferred currency",
+      "description": "Default currency format used to display room stay pricing lists.",
+      "usd": "USD ($ - US Dollar)",
+      "khr": "KHR (៛ - Cambodian Riel)"
+    },
+    "sidebar": {
+      "title": "About preferences",
+      "paragraph1": "Global configurations like language and currency are loaded dynamically to tailor your user interface.",
+      "paragraph2": "Khmer language translates all core dashboards, lists, and settings. Changing currency formats the pricing values to approximate currency conversion rates."
+    },
+    "toast": {
+      "languageUpdated": "Language preference updated.",
+      "currencyUpdated": "Currency updated to {currency}."
+    }
+  },
   "owner": {
     "profile": {
       "name": "Owner Name",
@@ -2067,7 +2095,6 @@
           "dropzoneHint": "Supports ultra-high-definition PNG, JPEG, WebP (Max 10MB per unit, Limit 10 items)",
           "stagedUploadLabel": "Staged Upload Runway ({count})",
           "coverPriority": "Cover Priority",
-          "skipForNow": "Skip For Now",
           "uploadAndFinish": "Upload & Finish"
         },
         "editProperty": {
@@ -2472,8 +2499,7 @@
     "selector": {
       "searchPlaceholder": "Search amenities...",
       "all": "All",
-      "noResults": "No amenities found",
-      "selected": "{count} selected"
+      "noResults": "No amenities found"
     }
   },
   "bookingHistory": {

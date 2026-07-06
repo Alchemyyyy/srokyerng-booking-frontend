@@ -41,6 +41,18 @@ const palette = [
     'var(--color-muted)',
 ];
 
+// Fixed color per payment status, keyed by lowercase name — keeps a status's
+// color stable regardless of what order the backend returns it in (the old
+// palette[i % palette.length] positional assignment shifted every segment's
+// color whenever a status was missing or the backend order changed).
+const STATUS_COLORS = {
+    paid: 'var(--color-primary)',
+    pending: 'var(--color-warning)',
+    refunded: 'var(--color-success)',
+    submitted: 'var(--color-danger)',
+    failed: 'var(--color-danger)',
+};
+
 // ─── Store ────────────────────────────────────────────────────────────────────
 export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard', () => {
     const loading = ref(true);
@@ -157,7 +169,7 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
                 type: item.name,
                 revenue: Number(item.value) || 0,
                 share: Math.round(((Number(item.value) || 0) / total) * 100),
-                color: palette[i % palette.length],
+                color: STATUS_COLORS[String(item.name).toLowerCase()] ?? palette[i % palette.length],
             }));
         }
 

@@ -31,13 +31,6 @@ const paymentId            = ref(null);
 const fetchedPaymentStatus = ref("");
 const propertyImage        = ref(null);
 
-// Refund request state
-const showRefundForm       = ref(false);
-const refundReason         = ref("");
-const refundReasonError    = ref("");
-const requestingRefund     = ref(false);
-const refundRequestError   = ref("");
-
 // ── Fetch property image ──────────────────────────────────
 async function fetchPropertyImage(propId, reservationData) {
   const embedded =
@@ -131,6 +124,14 @@ const paymentStatusNorm = computed(() => {
   return raw;
 });
 
+// backend refund_requests.refund_status is "requested" while awaiting the
+// owner's decision — RefundStatusBadge expects "pending" for that same state.
+const refundStatusNorm = computed(() => {
+  const raw = String(reservation.value?.refund_status ?? "").toLowerCase();
+  if (raw === "requested") return "pending";
+  return raw || "not_requested";
+});
+
 const canCancel = computed(() => {
   if (!reservation.value) return false;
   const resStatus = status.value;
@@ -152,23 +153,6 @@ const canCancel = computed(() => {
   }
 
   return false;
-});
-
-// Show refund section only when payment was actually verified (money received by host)
-// AND reservation is now cancelled.
-// Spec: CONFIRMED+verified cancellation → refund eligible based on deadline.
-// We surface this card after cancellation (status becomes CANCELLED) with verified payment.
-const canRequestRefund = computed(() => {
-  if (!reservation.value) return false;
-  const resStatus = String(reservation.value.reservation_status ?? "").toLowerCase();
-  const pmtStatus = paymentStatusNorm.value; // normalized
-
-  // Only verified payments can trigger refund flow
-  if (pmtStatus !== "verified") return false;
-
-  // Show refund card only when already CANCELLED (manual refund request form)
-  // CONFIRMED+verified: refund is auto-created inside handleCancel, no card needed
-  return resStatus === "cancelled";
 });
 
 // Use normalized status so "failed" also triggers re-upload banner
@@ -250,42 +234,6 @@ async function handleCancel() {
     cancelError.value = e?.response?.data?.message ?? t("reservationDetail.form.cancelError");
   } finally {
     cancelling.value = false;
-  }
-}
-
-async function handleRefundRequest() {
-  if (!refundReason.value.trim()) {
-    refundReasonError.value = t("reservationDetail.refund.reasonError");
-    return;
-  }
-  refundReasonError.value  = "";
-  requestingRefund.value   = true;
-  refundRequestError.value = "";
-  try {
-    const resStatus = String(reservation.value?.reservation_status ?? "").toLowerCase();
-    const amount    = (policy.value?.refundAmount ?? Number(reservation.value?.total_amount)) || 0;
-    const reason    = refundReason.value.trim();
-
-    // This form is only reachable when reservation is already CANCELLED + payment verified.
-    // For CONFIRMED+verified, refund is auto-created inside handleCancel.
-    // Guard: if somehow called on a non-cancelled reservation, do NOT re-cancel.
-    if (resStatus !== "cancelled") {
-      refundRequestError.value = "Please cancel the reservation first.";
-      return;
-    }
-
-    // POST /api/reservations/:id/refund-request  body: { amount, reason }
-    await cancellationApi.requestRefund(route.params.id, { amount, reason });
-    toast.success(t("reservationDetail.refund.successMessage"), {
-      title: t("reservationDetail.refund.successTitle"),
-    });
-    showRefundForm.value = false;
-    refundReason.value   = "";
-    await fetchReservation();
-  } catch (e) {
-    refundRequestError.value = e?.response?.data?.message ?? t("reservationDetail.refund.errorMessage");
-  } finally {
-    requestingRefund.value = false;
   }
 }
 
@@ -442,7 +390,7 @@ onMounted(fetchReservation);
               </div>
               <div v-if="isCancelledOrCompleted" class="payment-item">
                 <span class="payment-label">{{ t("reservationDetail.bookingSummary.refund") }}</span>
-                <RefundStatusBadge :status="reservation.refund_status ?? 'not_requested'" />
+                <RefundStatusBadge :status="refundStatusNorm" />
               </div>
             </div>
           </div>
@@ -504,75 +452,6 @@ onMounted(fetchReservation);
               </div>
               <span class="breakdown-val" :class="`breakdown-val--${row.type}`">{{ row.value }}</span>
             </div>
-          </div>
-        </div>
-
-        <!-- ── Refund Request Card (already cancelled, payment was verified, no auto-refund) ── -->
-        <div v-if="status === 'cancelled' && paymentStatusNorm === 'verified' && (!reservation.refund_status || reservation.refund_status === 'not_requested') && (policy?.refundAmount > 0)" class="refund-request-card">
-          <div class="refund-request-header">
-            <div class="refund-request-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                <path d="M3 3v5h5"/>
-                <path d="M12 7v5l4 2"/>
-              </svg>
-            </div>
-            <div>
-              <p class="refund-request-eyebrow">{{ t("reservationDetail.refund.eyebrow") }}</p>
-              <p class="refund-request-title">{{ t("reservationDetail.refund.title") }}</p>
-            </div>
-          </div>
-          <p class="refund-request-desc">{{ t("reservationDetail.refund.description") }}</p>
-
-          <!-- Refund form -->
-          <div v-if="showRefundForm" class="refund-form">
-            <label class="reason-label">
-              {{ t("reservationDetail.refund.reasonLabel") }}
-              <span class="required">*</span>
-            </label>
-            <textarea
-              v-model="refundReason"
-              class="reason-textarea"
-              rows="4"
-              maxlength="500"
-              :placeholder="t('reservationDetail.refund.reasonPlaceholder')"
-              :disabled="requestingRefund"
-            />
-            <div class="reason-footer">
-              <span class="reason-error">{{ refundReasonError }}</span>
-              <span class="char-count">{{ refundReason.length }}/500</span>
-            </div>
-            <p v-if="refundRequestError" class="cancel-api-error">{{ refundRequestError }}</p>
-          </div>
-
-          <div class="refund-request-actions">
-            <button
-              v-if="!showRefundForm"
-              class="btn-refund-request"
-              @click="showRefundForm = true"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                <path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>
-              </svg>
-              {{ t("reservationDetail.refund.requestButton") }}
-            </button>
-            <template v-else>
-              <button class="btn-refund-cancel" @click="showRefundForm = false; refundReason = ''">
-                {{ t("reservationDetail.actions.goBack") }}
-              </button>
-              <button
-                class="btn-refund-submit"
-                :disabled="requestingRefund"
-                @click="handleRefundRequest"
-              >
-                <span v-if="requestingRefund" class="btn-spin"></span>
-                <svg v-else width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                  <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-                </svg>
-                {{ requestingRefund ? t("reservationDetail.refund.submitting") : t("reservationDetail.refund.submitButton") }}
-              </button>
-            </template>
           </div>
         </div>
 
@@ -766,6 +645,7 @@ onMounted(fetchReservation);
 .pay-badge--paid, .pay-badge--verified { background: rgba(16,185,129,0.08); color: #10b981; border-color: rgba(16,185,129,0.25); }
 .pay-badge--submitted { background: rgba(59,130,246,0.08); color: #3b82f6; border-color: rgba(59,130,246,0.25); }
 .pay-badge--failed    { background: rgba(239,68,68,0.08);  color: #ef4444; border-color: rgba(239,68,68,0.25); }
+.pay-badge--refunded  { background: rgba(59,130,246,0.08);  color: #3b82f6; border-color: rgba(59,130,246,0.25); }
 
 /* Cancelled reason */
 .cancel-reason-card { display: flex; align-items: flex-start; gap: 1rem; background: var(--color-surface); border: 1px solid var(--color-danger); border-radius: 18px; padding: 1.25rem 1.5rem; box-shadow: 0 1px 4px rgba(239,68,68,0.06); }
@@ -805,80 +685,6 @@ onMounted(fetchReservation);
 .breakdown-val--full    { color: #10b981; }
 .breakdown-val--partial { color: #d97706; }
 .breakdown-val--none    { color: #ef4444; }
-
-/* Refund request card */
-.refund-request-card {
-  background: var(--color-surface);
-  border: 1.5px solid var(--color-primary);
-  border-radius: 22px;
-  padding: 0;
-  overflow: hidden;
-  box-shadow: var(--shadow-panel);
-}
-.refund-request-header {
-  display: flex; align-items: center; gap: 1rem;
-  padding: 1.25rem 1.4rem 1rem;
-  border-bottom: 1px solid var(--color-primary-soft);
-  background: var(--color-primary-soft);
-}
-.refund-request-icon {
-  width: 48px; height: 48px; border-radius: 14px; flex-shrink: 0;
-  background: var(--color-primary-soft); color: var(--color-primary);
-  display: flex; align-items: center; justify-content: center;
-}
-.refund-request-eyebrow {
-  margin: 0 0 0.2rem;
-  font-size: 0.6rem; font-weight: 800;
-  text-transform: uppercase; letter-spacing: 0.14em;
-  color: var(--color-primary);
-}
-.refund-request-title {
-  margin: 0;
-  font-size: 1.05rem; font-weight: 800;
-  color: var(--color-text);
-}
-.refund-request-desc {
-  font-size: 0.875rem; color: var(--color-muted);
-  margin: 0; line-height: 1.65;
-  padding: 1rem 1.4rem 0;
-}
-.refund-form {
-  display: flex; flex-direction: column; gap: 0.5rem;
-  padding: 1rem 1.4rem 0;
-}
-.refund-request-actions {
-  display: flex; gap: 0.75rem; align-items: center;
-  padding: 1.1rem 1.4rem;
-}
-.btn-refund-request {
-  display: inline-flex; align-items: center; gap: 0.55rem;
-  padding: 0.75rem 1.6rem;
-  background: var(--color-primary); border: none; border-radius: 14px;
-  color: white; font-size: 0.875rem; font-weight: 700;
-  cursor: pointer; transition: all 0.2s;
-  box-shadow: 0 4px 14px rgba(59,130,246,0.3);
-}
-.btn-refund-request:hover { background: var(--color-primary-strong); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(59,130,246,0.38); }
-.btn-refund-cancel {
-  padding: 0.72rem 1.3rem;
-  border: 1.5px solid var(--color-border); border-radius: 12px;
-  background: transparent; color: var(--color-muted);
-  font-size: 0.85rem; font-weight: 700;
-  cursor: pointer; transition: 0.2s;
-  white-space: nowrap;
-}
-.btn-refund-cancel:hover { border-color: var(--color-muted); color: var(--color-text); }
-.btn-refund-submit {
-  flex: 1; display: inline-flex; align-items: center;
-  justify-content: center; gap: 0.5rem;
-  padding: 0.72rem 1.3rem;
-  background: var(--color-primary); border: none; border-radius: 12px;
-  color: white; font-size: 0.875rem; font-weight: 700;
-  cursor: pointer; transition: 0.2s;
-  box-shadow: 0 3px 10px rgba(59,130,246,0.25);
-}
-.btn-refund-submit:hover:not(:disabled) { background: var(--color-primary-strong); }
-.btn-refund-submit:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
 /* Blocked */
 .blocked-banner { display: flex; align-items: center; gap: 0.65rem; padding: 1rem 1.1rem; background: var(--color-surface); border: 1px solid var(--color-danger); border-radius: 16px; font-size: 0.875rem; color: var(--color-danger); box-shadow: 0 1px 4px rgba(239,68,68,0.06); }
@@ -934,6 +740,5 @@ onMounted(fetchReservation);
   .action-bar { grid-template-columns: 1fr; position: relative; bottom: 0; }
   .topbar { padding: 0.75rem; }
   .topbar-title { font-size: 0.95rem; }
-  .refund-request-actions { flex-direction: column; }
 }
 </style>
