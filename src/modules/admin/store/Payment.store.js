@@ -4,7 +4,7 @@ import { ref, computed } from "vue";
 import { paymentService } from "../services/Payment.service";
 import { getImageUrl } from "../utils/formatters";
 
-const STATUS_OPTIONS = ["submitted", "verified", "rejected"];
+const STATUS_OPTIONS = ["submitted", "paid", "failed"];
 
 export const usePaymentStore = defineStore("admin-payments", () => {
   // ── State ─────────────────────────────────────────────────────────────────

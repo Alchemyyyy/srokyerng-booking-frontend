@@ -825,6 +825,7 @@
       "payment_submitted": "Payment submitted",
       "payment_verified": "Payment verified",
       "payment_rejected": "Payment rejected",
+      "payment_refunded": "Payment refunded",
       "property_approved": "Property approved",
       "property_rejected": "Property rejected",
       "password_changed": "Password changed",
@@ -2809,8 +2810,8 @@
       "tabs": {
         "all": "All",
         "pendingVerification": "Pending Verification",
-        "verified": "Verified",
-        "rejected": "Rejected"
+        "paid": "Paid",
+        "failed": "Failed"
       },
       "searchPlaceholder": "Search by customer, reference, method...",
       "loading": "Loading payments...",

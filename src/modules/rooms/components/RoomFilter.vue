@@ -98,7 +98,7 @@ const facilityOptions = computed(() => [
           <span
             style="color: var(--color-muted)"
             class="text-[10px] font-medium"
-            >$20</span
+            >$0</span
           >
           <span style="color: var(--color-primary)" class="text-base font-bold">
             ${{ modelValue.priceRange }}
@@ -108,7 +108,7 @@ const facilityOptions = computed(() => [
           :value="modelValue.priceRange"
           @input="updateFilter('priceRange', Number($event.target.value))"
           type="range"
-          min="20"
+          min="0"
           max="250"
           style="accent-color: var(--color-primary-strong)"
           class="w-full h-2 rounded-lg appearance-none cursor-pointer outline-none room-range"

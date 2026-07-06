@@ -277,242 +277,138 @@ onMounted(fetchRoom);
       </header>
 
       <!-- Main Content -->
-      <div class="max-w-7xl mx-auto px-6 mt-8 pt-16">
-        <!-- Photo Mosaic Grid -->
-        <div
-          class="grid grid-cols-1 md:grid-cols-12 gap-3.5 mb-12 rounded-[32px] overflow-hidden bg-slate-900 shadow-2xl shadow-slate-900/10 relative group"
-        >
-          <!-- Hero Image -->
-          <div
-            class="md:col-span-7 h-[380px] md:h-[520px] overflow-hidden relative"
-          >
-            <img
-              :src="room.image"
-              alt="Room Master View"
-              class="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-1000 ease-out"
-            />
-            <div
-              class="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent pointer-events-none"
-            ></div>
-            <div
-              class="absolute bottom-6 left-6 z-10 bg-(--color-surface)/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-(--color-border) shadow-lg"
-            >
-              <p
-                class="text-[10px] font-black uppercase tracking-widest text-(--color-primary)"
-              >
-                {{ t("roomDetail.featuredSpace") }}
-              </p>
-              <p class="text-xs font-bold text-(--color-text) mt-0.5">
-                {{ t("roomDetail.featuredSpaceLabel") }}
-              </p>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        
+        <!-- Airbnb Style Header (Title Above Gallery) -->
+        <div class="mb-6">
+          <h1 class="text-2xl md:text-3xl font-semibold text-(--color-text) tracking-tight mb-2">
+            {{ room.type }}
+          </h1>
+          <div class="flex items-center justify-between text-sm font-medium text-(--color-muted)">
+            <div class="flex items-center gap-2">
+              <span class="flex items-center gap-1 text-(--color-text) font-semibold">
+                ★ 4.96
+              </span>
+              <span>·</span>
+              <span class="underline cursor-pointer font-medium" @click="showMapModal = true">{{ room.propertyName }}</span>
             </div>
-          </div>
-
-          <!-- Right Image Grid -->
-          <div
-            class="hidden md:grid grid-cols-2 md:col-span-5 gap-3.5 h-[520px]"
-          >
-            <div
-              class="overflow-hidden h-[253px] bg-slate-800 relative group/item"
-            >
-              <img
-                :src="room.images[1] || room.images[0]"
-                class="w-full h-full object-cover opacity-95 group-hover/item:scale-105 transition-all duration-700"
-              />
-              <div
-                class="absolute inset-0 bg-slate-950/10 group-hover/item:bg-transparent transition-all"
-              ></div>
-            </div>
-            <div
-              class="overflow-hidden h-[253px] bg-slate-800 relative group/item"
-            >
-              <img
-                :src="room.images[2] || room.images[0]"
-                class="w-full h-full object-cover opacity-95 group-hover/item:scale-105 transition-all duration-700"
-              />
-              <div
-                class="absolute inset-0 bg-slate-950/10 group-hover/item:bg-transparent transition-all"
-              ></div>
-            </div>
-            <div
-              class="overflow-hidden h-[253px] bg-slate-800 relative group/item"
-            >
-              <img
-                :src="room.images[3] || room.images[0]"
-                class="w-full h-full object-cover opacity-95 group-hover/item:scale-105 transition-all duration-700"
-              />
-              <div
-                class="absolute inset-0 bg-slate-950/10 group-hover/item:bg-transparent transition-all"
-              ></div>
-            </div>
-            <div
-              class="overflow-hidden h-[253px] bg-slate-800 relative group/item"
-            >
-              <img
-                :src="room.images[4] || room.images[0]"
-                class="w-full h-full object-cover opacity-95 group-hover/item:scale-105 transition-all duration-700"
-              />
-              <div
-                class="absolute inset-0 bg-slate-950/50 backdrop-blur-[3px] flex flex-col items-center justify-center cursor-pointer transition duration-300 group-hover/item:bg-slate-950/60"
-              >
-                <PhotoIcon
-                  class="w-6 h-6 text-white mb-1.5 transform group-hover/item:translate-y-[-2px] transition-transform"
-                />
-                <span
-                  class="text-white text-[11px] font-black tracking-widest uppercase bg-white/10 px-3.5 py-2 rounded-xl border border-white/20"
-                >
-                  {{ t("roomDetail.exploreGallery") }} ({{
-                    room.images.length
-                  }})
-                </span>
-              </div>
+            <div class="flex items-center gap-4 text-(--color-text)">
+              <button class="flex items-center gap-2 hover:bg-(--color-surface-soft) px-2 py-1 rounded-md transition underline font-semibold cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+                Share
+              </button>
+              <button class="flex items-center gap-2 hover:bg-(--color-surface-soft) px-2 py-1 rounded-md transition underline font-semibold cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                Save
+              </button>
             </div>
           </div>
         </div>
 
-        <!-- Twin Column Layout -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+        <!-- Airbnb Photo Gallery -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-2 h-[300px] md:h-[400px] lg:h-[450px] rounded-[16px] overflow-hidden relative mb-10">
+          <div class="md:col-span-2 h-full cursor-pointer group relative">
+            <img :src="room.image" class="w-full h-full object-cover group-hover:brightness-90 transition duration-300" />
+            <div class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          </div>
+          <div class="hidden md:grid grid-rows-2 gap-2 h-full">
+            <div class="w-full h-full cursor-pointer group relative">
+              <img :src="room.images[1] || room.images[0]" class="w-full h-full object-cover group-hover:brightness-90 transition duration-300" />
+              <div class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            </div>
+            <div class="w-full h-full cursor-pointer group relative">
+              <img :src="room.images[2] || room.images[0]" class="w-full h-full object-cover group-hover:brightness-90 transition duration-300" />
+              <div class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            </div>
+          </div>
+          <div class="hidden md:grid grid-rows-2 gap-2 h-full">
+            <div class="w-full h-full cursor-pointer group relative">
+              <img :src="room.images[3] || room.images[0]" class="w-full h-full object-cover group-hover:brightness-90 transition duration-300" />
+              <div class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            </div>
+            <div class="w-full h-full cursor-pointer group relative">
+              <img :src="room.images[4] || room.images[0]" class="w-full h-full object-cover group-hover:brightness-90 transition duration-300" />
+              <div class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <button class="absolute bottom-4 right-4 bg-(--color-surface) border border-(--color-text) text-(--color-text) px-4 py-1.5 rounded-lg text-sm font-semibold shadow-[0_2px_4px_rgba(0,0,0,0.18)] hover:bg-(--color-surface-soft) flex items-center gap-2 transition cursor-pointer">
+                <Squares2X2Icon class="w-4 h-4" />
+                Show all photos
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Layout Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start pb-12">
           <!-- Left Column -->
-          <div class="lg:col-span-7 space-y-12">
-            <!-- Heading -->
-            <div class="space-y-3">
-              <div
-                class="inline-flex items-center gap-1.5 bg-(--color-primary-soft) border border-(--color-primary)/20 text-(--color-primary) px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest"
-              >
-                <span class="w-1 h-1 bg-(--color-primary) rounded-full"></span>
-                {{ t("roomDetail.signatureRoom") }}
+          <div class="lg:col-span-7 space-y-8">
+            <!-- Host / Basic Specs -->
+            <div class="flex justify-between items-start border-b border-(--color-border) pb-6">
+              <div>
+                <h2 class="text-xl font-semibold text-(--color-text)">Hosted by {{ room.propertyName }}</h2>
+                <p class="text-base text-(--color-muted) font-normal mt-1 flex items-center gap-1.5">
+                  {{ room.guests }} guests &middot; {{ room.floorNumber ? `Floor ${room.floorNumber}` : '1 bedroom' }} &middot; 1 bed &middot; 1 private bath
+                </p>
               </div>
-              <h1
-                class="text-3xl md:text-5xl font-black tracking-tight text-(--color-text) leading-[1.15]"
-              >
-                {{ room.type }}
-              </h1>
-              <div
-                class="flex items-center gap-3 text-xs text-(--color-muted) font-semibold pt-1"
-              >
-                <span>{{ room.propertyName }}</span>
-                <span class="w-1 h-1 bg-(--color-border) rounded-full"></span>
-                <span
-                  class="text-(--color-primary) underline cursor-pointer"
-                  @click="showMapModal = true"
-                >
-                  {{ t("roomDetail.showMap") }}
-                </span>
+              <div class="w-12 h-12 rounded-full bg-(--color-surface-soft) overflow-hidden flex items-center justify-center border border-(--color-border) shrink-0">
+                <span class="text-lg font-bold text-(--color-muted)">{{ room.propertyName ? room.propertyName.charAt(0) : 'H' }}</span>
               </div>
             </div>
 
-            <!-- Spec Cards -->
-            <div class="grid grid-cols-3 gap-4">
-              <div
-                class="bg-(--color-surface) border border-(--color-border) rounded-[24px] p-5 flex flex-col justify-between shadow-xl shadow-(--color-border)/40"
-              >
-                <div
-                  class="w-9 h-9 rounded-xl bg-(--color-surface-soft) flex items-center justify-center border border-(--color-border) mb-4"
-                >
-                  <UsersIcon class="w-4 h-4 text-(--color-primary)" />
-                </div>
+            <!-- Highlights -->
+            <div class="border-b border-(--color-border) pb-6 space-y-5">
+              <div class="flex items-start gap-4">
+                <ShieldCheckIcon class="w-7 h-7 text-(--color-text) shrink-0" />
                 <div>
-                  <p
-                    class="text-[10px] font-black uppercase text-(--color-muted) tracking-wider"
-                  >
-                    {{ t("roomDetail.maxAllowed") }}
-                  </p>
-                  <p class="text-sm font-black text-(--color-text) mt-0.5">
-                    {{ room.guests }} {{ t("roomDetail.guests") }}
-                  </p>
+                  <h3 class="text-base font-semibold text-(--color-text)">Self check-in</h3>
+                  <p class="text-sm text-(--color-muted)">Check yourself in with the lockbox.</p>
                 </div>
               </div>
-              <div
-                class="bg-(--color-surface) border border-(--color-border) rounded-[24px] p-5 flex flex-col justify-between shadow-xl shadow-(--color-border)/40"
-              >
-                <div
-                  class="w-9 h-9 rounded-xl bg-(--color-surface-soft) flex items-center justify-center border border-(--color-border) mb-4"
-                >
-                  <TableCellsIcon class="w-4 h-4 text-(--color-primary)" />
-                </div>
+              <div class="flex items-start gap-4">
+                <UsersIcon class="w-7 h-7 text-(--color-text) shrink-0" />
                 <div>
-                  <p
-                    class="text-[10px] font-black uppercase text-(--color-muted) tracking-wider"
-                  >
-                    {{ t("roomDetail.beddingConfig") }}
-                  </p>
-                </div>
-              </div>
-              <div
-                class="bg-(--color-surface) border border-(--color-border) rounded-[24px] p-5 flex flex-col justify-between shadow-xl shadow-(--color-border)/40"
-              >
-                <div
-                  class="w-9 h-9 rounded-xl bg-(--color-surface-soft) flex items-center justify-center border border-(--color-border) mb-4"
-                >
-                  <Squares2X2Icon class="w-4 h-4 text-(--color-primary)" />
-                </div>
-                <div>
-                  <p
-                    class="text-[10px] font-black uppercase text-(--color-muted) tracking-wider"
-                  >
-                    {{ t("roomDetail.floorDimension") }}
-                  </p>
-                  <p class="text-sm font-black text-(--color-text) mt-0.5">
-                    {{ room.floorNumber ? `Floor ${room.floorNumber}` : "Ground floor" }}
-                  </p>
+                  <h3 class="text-base font-semibold text-(--color-text)">Superhost</h3>
+                  <p class="text-sm text-(--color-muted)">Superhosts are experienced, highly rated hosts.</p>
                 </div>
               </div>
             </div>
 
             <!-- Description -->
-            <div class="space-y-3.5">
-              <h2
-                class="text-xs font-black text-(--color-text) uppercase tracking-widest border-l-2 border-(--color-primary) pl-3"
-              >
-                {{ t("roomDetail.architectureStory") }}
-              </h2>
-              <p
-                class="text-xs text-(--color-muted) font-medium leading-[1.75] tracking-wide text-justify"
-              >
+            <div class="border-b border-(--color-border) pb-6">
+              <div class="mb-5">
+                <img src="https://a0.muscache.com/pictures/aircover/aircover-logo/original/56683a2f-f11b-43f6-8af7-a1a3828c27ad.svg" alt="AirCover" class="h-6 dark:invert" />
+                <p class="text-sm text-(--color-muted) mt-3 leading-relaxed">
+                  Every booking includes free protection from Host cancellations, listing inaccuracies, and other issues like trouble checking in.
+                </p>
+              </div>
+              <p class="text-base text-(--color-text) font-normal leading-relaxed text-left line-clamp-4">
                 {{ room.description }}
               </p>
+              <button class="text-base font-semibold underline mt-4 flex items-center gap-1 hover:text-(--color-muted) cursor-pointer">
+                Show more <span aria-hidden="true">&gt;</span>
+              </button>
             </div>
 
             <!-- Amenities -->
-            <div class="space-y-4">
-              <h2
-                class="text-xs font-black text-(--color-text) uppercase tracking-widest border-l-2 border-(--color-primary) pl-3"
-              >
-                {{ t("roomDetail.includedLuxuries") }}
-              </h2>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div
-                  v-for="amenity in room.amenities"
-                  :key="amenity"
-                  class="flex items-center gap-3.5 p-4 bg-(--color-surface) border border-(--color-border) rounded-2xl shadow-sm hover:border-(--color-primary)/30 hover:shadow-md transition-all duration-300"
-                >
-                  <div
-                    class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs font-bold border border-emerald-100/60"
-                  >
-                    ✓
+            <div class="border-b border-(--color-border) pb-8">
+              <h2 class="text-xl font-semibold text-(--color-text) mb-6">What this place offers</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
+                <div v-for="amenity in room.amenities" :key="amenity" class="flex items-center gap-4">
+                  <div class="w-6 h-6 flex items-center justify-center text-(--color-text)">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14"/></svg>
                   </div>
-                  <span
-                    class="text-xs font-bold text-(--color-text) tracking-wide"
-                    >{{ amenity }}</span
-                  >
+                  <span class="text-base font-normal text-(--color-text)">{{ amenity }}</span>
                 </div>
               </div>
+              <button class="mt-8 border border-(--color-text) text-(--color-text) px-6 py-3 rounded-lg text-base font-semibold hover:bg-(--color-surface-soft) transition bg-(--color-surface) cursor-pointer shadow-sm">
+                Show all amenities
+              </button>
             </div>
 
-            <!-- ── Availability Calendar ──────────────────────────────────── -->
-            <div class="space-y-4">
-              <h2
-                class="text-xs font-black text-(--color-text) uppercase tracking-widest border-l-2 border-(--color-primary) pl-3"
-              >
-                Availability
-              </h2>
-              <p class="text-xs text-(--color-muted) font-medium">
-                Select your check-in and check-out dates below. Unavailable
-                dates are shown in red.
-              </p>
-              <div
-                class="bg-(--color-surface) border border-(--color-border) rounded-[24px] p-6 shadow-sm"
-              >
+            <!-- Availability Calendar -->
+            <div class="pb-8">
+              <h2 class="text-xl font-semibold text-(--color-text) mb-1">Select check-in date</h2>
+              <p class="text-sm text-(--color-muted) mb-5">Add your travel dates for exact pricing</p>
+              <div class="w-full">
                 <AvailabilityCalendar
                   :room-id="room.id"
                   mode="customer"
@@ -520,166 +416,99 @@ onMounted(fetchRoom);
                 />
               </div>
             </div>
-            <!-- ── End Availability Calendar ─────────────────────────────── -->
           </div>
 
           <!-- Right Column: Booking Panel -->
-          <div class="lg:col-span-5 sticky top-24">
-            <div
-              class="bg-(--color-surface) rounded-[32px] border border-(--color-border) shadow-2xl p-6 md:p-8 space-y-6 relative overflow-hidden"
-            >
-              <!-- Top color bar -->
-              <div
-                class="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-(--color-primary) to-blue-500"
-              ></div>
-
-              <!-- Price -->
-              <div
-                class="flex items-baseline justify-between border-b border-(--color-border) pb-5"
-              >
-                <div>
-                  <span
-                    class="text-[9px] uppercase font-black text-(--color-muted) tracking-widest block mb-0.5"
-                  >
-                    {{ t("roomDetail.ratesFrom") }}
-                  </span>
-                  <span
-                    class="text-4xl font-black text-(--color-primary) tracking-tight"
-                    >${{ room.basePrice }}</span
-                  >
-                  <span class="text-(--color-muted) text-xs font-bold">
-                    {{ t("roomDetail.perNight") }}</span
-                  >
+          <div class="lg:col-span-5 relative">
+            <div class="sticky top-24">
+              <div class="bg-(--color-surface) border border-(--color-border) rounded-xl shadow-[0_6px_16px_rgba(0,0,0,0.12)] p-6 mb-6 text-(--color-text)">
+                <!-- Price -->
+                <div class="flex items-baseline gap-1 mb-5">
+                  <span class="text-2xl font-semibold">${{ room.basePrice }}</span>
+                  <span class="text-(--color-muted) text-base font-normal"> night</span>
                 </div>
-                <div class="text-right">
-                  <span
-                    class="text-[9px] text-emerald-600 font-black uppercase tracking-widest bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-md block"
-                  >
-                    {{ t("roomDetail.bestRate") }}
-                  </span>
-                </div>
-              </div>
 
-              <!-- Form -->
-              <form @submit.prevent class="space-y-4">
-                <!-- Dates — auto-filled by calendar selection -->
-                <div
-                  class="grid grid-cols-2 gap-3 bg-(--color-surface-soft) border border-(--color-border) p-3 rounded-2xl"
-                >
-                  <div class="space-y-1">
-                    <label
-                      class="block text-[9px] font-black text-(--color-muted) uppercase tracking-widest"
-                    >
-                      {{ t("roomDetail.arrivalDate") }}
-                    </label>
-                    <input
-                      type="date"
-                      v-model="checkInDate"
-                      class="w-full bg-transparent text-xs text-(--color-text) outline-none font-bold cursor-pointer"
-                    />
+                <!-- Form -->
+                <form @submit.prevent class="space-y-4">
+                  <!-- Dates & Guests Box -->
+                  <div class="border border-(--color-border) rounded-lg overflow-hidden">
+                    <div class="grid grid-cols-2 border-b border-(--color-border)">
+                      <div class="p-2.5 border-r border-(--color-border) focus-within:bg-(--color-surface-soft) relative group">
+                        <label class="block text-[10px] font-bold text-(--color-text) uppercase pl-1 cursor-pointer group-hover:text-(--color-text)">
+                          Check-in
+                        </label>
+                        <input
+                          type="date"
+                          v-model="checkInDate"
+                          class="w-full bg-transparent text-sm text-(--color-text) outline-none cursor-pointer pl-1"
+                        />
+                      </div>
+                      <div class="p-2.5 focus-within:bg-(--color-surface-soft) relative group">
+                        <label class="block text-[10px] font-bold text-(--color-text) uppercase pl-1 cursor-pointer group-hover:text-(--color-text)">
+                          Checkout
+                        </label>
+                        <input
+                          type="date"
+                          v-model="checkOutDate"
+                          class="w-full bg-transparent text-sm text-(--color-text) outline-none cursor-pointer pl-1"
+                        />
+                      </div>
+                    </div>
+                    <div class="p-2.5 focus-within:bg-(--color-surface-soft) relative group">
+                      <label class="block text-[10px] font-bold text-(--color-text) uppercase pl-1 cursor-pointer group-hover:text-(--color-text)">
+                        Guests
+                      </label>
+                      <select
+                        v-model.number="guestCount"
+                        class="w-full text-sm text-(--color-text) bg-transparent outline-none appearance-none cursor-pointer pl-1"
+                      >
+                        <option v-for="n in room.guests || 2" :key="n" :value="n">
+                          {{ n }} {{ n === 1 ? "guest" : "guests" }}
+                        </option>
+                      </select>
+                      <span class="absolute right-3 top-1/2 text-(--color-muted) pointer-events-none text-xs">▼</span>
+                    </div>
                   </div>
-                  <div class="space-y-1 border-l border-(--color-border) pl-3">
-                    <label
-                      class="block text-[9px] font-black text-(--color-muted) uppercase tracking-widest"
-                    >
-                      {{ t("roomDetail.departureDate") }}
-                    </label>
-                    <input
-                      type="date"
-                      v-model="checkOutDate"
-                      class="w-full bg-transparent text-xs text-(--color-text) outline-none font-bold cursor-pointer"
-                    />
-                  </div>
-                </div>
 
-                <!-- Hint when dates are selected via calendar -->
-                <p
-                  v-if="checkInDate && checkOutDate"
-                  class="text-[10px] text-emerald-600 font-bold flex items-center gap-1"
-                >
-                  ✓ Dates selected from availability calendar
-                </p>
-
-                <!-- Guests -->
-                <div class="space-y-1.5">
-                  <label
-                    class="block text-[9px] font-black text-(--color-muted) uppercase tracking-widest"
+                  <!-- CTA Button -->
+                  <button
+                    type="button"
+                    @click="goToBooking"
+                    class="w-full bg-(--color-primary) hover:bg-(--color-primary-strong) text-white font-semibold text-base py-3.5 rounded-lg transition-colors cursor-pointer"
                   >
-                    {{ t("roomDetail.accompaniedGuests") }}
-                  </label>
-                  <div
-                    class="relative bg-(--color-surface) border border-(--color-border) focus-within:border-(--color-primary) rounded-xl px-4 py-3 shadow-sm transition"
-                  >
-                    <select
-                      v-model.number="guestCount"
-                      class="w-full text-xs text-(--color-text) bg-transparent outline-none appearance-none font-bold cursor-pointer"
-                    >
-                      <option v-for="n in room.guests || 2" :key="n" :value="n">
-                        {{ n }} {{ n === 1 ? "Adult" : "Adults" }}
-                      </option>
-                    </select>
-                    <span
-                      class="absolute right-4 top-4 text-(--color-muted) pointer-events-none text-[8px]"
-                      >▼</span
-                    >
-                  </div>
-                </div>
+                    Reserve
+                  </button>
+                  <p class="text-sm text-(--color-muted) text-center mt-2">You won't be charged yet</p>
+                </form>
 
                 <!-- Price Breakdown -->
-                <div
-                  class="bg-(--color-surface-soft) rounded-2xl p-4 space-y-2 text-xs font-semibold text-(--color-muted) border border-(--color-border)"
-                >
-                  <div class="flex justify-between items-center">
-                    <span class="font-medium"
-                      >{{ t("roomDetail.baseStayRate") }} (${{
-                        room.basePrice
-                      }}
-                      × {{ t("roomDetail.nights", { count: stayNights }) }})</span
-                    >
-                    <span class="font-black text-(--color-text)"
-                      >${{ totalPrice.toFixed(2) }}</span
-                    >
+                <div v-if="checkInDate && checkOutDate" class="mt-5 space-y-3 text-base text-(--color-muted)">
+                  <div class="flex justify-between">
+                    <span class="underline">${{ room.basePrice }} × {{ stayNights }} nights</span>
+                    <span>${{ totalPrice.toFixed(2) }}</span>
                   </div>
-                  <div
-                    class="flex justify-between items-center text-[11px] text-(--color-muted) border-b border-(--color-border) pb-2.5"
-                  >
-                    <span>{{ t("roomDetail.resortSurcharges") }}</span>
-                    <span
-                      class="text-emerald-600 font-black bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded"
-                    >
-                      {{ t("roomDetail.included") }}
-                    </span>
+                  <div class="flex justify-between">
+                    <span class="underline">Cleaning fee</span>
+                    <span>$0.00</span>
                   </div>
-                  <div
-                    class="flex justify-between items-center pt-2 text-(--color-text) font-black"
-                  >
-                    <span
-                      class="text-xs text-(--color-text) uppercase tracking-wider"
-                      >{{ t("roomDetail.aggregateTotal") }}</span
-                    >
-                    <span
-                      class="text-xl text-(--color-primary) font-black tracking-tight"
-                      >${{ totalPrice.toFixed(2) }}</span
-                    >
+                  <div class="flex justify-between">
+                    <span class="underline">Srok-Yerng service fee</span>
+                    <span>$0.00</span>
+                  </div>
+                  <div class="border-t border-(--color-border) my-4"></div>
+                  <div class="flex justify-between text-base font-semibold text-(--color-text) pb-1">
+                    <span>Total before taxes</span>
+                    <span>${{ totalPrice.toFixed(2) }}</span>
                   </div>
                 </div>
-
-                <!-- CTA Button -->
-                <button
-                  type="button"
-                  @click="goToBooking"
-                  class="w-full mt-2 bg-(--color-primary) hover:bg-(--color-primary-strong) text-white font-black text-xs py-4 rounded-xl shadow-xl transition-all duration-300 tracking-widest uppercase cursor-pointer"
-                >
-                  {{ t("roomDetail.confirmReservation") }}
-                </button>
-              </form>
-
-              <!-- No Deposit -->
-              <div
-                class="flex items-center justify-center gap-1.5 text-[10px] text-(--color-muted) font-semibold"
-              >
-                <ShieldCheckIcon class="w-3.5 h-3.5 text-emerald-500" />
-                <span>{{ t("roomDetail.noDeposit") }}</span>
+              </div>
+              
+              <!-- Report Listing -->
+              <div class="text-center flex justify-center gap-3 items-center">
+                <span class="text-(--color-muted)">
+                  <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="presentation" focusable="false" style="display: block; height: 16px; width: 16px; fill: currentcolor;"><path d="M28 6H17V4a2 2 0 0 0-2-2H3v28h2V18h10v2a2 2 0 0 0 2 2h11l.115-.006a1 1 0 0 0 .885-.994l.001-14.996L29 6a1 1 0 0 0-1-1zm-1 14h-9.999v-2a2 2 0 0 0-2-2H5V4h9.999v2a2 2 0 0 0 2 2H27z"></path></svg>
+                </span>
+                <span class="text-sm text-(--color-muted) underline cursor-pointer hover:text-(--color-text)">Report this listing</span>
               </div>
             </div>
           </div>
@@ -692,7 +521,7 @@ onMounted(fetchRoom);
       <div class="flex max-h-[80vh] h-full w-full max-w-4xl overflow-hidden rounded-sm bg-(--color-page) text-(--color-text) shadow-2xl border border-(--color-border) animate-scaleUp flex-col" style="border-radius: var(--radius-sm);">
         <div class="flex items-center justify-between p-4 border-b border-(--color-border) bg-(--color-surface)">
           <h3 class="text-lg font-black text-(--color-text)">{{ room?.propertyName || t("roomDetail.showMap") }}</h3>
-          <button type="button" class="p-1.5 rounded-sm hover:bg-gray-100 dark:hover:bg-neutral-800 transition active:scale-95 cursor-pointer" style="border-radius: var(--radius-sm);" @click="showMapModal = false">
+          <button type="button" class="p-1.5 rounded-sm hover:bg-(--color-surface-soft) dark:hover:bg-neutral-800 transition active:scale-95 cursor-pointer" style="border-radius: var(--radius-sm);" @click="showMapModal = false">
             <XMarkIcon class="h-6 w-6 text-(--color-text)" />
           </button>
         </div>

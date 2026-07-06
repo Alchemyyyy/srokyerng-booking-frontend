@@ -825,6 +825,7 @@
       "payment_submitted": "បានដាក់ស្នើការទូទាត់",
       "payment_verified": "បានផ្ទៀងផ្ទាត់ការទូទាត់",
       "payment_rejected": "បានបដិសេធការទូទាត់",
+      "payment_refunded": "បានសងប្រាក់វិញ",
       "property_approved": "បានអនុម័តអចលនទ្រព្យ",
       "property_rejected": "បានបដិសេធអចលនទ្រព្យ",
       "password_changed": "បានប្តូរពាក្យសម្ងាត់",
@@ -2810,8 +2811,8 @@
       "tabs": {
         "all": "ទាំងអស់",
         "pendingVerification": "កំពុងរង់ចាំការផ្ទៀងផ្ទាត់",
-        "verified": "បានផ្ទៀងផ្ទាត់",
-        "rejected": "បានបដិសេធ"
+        "paid": "បានទូទាត់",
+        "failed": "បរាជ័យ"
       },
       "searchPlaceholder": "ស្វែងរកតាមអតិថិជន លេខយោង វិធីសាស្ត្រ...",
       "loading": "កំពុងផ្ទុកការទូទាត់...",

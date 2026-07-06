@@ -37,8 +37,8 @@ const handleLogoError = (methodId) => {
 const STATUS_TABS = computed(() => [
   { key: "all", label: t("admin.paymentMonitorPage.tabs.all") },
   { key: "submitted", label: t("admin.paymentMonitorPage.tabs.pendingVerification") },
-  { key: "verified", label: t("admin.paymentMonitorPage.tabs.verified") },
-  { key: "rejected", label: t("admin.paymentMonitorPage.tabs.rejected") },
+  { key: "paid", label: t("admin.paymentMonitorPage.tabs.paid") },
+  { key: "failed", label: t("admin.paymentMonitorPage.tabs.failed") },
 ]);
 
 // ── Receipt modal state ───────────────────────────────────────────────────────

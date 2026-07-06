@@ -1,6 +1,9 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
 import {
+  ArrowUturnLeftIcon,
+  ArrowUturnRightIcon,
+  FaceSmileIcon,
   ArchiveBoxIcon,
   ArrowLeftIcon,
   BellAlertIcon,
@@ -44,6 +47,7 @@ const notificationToneClass = {
   payment_submitted: "bg-blue-500/10 text-blue-600 border-blue-500/20",
   payment_verified: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
   payment_rejected: "bg-rose-500/10 text-rose-600 border-rose-500/20",
+  payment_refunded: "bg-blue-500/10 text-blue-600 border-blue-500/20",
   property_approved: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
   property_rejected: "bg-rose-500/10 text-rose-600 border-rose-500/20",
   password_changed: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
@@ -277,7 +281,57 @@ const archiveNotification = async (notification) => {
   }
 };
 
+
+const selectedIds = ref([]);
+
+const isAllSelected = computed(() => {
+  return (
+    notificationStore.notifications.length > 0 &&
+    selectedIds.value.length === notificationStore.notifications.length
+  );
+});
+
+const toggleSelectAll = () => {
+  if (isAllSelected.value) {
+    selectedIds.value = [];
+  } else {
+    selectedIds.value = notificationStore.notifications.map((n) => n.id);
+  }
+};
+
+const toggleSelection = (id, event) => {
+  if (event) event.stopPropagation();
+  if (selectedIds.value.includes(id)) {
+    selectedIds.value = selectedIds.value.filter((i) => i !== id);
+  } else {
+    selectedIds.value.push(id);
+  }
+};
+
+const bulkMarkAsRead = async () => {
+  if (selectedIds.value.length === 0) return;
+  try {
+    await Promise.all(selectedIds.value.map(id => notificationStore.markAsRead(id)));
+    selectedIds.value = [];
+    toastStore.success(t("notifications.toast.markedAsRead", "Marked as read"));
+  } catch (err) {
+    toastStore.danger(err.message || t("notifications.errors.update"));
+  }
+};
+
+const bulkArchive = async () => {
+  if (selectedIds.value.length === 0) return;
+  try {
+    await Promise.all(selectedIds.value.map(id => notificationStore.archive(id)));
+    selectedIds.value = [];
+    toastStore.success(t("notifications.toast.archived", "Archived"));
+  } catch (err) {
+    toastStore.danger(err.message || t("notifications.errors.archive"));
+  }
+};
+
 onMounted(async () => {
+
   try {
     await Promise.all([
       notificationStore.fetchNotifications({ status: "all", page: 1 }),
@@ -355,84 +409,108 @@ onMounted(async () => {
           </div>
         </div>
 
-        <!-- Active Notifications List (Airbnb style list layout) -->
-        <div v-else class="divide-y divide-(--color-border)/60">
-          <TransitionGroup name="list" tag="div" class="divide-y divide-(--color-border)/60">
+        <!-- Mailbox Toolbar -->
+        <div v-if="notificationStore.hasNotifications" class="flex items-center justify-between border-b border-(--color-border) pb-3 mb-2 px-2">
+          <div class="flex items-center gap-4">
+            <input 
+              type="checkbox" 
+              class="w-4 h-4 rounded border-(--color-border) text-(--color-primary) focus:ring-(--color-primary) cursor-pointer"
+              :checked="isAllSelected"
+              @change="toggleSelectAll"
+            />
+            <div class="flex items-center gap-1 opacity-0 transition-opacity duration-200" :class="{ 'opacity-100': selectedIds.length > 0 }">
+              <button 
+                type="button" 
+                @click="bulkMarkAsRead"
+                class="p-1.5 rounded hover:bg-(--color-surface-soft) text-(--color-muted) hover:text-(--color-text) transition cursor-pointer" 
+                title="Mark as read"
+              >
+                <CheckIcon class="w-5 h-5" />
+              </button>
+              <button 
+                type="button" 
+                @click="bulkArchive"
+                class="p-1.5 rounded hover:bg-(--color-surface-soft) text-(--color-muted) hover:text-(--color-text) transition cursor-pointer" 
+                title="Archive"
+              >
+                <ArchiveBoxIcon class="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+          <div class="text-xs text-(--color-muted) font-semibold">
+            {{ selectedIds.length > 0 ? `${selectedIds.length} selected` : `${notificationStore.notifications.length} messages` }}
+          </div>
+        </div>
+
+        <!-- Active Notifications List (Email Style) -->
+        <div v-else-if="notificationStore.hasNotifications" class="border-t border-transparent"></div>
+        
+        <div v-if="notificationStore.hasNotifications" class="flex flex-col bg-(--color-surface) border-t border-(--color-border)/50">
+          <TransitionGroup name="list" tag="div">
             <article
               v-for="notification in notificationStore.notifications"
               :key="notification.id"
-              class="relative flex items-start gap-4 py-6 transition duration-200 hover:bg-(--color-surface-soft)/30 px-4 -mx-4 rounded-2xl group cursor-pointer"
+              class="relative flex items-center gap-4 py-3 px-2 border-b border-(--color-border)/50 transition duration-150 group cursor-pointer"
+              :class="notification.is_read ? 'bg-(--color-surface) hover:bg-(--color-surface-soft)/40' : 'bg-(--color-surface-soft)/10 hover:bg-(--color-surface-soft)/60'"
               @click="openDetail(notification)"
             >
-              <!-- Unread Status Dot -->
-              <div class="flex items-center justify-center w-2 h-12">
-                <span
-                  v-if="!notification.is_read"
-                  class="h-2 w-2 rounded-full bg-(--color-primary)"
-                ></span>
+              <!-- Checkbox & Status -->
+              <div class="flex items-center gap-3 w-10 shrink-0" @click.stop>
+                <input 
+                  type="checkbox" 
+                  class="w-4 h-4 rounded border-(--color-border) text-(--color-primary) focus:ring-(--color-primary) cursor-pointer"
+                  :checked="selectedIds.includes(notification.id)"
+                  @change="toggleSelection(notification.id, $event)"
+                />
               </div>
 
-              <!-- Left side Icon Circle -->
-              <div
-                class="flex items-center justify-center w-12 h-12 rounded-full border border-(--color-border)/40 shadow-inner shrink-0"
-                :class="getToneClass(notification.type)"
-              >
-                <component :is="getNotificationIcon(notification.type)" class="w-5.5 h-5.5" />
-              </div>
-
-              <!-- Middle Text Body -->
-              <div class="min-w-0 flex-1">
-                <div class="flex flex-wrap items-baseline gap-2 mb-1">
-                  <span
-                    class="text-[10px] font-black uppercase tracking-wider text-(--color-primary)"
-                  >
-                    {{ getTypeLabel(notification.type) }}
-                  </span>
-                  <span class="text-[10px] font-bold text-(--color-muted)">•</span>
-                  <span class="text-xs font-semibold text-(--color-muted)">
-                    {{ formatDate(notification.created_at) }}
-                  </span>
-                </div>
-
-                <h3 class="text-base font-extrabold text-(--color-text) group-hover:text-(--color-primary) transition-colors duration-200">
-                  {{ notification.title }}
-                </h3>
-                <p class="mt-1 text-sm font-semibold leading-relaxed text-(--color-muted) line-clamp-2">
-                  {{ notification.message }}
-                </p>
-              </div>
-
-              <!-- Right side row Actions -->
-              <div class="flex items-center gap-1 shrink-0 self-center">
-                <button
-                  v-if="!notification.is_read"
-                  type="button"
-                  :disabled="notificationStore.actionLoading"
-                  @click.stop="markAsRead(notification)"
-                  class="h-9 w-9 flex items-center justify-center rounded-full hover:bg-(--color-surface-soft) text-(--color-muted) hover:text-(--color-success) transition duration-200 active:scale-95 cursor-pointer disabled:opacity-50"
-                  title="Mark as read"
-                >
-                  <CheckIcon class="h-5 w-5" />
-                </button>
-
-                <span
-                  v-else
-                  class="h-9 w-9 flex items-center justify-center text-emerald-600/70"
-                  title="Read"
-                >
-                  <EyeIcon class="h-4.5 w-4.5" />
+              <!-- Sender/Type Column -->
+              <div class="w-32 sm:w-48 shrink-0 truncate">
+                <span class="text-sm truncate" :class="notification.is_read ? 'font-medium text-(--color-text)' : 'font-bold text-(--color-text)'">
+                  {{ getTypeLabel(notification.type) }}
                 </span>
+              </div>
 
-                <button
-                  v-if="notificationStore.currentStatus !== 'archived'"
-                  type="button"
-                  :disabled="notificationStore.actionLoading"
-                  @click.stop="archiveNotification(notification)"
-                  class="h-9 w-9 flex items-center justify-center rounded-full hover:bg-(--color-surface-soft) text-(--color-muted) hover:text-(--color-danger) transition duration-200 active:scale-95 cursor-pointer disabled:opacity-50"
-                  title="Archive"
-                >
-                  <ArchiveBoxIcon class="h-4.5 w-4.5" />
-                </button>
+              <!-- Subject & Snippet -->
+              <div class="min-w-0 flex-1 flex items-baseline truncate">
+                <span class="text-sm truncate mr-2" :class="notification.is_read ? 'font-medium text-(--color-text)' : 'font-bold text-(--color-text)'">
+                  {{ notification.title }}
+                </span>
+                <span class="text-sm font-normal text-(--color-muted) truncate hidden sm:inline">
+                  - {{ notification.message }}
+                </span>
+              </div>
+
+              <!-- Timestamp / Hover Actions -->
+              <div class="w-24 shrink-0 flex justify-end items-center text-xs">
+                <!-- Timestamp (default view) -->
+                <span class="text-(--color-muted) font-medium group-hover:hidden whitespace-nowrap" :class="!notification.is_read && 'font-bold text-(--color-text)'">
+                  {{ formatDate(notification.created_at) }}
+                </span>
+                
+                <!-- Hover Actions -->
+                <div class="hidden group-hover:flex items-center gap-2" @click.stop>
+                  <button
+                    v-if="!notification.is_read"
+                    type="button"
+                    :disabled="notificationStore.actionLoading"
+                    @click.stop="markAsRead(notification)"
+                    class="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/10 text-(--color-muted) hover:text-(--color-text) transition cursor-pointer"
+                    title="Mark as read"
+                  >
+                    <CheckIcon class="h-4.5 w-4.5" />
+                  </button>
+                  <button
+                    v-if="notificationStore.currentStatus !== 'archived'"
+                    type="button"
+                    :disabled="notificationStore.actionLoading"
+                    @click.stop="archiveNotification(notification)"
+                    class="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/10 text-(--color-muted) hover:text-(--color-text) transition cursor-pointer"
+                    title="Archive"
+                  >
+                    <ArchiveBoxIcon class="h-4.5 w-4.5" />
+                  </button>
+                </div>
               </div>
             </article>
           </TransitionGroup>
@@ -535,15 +613,3 @@ onMounted(async () => {
     </Teleport>
   </div>
 </template>
-
-<style scoped>
-.list-enter-active,
-.list-leave-active {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.list-enter-from,
-.list-leave-to {
-  opacity: 0;
-  transform: translateY(15px) scale(0.98);
-}
-</style>
