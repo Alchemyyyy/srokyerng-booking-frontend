@@ -10,6 +10,7 @@ import OwnerLoadingState from "@/modules/owner/components/OwnerLoadingState.vue"
 import { reservationApi } from "../api/reservation.api";
 import { useRealtimeRefresh } from "@/shared/composables/useRealtimeRefresh";
 import { socketService } from "@/shared/services/socket.service";
+import { formatPrice } from "@/shared/utils/currency";
 
 const router = useRouter();
 const { t, te } = useI18n({ useScope: "global" });
@@ -57,12 +58,6 @@ const paginatedReservations = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;
   return recentReservations.value.slice(start, start + itemsPerPage);
 });
-
-const formatCurrency = (value) =>
-  new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Number(value || 0));
 
 const formatDate = (value) => {
   if (!value) return "-";
@@ -149,7 +144,7 @@ useRealtimeRefresh({
           {{ t("owner.reservationsPage.totalEarnings") }}
         </span>
         <h3 class="mt-1 text-2xl font-bold">
-          ${{ formatCurrency(stats.totalEarnings) }}
+          {{ formatPrice(stats.totalEarnings) }}
         </h3>
       </div>
 
@@ -201,7 +196,7 @@ useRealtimeRefresh({
         @row-click="goToReservationDetail"
       >
         <template #cell-amount="{ value }">
-          <span class="font-semibold">${{ formatCurrency(value) }}</span>
+          <span class="font-semibold">{{ formatPrice(value) }}</span>
         </template>
 
         <template #cell-status="{ value }">

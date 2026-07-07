@@ -329,9 +329,22 @@ const handleEditSubmit = async () => {
 };
 
 // ── Deactivate / Activate ─────────────────────────────────────────────────────
+// 'deactivate' | 'activate' | null — which status-change confirmation is pending
+const statusConfirmAction = ref(null);
+
+const requestDeactivate = () => {
+  statusConfirmAction.value = "deactivate";
+};
+
+const requestActivate = () => {
+  statusConfirmAction.value = "activate";
+};
+
+const closeStatusConfirm = () => {
+  statusConfirmAction.value = null;
+};
+
 const handleDeactivate = async () => {
-  if (!confirm(t("owner.propertyDetailPage.confirm.deactivateMessage")))
-    return;
   togglingStatus.value = true;
   try {
     await propertyApi.deactivateProperty(route.params.id);
@@ -344,7 +357,6 @@ const handleDeactivate = async () => {
 };
 
 const handleActivate = async () => {
-  if (!confirm(t("owner.propertyDetailPage.confirm.activateMessage"))) return;
   togglingStatus.value = true;
   try {
     await propertyApi.activateProperty(route.params.id);
@@ -353,6 +365,16 @@ const handleActivate = async () => {
     console.error("Failed to activate:", err);
   } finally {
     togglingStatus.value = false;
+  }
+};
+
+const confirmStatusChange = async () => {
+  const action = statusConfirmAction.value;
+  closeStatusConfirm();
+  if (action === "deactivate") {
+    await handleDeactivate();
+  } else if (action === "activate") {
+    await handleActivate();
   }
 };
 
@@ -812,7 +834,7 @@ onMounted(async () => {
             <!-- Deactivate — only if approved -->
             <button
               v-if="statusName === 'approved'"
-              @click="handleDeactivate"
+              @click="requestDeactivate"
               :disabled="togglingStatus"
               class="flex items-center justify-between w-full px-4 py-3 rounded-xl border border-amber-200 bg-amber-50 text-amber-700 text-sm font-semibold hover:bg-amber-100 disabled:opacity-50 transition"
             >
@@ -827,7 +849,7 @@ onMounted(async () => {
             <!-- Activate — only if suspended -->
             <button
               v-if="statusName === 'suspended'"
-              @click="handleActivate"
+              @click="requestActivate"
               :disabled="togglingStatus"
               class="flex items-center justify-between w-full px-4 py-3 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 text-sm font-semibold hover:bg-emerald-100 disabled:opacity-50 transition"
             >
@@ -1068,6 +1090,38 @@ onMounted(async () => {
         </AppButton>
       </div>
     </div>
+  </AppModal>
+
+  <!-- ── Deactivate / Activate confirmation modal ────────────────────────────── -->
+  <AppModal
+    :open="!!statusConfirmAction"
+    :title="
+      statusConfirmAction === 'deactivate'
+        ? t('owner.propertyDetailPage.confirm.deactivateTitle')
+        : t('owner.propertyDetailPage.confirm.activateTitle')
+    "
+    panel-class="rounded-2xl border border-(--color-border) shadow-2xl bg-(--color-surface) max-w-sm"
+    @close="closeStatusConfirm"
+  >
+    <p class="text-sm leading-relaxed text-(--color-muted) py-2">
+      {{
+        statusConfirmAction === "deactivate"
+          ? t("owner.propertyDetailPage.confirm.deactivateMessage")
+          : t("owner.propertyDetailPage.confirm.activateMessage")
+      }}
+    </p>
+    <template #footer>
+      <AppButton type="button" variant="secondary" @click="closeStatusConfirm">
+        {{ t("common.cancel") }}
+      </AppButton>
+      <AppButton
+        type="button"
+        :variant="statusConfirmAction === 'deactivate' ? 'danger' : 'primary'"
+        @click="confirmStatusChange"
+      >
+        {{ t("common.confirm") }}
+      </AppButton>
+    </template>
   </AppModal>
 
   <div

@@ -121,14 +121,17 @@ const emptyStateContent = computed(() => {
 
 const approveModalOpen = ref(false);
 const currentApproveId = ref(null);
+const approveErrorMessage = ref('');
 
 const rejectModalOpen = ref(false);
 const currentRejectId = ref(null);
 const rejectReason = ref('');
 const rejectReasonError = ref(false);
+const rejectErrorMessage = ref('');
 
 const pendingModalOpen = ref(false);
 const currentPendingId = ref(null);
+const pendingErrorMessage = ref('');
 
 onMounted(async () => {
     await approvalStore.fetchProperties();
@@ -152,26 +155,31 @@ const goToDetail = (id) => {
 const handleDropdownStatusSelection = ({ id, status }) => {
     if (status === 'approve') {
         currentApproveId.value = id;
+        approveErrorMessage.value = '';
         approveModalOpen.value = true;
     } else if (status === 'reject') {
         currentRejectId.value = id;
         rejectReason.value = '';
         rejectReasonError.value = false;
+        rejectErrorMessage.value = '';
         rejectModalOpen.value = true;
     } else if (status === 'pending') {
         currentPendingId.value = id;
+        pendingErrorMessage.value = '';
         pendingModalOpen.value = true;
     }
 };
 
 const openApproveModal = (id) => {
     currentApproveId.value = id;
+    approveErrorMessage.value = '';
     approveModalOpen.value = true;
 };
 
 const submitApprove = async () => {
     if (!currentApproveId.value) return;
 
+    approveErrorMessage.value = '';
     const success = await approvalStore.handleApprove(currentApproveId.value);
     if (success) {
         approveModalOpen.value = false;
@@ -182,10 +190,7 @@ const submitApprove = async () => {
         });
         await approvalStore.fetchProperties(); // Refresh ទិន្នន័យថ្មីពី Server ចូល Store
     } else {
-        toastStore.danger(t('admin.propertyApprovalPage.toasts.approveFailMessage'), {
-            title: t('admin.propertyApprovalPage.toasts.approveFailTitle'),
-            timeout: 4000
-        });
+        approveErrorMessage.value = approvalStore.actionError || t('admin.propertyApprovalPage.toasts.approveFailMessage');
     }
 };
 
@@ -193,6 +198,7 @@ const openRejectModal = (id) => {
     currentRejectId.value = id;
     rejectReason.value = '';
     rejectReasonError.value = false;
+    rejectErrorMessage.value = '';
     rejectModalOpen.value = true;
 };
 
@@ -202,6 +208,7 @@ const submitReject = async () => {
         return;
     }
     rejectReasonError.value = false;
+    rejectErrorMessage.value = '';
 
     const success = await approvalStore.handleReject(currentRejectId.value, rejectReason.value);
     if (success) {
@@ -213,16 +220,14 @@ const submitReject = async () => {
         });
         await approvalStore.fetchProperties(); // Refresh ទិន្នន័យថ្មីពី Server ចូល Store
     } else {
-        toastStore.danger(t('admin.propertyApprovalPage.toasts.rejectFailMessage'), {
-            title: t('admin.propertyApprovalPage.toasts.rejectFailTitle'),
-            timeout: 4000
-        });
+        rejectErrorMessage.value = approvalStore.actionError || t('admin.propertyApprovalPage.toasts.rejectFailMessage');
     }
 };
 
 const submitSetPending = async () => {
     if (!currentPendingId.value) return;
 
+    pendingErrorMessage.value = '';
     const success = await approvalStore.handleSetPending(currentPendingId.value);
     if (success) {
         pendingModalOpen.value = false;
@@ -233,10 +238,7 @@ const submitSetPending = async () => {
         });
         await approvalStore.fetchProperties(); // Refresh ទិន្នន័យថ្មីពី Server ចូល Store
     } else {
-        toastStore.danger(t('admin.propertyApprovalPage.toasts.pendingFailMessage'), {
-            title: t('admin.propertyApprovalPage.toasts.pendingFailTitle'),
-            timeout: 4000
-        });
+        pendingErrorMessage.value = approvalStore.actionError || t('admin.propertyApprovalPage.toasts.pendingFailMessage');
     }
 };
 </script>
@@ -289,7 +291,7 @@ const submitSetPending = async () => {
             </div>
         </template>
 
-        <AppModal :open="approveModalOpen" @close="approveModalOpen = false">
+        <AppModal :open="approveModalOpen" :title="t('admin.propertyApprovalPage.modal.approve.title')" @close="approveModalOpen = false">
             <div class="modal-surface-content text-center">
                 <div class="icon-wrapper confirmation-success">
                     <CheckCircleIcon class="modal-status-icon text-success" />
@@ -298,6 +300,7 @@ const submitSetPending = async () => {
                     <h3 class="modal-title">{{ t('admin.propertyApprovalPage.modal.approve.title') }}</h3>
                     <p class="modal-desc mt-2">{{ t('admin.propertyApprovalPage.modal.approve.description') }}</p>
                 </div>
+                <span v-if="approveErrorMessage" class="validation-msg block mt-1">{{ approveErrorMessage }}</span>
                 <div class="modal-footer-actions justify-center mt-4">
                     <button @click="approveModalOpen = false" class="btn-cancel">{{ t('admin.propertyApprovalPage.modal.cancel') }}</button>
                     <button @click="submitApprove" :disabled="approvalStore.processing"
@@ -309,7 +312,7 @@ const submitSetPending = async () => {
             </div>
         </AppModal>
 
-        <AppModal :open="rejectModalOpen" @close="rejectModalOpen = false">
+        <AppModal :open="rejectModalOpen" :title="t('admin.propertyApprovalPage.modal.reject.title')" @close="rejectModalOpen = false">
             <div class="modal-surface-content">
                 <div class="flex items-center gap-2">
                     <XCircleIcon class="modal-status-icon text-danger small-icon" />
@@ -322,6 +325,7 @@ const submitSetPending = async () => {
                     <textarea v-model="rejectReason" rows="4" class="modal-textarea"
                         :class="{ 'input-error': rejectReasonError }" :placeholder="t('admin.propertyApprovalPage.modal.reject.placeholder')"></textarea>
                     <span v-if="rejectReasonError" class="validation-msg">{{ t('admin.propertyApprovalPage.modal.reject.validationError') }}</span>
+                    <span v-else-if="rejectErrorMessage" class="validation-msg">{{ rejectErrorMessage }}</span>
                 </div>
 
                 <div class="modal-footer-actions mt-4">
@@ -335,7 +339,7 @@ const submitSetPending = async () => {
             </div>
         </AppModal>
 
-        <AppModal :open="pendingModalOpen" @close="pendingModalOpen = false">
+        <AppModal :open="pendingModalOpen" :title="t('admin.propertyApprovalPage.modal.pending.title')" @close="pendingModalOpen = false">
             <div class="modal-surface-content text-center">
                 <div class="icon-wrapper" style="background-color: var(--color-warning-soft);">
                     <QuestionMarkCircleIcon class="modal-status-icon" style="color: var(--color-warning);" />
@@ -344,6 +348,7 @@ const submitSetPending = async () => {
                     <h3 class="modal-title">{{ t('admin.propertyApprovalPage.modal.pending.title') }}</h3>
                     <p class="modal-desc mt-2">{{ t('admin.propertyApprovalPage.modal.pending.description') }}</p>
                 </div>
+                <span v-if="pendingErrorMessage" class="validation-msg block mt-1">{{ pendingErrorMessage }}</span>
                 <div class="modal-footer-actions justify-center mt-4">
                     <button @click="pendingModalOpen = false" class="btn-cancel">{{ t('admin.propertyApprovalPage.modal.cancel') }}</button>
                     <button @click="submitSetPending" :disabled="approvalStore.processing"

@@ -6,6 +6,7 @@ import { reservationApi } from "../api/reservation.api";
 import LoadingSpinner from "@/shared/components/LoadingSpinner.vue";
 import OwnerLoadingState from "@/modules/owner/components/OwnerLoadingState.vue";
 import { ArrowLeftIcon } from "@heroicons/vue/24/outline";
+import { formatPrice } from "@/shared/utils/currency";
 
 const route = useRoute();
 const router = useRouter();
@@ -16,12 +17,6 @@ const statusLabel = (value) => safeT(`common.status.${String(value || "").toLowe
 const loading = ref(true);
 const error = ref("");
 const reservation = ref(null);
-
-const formatCurrency = (value) =>
-  new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Number(value || 0));
 
 const formatDate = (value) => {
   if (!value) return "-";
@@ -180,7 +175,7 @@ onMounted(fetchReservation);
             </div>
             <div>
               <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.reservationDetail.pricePerNight") }}</span>
-              <span class="font-medium text-(--color-text) text-xs">${{ formatCurrency(reservation.price_per_night) }}</span>
+              <span class="font-medium text-(--color-text) text-xs">{{ formatPrice(reservation.price_per_night) }}</span>
             </div>
           </div>
         </div>
@@ -211,7 +206,7 @@ onMounted(fetchReservation);
 
         <div>
           <span class="text-[10px] text-(--color-muted) uppercase font-bold block">{{ t("owner.reservationDetail.totalAmount") }}</span>
-          <span class="font-black text-(--color-success) text-2xl">${{ formatCurrency(reservation.total_amount) }}</span>
+          <span class="font-black text-(--color-success) text-2xl">{{ formatPrice(reservation.total_amount) }}</span>
         </div>
 
         <div>

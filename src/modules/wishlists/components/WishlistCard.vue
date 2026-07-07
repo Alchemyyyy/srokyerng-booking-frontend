@@ -4,6 +4,7 @@ import { useI18n } from "vue-i18n";
 import placeholer from "@/assets/images/properties/placeholder.png";
 import { HeartIcon as HeartSolidIcon, StarIcon } from "@heroicons/vue/24/solid";
 import { resolveAssetUrl } from "@/shared/utils/assetUrl";
+import { formatPrice } from "@/shared/utils/currency";
 
 const { t } = useI18n({ useScope: "global" });
 
@@ -75,7 +76,7 @@ const location = computed(() => {
 
       <div class="mt-1 flex items-baseline gap-1">
         <span class="text-[15px] font-bold text-(--color-text)">
-          ${{ item.price_per_night ?? 0 }}
+          {{ formatPrice(item.price_per_night ?? 0) }}
         </span>
         <span class="text-sm font-normal text-(--color-muted)">{{ t("components.wishlistCard.night") }}</span>
       </div>

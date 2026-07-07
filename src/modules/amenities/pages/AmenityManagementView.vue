@@ -147,11 +147,8 @@
           >
             <!-- TOP ROW -->
             <div class="property-top">
-              <!-- Image with upload overlay -->
-              <div
-                class="property-img-wrap"
-                @click="triggerImageUpload(property.id)"
-              >
+              <!-- Image (read-only — managed from the property's own edit page) -->
+              <div class="property-img-wrap">
                 <img
                   v-if="property.image"
                   :src="property.image"
@@ -167,31 +164,6 @@
                 >
                   {{ getPropertyInitials(property.name) }}
                 </div>
-                <div class="img-upload-overlay">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="white"
-                    stroke-width="2.2"
-                  >
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="17 8 12 3 7 8" />
-                    <line x1="12" y1="3" x2="12" y2="15" />
-                  </svg>
-                </div>
-                <input
-                  :ref="
-                    (el) => {
-                      if (el) imageInputRefs[property.id] = el;
-                    }
-                  "
-                  type="file"
-                  accept="image/*"
-                  class="hidden-input"
-                  @change="onImageSelected($event, property)"
-                />
               </div>
 
               <div class="property-info">
@@ -448,38 +420,6 @@ const getPropertyInitials = (name = "") =>
     .map((w) => w[0]?.toUpperCase() || "")
     .join("");
 
-// ─── Image upload ────────────────────────────────────────
-const imageInputRefs = {};
-
-const triggerImageUpload = (propertyId) => {
-  imageInputRefs[propertyId]?.click();
-};
-
-const onImageSelected = async (event, property) => {
-  const file = event.target.files?.[0];
-  if (!file) return;
-
-  const localUrl = URL.createObjectURL(file);
-  property.image = localUrl;
-
-  try {
-    const formData = new FormData();
-    formData.append("image", file);
-    formData.append("_method", "PATCH");
-
-    const response = await http.post(`/properties/${property.id}`, formData);
-
-    const savedUrl = response?.image || response?.data?.image;
-    if (savedUrl) property.image = savedUrl;
-  } catch (err) {
-    console.error("Image upload failed:", err);
-    error.value = "Failed to upload image. Please try again.";
-    property.image = null;
-  }
-
-  event.target.value = "";
-};
-
 // ─── Chip colors & SVGs per amenity ─────────────────────
 const chipMeta = {
   "Wi-Fi": {
@@ -612,7 +552,7 @@ const saveModalAmenities = async () => {
   } catch (err) {
     error.value =
       err?.response?.data?.message ||
-      "Failed to save amenities. Check your backend connection.";
+      t("amenityManagement.errors.saveAmenities");
   } finally {
     editModal.value.saving = false;
   }
@@ -625,7 +565,7 @@ const fetchAmenities = async () => {
   try {
     amenities.value = await getAllAmenities();
   } catch (err) {
-    error.value = err?.response?.data?.message || "Failed to load amenities.";
+    error.value = err?.response?.data?.message || t("amenityManagement.errors.loadAmenities");
   } finally {
     loading.value = false;
   }
@@ -647,7 +587,7 @@ const loadCatalogueAmenitiesForProperty = async (id) => {
     originalSelected.value = [...ids];
   } catch (err) {
     error.value =
-      err?.response?.data?.message || "Failed to load this property's amenities.";
+      err?.response?.data?.message || t("amenityManagement.errors.loadPropertyAmenities");
   } finally {
     loadingCatalogueAmenities.value = false;
   }
@@ -678,7 +618,7 @@ const saveAmenities = async () => {
       saveSuccess.value = false;
     }, 2000);
   } catch (err) {
-    error.value = err?.response?.data?.message || "Failed to save amenities.";
+    error.value = err?.response?.data?.message || t("amenityManagement.errors.saveAmenities");
   } finally {
     saving.value = false;
   }
@@ -736,7 +676,7 @@ const fetchMyProperties = async () => {
     );
   } catch (err) {
     console.error("fetchMyProperties error:", err);
-    error.value = "Failed to load your properties.";
+    error.value = t("amenityManagement.errors.loadProperties");
   } finally {
     loadingProperties.value = false;
   }
@@ -988,7 +928,6 @@ watch(
   border-radius: 14px;
   overflow: hidden;
   flex-shrink: 0;
-  cursor: pointer;
 }
 
 .property-image {
@@ -1007,26 +946,6 @@ watch(
   font-size: 22px;
   font-weight: 800;
   border-radius: 14px;
-}
-
-.img-upload-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  border-radius: 14px;
-}
-
-.property-img-wrap:hover .img-upload-overlay {
-  opacity: 1;
-}
-
-.hidden-input {
-  display: none;
 }
 
 .property-info {

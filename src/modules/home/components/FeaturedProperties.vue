@@ -10,6 +10,7 @@ import { useWishlistStore } from "@/modules/wishlists/store/wishlistStore";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useToastStore } from "@/shared/store/toastStore";
 import placeholderImage from "@/assets/images/properties/placeholder.png";
+import { formatPrice } from "@/shared/utils/currency";
 
 const props = defineProps({
   selectedCategory: { type: String, default: "all" },
@@ -236,7 +237,7 @@ onMounted(() => {
 
               <!-- Price -->
               <div class="mt-2 flex items-baseline gap-1">
-                <span class="text-sm font-black text-(--color-text)">${{ property.price }}</span>
+                <span class="text-sm font-black text-(--color-text)">{{ formatPrice(property.price) }}</span>
                 <span class="text-xs font-normal text-(--color-muted)">/ {{ t("home.featured.perNight") }}</span>
               </div>
             </div>

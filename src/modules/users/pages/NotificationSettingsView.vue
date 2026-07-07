@@ -5,6 +5,8 @@ import { useI18n } from "vue-i18n";
 import {
   ChevronRightIcon,
   InformationCircleIcon,
+  BellIcon,
+  ShieldCheckIcon,
 } from "@heroicons/vue/24/outline";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useToastStore } from "@/shared/store/toastStore";
@@ -71,7 +73,7 @@ onMounted(() => {
 <template>
   <div
     class="min-h-screen bg-(--color-page) text-(--color-text) flex flex-col font-sans transition-all duration-300"
-    :class="isDashboardRole ? (isSidebarOpen ? 'ml-64' : 'ml-20') : ''"
+    :class="authStore.user?.role === 'admin' ? (isSidebarOpen ? 'ml-64' : 'ml-20') : ''"
   >
     <PublicNavbar v-if="!isDashboardRole" />
 
@@ -94,98 +96,82 @@ onMounted(() => {
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 mt-12">
         <!-- Main Form Settings (Left Side) -->
-        <div class="lg:col-span-2 space-y-8 divide-y divide-(--color-border)">
+        <div class="lg:col-span-2 space-y-6">
           
-          <!-- Section 1: Bookings and Stays -->
-          <div class="py-6 first:pt-0">
-            <h2 class="text-lg font-extrabold text-(--color-text)">{{ t("settingsPage.notifications.sections.stays.title") }}</h2>
-            <p class="text-xs text-(--color-muted) mt-1 font-medium leading-relaxed">
-              {{ t("settingsPage.notifications.sections.stays.description") }}
-            </p>
-
-            <div class="mt-6 space-y-4">
-              <!-- Email Toggle -->
-              <div class="flex items-center justify-between py-2">
-                <div>
-                  <h4 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.notifications.sections.stays.emailTitle") }}</h4>
-                  <p class="text-xs text-(--color-muted) font-medium mt-0.5">{{ t("settingsPage.notifications.sections.stays.emailDescription") }}</p>
-                </div>
-                <label class="relative inline-flex items-center cursor-pointer select-none">
-                  <input type="checkbox" v-model="preferences.booking_email" @change="handleSave" class="sr-only peer" />
-                  <div class="w-11 h-6 bg-zinc-300 dark:bg-zinc-700 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-(--color-primary)"></div>
-                </label>
+          <!-- Card 1: Bookings and Stays -->
+          <div class="rounded-2xl border border-(--color-border) bg-(--color-surface) p-6 shadow-xs hover:border-(--color-primary)/30 transition duration-300">
+            <div class="flex items-start gap-4">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-(--color-primary-soft) text-(--color-primary)">
+                <BellIcon class="h-5 w-5" />
               </div>
+              <div class="flex-grow">
+                <h2 class="text-base font-extrabold text-(--color-text)">{{ t("settingsPage.notifications.sections.stays.title") }}</h2>
+                <p class="text-xs text-(--color-muted) mt-1 font-semibold leading-relaxed">
+                  {{ t("settingsPage.notifications.sections.stays.description") }}
+                </p>
 
-              <!-- Push Toggle -->
-              <div class="flex items-center justify-between py-2">
-                <div>
-                  <h4 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.notifications.sections.stays.pushTitle") }}</h4>
-                  <p class="text-xs text-(--color-muted) font-medium mt-0.5">{{ t("settingsPage.notifications.sections.stays.pushDescription") }}</p>
+                <div class="mt-6 space-y-5 divide-y divide-(--color-border)/60">
+                  <!-- Email Toggle -->
+                  <div class="flex items-center justify-between pt-4 first:pt-0">
+                    <div class="pr-4">
+                      <h4 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.notifications.sections.stays.emailTitle") }}</h4>
+                      <p class="text-xs text-(--color-muted) font-medium mt-0.5">{{ t("settingsPage.notifications.sections.stays.emailDescription") }}</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer select-none shrink-0">
+                      <input type="checkbox" v-model="preferences.booking_email" @change="handleSave" class="sr-only peer" />
+                      <div class="w-11 h-6 bg-zinc-300 dark:bg-zinc-700 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-(--color-primary)"></div>
+                    </label>
+                  </div>
+
+                  <!-- Push Toggle -->
+                  <div class="flex items-center justify-between pt-4">
+                    <div class="pr-4">
+                      <h4 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.notifications.sections.stays.pushTitle") }}</h4>
+                      <p class="text-xs text-(--color-muted) font-medium mt-0.5">{{ t("settingsPage.notifications.sections.stays.pushDescription") }}</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer select-none shrink-0">
+                      <input type="checkbox" v-model="preferences.booking_push" @change="handleSave" class="sr-only peer" />
+                      <div class="w-11 h-6 bg-zinc-300 dark:bg-zinc-700 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-(--color-primary)"></div>
+                    </label>
+                  </div>
                 </div>
-                <label class="relative inline-flex items-center cursor-pointer select-none">
-                  <input type="checkbox" v-model="preferences.booking_push" @change="handleSave" class="sr-only peer" />
-                  <div class="w-11 h-6 bg-zinc-300 dark:bg-zinc-700 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-(--color-primary)"></div>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <!-- Section 2: Messages -->
-          <div class="py-6">
-            <h2 class="text-lg font-extrabold text-(--color-text)">{{ t("settingsPage.notifications.sections.messages.title") }}</h2>
-            <p class="text-xs text-(--color-muted) mt-1 font-medium leading-relaxed">
-              {{ t("settingsPage.notifications.sections.messages.description") }}
-            </p>
-
-            <div class="mt-6 space-y-4">
-              <!-- Email Toggle -->
-              <div class="flex items-center justify-between py-2">
-                <div>
-                  <h4 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.notifications.sections.messages.emailTitle") }}</h4>
-                  <p class="text-xs text-(--color-muted) font-medium mt-0.5">{{ t("settingsPage.notifications.sections.messages.emailDescription") }}</p>
-                </div>
-                <label class="relative inline-flex items-center cursor-pointer select-none">
-                  <input type="checkbox" v-model="preferences.messages_email" @change="handleSave" class="sr-only peer" />
-                  <div class="w-11 h-6 bg-zinc-300 dark:bg-zinc-700 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-(--color-primary)"></div>
-                </label>
-              </div>
-
-              <!-- Push Toggle -->
-              <div class="flex items-center justify-between py-2">
-                <div>
-                  <h4 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.notifications.sections.messages.pushTitle") }}</h4>
-                  <p class="text-xs text-(--color-muted) font-medium mt-0.5">{{ t("settingsPage.notifications.sections.messages.pushDescription") }}</p>
-                </div>
-                <label class="relative inline-flex items-center cursor-pointer select-none">
-                  <input type="checkbox" v-model="preferences.messages_push" @change="handleSave" class="sr-only peer" />
-                  <div class="w-11 h-6 bg-zinc-300 dark:bg-zinc-700 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-(--color-primary)"></div>
-                </label>
               </div>
             </div>
           </div>
 
-          <!-- Section 3: Account security -->
-          <div class="py-6">
-            <h2 class="text-lg font-extrabold text-(--color-text)">{{ t("settingsPage.notifications.sections.security.title") }}</h2>
-            <p class="text-xs text-(--color-muted) mt-1 font-medium leading-relaxed">
-              {{ t("settingsPage.notifications.sections.security.description") }}
-            </p>
-
-            <div class="mt-6 space-y-4">
-              <!-- Email Toggle -->
-              <div class="flex items-center justify-between py-2">
-                <div>
-                  <h4 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.notifications.sections.security.emailTitle") }}</h4>
-                  <p class="text-xs text-(--color-muted) font-medium mt-0.5">{{ t("settingsPage.notifications.sections.security.emailDescription") }}</p>
-                </div>
-                <label class="relative inline-flex items-center cursor-pointer select-none">
-                  <input type="checkbox" v-model="preferences.security_email" disabled class="sr-only peer" />
-                  <div class="w-11 h-6 bg-zinc-200 dark:bg-zinc-800 rounded-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-zinc-400 after:rounded-full after:h-5 after:w-5 peer-checked:bg-(--color-primary) opacity-50 cursor-not-allowed"></div>
-                </label>
+          <!-- Card 2: Account security -->
+          <div class="rounded-2xl border border-(--color-border) bg-(--color-surface) p-6 shadow-xs hover:border-(--color-primary)/30 transition duration-300">
+            <div class="flex items-start gap-4">
+              <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-(--color-primary-soft) text-(--color-primary)">
+                <ShieldCheckIcon class="h-5 w-5" />
               </div>
-              <p class="text-[10px] text-(--color-muted) font-semibold mt-1">
-                {{ t("settingsPage.notifications.sections.security.complianceNote") }}
-              </p>
+              <div class="flex-grow">
+                <h2 class="text-base font-extrabold text-(--color-text)">{{ t("settingsPage.notifications.sections.security.title") }}</h2>
+                <p class="text-xs text-(--color-muted) mt-1 font-semibold leading-relaxed">
+                  {{ t("settingsPage.notifications.sections.security.description") }}
+                </p>
+
+                <div class="mt-6 space-y-5">
+                  <!-- Email Toggle -->
+                  <div class="flex items-center justify-between">
+                    <div class="pr-4">
+                      <h4 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.notifications.sections.security.emailTitle") }}</h4>
+                      <p class="text-xs text-(--color-muted) font-medium mt-0.5">{{ t("settingsPage.notifications.sections.security.emailDescription") }}</p>
+                    </div>
+                    <label class="relative inline-flex items-center select-none shrink-0 cursor-not-allowed">
+                      <input type="checkbox" v-model="preferences.security_email" disabled class="sr-only peer" />
+                      <div class="w-11 h-6 bg-zinc-200 dark:bg-zinc-800 rounded-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-zinc-400 after:rounded-full after:h-5 after:w-5 peer-checked:bg-(--color-primary) opacity-50"></div>
+                    </label>
+                  </div>
+                  
+                  <div class="rounded-xl border border-(--color-border) bg-(--color-surface-soft) p-4 flex gap-2.5 items-start mt-2">
+                    <InformationCircleIcon class="h-4.5 w-4.5 text-(--color-muted) shrink-0 mt-0.5" />
+                    <p class="text-[11px] text-(--color-muted) font-bold leading-relaxed">
+                      {{ t("settingsPage.notifications.sections.security.complianceNote") }}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

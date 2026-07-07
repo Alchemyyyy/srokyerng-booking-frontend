@@ -2,7 +2,16 @@
 import { computed, reactive, ref } from "vue";
 import { useRouter, RouterLink } from "vue-router";
 import { useI18n } from "vue-i18n";
-import { ChevronRightIcon } from "@heroicons/vue/24/outline";
+import {
+  ChevronRightIcon,
+  UserIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+  CalendarIcon,
+  MapPinIcon,
+  PencilIcon,
+  UserCircleIcon,
+} from "@heroicons/vue/24/outline";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useToastStore } from "@/shared/store/toastStore";
 import { useSidebar } from "@/shared/composables/useSidebar";
@@ -98,7 +107,7 @@ const formatLabel = (field) => {
 <template>
   <div
     class="min-h-screen bg-(--color-page) text-(--color-text) flex flex-col font-sans transition-all duration-300"
-    :class="isDashboardRole ? (isSidebarOpen ? 'ml-64' : 'ml-20') : ''"
+    :class="authStore.user?.role === 'admin' ? (isSidebarOpen ? 'ml-64' : 'ml-20') : ''"
   >
     <PublicNavbar v-if="!isDashboardRole" />
 
@@ -120,286 +129,321 @@ const formatLabel = (field) => {
       </h1>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 mt-12">
-        <!-- Edit Form List (Left Panel) -->
-        <div class="lg:col-span-2 divide-y divide-(--color-border)">
+        <!-- Edit Form Cards (Left Panel) -->
+        <div class="lg:col-span-2 space-y-6">
           
-          <!-- Legal Name Row -->
-          <div class="py-6">
+          <!-- Legal Name Card -->
+          <div class="rounded-2xl border border-(--color-border) bg-(--color-surface) p-6 shadow-xs hover:border-(--color-primary)/30 transition duration-300">
             <div class="flex justify-between items-start">
-              <div class="flex-1 pr-4">
-                <h3 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.personalInfo.fields.fullName.label") }}</h3>
+              <div class="flex items-start gap-4 flex-1 pr-4">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-(--color-primary-soft) text-(--color-primary)">
+                  <UserIcon class="h-5 w-5" />
+                </div>
+                <div class="flex-1">
+                  <h3 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.personalInfo.fields.fullName.label") }}</h3>
 
-                <!-- Display Mode -->
-                <p v-if="activeEditField !== 'full_name'" class="text-sm text-(--color-muted) mt-1 font-medium">
-                  {{ user?.full_name || t("settingsPage.personalInfo.notProvided") }}
-                </p>
-
-                <!-- Edit Mode -->
-                <div v-else class="mt-4 space-y-4 max-w-md animate-fadeIn">
-                  <p class="text-xs text-(--color-muted) leading-relaxed">
-                    {{ t("settingsPage.personalInfo.fields.fullName.hint") }}
+                  <!-- Display Mode -->
+                  <p v-if="activeEditField !== 'full_name'" class="text-sm text-(--color-muted) mt-1.5 font-semibold">
+                    {{ user?.full_name || t("settingsPage.personalInfo.notProvided") }}
                   </p>
-                  <div>
-                    <input
-                      v-model="forms.full_name"
-                      type="text"
-                      class="w-full rounded-xl border border-(--color-border) px-4 py-3 text-sm bg-(--color-page) text-(--color-text) focus:outline-hidden focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary) font-semibold"
-                      :placeholder="t('settingsPage.personalInfo.fields.fullName.placeholder')"
-                    />
-                  </div>
-                  <div class="flex gap-3">
-                    <button
-                      type="button"
-                      @click="handleSave('full_name')"
-                      :disabled="loadingField === 'full_name' || !forms.full_name.trim()"
-                      class="px-5 py-2.5 rounded-xl bg-(--color-text) text-(--color-page) font-bold text-xs hover:opacity-90 active:scale-95 transition disabled:opacity-50 cursor-pointer"
-                    >
-                      <span v-if="loadingField === 'full_name'">{{ t("settingsPage.personalInfo.saving") }}</span>
-                      <span v-else>{{ t("settingsPage.personalInfo.save") }}</span>
-                    </button>
-                    <button
-                      type="button"
-                      @click="toggleEdit('full_name')"
-                      class="px-5 py-2.5 rounded-xl border border-(--color-border) text-(--color-text) font-bold text-xs hover:bg-(--color-surface-soft) active:scale-95 transition cursor-pointer"
-                    >
-                      {{ t("settingsPage.personalInfo.cancel") }}
-                    </button>
+
+                  <!-- Edit Mode -->
+                  <div v-else class="mt-4 space-y-4 max-w-md animate-fadeIn">
+                    <p class="text-xs text-(--color-muted) leading-relaxed font-medium">
+                      {{ t("settingsPage.personalInfo.fields.fullName.hint") }}
+                    </p>
+                    <div>
+                      <input
+                        v-model="forms.full_name"
+                        type="text"
+                        class="w-full rounded-xl border border-(--color-border) px-4 py-3 text-sm bg-(--color-page) text-(--color-text) focus:outline-hidden focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary) font-semibold"
+                        :placeholder="t('settingsPage.personalInfo.fields.fullName.placeholder')"
+                      />
+                    </div>
+                    <div class="flex gap-3">
+                      <button
+                        type="button"
+                        @click="handleSave('full_name')"
+                        :disabled="loadingField === 'full_name' || !forms.full_name.trim()"
+                        class="px-5 py-2.5 rounded-xl bg-(--color-text) text-(--color-page) font-bold text-xs hover:opacity-90 active:scale-95 transition disabled:opacity-50 cursor-pointer"
+                      >
+                        <span v-if="loadingField === 'full_name'">{{ t("settingsPage.personalInfo.saving") }}</span>
+                        <span v-else>{{ t("settingsPage.personalInfo.save") }}</span>
+                      </button>
+                      <button
+                        type="button"
+                        @click="toggleEdit('full_name')"
+                        class="px-5 py-2.5 rounded-xl border border-(--color-border) text-(--color-text) font-bold text-xs hover:bg-(--color-surface-soft) active:scale-95 transition cursor-pointer"
+                      >
+                        {{ t("settingsPage.personalInfo.cancel") }}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
               <button
                 type="button"
                 @click="toggleEdit('full_name')"
-                class="text-sm font-extrabold text-(--color-text) underline hover:text-(--color-primary) cursor-pointer"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-(--color-border) hover:bg-(--color-surface-soft) text-xs font-bold text-(--color-text) transition active:scale-95 cursor-pointer"
               >
-                {{ activeEditField === 'full_name' ? t("settingsPage.personalInfo.cancel") : t("settingsPage.personalInfo.edit") }}
+                <PencilIcon class="h-3.5 w-3.5 text-(--color-muted)" />
+                <span>{{ activeEditField === 'full_name' ? t("settingsPage.personalInfo.cancel") : t("settingsPage.personalInfo.edit") }}</span>
               </button>
             </div>
           </div>
 
-          <!-- Email Address Row (Read Only Badge for Security) -->
-          <div class="py-6">
+          <!-- Email Address Card (Read Only Badge for Security) -->
+          <div class="rounded-2xl border border-(--color-border) bg-(--color-surface) p-6 shadow-xs hover:border-(--color-primary)/30 transition duration-300">
             <div class="flex justify-between items-start">
-              <div class="flex-1 pr-4">
-                <h3 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.personalInfo.fields.email.label") }}</h3>
-                <p class="text-sm text-(--color-muted) mt-1 font-medium">
-                  {{ user?.email }}
-                </p>
-                <p class="text-[10px] text-(--color-muted) font-semibold mt-1">
-                  {{ t("settingsPage.personalInfo.fields.email.hint") }}
-                </p>
+              <div class="flex items-start gap-4 flex-1 pr-4">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-(--color-primary-soft) text-(--color-primary)">
+                  <EnvelopeIcon class="h-5 w-5" />
+                </div>
+                <div class="flex-1">
+                  <h3 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.personalInfo.fields.email.label") }}</h3>
+                  <p class="text-sm text-(--color-muted) mt-1.5 font-semibold">
+                    {{ user?.email }}
+                  </p>
+                  <p class="text-[10px] text-(--color-muted) font-semibold mt-1">
+                    {{ t("settingsPage.personalInfo.fields.email.hint") }}
+                  </p>
+                </div>
               </div>
-              <span class="text-xs font-bold text-(--color-success) bg-(--color-success-soft) px-2.5 py-1 rounded-full border border-(--color-success)/10">
+              <span class="text-xs font-bold text-(--color-success) bg-(--color-success-soft) px-3 py-1.5 rounded-lg border border-(--color-success)/10 select-none">
                 {{ statusLabel("verified") }}
               </span>
             </div>
           </div>
 
-          <!-- Phone Number Row -->
-          <div class="py-6">
+          <!-- Phone Number Card -->
+          <div class="rounded-2xl border border-(--color-border) bg-(--color-surface) p-6 shadow-xs hover:border-(--color-primary)/30 transition duration-300">
             <div class="flex justify-between items-start">
-              <div class="flex-1 pr-4">
-                <h3 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.personalInfo.fields.phone.label") }}</h3>
+              <div class="flex items-start gap-4 flex-1 pr-4">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-(--color-primary-soft) text-(--color-primary)">
+                  <PhoneIcon class="h-5 w-5" />
+                </div>
+                <div class="flex-1">
+                  <h3 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.personalInfo.fields.phone.label") }}</h3>
 
-                <!-- Display Mode -->
-                <p v-if="activeEditField !== 'phone'" class="text-sm text-(--color-muted) mt-1 font-medium">
-                  {{ user?.phone || t("settingsPage.personalInfo.notProvided") }}
-                </p>
-
-                <!-- Edit Mode -->
-                <div v-else class="mt-4 space-y-4 max-w-md animate-fadeIn">
-                  <p class="text-xs text-(--color-muted) leading-relaxed">
-                    {{ t("settingsPage.personalInfo.fields.phone.hint") }}
+                  <!-- Display Mode -->
+                  <p v-if="activeEditField !== 'phone'" class="text-sm text-(--color-muted) mt-1.5 font-semibold">
+                    {{ user?.phone || t("settingsPage.personalInfo.notProvided") }}
                   </p>
-                  <div>
-                    <input
-                      v-model="forms.phone"
-                      type="text"
-                      class="w-full rounded-xl border border-(--color-border) px-4 py-3 text-sm bg-(--color-page) text-(--color-text) focus:outline-hidden focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary) font-semibold"
-                      :placeholder="t('settingsPage.personalInfo.fields.phone.placeholder')"
-                    />
-                  </div>
-                  <div class="flex gap-3">
-                    <button
-                      type="button"
-                      @click="handleSave('phone')"
-                      :disabled="loadingField === 'phone'"
-                      class="px-5 py-2.5 rounded-xl bg-(--color-text) text-(--color-page) font-bold text-xs hover:opacity-90 active:scale-95 transition disabled:opacity-50 cursor-pointer"
-                    >
-                      <span v-if="loadingField === 'phone'">{{ t("settingsPage.personalInfo.saving") }}</span>
-                      <span v-else>{{ t("settingsPage.personalInfo.save") }}</span>
-                    </button>
-                    <button
-                      type="button"
-                      @click="toggleEdit('phone')"
-                      class="px-5 py-2.5 rounded-xl border border-(--color-border) text-(--color-text) font-bold text-xs hover:bg-(--color-surface-soft) active:scale-95 transition cursor-pointer"
-                    >
-                      {{ t("settingsPage.personalInfo.cancel") }}
-                    </button>
+
+                  <!-- Edit Mode -->
+                  <div v-else class="mt-4 space-y-4 max-w-md animate-fadeIn">
+                    <p class="text-xs text-(--color-muted) leading-relaxed font-medium">
+                      {{ t("settingsPage.personalInfo.fields.phone.hint") }}
+                    </p>
+                    <div>
+                      <input
+                        v-model="forms.phone"
+                        type="text"
+                        class="w-full rounded-xl border border-(--color-border) px-4 py-3 text-sm bg-(--color-page) text-(--color-text) focus:outline-hidden focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary) font-semibold"
+                        :placeholder="t('settingsPage.personalInfo.fields.phone.placeholder')"
+                      />
+                    </div>
+                    <div class="flex gap-3">
+                      <button
+                        type="button"
+                        @click="handleSave('phone')"
+                        :disabled="loadingField === 'phone'"
+                        class="px-5 py-2.5 rounded-xl bg-(--color-text) text-(--color-page) font-bold text-xs hover:opacity-90 active:scale-95 transition disabled:opacity-50 cursor-pointer"
+                      >
+                        <span v-if="loadingField === 'phone'">{{ t("settingsPage.personalInfo.saving") }}</span>
+                        <span v-else>{{ t("settingsPage.personalInfo.save") }}</span>
+                      </button>
+                      <button
+                        type="button"
+                        @click="toggleEdit('phone')"
+                        class="px-5 py-2.5 rounded-xl border border-(--color-border) text-(--color-text) font-bold text-xs hover:bg-(--color-surface-soft) active:scale-95 transition cursor-pointer"
+                      >
+                        {{ t("settingsPage.personalInfo.cancel") }}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
               <button
                 type="button"
                 @click="toggleEdit('phone')"
-                class="text-sm font-extrabold text-(--color-text) underline hover:text-(--color-primary) cursor-pointer"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-(--color-border) hover:bg-(--color-surface-soft) text-xs font-bold text-(--color-text) transition active:scale-95 cursor-pointer"
               >
-                {{ activeEditField === 'phone' ? t("settingsPage.personalInfo.cancel") : t("settingsPage.personalInfo.edit") }}
+                <PencilIcon class="h-3.5 w-3.5 text-(--color-muted)" />
+                <span>{{ activeEditField === 'phone' ? t("settingsPage.personalInfo.cancel") : t("settingsPage.personalInfo.edit") }}</span>
               </button>
             </div>
           </div>
 
-          <!-- Gender Row -->
-          <div class="py-6">
+          <!-- Gender Card -->
+          <div class="rounded-2xl border border-(--color-border) bg-(--color-surface) p-6 shadow-xs hover:border-(--color-primary)/30 transition duration-300">
             <div class="flex justify-between items-start">
-              <div class="flex-1 pr-4">
-                <h3 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.personalInfo.fields.gender.label") }}</h3>
+              <div class="flex items-start gap-4 flex-1 pr-4">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-(--color-primary-soft) text-(--color-primary)">
+                  <UserCircleIcon class="h-5 w-5" />
+                </div>
+                <div class="flex-1">
+                  <h3 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.personalInfo.fields.gender.label") }}</h3>
 
-                <!-- Display Mode -->
-                <p v-if="activeEditField !== 'gender'" class="text-sm text-(--color-muted) mt-1 font-medium capitalize">
-                  {{ user?.gender || t("settingsPage.personalInfo.notProvided") }}
-                </p>
+                  <!-- Display Mode -->
+                  <p v-if="activeEditField !== 'gender'" class="text-sm text-(--color-muted) mt-1.5 font-semibold capitalize">
+                    {{ user?.gender || t("settingsPage.personalInfo.notProvided") }}
+                  </p>
 
-                <!-- Edit Mode -->
-                <div v-else class="mt-4 space-y-4 max-w-md animate-fadeIn">
-                  <div>
-                    <select
-                      v-model="forms.gender"
-                      class="w-full rounded-xl border border-(--color-border) px-4 py-3 text-sm bg-(--color-page) text-(--color-text) focus:outline-hidden focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary) font-semibold"
-                    >
-                      <option value="">{{ t("settingsPage.personalInfo.fields.gender.options.select") }}</option>
-                      <option value="male">{{ t("settingsPage.personalInfo.fields.gender.options.male") }}</option>
-                      <option value="female">{{ t("settingsPage.personalInfo.fields.gender.options.female") }}</option>
-                      <option value="other">{{ t("settingsPage.personalInfo.fields.gender.options.other") }}</option>
-                    </select>
-                  </div>
-                  <div class="flex gap-3">
-                    <button
-                      type="button"
-                      @click="handleSave('gender')"
-                      :disabled="loadingField === 'gender'"
-                      class="px-5 py-2.5 rounded-xl bg-(--color-text) text-(--color-page) font-bold text-xs hover:opacity-90 active:scale-95 transition disabled:opacity-50 cursor-pointer"
-                    >
-                      <span v-if="loadingField === 'gender'">{{ t("settingsPage.personalInfo.saving") }}</span>
-                      <span v-else>{{ t("settingsPage.personalInfo.save") }}</span>
-                    </button>
-                    <button
-                      type="button"
-                      @click="toggleEdit('gender')"
-                      class="px-5 py-2.5 rounded-xl border border-(--color-border) text-(--color-text) font-bold text-xs hover:bg-(--color-surface-soft) active:scale-95 transition cursor-pointer"
-                    >
-                      {{ t("settingsPage.personalInfo.cancel") }}
-                    </button>
+                  <!-- Edit Mode -->
+                  <div v-else class="mt-4 space-y-4 max-w-md animate-fadeIn">
+                    <div>
+                      <select
+                        v-model="forms.gender"
+                        class="w-full rounded-xl border border-(--color-border) px-4 py-3 text-sm bg-(--color-page) text-(--color-text) focus:outline-hidden focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary) font-semibold cursor-pointer"
+                      >
+                        <option value="">{{ t("settingsPage.personalInfo.fields.gender.options.select") }}</option>
+                        <option value="male">{{ t("settingsPage.personalInfo.fields.gender.options.male") }}</option>
+                        <option value="female">{{ t("settingsPage.personalInfo.fields.gender.options.female") }}</option>
+                        <option value="other">{{ t("settingsPage.personalInfo.fields.gender.options.other") }}</option>
+                      </select>
+                    </div>
+                    <div class="flex gap-3">
+                      <button
+                        type="button"
+                        @click="handleSave('gender')"
+                        :disabled="loadingField === 'gender'"
+                        class="px-5 py-2.5 rounded-xl bg-(--color-text) text-(--color-page) font-bold text-xs hover:opacity-90 active:scale-95 transition disabled:opacity-50 cursor-pointer"
+                      >
+                        <span v-if="loadingField === 'gender'">{{ t("settingsPage.personalInfo.saving") }}</span>
+                        <span v-else>{{ t("settingsPage.personalInfo.save") }}</span>
+                      </button>
+                      <button
+                        type="button"
+                        @click="toggleEdit('gender')"
+                        class="px-5 py-2.5 rounded-xl border border-(--color-border) text-(--color-text) font-bold text-xs hover:bg-(--color-surface-soft) active:scale-95 transition cursor-pointer"
+                      >
+                        {{ t("settingsPage.personalInfo.cancel") }}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
               <button
                 type="button"
                 @click="toggleEdit('gender')"
-                class="text-sm font-extrabold text-(--color-text) underline hover:text-(--color-primary) cursor-pointer"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-(--color-border) hover:bg-(--color-surface-soft) text-xs font-bold text-(--color-text) transition active:scale-95 cursor-pointer"
               >
-                {{ activeEditField === 'gender' ? t("settingsPage.personalInfo.cancel") : t("settingsPage.personalInfo.edit") }}
+                <PencilIcon class="h-3.5 w-3.5 text-(--color-muted)" />
+                <span>{{ activeEditField === 'gender' ? t("settingsPage.personalInfo.cancel") : t("settingsPage.personalInfo.edit") }}</span>
               </button>
             </div>
           </div>
 
-          <!-- Date of Birth Row -->
-          <div class="py-6">
+          <!-- Date of Birth Card -->
+          <div class="rounded-2xl border border-(--color-border) bg-(--color-surface) p-6 shadow-xs hover:border-(--color-primary)/30 transition duration-300">
             <div class="flex justify-between items-start">
-              <div class="flex-1 pr-4">
-                <h3 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.personalInfo.fields.dateOfBirth.label") }}</h3>
+              <div class="flex items-start gap-4 flex-1 pr-4">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-(--color-primary-soft) text-(--color-primary)">
+                  <CalendarIcon class="h-5 w-5" />
+                </div>
+                <div class="flex-1">
+                  <h3 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.personalInfo.fields.dateOfBirth.label") }}</h3>
 
-                <!-- Display Mode -->
-                <p v-if="activeEditField !== 'date_of_birth'" class="text-sm text-(--color-muted) mt-1 font-medium">
-                  {{ user?.date_of_birth ? new Date(user.date_of_birth).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : t("settingsPage.personalInfo.notProvided") }}
-                </p>
+                  <!-- Display Mode -->
+                  <p v-if="activeEditField !== 'date_of_birth'" class="text-sm text-(--color-muted) mt-1.5 font-semibold">
+                    {{ user?.date_of_birth ? new Date(user.date_of_birth).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : t("settingsPage.personalInfo.notProvided") }}
+                  </p>
 
-                <!-- Edit Mode -->
-                <div v-else class="mt-4 space-y-4 max-w-md animate-fadeIn">
-                  <div>
-                    <input
-                      v-model="forms.date_of_birth"
-                      type="date"
-                      class="w-full rounded-xl border border-(--color-border) px-4 py-3 text-sm bg-(--color-page) text-(--color-text) focus:outline-hidden focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary) font-semibold"
-                    />
-                  </div>
-                  <div class="flex gap-3">
-                    <button
-                      type="button"
-                      @click="handleSave('date_of_birth')"
-                      :disabled="loadingField === 'date_of_birth'"
-                      class="px-5 py-2.5 rounded-xl bg-(--color-text) text-(--color-page) font-bold text-xs hover:opacity-90 active:scale-95 transition disabled:opacity-50 cursor-pointer"
-                    >
-                      <span v-if="loadingField === 'date_of_birth'">{{ t("settingsPage.personalInfo.saving") }}</span>
-                      <span v-else>{{ t("settingsPage.personalInfo.save") }}</span>
-                    </button>
-                    <button
-                      type="button"
-                      @click="toggleEdit('date_of_birth')"
-                      class="px-5 py-2.5 rounded-xl border border-(--color-border) text-(--color-text) font-bold text-xs hover:bg-(--color-surface-soft) active:scale-95 transition cursor-pointer"
-                    >
-                      {{ t("settingsPage.personalInfo.cancel") }}
-                    </button>
+                  <!-- Edit Mode -->
+                  <div v-else class="mt-4 space-y-4 max-w-md animate-fadeIn">
+                    <div>
+                      <input
+                        v-model="forms.date_of_birth"
+                        type="date"
+                        class="w-full rounded-xl border border-(--color-border) px-4 py-3 text-sm bg-(--color-page) text-(--color-text) focus:outline-hidden focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary) font-semibold cursor-pointer"
+                      />
+                    </div>
+                    <div class="flex gap-3">
+                      <button
+                        type="button"
+                        @click="handleSave('date_of_birth')"
+                        :disabled="loadingField === 'date_of_birth'"
+                        class="px-5 py-2.5 rounded-xl bg-(--color-text) text-(--color-page) font-bold text-xs hover:opacity-90 active:scale-95 transition disabled:opacity-50 cursor-pointer"
+                      >
+                        <span v-if="loadingField === 'date_of_birth'">{{ t("settingsPage.personalInfo.saving") }}</span>
+                        <span v-else>{{ t("settingsPage.personalInfo.save") }}</span>
+                      </button>
+                      <button
+                        type="button"
+                        @click="toggleEdit('date_of_birth')"
+                        class="px-5 py-2.5 rounded-xl border border-(--color-border) text-(--color-text) font-bold text-xs hover:bg-(--color-surface-soft) active:scale-95 transition cursor-pointer"
+                      >
+                        {{ t("settingsPage.personalInfo.cancel") }}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
               <button
                 type="button"
                 @click="toggleEdit('date_of_birth')"
-                class="text-sm font-extrabold text-(--color-text) underline hover:text-(--color-primary) cursor-pointer"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-(--color-border) hover:bg-(--color-surface-soft) text-xs font-bold text-(--color-text) transition active:scale-95 cursor-pointer"
               >
-                {{ activeEditField === 'date_of_birth' ? t("settingsPage.personalInfo.cancel") : t("settingsPage.personalInfo.edit") }}
+                <PencilIcon class="h-3.5 w-3.5 text-(--color-muted)" />
+                <span>{{ activeEditField === 'date_of_birth' ? t("settingsPage.personalInfo.cancel") : t("settingsPage.personalInfo.edit") }}</span>
               </button>
             </div>
           </div>
 
-          <!-- Address Row -->
-          <div class="py-6">
+          <!-- Address Card -->
+          <div class="rounded-2xl border border-(--color-border) bg-(--color-surface) p-6 shadow-xs hover:border-(--color-primary)/30 transition duration-300">
             <div class="flex justify-between items-start">
-              <div class="flex-1 pr-4">
-                <h3 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.personalInfo.fields.address.label") }}</h3>
+              <div class="flex items-start gap-4 flex-1 pr-4">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-(--color-primary-soft) text-(--color-primary)">
+                  <MapPinIcon class="h-5 w-5" />
+                </div>
+                <div class="flex-1">
+                  <h3 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.personalInfo.fields.address.label") }}</h3>
 
-                <!-- Display Mode -->
-                <p v-if="activeEditField !== 'address'" class="text-sm text-(--color-muted) mt-1 font-medium">
-                  {{ user?.address || t("settingsPage.personalInfo.notProvided") }}
-                </p>
+                  <!-- Display Mode -->
+                  <p v-if="activeEditField !== 'address'" class="text-sm text-(--color-muted) mt-1.5 font-semibold">
+                    {{ user?.address || t("settingsPage.personalInfo.notProvided") }}
+                  </p>
 
-                <!-- Edit Mode -->
-                <div v-else class="mt-4 space-y-4 max-w-md animate-fadeIn">
-                  <div>
-                    <textarea
-                      v-model="forms.address"
-                      rows="2"
-                      class="w-full rounded-xl border border-(--color-border) px-4 py-3 text-sm bg-(--color-page) text-(--color-text) focus:outline-hidden focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary) font-semibold resize-none"
-                      :placeholder="t('settingsPage.personalInfo.fields.address.placeholder')"
-                    ></textarea>
-                  </div>
-                  <div class="flex gap-3">
-                    <button
-                      type="button"
-                      @click="handleSave('address')"
-                      :disabled="loadingField === 'address'"
-                      class="px-5 py-2.5 rounded-xl bg-(--color-text) text-(--color-page) font-bold text-xs hover:opacity-90 active:scale-95 transition disabled:opacity-50 cursor-pointer"
-                    >
-                      <span v-if="loadingField === 'address'">{{ t("settingsPage.personalInfo.saving") }}</span>
-                      <span v-else>{{ t("settingsPage.personalInfo.save") }}</span>
-                    </button>
-                    <button
-                      type="button"
-                      @click="toggleEdit('address')"
-                      class="px-5 py-2.5 rounded-xl border border-(--color-border) text-(--color-text) font-bold text-xs hover:bg-(--color-surface-soft) active:scale-95 transition cursor-pointer"
-                    >
-                      {{ t("settingsPage.personalInfo.cancel") }}
-                    </button>
+                  <!-- Edit Mode -->
+                  <div v-else class="mt-4 space-y-4 max-w-md animate-fadeIn">
+                    <div>
+                      <textarea
+                        v-model="forms.address"
+                        rows="2"
+                        class="w-full rounded-xl border border-(--color-border) px-4 py-3 text-sm bg-(--color-page) text-(--color-text) focus:outline-hidden focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary) font-semibold resize-none"
+                        :placeholder="t('settingsPage.personalInfo.fields.address.placeholder')"
+                      ></textarea>
+                    </div>
+                    <div class="flex gap-3">
+                      <button
+                        type="button"
+                        @click="handleSave('address')"
+                        :disabled="loadingField === 'address'"
+                        class="px-5 py-2.5 rounded-xl bg-(--color-text) text-(--color-page) font-bold text-xs hover:opacity-90 active:scale-95 transition disabled:opacity-50 cursor-pointer"
+                      >
+                        <span v-if="loadingField === 'address'">{{ t("settingsPage.personalInfo.saving") }}</span>
+                        <span v-else>{{ t("settingsPage.personalInfo.save") }}</span>
+                      </button>
+                      <button
+                        type="button"
+                        @click="toggleEdit('address')"
+                        class="px-5 py-2.5 rounded-xl border border-(--color-border) text-(--color-text) font-bold text-xs hover:bg-(--color-surface-soft) active:scale-95 transition cursor-pointer"
+                      >
+                        {{ t("settingsPage.personalInfo.cancel") }}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
               <button
                 type="button"
                 @click="toggleEdit('address')"
-                class="text-sm font-extrabold text-(--color-text) underline hover:text-(--color-primary) cursor-pointer"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-(--color-border) hover:bg-(--color-surface-soft) text-xs font-bold text-(--color-text) transition active:scale-95 cursor-pointer"
               >
-                {{ activeEditField === 'address' ? t("settingsPage.personalInfo.cancel") : t("settingsPage.personalInfo.edit") }}
+                <PencilIcon class="h-3.5 w-3.5 text-(--color-muted)" />
+                <span>{{ activeEditField === 'address' ? t("settingsPage.personalInfo.cancel") : t("settingsPage.personalInfo.edit") }}</span>
               </button>
             </div>
           </div>

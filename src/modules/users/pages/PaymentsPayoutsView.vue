@@ -14,6 +14,7 @@ import { getBankName } from "@/modules/payments/utils/bankBranding";
 import PublicNavbar from "@/shared/components/PublicNavbar.vue";
 import PublicFooter from "@/shared/components/PublicFooter.vue";
 import http from "@/app/api/http";
+import { formatPrice } from "@/shared/utils/currency";
 
 const { t, te } = useI18n({ useScope: "global" });
 const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
@@ -93,7 +94,7 @@ const getStatusBadgeClass = (status) => {
 <template>
   <div
     class="min-h-screen bg-(--color-page) text-(--color-text) flex flex-col font-sans transition-all duration-300"
-    :class="isDashboardRole ? (isSidebarOpen ? 'ml-64' : 'ml-20') : ''"
+    :class="authStore.user?.role === 'admin' ? (isSidebarOpen ? 'ml-64' : 'ml-20') : ''"
   >
     <PublicNavbar v-if="!isDashboardRole" />
 
@@ -184,7 +185,7 @@ const getStatusBadgeClass = (status) => {
                         <p class="text-[10px] text-(--color-muted) mt-0.5">{{ tx.roomType }}</p>
                       </td>
                       <td class="px-6 py-4 text-(--color-muted)">{{ tx.date }}</td>
-                      <td class="px-6 py-4 font-bold text-(--color-text)">${{ Number(tx.amount).toFixed(2) }}</td>
+                      <td class="px-6 py-4 font-bold text-(--color-text)">{{ formatPrice(tx.amount) }}</td>
                       <td class="px-6 py-4">
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider" :class="getStatusBadgeClass(tx.status)">
                           {{ statusLabel(tx.status) }}

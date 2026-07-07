@@ -23,7 +23,7 @@ export const useAdminAnalyticsStore = defineStore('adminAnalytics', () => {
     // STATES
     const loading = ref(false);
     const error = ref(null);
-    const selectedHistory = ref('12m');
+    const selectedHistory = ref('24m');
     const stats = ref({ properties: 0, pendingProperties: 0, bookings: 0, users: 0, owners: 0, customers: 0, paymentsTotal: 0, revenue: 0, reviewsCount: 0, reviewsAverage: 0 });
     const propertiesPipeline = ref([]);
     const rawSystemActivities = ref([]); // រក្សាទុកតម្លៃ Array ដើមពី Service
@@ -31,11 +31,7 @@ export const useAdminAnalyticsStore = defineStore('adminAnalytics', () => {
     const quickLinks = ref([]);
     const overviewTimeline = ref({ labels: [], properties: [], users: [] });
 
-    const historyOptions = ref([
-        { value: '6m', label: '6m' },
-        { value: '12m', label: '12m' },
-        { value: '24m', label: '24m' },
-    ]);
+    const historyOptions = ref([]);
 
     // GETTERS
     // 💡 ដំណោះស្រាយពិសេស៖ បំប្លែងឈ្មោះ Icon ទៅជា Component Object តាមអ្វីដែល ActivityFeed ត្រូវការ

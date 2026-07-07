@@ -125,6 +125,12 @@ const getActionRoute = (notification) => {
   const meta = notification.data || {};
 
   if (role === "customer") {
+    if (notification.type === "message_received" && meta.conversation_id) {
+      return { name: "customer.chat-detail", params: { conversationId: meta.conversation_id } };
+    }
+    if (notification.type === "message_received") {
+      return { name: "customer.chats" };
+    }
     if (notification.type?.startsWith("reservation") && meta.reservation_id) {
       return { name: "customer.booking-detail", params: { id: meta.reservation_id } };
     }
@@ -135,6 +141,12 @@ const getActionRoute = (notification) => {
       return { name: "customer.booking-history" };
     }
   } else if (role === "owner") {
+    if (notification.type === "message_received" && meta.conversation_id) {
+      return { name: "owner.chat-detail", params: { conversationId: meta.conversation_id } };
+    }
+    if (notification.type === "message_received") {
+      return { name: "owner.chats" };
+    }
     if (notification.type?.startsWith("reservation")) {
       return { name: "owner.reservations" };
     }
@@ -156,6 +168,7 @@ const getActionRoute = (notification) => {
 
 const getActionLabel = (notification) => {
   if (!notification) return t("notifications.actions.viewDetails");
+  if (notification.type === "message_received") return t("notifications.actions.viewChat");
   if (notification.type?.startsWith("reservation")) return t("notifications.actions.viewBooking");
   if (notification.type?.startsWith("payment")) return t("notifications.actions.viewPayment");
   if (notification.type?.startsWith("property")) return t("notifications.actions.viewProperty");

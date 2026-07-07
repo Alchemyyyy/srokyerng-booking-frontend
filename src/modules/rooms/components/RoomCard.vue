@@ -11,6 +11,7 @@ import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoomStore } from "../store/roomStore";
 import { useRouter } from "vue-router";
+import { formatPrice } from "@/shared/utils/currency";
 
 const roomStore = useRoomStore();
 const router = useRouter();
@@ -158,7 +159,7 @@ onMounted(async () => {
           <BanknotesIcon class="h-4 w-4 opacity-70" aria-hidden="true" />
           <span class="font-medium">{{ t("components.roomCard.baseRate") }}</span>
           <strong class="text-(--color-text) font-bold text-sm">
-            ${{ room.basePrice }}
+            {{ formatPrice(room.basePrice) }}
             <span class="text-xs font-medium text-(--color-muted)"
               >{{ t("components.roomCard.perNight") }}</span
             >

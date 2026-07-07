@@ -13,7 +13,9 @@ import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useChatStore } from "../store/chatStore";
 import { socketService } from "@/shared/services/socket.service";
+import { useToastStore } from "@/shared/store/toastStore";
 import UserAvatar from "@/shared/components/UserAvatar.vue";
+import AppModal from "@/shared/components/AppModal.vue";
 
 const { t, te } = useI18n({ useScope: "global" });
 const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
@@ -32,6 +34,7 @@ const props = defineProps({
 const router = useRouter();
 const authStore = useAuthStore();
 const chatStore = useChatStore();
+const toastStore = useToastStore();
 
 const messageText = ref("");
 const selectedFile = ref(null);
@@ -161,13 +164,29 @@ const handleSend = async () => {
   }
 };
 
-const handleUnsend = async (messageId) => {
-  if (confirm(t("chats.pane.confirm.unsend"))) {
-    try {
-      await chatStore.unsendMessage(props.conversationId, messageId);
-    } catch (err) {
-      console.error("Failed to unsend message", err);
-    }
+// ── Unsend Confirmation Modal ──
+const showUnsendModal = ref(false);
+const pendingUnsendMessageId = ref(null);
+
+const handleUnsend = (messageId) => {
+  pendingUnsendMessageId.value = messageId;
+  showUnsendModal.value = true;
+};
+
+const closeUnsendModal = () => {
+  showUnsendModal.value = false;
+  pendingUnsendMessageId.value = null;
+};
+
+const confirmUnsend = async () => {
+  const messageId = pendingUnsendMessageId.value;
+  closeUnsendModal();
+  if (!messageId) return;
+
+  try {
+    await chatStore.unsendMessage(props.conversationId, messageId);
+  } catch (err) {
+    console.error("Failed to unsend message", err);
   }
 };
 
@@ -233,7 +252,7 @@ const startRecording = async () => {
     mediaRecorder.value.start();
   } catch (err) {
     console.error("Microphone access denied or error:", err);
-    alert(t("chats.pane.errors.micDenied"));
+    toastStore.danger(t("chats.pane.errors.micDenied"));
   }
 };
 
@@ -526,5 +545,33 @@ const goBack = () => {
         </button>
       </div>
     </footer>
+
+    <!-- Unsend Message Confirmation Modal -->
+    <AppModal
+      :open="showUnsendModal"
+      :title="t('chats.pane.actions.unsendTitle')"
+      panel-class="rounded-2xl border border-(--color-border) shadow-2xl bg-(--color-surface) max-w-sm"
+      @close="closeUnsendModal"
+    >
+      <p class="text-sm leading-relaxed text-(--color-muted) py-2">
+        {{ t("chats.pane.confirm.unsend") }}
+      </p>
+      <template #footer>
+        <button
+          type="button"
+          @click="closeUnsendModal"
+          class="px-4 py-2 rounded-xl border border-(--color-border) text-(--color-text) text-xs font-bold hover:bg-(--color-surface-soft) active:scale-95 transition cursor-pointer"
+        >
+          {{ t("common.cancel") }}
+        </button>
+        <button
+          type="button"
+          @click="confirmUnsend"
+          class="px-4 py-2 rounded-xl bg-rose-600 hover:opacity-90 text-white text-xs font-bold shadow-md active:scale-95 transition cursor-pointer"
+        >
+          {{ t("common.confirm") }}
+        </button>
+      </template>
+    </AppModal>
   </div>
 </template>

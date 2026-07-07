@@ -69,7 +69,7 @@
     </div>
 
     <!-- Amenity count -->
-    <p class="amenity-count">{{ filteredAmenities.length }} amenities</p>
+    <p class="amenity-count">{{ t("amenityManagement.selector.amenityCount", { count: filteredAmenities.length }) }}</p>
 
     <!-- Groups -->
     <div v-if="groupedAmenities.length" class="groups-wrapper">

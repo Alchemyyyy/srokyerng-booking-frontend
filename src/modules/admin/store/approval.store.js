@@ -10,6 +10,13 @@ export const useApprovalStore = defineStore('admin-approval', () => {
     const loading = ref(false);
     const processing = ref(false);
     const error = ref(null);
+    // Separate from `error` on purpose: `error` gates the page-level
+    // "Data Fetching Interrupted" screen (hides the whole table). Action
+    // failures (approve/reject/suspend/pending) are shown inline in their
+    // confirmation modal instead, so they must never set `error` — doing so
+    // previously made a failed approve (e.g. "missing image") blank out the
+    // entire properties list after the modal closed.
+    const actionError = ref(null);
 
     const fetchProperties = async (params = {}) => {
         loading.value = true;
@@ -68,13 +75,13 @@ export const useApprovalStore = defineStore('admin-approval', () => {
     // status_id: 2 សម្រាប់ Approve
     const handleApprove = async (id) => {
         processing.value = true;
-        error.value = null;
+        actionError.value = null;
         try {
             await approvalService.updatePropertyStatus(id, 2);
             return true;
         } catch (err) {
             console.error(err);
-            error.value = err?.response?.data?.message || err?.message || 'ការអនុម័តមានបញ្ហា។';
+            actionError.value = err?.response?.data?.message || err?.message || 'ការអនុម័តមានបញ្ហា។';
             return false;
         } finally {
             processing.value = false;
@@ -84,13 +91,13 @@ export const useApprovalStore = defineStore('admin-approval', () => {
     // status_id: 3 សម្រាប់ Reject
     const handleReject = async (id, reason) => {
         processing.value = true;
-        error.value = null;
+        actionError.value = null;
         try {
             await approvalService.updatePropertyStatus(id, 3, reason);
             return true;
         } catch (err) {
             console.error(err);
-            error.value = err?.response?.data?.message || err?.message || 'ការបដិសេធមានបញ្ហា។';
+            actionError.value = err?.response?.data?.message || err?.message || 'ការបដិសេធមានបញ្ហា។';
             return false;
         } finally {
             processing.value = false;
@@ -100,13 +107,13 @@ export const useApprovalStore = defineStore('admin-approval', () => {
     // status_id: 4 សម្រាប់ Suspend
     const handleSuspend = async (id, reason) => {
         processing.value = true;
-        error.value = null;
+        actionError.value = null;
         try {
             await approvalService.updatePropertyStatus(id, 4, reason);
             return true;
         } catch (err) {
             console.error(err);
-            error.value = err?.response?.data?.message || err?.message || 'ការផ្អាកបណ្តោះអាសន្នមានបញ្ហា។';
+            actionError.value = err?.response?.data?.message || err?.message || 'ការផ្អាកបណ្តោះអាសន្នមានបញ្ហា។';
             return false;
         } finally {
             processing.value = false;
@@ -116,13 +123,13 @@ export const useApprovalStore = defineStore('admin-approval', () => {
     // status_id: 1 សម្រាប់កំណត់ជា Pending ឡើងវិញ
     const handleSetPending = async (id) => {
         processing.value = true;
-        error.value = null;
+        actionError.value = null;
         try {
             await approvalService.updatePropertyStatus(id, 1);
             return true;
         } catch (err) {
             console.error(err);
-            error.value = err?.response?.data?.message || err?.message || 'ការប្តូរទៅ Pending មានបញ្ហា។';
+            actionError.value = err?.response?.data?.message || err?.message || 'ការប្តូរទៅ Pending មានបញ្ហា។';
             return false;
         } finally {
             processing.value = false;
@@ -136,6 +143,7 @@ export const useApprovalStore = defineStore('admin-approval', () => {
         loading,
         processing,
         error,
+        actionError,
         fetchProperties,
         fetchPropertyDetail,
         fetchPropertyImages,

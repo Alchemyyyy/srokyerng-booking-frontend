@@ -2,7 +2,7 @@
 import { computed, reactive, ref } from "vue";
 import { useRouter, RouterLink } from "vue-router";
 import { useI18n } from "vue-i18n";
-import { ChevronRightIcon } from "@heroicons/vue/24/outline";
+import { ChevronRightIcon, EyeIcon, EyeSlashIcon, KeyIcon, PencilIcon } from "@heroicons/vue/24/outline";
 import { useToastStore } from "@/shared/store/toastStore";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useSidebar } from "@/shared/composables/useSidebar";
@@ -29,6 +29,10 @@ const isDashboardRole = computed(() => ["owner", "admin"].includes(authStore.use
 const activeEdit = ref(false);
 const savingPassword = ref(false);
 
+const showCurrentPassword = ref(false);
+const showNewPassword = ref(false);
+const showConfirmPassword = ref(false);
+
 const passwordForm = reactive({
   current_password: "",
   new_password: "",
@@ -50,6 +54,9 @@ const toggleEdit = () => {
   passwordErrors.current_password = "";
   passwordErrors.new_password = "";
   passwordErrors.confirm_password = "";
+  showCurrentPassword.value = false;
+  showNewPassword.value = false;
+  showConfirmPassword.value = false;
 };
 
 const handleSave = async () => {
@@ -94,7 +101,7 @@ const handleSave = async () => {
 <template>
   <div
     class="min-h-screen bg-(--color-page) text-(--color-text) flex flex-col font-sans transition-all duration-300"
-    :class="isDashboardRole ? (isSidebarOpen ? 'ml-64' : 'ml-20') : ''"
+    :class="authStore.user?.role === 'admin' ? (isSidebarOpen ? 'ml-64' : 'ml-20') : ''"
   >
     <PublicNavbar v-if="!isDashboardRole" />
 
@@ -117,87 +124,122 @@ const handleSave = async () => {
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 mt-12">
         <!-- Main Form Section (Left Side) -->
-        <div class="lg:col-span-2 space-y-8 divide-y divide-(--color-border)">
+        <div class="lg:col-span-2 space-y-6">
           
-          <!-- Password update section -->
-          <div class="py-6 first:pt-0">
+          <!-- Password update card -->
+          <div class="rounded-2xl border border-(--color-border) bg-(--color-surface) p-6 shadow-xs hover:border-(--color-primary)/30 transition duration-300">
             <div class="flex justify-between items-start">
-              <div class="flex-grow pr-4">
-                <h3 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.loginSecurity.password.label") }}</h3>
+              <div class="flex items-start gap-4 flex-1 pr-4">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-(--color-primary-soft) text-(--color-primary)">
+                  <KeyIcon class="h-5 w-5" />
+                </div>
+                <div class="flex-grow">
+                  <h3 class="text-sm font-bold text-(--color-text)">{{ t("settingsPage.loginSecurity.password.label") }}</h3>
 
-                <!-- Display state -->
-                <p v-if="!activeEdit" class="text-sm text-(--color-muted) mt-1 font-medium">
-                  {{ t("settingsPage.loginSecurity.password.lastUpdated") }}
-                </p>
+                  <!-- Display state -->
+                  <p v-if="!activeEdit" class="text-sm text-(--color-muted) mt-1.5 font-semibold">
+                    {{ t("settingsPage.loginSecurity.password.lastUpdated") }}
+                  </p>
 
-                <!-- Edit inline form -->
-                <div v-else class="mt-5 space-y-4 max-w-md animate-fadeIn">
-                  <!-- Current Password -->
-                  <div>
-                    <label class="block text-xs font-bold text-(--color-text) mb-1.5">
-                      {{ t("settingsPage.loginSecurity.password.currentLabel") }}
-                    </label>
-                    <input
-                      v-model="passwordForm.current_password"
-                      type="password"
-                      class="w-full rounded-xl border border-(--color-border) px-4 py-3 text-sm bg-(--color-page) text-(--color-text) focus:outline-hidden focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary) font-semibold"
-                      :placeholder="t('settingsPage.loginSecurity.password.currentPlaceholder')"
-                    />
-                    <p v-if="passwordErrors.current_password" class="text-xs text-rose-500 font-bold mt-1">
-                      {{ passwordErrors.current_password }}
-                    </p>
-                  </div>
+                  <!-- Edit inline form -->
+                  <div v-else class="mt-5 space-y-4 max-w-md animate-fadeIn">
+                    <!-- Current Password -->
+                    <div>
+                      <label class="block text-xs font-bold text-(--color-text) mb-1.5">
+                        {{ t("settingsPage.loginSecurity.password.currentLabel") }}
+                      </label>
+                      <div class="relative">
+                        <input
+                          v-model="passwordForm.current_password"
+                          :type="showCurrentPassword ? 'text' : 'password'"
+                          class="w-full rounded-xl border border-(--color-border) pl-4 pr-12 py-3 text-sm bg-(--color-page) text-(--color-text) focus:outline-hidden focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary) font-semibold"
+                          :placeholder="t('settingsPage.loginSecurity.password.currentPlaceholder')"
+                        />
+                        <button
+                          type="button"
+                          @click="showCurrentPassword = !showCurrentPassword"
+                          class="absolute right-3.5 top-1/2 -translate-y-1/2 text-(--color-muted) hover:text-(--color-text) cursor-pointer"
+                        >
+                          <EyeIcon v-if="!showCurrentPassword" class="h-5 w-5" />
+                          <EyeSlashIcon v-else class="h-5 w-5" />
+                        </button>
+                      </div>
+                      <p v-if="passwordErrors.current_password" class="text-xs text-rose-500 font-bold mt-1">
+                        {{ passwordErrors.current_password }}
+                      </p>
+                    </div>
 
-                  <!-- New Password -->
-                  <div>
-                    <label class="block text-xs font-bold text-(--color-text) mb-1.5">
-                      {{ t("settingsPage.loginSecurity.password.newLabel") }}
-                    </label>
-                    <input
-                      v-model="passwordForm.new_password"
-                      type="password"
-                      class="w-full rounded-xl border border-(--color-border) px-4 py-3 text-sm bg-(--color-page) text-(--color-text) focus:outline-hidden focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary) font-semibold"
-                      :placeholder="t('settingsPage.loginSecurity.password.newPlaceholder')"
-                    />
-                    <p v-if="passwordErrors.new_password" class="text-xs text-rose-500 font-bold mt-1">
-                      {{ passwordErrors.new_password }}
-                    </p>
-                  </div>
+                    <!-- New Password -->
+                    <div>
+                      <label class="block text-xs font-bold text-(--color-text) mb-1.5">
+                        {{ t("settingsPage.loginSecurity.password.newLabel") }}
+                      </label>
+                      <div class="relative">
+                        <input
+                          v-model="passwordForm.new_password"
+                          :type="showNewPassword ? 'text' : 'password'"
+                          class="w-full rounded-xl border border-(--color-border) pl-4 pr-12 py-3 text-sm bg-(--color-page) text-(--color-text) focus:outline-hidden focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary) font-semibold"
+                          :placeholder="t('settingsPage.loginSecurity.password.newPlaceholder')"
+                        />
+                        <button
+                          type="button"
+                          @click="showNewPassword = !showNewPassword"
+                          class="absolute right-3.5 top-1/2 -translate-y-1/2 text-(--color-muted) hover:text-(--color-text) cursor-pointer"
+                        >
+                          <EyeIcon v-if="!showNewPassword" class="h-5 w-5" />
+                          <EyeSlashIcon v-else class="h-5 w-5" />
+                        </button>
+                      </div>
+                      <p v-if="passwordErrors.new_password" class="text-xs text-rose-500 font-bold mt-1">
+                        {{ passwordErrors.new_password }}
+                      </p>
+                    </div>
 
-                  <!-- Confirm New Password -->
-                  <div>
-                    <label class="block text-xs font-bold text-(--color-text) mb-1.5">
-                      {{ t("settingsPage.loginSecurity.password.confirmLabel") }}
-                    </label>
-                    <input
-                      v-model="passwordForm.confirm_password"
-                      type="password"
-                      class="w-full rounded-xl border border-(--color-border) px-4 py-3 text-sm bg-(--color-page) text-(--color-text) focus:outline-hidden focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary) font-semibold"
-                      :placeholder="t('settingsPage.loginSecurity.password.confirmPlaceholder')"
-                    />
-                    <p v-if="passwordErrors.confirm_password" class="text-xs text-rose-500 font-bold mt-1">
-                      {{ passwordErrors.confirm_password }}
-                    </p>
-                  </div>
+                    <!-- Confirm New Password -->
+                    <div>
+                      <label class="block text-xs font-bold text-(--color-text) mb-1.5">
+                        {{ t("settingsPage.loginSecurity.password.confirmLabel") }}
+                      </label>
+                      <div class="relative">
+                        <input
+                          v-model="passwordForm.confirm_password"
+                          :type="showConfirmPassword ? 'text' : 'password'"
+                          class="w-full rounded-xl border border-(--color-border) pl-4 pr-12 py-3 text-sm bg-(--color-page) text-(--color-text) focus:outline-hidden focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary) font-semibold"
+                          :placeholder="t('settingsPage.loginSecurity.password.confirmPlaceholder')"
+                        />
+                        <button
+                          type="button"
+                          @click="showConfirmPassword = !showConfirmPassword"
+                          class="absolute right-3.5 top-1/2 -translate-y-1/2 text-(--color-muted) hover:text-(--color-text) cursor-pointer"
+                        >
+                          <EyeIcon v-if="!showConfirmPassword" class="h-5 w-5" />
+                          <EyeSlashIcon v-else class="h-5 w-5" />
+                        </button>
+                      </div>
+                      <p v-if="passwordErrors.confirm_password" class="text-xs text-rose-500 font-bold mt-1">
+                        {{ passwordErrors.confirm_password }}
+                      </p>
+                    </div>
 
-                  <!-- Save / Cancel Controls -->
-                  <div class="flex gap-3 pt-2">
-                    <button
-                      type="button"
-                      @click="handleSave"
-                      :disabled="savingPassword || !passwordForm.current_password || !passwordForm.new_password || !passwordForm.confirm_password"
-                      class="px-5 py-2.5 rounded-xl bg-(--color-text) text-(--color-page) font-bold text-xs hover:opacity-90 active:scale-95 transition disabled:opacity-50 cursor-pointer"
-                    >
-                      <span v-if="savingPassword">{{ t("settingsPage.loginSecurity.password.updating") }}</span>
-                      <span v-else>{{ t("settingsPage.loginSecurity.password.updateButton") }}</span>
-                    </button>
-                    <button
-                      type="button"
-                      @click="toggleEdit"
-                      class="px-5 py-2.5 rounded-xl border border-(--color-border) text-(--color-text) font-bold text-xs hover:bg-(--color-surface-soft) active:scale-95 transition cursor-pointer"
-                    >
-                      {{ t("settingsPage.loginSecurity.password.cancelButton") }}
-                    </button>
+                    <!-- Save / Cancel Controls -->
+                    <div class="flex gap-3 pt-2">
+                      <button
+                        type="button"
+                        @click="handleSave"
+                        :disabled="savingPassword || !passwordForm.current_password || !passwordForm.new_password || !passwordForm.confirm_password"
+                        class="px-5 py-2.5 rounded-xl bg-(--color-text) text-(--color-page) font-bold text-xs hover:opacity-90 active:scale-95 transition disabled:opacity-50 cursor-pointer"
+                      >
+                        <span v-if="savingPassword">{{ t("settingsPage.loginSecurity.password.updating") }}</span>
+                        <span v-else>{{ t("settingsPage.loginSecurity.password.updateButton") }}</span>
+                      </button>
+                      <button
+                        type="button"
+                        @click="toggleEdit"
+                        class="px-5 py-2.5 rounded-xl border border-(--color-border) text-(--color-text) font-bold text-xs hover:bg-(--color-surface-soft) active:scale-95 transition cursor-pointer"
+                      >
+                        {{ t("settingsPage.loginSecurity.password.cancelButton") }}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -205,17 +247,18 @@ const handleSave = async () => {
               <button
                 type="button"
                 @click="toggleEdit"
-                class="text-sm font-extrabold text-(--color-text) underline hover:text-(--color-primary) cursor-pointer"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-(--color-border) hover:bg-(--color-surface-soft) text-xs font-bold text-(--color-text) transition active:scale-95 cursor-pointer"
               >
-                {{ activeEdit ? t("settingsPage.loginSecurity.password.cancelButton") : t("settingsPage.loginSecurity.password.updateToggle") }}
+                <PencilIcon class="h-3.5 w-3.5 text-(--color-muted)" />
+                <span>{{ activeEdit ? t("settingsPage.loginSecurity.password.cancelButton") : t("settingsPage.loginSecurity.password.updateToggle") }}</span>
               </button>
             </div>
           </div>
 
           <!-- Active Sessions Section -->
-          <div class="py-6">
-            <h3 class="text-sm font-bold text-(--color-text) mb-4">{{ t("settingsPage.loginSecurity.deviceManagement.title") }}</h3>
-            <SessionManagementCard class="!border-0 !p-0 !shadow-none bg-transparent" />
+          <div class="space-y-4">
+            <h3 class="text-sm font-bold text-(--color-text) ml-1">{{ t("settingsPage.loginSecurity.deviceManagement.title") }}</h3>
+            <SessionManagementCard class="border border-(--color-border) bg-(--color-surface) p-6 rounded-2xl shadow-xs" />
           </div>
 
         </div>

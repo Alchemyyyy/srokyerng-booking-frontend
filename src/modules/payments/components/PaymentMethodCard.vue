@@ -11,9 +11,9 @@
  *   methodName    : string  — bank/method name, e.g. "ABA"
  *   accountNumber : string  — manual-transfer fallback when no QR is set
  */
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
-import { QrCodeIcon } from "@heroicons/vue/24/outline";
+import { QrCodeIcon, XMarkIcon } from "@heroicons/vue/24/outline";
 
 const { t } = useI18n({ useScope: "global" });
 
@@ -30,6 +30,8 @@ const subLabel = computed(() =>
     ? t("components.paymentMethodCard.khqrWithMethod", { method: props.methodName })
     : t("components.paymentMethodCard.khqrOnly")
 );
+
+const isPreviewOpen = ref(false);
 </script>
 
 <template>
@@ -47,12 +49,19 @@ const subLabel = computed(() =>
 
     <!-- QR image -->
     <div class="qr-card__qr-area">
-      <img
+      <button
         v-if="qrImageUrl"
-        :src="qrImageUrl"
-        :alt="t('components.paymentMethodCard.qrAlt')"
-        class="qr-card__qr-img"
-      />
+        type="button"
+        class="qr-card__qr-btn"
+        :aria-label="t('components.paymentMethodCard.previewQr')"
+        @click="isPreviewOpen = true"
+      >
+        <img
+          :src="qrImageUrl"
+          :alt="t('components.paymentMethodCard.qrAlt')"
+          class="qr-card__qr-img"
+        />
+      </button>
       <div v-else class="qr-card__qr-placeholder">
         <QrCodeIcon class="qr-card__placeholder-icon" />
         <span>{{ t("components.paymentMethodCard.qrNotConfigured") }}</span>
@@ -93,6 +102,34 @@ const subLabel = computed(() =>
       {{ t("components.paymentMethodCard.instructionHint") }}
     </p>
   </div>
+
+  <!-- QR preview lightbox -->
+  <Teleport to="body">
+    <div
+      v-if="isPreviewOpen"
+      class="qr-preview"
+      role="dialog"
+      aria-modal="true"
+      @click.self="isPreviewOpen = false"
+    >
+      <button
+        type="button"
+        class="qr-preview__close"
+        :aria-label="t('common.close')"
+        @click="isPreviewOpen = false"
+      >
+        <XMarkIcon class="qr-preview__close-icon" />
+      </button>
+      <img
+        :src="qrImageUrl"
+        :alt="t('components.paymentMethodCard.qrAlt')"
+        class="qr-preview__img"
+      />
+      <p class="qr-preview__hint">
+        {{ t("components.paymentMethodCard.instructionHint") }}
+      </p>
+    </div>
+  </Teleport>
 </template>
 
 <style scoped>
@@ -149,22 +186,44 @@ const subLabel = computed(() =>
 /* QR area */
 .qr-card__qr-area {
   display: flex;
+  align-items: center;
   justify-content: center;
 }
 
+.qr-card__qr-btn {
+  display: block;
+  width: fit-content;
+  margin: 0 auto;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: zoom-in;
+  border-radius: 16px;
+  transition: transform 0.15s ease;
+}
+.qr-card__qr-btn:hover {
+  transform: scale(1.02);
+}
+.qr-card__qr-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 .qr-card__qr-img {
-  width: 172px;
-  height: 172px;
+  display: block;
+  width: min(280px, 100%);
+  aspect-ratio: 1 / 1;
   object-fit: contain;
+  object-position: center;
   border-radius: 16px;
   border: 1px solid var(--color-border);
   background: #fff;
-  padding: 0.5rem;
+  padding: 0.75rem;
 }
 
 .qr-card__qr-placeholder {
-  width: 172px;
-  height: 172px;
+  width: min(280px, 100%);
+  aspect-ratio: 1 / 1;
   border-radius: 16px;
   border: 2px dashed var(--color-border);
   display: flex;
@@ -239,5 +298,64 @@ const subLabel = computed(() =>
   color: var(--color-primary);
   text-align: center;
   line-height: 1.5;
+}
+
+/* Preview lightbox */
+.qr-preview {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem 1.25rem;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+}
+
+.qr-preview__close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.qr-preview__close:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+.qr-preview__close-icon {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.qr-preview__img {
+  display: block;
+  width: min(420px, 90vw);
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 20px;
+  background: #fff;
+  padding: 1.25rem;
+}
+
+.qr-preview__hint {
+  margin: 0;
+  max-width: 32ch;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
 }
 </style>

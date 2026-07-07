@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
+import { formatPrice } from "@/shared/utils/currency";
 
 const { t } = useI18n({ useScope: "global" });
 
@@ -98,10 +99,10 @@ const facilityOptions = computed(() => [
           <span
             style="color: var(--color-muted)"
             class="text-[10px] font-medium"
-            >$0</span
+            >{{ formatPrice(0) }}</span
           >
           <span style="color: var(--color-primary)" class="text-base font-bold">
-            ${{ modelValue.priceRange }}
+            {{ formatPrice(modelValue.priceRange) }}
           </span>
         </div>
         <input

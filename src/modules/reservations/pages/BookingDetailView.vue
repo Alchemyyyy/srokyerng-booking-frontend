@@ -12,6 +12,7 @@ import {
   cancelReservation,
 } from "../services/cancellationService";
 import RefundStatusBadge from "../components/RefundStatusBadge.vue";
+import { formatPrice } from "@/shared/utils/currency";
 
 const route  = useRoute();
 const router = useRouter();
@@ -30,6 +31,10 @@ const reasonError          = ref("");
 const paymentId            = ref(null);
 const fetchedPaymentStatus = ref("");
 const propertyImage        = ref(null);
+
+const newRefundReason      = ref("");
+const submittingRefund     = ref(false);
+const newRefundError       = ref("");
 
 // ── Fetch property image ──────────────────────────────────
 async function fetchPropertyImage(propId, reservationData) {
@@ -237,6 +242,35 @@ async function handleCancel() {
   }
 }
 
+async function handleNewRefundRequest() {
+  if (newRefundReason.value.trim().length < 10) {
+    newRefundError.value = t("reservationDetail.refund.minChars");
+    return;
+  }
+  newRefundError.value   = "";
+  submittingRefund.value = true;
+  try {
+    const amount = Number(reservation.value?.total_amount) || 0;
+    const refundAmount = policy.value?.refundAmount ?? amount;
+
+    await cancellationApi.requestRefund(route.params.id, {
+      amount: refundAmount,
+      reason: newRefundReason.value.trim(),
+    });
+
+    toast.success(t("reservationDetail.refund.successMessage"), {
+      title: t("reservationDetail.refund.successTitle"),
+    });
+
+    newRefundReason.value = "";
+    await fetchReservation();
+  } catch (e) {
+    newRefundError.value = e?.response?.data?.message ?? t("reservationDetail.refund.errorMessage");
+  } finally {
+    submittingRefund.value = false;
+  }
+}
+
 // ── Helpers ───────────────────────────────────────────────
 function fmt(d) {
   if (!d) return "—";
@@ -377,7 +411,7 @@ onMounted(fetchReservation);
             <div class="payment-row">
               <div class="payment-item">
                 <span class="payment-label">{{ t("reservationDetail.bookingSummary.totalPaid") }}</span>
-                <span class="payment-amount">${{ reservation.total_amount }}</span>
+                <span class="payment-amount">{{ formatPrice(reservation.total_amount) }}</span>
               </div>
               <div class="payment-item">
                 <span class="payment-label">{{ t("reservationDetail.bookingSummary.payment") }}</span>
@@ -410,7 +444,7 @@ onMounted(fetchReservation);
         </div>
 
         <!-- ── Cancellation Policy ── -->
-        <div v-if="policy && paymentStatusNorm === 'verified'" class="policy-card" :class="`policy-card--${policy.tone}`">
+        <div v-if="policy && (paymentStatusNorm === 'verified' || paymentStatusNorm === 'pending')" class="policy-card" :class="`policy-card--${policy.tone}`">
           <div class="policy-top">
             <div class="policy-icon" :class="`policy-icon--${policy.tone}`">
               <svg v-if="policy.tone === 'free'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
@@ -431,7 +465,7 @@ onMounted(fetchReservation);
             </div>
             <div class="policy-refund-block" :class="`policy-refund-block--${policy.tone}`">
               <p class="policy-refund-eyebrow">{{ t("reservationDetail.policy.youReceive") }}</p>
-              <p class="policy-refund-amount">${{ Number(policy.refundAmount ?? 0).toFixed(2) }}</p>
+              <p class="policy-refund-amount">{{ formatPrice(policy.refundAmount ?? 0) }}</p>
               <span v-if="policy.tone === 'partial'" class="refund-tag">50% REFUND</span>
             </div>
           </div>
@@ -455,6 +489,57 @@ onMounted(fetchReservation);
           </div>
         </div>
 
+        <!-- ── Refund Rejected & Request Refund Section ── -->
+        <div v-if="status === 'cancelled' && refundStatusNorm === 'rejected'" class="refund-request-card">
+          <!-- Banner: Rejection decision note from owner -->
+          <div class="refund-rejected-banner">
+            <div class="rejected-banner-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
+              </svg>
+            </div>
+            <div class="rejected-banner-text">
+              <h3 class="rejected-banner-title">{{ t("reservationDetail.refund.rejectedTitle") }}</h3>
+              <p class="rejected-banner-desc">
+                {{ t("reservationDetail.refund.rejectedDesc") }}
+              </p>
+              <div v-if="reservation.refund_decision_note" class="rejection-note-box">
+                <span class="rejection-note-label">{{ t("reservationDetail.refund.ownerNote") }}</span>
+                <p class="rejection-note-text">"{{ reservation.refund_decision_note }}"</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Refund Request Form -->
+          <div class="refund-form">
+            <h4 class="refund-form-title">{{ t("reservationDetail.refund.requestAgainTitle") }}</h4>
+            <p class="refund-form-subtitle">
+              {{ t("reservationDetail.refund.requestAgainDesc") }}
+            </p>
+            <div class="refund-textarea-container">
+              <label class="reason-label">
+                {{ t("reservationDetail.refund.reasonLabel") }}<span class="required">*</span>
+              </label>
+              <textarea
+                v-model="newRefundReason"
+                class="reason-textarea"
+                rows="3"
+                maxlength="500"
+                :placeholder="t('reservationDetail.refund.reasonPlaceholder')"
+                :disabled="submittingRefund"
+              />
+              <div class="reason-footer">
+                <span class="reason-error">{{ newRefundError }}</span>
+                <span class="char-count">{{ newRefundReason.length }}/500</span>
+              </div>
+            </div>
+            <button class="btn-submit-refund" :disabled="submittingRefund || newRefundReason.trim().length < 10" @click="handleNewRefundRequest">
+              <span v-if="submittingRefund" class="btn-spin"></span>
+              {{ submittingRefund ? t("reservationDetail.refund.submitting") : t("reservationDetail.refund.submitButton") }}
+            </button>
+          </div>
+        </div>
+
         <!-- ── Blocked banner ── -->
         <div v-else-if="!canCancel && !isCancelledOrCompleted && !(status === 'cancelled' && paymentStatusNorm === 'verified')" class="blocked-banner">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -475,41 +560,7 @@ onMounted(fetchReservation);
           </button>
         </div>
 
-        <!-- ── Notice Card ── -->
-        <div v-if="canCancel" class="notice-card">
-          <div class="notice-body">
-            <div class="notice-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.2">
-                <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-              </svg>
-            </div>
-            <div class="notice-content">
-              <p class="notice-title">{{ t("reservationDetail.notice.title") }}</p>
-              <ul class="notice-list">
-                <li>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.4">
-                    <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-                  </svg>
-                  <span>{{ t("reservationDetail.notice.irreversible") }}</span>
-                </li>
-                <li>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.4">
-                    <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
-                  </svg>
-                  <span>{{ t("reservationDetail.notice.refundTime") }}</span>
-                </li>
-                <li>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.4">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 15.01 9 12.01"/>
-                  </svg>
-                  <span>{{ t("reservationDetail.notice.notification") }}</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
+
 
         <!-- ── Cancel Reason Textarea ── -->
         <div v-if="canCancel && showConfirm" class="reason-card">
@@ -725,6 +776,133 @@ onMounted(fetchReservation);
 .btn-cancel:hover:not(:disabled) { background: #dc2626; transform: translateY(-1px); }
 .btn-cancel:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
 .btn-spin { width: 15px; height: 15px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+
+/* Refund Request Card */
+.refund-request-card {
+  background: var(--color-surface);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.refund-rejected-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px dashed var(--color-danger);
+  border-radius: 16px;
+  padding: 1.25rem;
+}
+
+.rejected-banner-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rejected-banner-text {
+  flex: 1;
+}
+
+.rejected-banner-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #ef4444;
+}
+
+.rejected-banner-desc {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.rejection-note-box {
+  margin-top: 0.75rem;
+  background: var(--color-surface);
+  border-left: 3px solid var(--color-danger);
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+}
+
+.rejection-note-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--color-text);
+  display: block;
+}
+
+.rejection-note-text {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  font-style: italic;
+}
+
+.refund-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.refund-form-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.refund-form-subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.refund-textarea-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.btn-submit-refund {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.9rem 1rem;
+  background: var(--color-primary);
+  border: none;
+  border-radius: 14px;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px var(--color-primary-soft);
+  align-self: flex-start;
+}
+
+.btn-submit-refund:hover:not(:disabled) {
+  background: var(--color-primary-hover, #4f46e5);
+  transform: translateY(-1px);
+}
+
+.btn-submit-refund:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
 
 /* Responsive */
 @media (max-width: 640px) {

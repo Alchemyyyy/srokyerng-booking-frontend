@@ -15,6 +15,7 @@ import {
   PauseCircleIcon,
   PlayCircleIcon,
 } from "@heroicons/vue/24/outline";
+import { formatPrice } from "@/shared/utils/currency";
 
 const emit = defineEmits(["edit", "toggle-status"]);
 
@@ -82,8 +83,8 @@ const badgeConfig = computed(() => {
   if (s === "PENDING")
     return {
       label: statusLabel("pending"),
-      bg: "bg-blue-500/10 border-blue-500/20",
-      text: "text-blue-700",
+      bg: "bg-amber-500/10 border-amber-500/20",
+      text: "text-amber-700",
     };
   if (s === "REJECTED")
     return {
@@ -293,7 +294,7 @@ const handleActivate = (e) => {
             {{ t("components.propertyCard.revenue") }}
           </p>
           <p class="text-[16px] font-black text-(--color-text) mt-0.5">
-            ${{ property.revenue?.toLocaleString() || 0 }}
+            {{ formatPrice(property.revenue || 0) }}
           </p>
         </div>
       </div>

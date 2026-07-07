@@ -71,7 +71,7 @@ onMounted(() => {
 <template>
   <div
     class="min-h-screen bg-(--color-page) text-(--color-text) flex flex-col font-sans transition-all duration-300"
-    :class="isDashboardRole ? (isSidebarOpen ? 'ml-64' : 'ml-20') : ''"
+    :class="authStore.user?.role === 'admin' ? (isSidebarOpen ? 'ml-64' : 'ml-20') : ''"
   >
     <PublicNavbar v-if="!isDashboardRole" />
 

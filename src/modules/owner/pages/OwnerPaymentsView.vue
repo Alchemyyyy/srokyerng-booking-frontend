@@ -10,6 +10,7 @@ import AppModal from "@/shared/components/AppModal.vue";
 import AppPagination from "../components/TablePagination.vue";
 
 import { useOwnerPaymentStore } from "../store/ownerPayment.store";
+import { formatPrice } from "@/shared/utils/currency";
 import { ShieldCheckIcon, CheckIcon, XMarkIcon, CheckCircleIcon, XCircleIcon } from "@heroicons/vue/24/outline";
 import { useToastStore } from "@/shared/store/toastStore";
 import { useI18n } from "vue-i18n";
@@ -66,9 +67,6 @@ const refundColumns = computed(() => [
     { key: "refund_status", label: t("owner.paymentsPage.columns.status") },
     { key: "payment_action", label: t("owner.paymentsPage.columns.actions") },
 ]);
-
-const formatCurrency = (value) =>
-    new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value || 0));
 
 const formatDate = (value) => {
     if (!value) return "-";
@@ -212,7 +210,7 @@ const rejectModalDesc = computed(() =>
             <button type="button"
                 class="inline-flex items-center gap-2 rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-2 text-xs font-semibold text-(--color-text) transition hover:bg-(--color-input)/50 shadow-sm cursor-pointer"
                 :disabled="loading" @click="paymentStore.loadData">
-                <LoadingSpinner v-if="loading" class="h-4 w-4" />
+                <LoadingSpinner v-if="loading" no-text size-class="size-4" />
                 <span>{{ t("owner.paymentsPage.refreshData") }}</span>
             </button>
         </header>
@@ -220,7 +218,7 @@ const rejectModalDesc = computed(() =>
         <section class="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-4">
             <div class="rounded-xl border border-(--color-border) bg-(--color-surface) p-5 shadow-sm">
                 <span class="text-[11px] font-bold uppercase tracking-wider text-(--color-muted)">{{ t("owner.paymentsPage.confirmedEarnings") }}</span>
-                <h3 class="mt-1 text-2xl font-bold text-(--color-text)">${{ formatCurrency(stats.totalEarnings) }}</h3>
+                <h3 class="mt-1 text-2xl font-bold text-(--color-text)">{{ formatPrice(stats.totalEarnings) }}</h3>
             </div>
             <div class="rounded-xl border border-(--color-border) bg-(--color-surface) p-5 shadow-sm">
                 <span class="text-[11px] font-bold uppercase tracking-wider text-(--color-muted)">{{ t("owner.paymentsPage.totalRecords") }}</span>
@@ -297,7 +295,7 @@ const rejectModalDesc = computed(() =>
                     <template #cell-amount="{ value }">
                         <span class="font-bold"
                             :class="activeModule === 'refunds' ? 'text-rose-600' : 'text-(--color-text)'">
-                            ${{ formatCurrency(value) }}
+                            {{ formatPrice(value) }}
                         </span>
                     </template>
 
@@ -376,7 +374,7 @@ const rejectModalDesc = computed(() =>
                         class="btn-cancel">{{ t("owner.paymentsPage.cancel") }}</button>
                     <button type="button" @click="handleConfirmApprove" :disabled="actionLoading"
                         class="btn-confirm-approve min-w-120px flex items-center justify-center">
-                        <LoadingSpinner v-if="actionLoading" class="h-4 w-4 text-white" />
+                        <LoadingSpinner v-if="actionLoading" no-text size-class="size-4" color-class="border-white" />
                         <span v-else>{{ t("owner.paymentsPage.yesProceed") }}</span>
                     </button>
                 </div>
@@ -409,7 +407,7 @@ const rejectModalDesc = computed(() =>
                         class="btn-cancel">{{ t("owner.paymentsPage.cancel") }}</button>
                     <button type="button" @click="handleConfirmReject" :disabled="actionLoading"
                         class="btn-confirm-reject min-w-150px flex items-center justify-center">
-                        <LoadingSpinner v-if="actionLoading" class="h-4 w-4 text-white" />
+                        <LoadingSpinner v-if="actionLoading" no-text size-class="size-4" color-class="border-white" />
                         <span v-else>{{ t("owner.paymentsPage.confirmAction") }}</span>
                     </button>
                 </div>

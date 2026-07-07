@@ -21,6 +21,7 @@ import RoomFormModal from "@/modules/rooms/components/RoomFormModal.vue";
 import { useRoomStore } from "@/modules/rooms/store/roomStore";
 import { useToastStore } from "@/shared/store/toastStore";
 import OwnerLoadingState from "@/modules/owner/components/OwnerLoadingState.vue";
+import { formatPrice } from "@/shared/utils/currency";
 
 const roomStore = useRoomStore();
 
@@ -435,7 +436,7 @@ onMounted(async () => {
               {{ t("owner.roomDetailPage.pricePerNight") }}
             </p>
             <p class="text-2xl font-black text-(--color-primary) mt-1">
-              ${{ Number(room.price_per_night).toFixed(2) }}
+              {{ formatPrice(room.price_per_night) }}
             </p>
           </div>
 
@@ -606,7 +607,7 @@ onMounted(async () => {
                 {{ t("owner.roomDetailPage.total") }}
               </p>
               <p class="text-xl font-black text-(--color-primary)">
-                ${{ booking.total_amount }}
+                {{ formatPrice(booking.total_amount) }}
               </p>
             </div>
           </div>

@@ -46,22 +46,16 @@ const connKey = (provider) => `conn_${provider}_${authStore.user?.id ?? "anon"}`
 const googleConnected = ref(
   localStorage.getItem(connKey("google")) === "true" || !!authStore.user?.google_id,
 );
-const facebookConnected = ref(localStorage.getItem(connKey("facebook")) === "true");
 const connectingProvider = ref(null);
 const disconnectingProvider = ref(null);
 
 const handleConnect = (provider) => {
   connectingProvider.value = provider;
   setTimeout(() => {
-    if (provider === "google") {
-      googleConnected.value = true;
-      localStorage.setItem(connKey("google"), "true");
-    } else {
-      facebookConnected.value = true;
-      localStorage.setItem(connKey("facebook"), "true");
-    }
+    googleConnected.value = true;
+    localStorage.setItem(connKey("google"), "true");
     connectingProvider.value = null;
-    toastStore.success(`${provider.charAt(0).toUpperCase() + provider.slice(1)} account connected successfully!`);
+    toastStore.success(t("profile.connections.connectSuccess", { provider: provider.charAt(0).toUpperCase() + provider.slice(1) }));
   }, 1200);
 };
 
@@ -71,15 +65,10 @@ const triggerDisconnect = (provider) => {
 
 const confirmDisconnect = () => {
   const provider = disconnectingProvider.value;
-  if (provider === "google") {
-    googleConnected.value = false;
-    localStorage.setItem(connKey("google"), "false");
-  } else {
-    facebookConnected.value = false;
-    localStorage.setItem(connKey("facebook"), "false");
-  }
+  googleConnected.value = false;
+  localStorage.setItem(connKey("google"), "false");
   disconnectingProvider.value = null;
-  toastStore.success(`${provider.charAt(0).toUpperCase() + provider.slice(1)} account disconnected.`);
+  toastStore.success(t("profile.connections.disconnectSuccess", { provider: provider.charAt(0).toUpperCase() + provider.slice(1) }));
 };
 
 const {
@@ -328,11 +317,11 @@ onUnmounted(() => {
 
 <template> <div class="owner-profile ">
     <!-- Header -->
-    <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-2">
+    <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-3xl font-bold tracking-tight text-(--color-text)">Profile</h1>
+        <h1 class="text-3xl font-bold tracking-tight text-(--color-text)">{{ t("profile.ownerPage.title") }}</h1>
         <p class="mt-1 text-sm text-(--color-muted)">
-          Manage your host profile, photo, and account security.
+          {{ t("profile.ownerPage.subtitle") }}
         </p>
       </div>
     </header>
@@ -380,8 +369,8 @@ onUnmounted(() => {
         <div class="owner-filter-tabs">
           <button
             v-for="tab in [
-              { key: 'about', label: 'About me' },
-              { key: 'connections', label: 'Connections' },
+              { key: 'about', label: t('profile.tabs.aboutMe') },
+              { key: 'connections', label: t('profile.tabs.connections') },
             ]"
             :key="tab.key"
             class="owner-filter-btn"
@@ -397,13 +386,13 @@ onUnmounted(() => {
       <div v-if="activeTab === 'about'" class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] items-start">
         <section class="rounded-xl border border-(--color-border) bg-(--color-surface) shadow-sm p-6 lg:order-1">
           <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-(--color-text)">Personal details</h2>
+            <h2 class="text-xl font-bold text-(--color-text)">{{ t("profile.ownerPage.personalDetails") }}</h2>
             <button
               type="button"
               class="rounded-lg border border-(--color-border) px-3 py-1.5 text-xs font-bold text-(--color-text) hover:bg-(--color-surface-soft) transition cursor-pointer"
               @click="isEditing = !isEditing"
             >
-              {{ isEditing ? 'Cancel' : 'Edit' }}
+              {{ isEditing ? t("common.cancel") : t("profile.editBtn") }}
             </button>
           </div>
 
@@ -411,7 +400,7 @@ onUnmounted(() => {
             <button
               type="button"
               class="relative block rounded-full overflow-hidden shrink-0 focus:outline-none focus:ring-2 focus:ring-(--color-primary)"
-              title="Update photo"
+              :title="t('profile.summary.viewImage')"
               @click="cropModalOpen = true"
             >
               <UserAvatar :name="userLabel" :src="avatarPreviewUrl" size-class="h-20 w-20 text-3xl font-semibold" />
@@ -449,7 +438,7 @@ onUnmounted(() => {
               class="flex items-center gap-3 text-sm font-semibold text-(--color-text) hover:text-(--color-primary) transition-colors"
             >
               <ChatBubbleLeftEllipsisIcon class="h-5 w-5 text-(--color-muted)" />
-              <span>See reviews about my properties</span>
+              <span>{{ t("profile.reviews.owner") }}</span>
             </RouterLink>
           </div>
         </section>
@@ -471,11 +460,11 @@ onUnmounted(() => {
               </svg>
             </div>
             <div>
-              <h3 class="text-sm font-bold text-(--color-text)">Google Account</h3>
-              <p class="text-xs text-(--color-muted) mt-1">Allows one-tap login and registration.</p>
+              <h3 class="text-sm font-bold text-(--color-text)">{{ t("profile.connections.googleTitle") }}</h3>
+              <p class="text-xs text-(--color-muted) mt-1">{{ t("profile.connections.googleDesc") }}</p>
               <div v-if="googleConnected" class="inline-flex items-center gap-1.5 mt-2 text-xs font-bold text-emerald-600 dark:text-emerald-500 bg-emerald-500/5 px-2.5 py-1 rounded-full border border-emerald-500/10">
                 <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                Connected
+                {{ t("profile.connections.connected") }}
               </div>
             </div>
           </div>
@@ -486,7 +475,7 @@ onUnmounted(() => {
               class="px-4 py-2 border border-(--color-border) hover:bg-(--color-surface-soft) text-(--color-text) text-xs font-bold rounded-lg transition cursor-pointer"
               @click="triggerDisconnect('google')"
             >
-              Disconnect
+              {{ t("profile.connections.disconnect") }}
             </button>
             <button
               v-else
@@ -496,45 +485,7 @@ onUnmounted(() => {
               @click="handleConnect('google')"
             >
               <span v-if="connectingProvider === 'google'" class="h-3 w-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-              <span>{{ connectingProvider === 'google' ? 'Connecting...' : 'Connect' }}</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="p-6 flex items-start justify-between gap-6">
-          <div class="flex items-start gap-4">
-            <div class="h-10 w-10 shrink-0 bg-blue-600/5 dark:bg-blue-600/10 rounded-full flex items-center justify-center border border-blue-600/10">
-              <svg class="h-5 w-5 text-blue-600 fill-current" viewBox="0 0 24 24">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-              </svg>
-            </div>
-            <div>
-              <h3 class="text-sm font-bold text-(--color-text)">Facebook Account</h3>
-              <p class="text-xs text-(--color-muted) mt-1">Link your Facebook profile to instantly log in.</p>
-              <div v-if="facebookConnected" class="inline-flex items-center gap-1.5 mt-2 text-xs font-bold text-emerald-600 dark:text-emerald-500 bg-emerald-500/5 px-2.5 py-1 rounded-full border border-emerald-500/10">
-                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                Connected
-              </div>
-            </div>
-          </div>
-          <div>
-            <button
-              v-if="facebookConnected"
-              type="button"
-              class="px-4 py-2 border border-(--color-border) hover:bg-(--color-surface-soft) text-(--color-text) text-xs font-bold rounded-lg transition cursor-pointer"
-              @click="triggerDisconnect('facebook')"
-            >
-              Disconnect
-            </button>
-            <button
-              v-else
-              type="button"
-              :disabled="connectingProvider === 'facebook'"
-              class="px-4 py-2 bg-(--color-primary) hover:opacity-90 text-white text-xs font-bold rounded-lg transition active:scale-95 cursor-pointer flex items-center gap-1.5"
-              @click="handleConnect('facebook')"
-            >
-              <span v-if="connectingProvider === 'facebook'" class="h-3 w-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-              <span>{{ connectingProvider === 'facebook' ? 'Connecting...' : 'Connect' }}</span>
+              <span>{{ connectingProvider === 'google' ? t("profile.connections.connecting") : t("profile.connections.connect") }}</span>
             </button>
           </div>
         </div>
@@ -594,19 +545,19 @@ onUnmounted(() => {
     <!-- Disconnect confirmation -->
     <AppModal
       :open="!!disconnectingProvider"
-      title="Disconnect account?"
+      :title="t('profile.connections.disconnectTitle')"
       panel-class="rounded-2xl border border-(--color-border) shadow-2xl bg-(--color-surface) max-w-sm"
       @close="disconnectingProvider = null"
     >
       <p class="text-sm leading-relaxed text-(--color-muted) py-2">
-        Are you sure you want to disconnect your Srok-Yerng Booking account from this {{ disconnectingProvider }} account?
+        {{ t("profile.connections.disconnectConfirm", { provider: disconnectingProvider }) }}
       </p>
       <template #footer>
         <AppButton type="button" variant="secondary" class="rounded-xl" @click="disconnectingProvider = null">
-          Cancel
+          {{ t("common.cancel") }}
         </AppButton>
         <AppButton type="button" variant="danger" class="rounded-xl" @click="confirmDisconnect">
-          Disconnect
+          {{ t("profile.connections.disconnect") }}
         </AppButton>
       </template>
     </AppModal>
@@ -617,6 +568,9 @@ onUnmounted(() => {
 .owner-profile {
   padding: 0 24px 80px;
   background: var(--color-page);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 .owner-toolbar {
   display: flex;

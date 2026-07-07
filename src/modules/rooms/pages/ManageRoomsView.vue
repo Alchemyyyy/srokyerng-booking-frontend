@@ -190,6 +190,24 @@ const validateFloorNumber = (value, { required = false } = {}) => {
   return null;
 };
 
+// Total rooms (inventory) must be a positive whole number — a room listing
+// can't advertise 0 or a negative number of units.
+const INVENTORY_MIN = 1;
+
+const validateInventory = (value) => {
+  const isEmpty = value === null || value === undefined || value === "";
+  if (isEmpty) return t("owner.manageRoomsPage.errors.inventoryRequired");
+
+  const num = Number(value);
+  if (Number.isNaN(num)) return t("owner.manageRoomsPage.errors.inventoryNotNumber");
+  if (!Number.isInteger(num))
+    return t("owner.manageRoomsPage.errors.inventoryNotInteger");
+  if (num < INVENTORY_MIN)
+    return t("owner.manageRoomsPage.errors.inventoryTooLow", { min: INVENTORY_MIN });
+
+  return null;
+};
+
 /**
  * Looks at rooms already saved for this property. If they span more than
  * one distinct floor, we know it's a multi-floor building — so floor
@@ -300,6 +318,9 @@ const handleAddRoom = async (formData) => {
   });
   if (floorError) errors.floorNumber = floorError;
 
+  const inventoryError = validateInventory(addRoomForm.value.inventory);
+  if (inventoryError) errors.inventory = inventoryError;
+
   addFormErrors.value = errors;
   if (Object.keys(errors).length > 0 || !selectedProperty) return;
 
@@ -349,6 +370,10 @@ const handleEditRoom = async (formData) => {
     required: floorRequired,
   });
   if (floorError) errors.floorNumber = floorError;
+
+  const inventoryError = validateInventory(formData.inventory);
+  if (inventoryError) errors.inventory = inventoryError;
+
   editFormErrors.value = errors;
   if (Object.keys(errors).length > 0 || !editingRoomId.value) return;
 

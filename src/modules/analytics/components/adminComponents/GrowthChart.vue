@@ -1,6 +1,5 @@
 <script setup>
 import { nextTick, onMounted, ref, watch } from 'vue'
-import { ArrowDownTrayIcon } from '@heroicons/vue/24/outline'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -27,7 +26,7 @@ const props = defineProps({
   },
   selectedHistory: {
     type: String,
-    default: '12m',
+    default: '24m',
   },
   historyOptions: {
     type: Array,
@@ -188,10 +187,6 @@ const lineChartOptions = ref({
             {{ dataset.label }}
           </button>
         </div>
-
-        <button class="export-btn cursor-pointer" :aria-label="t('admin.analyticsPage.growthChart.exportAriaLabel')">
-          <ArrowDownTrayIcon class="h-4 w-4" />
-        </button>
       </div>
     </div>
 

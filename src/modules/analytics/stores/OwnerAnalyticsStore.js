@@ -11,17 +11,13 @@ import {
 import i18n from '@/app/i18n';
 import { analyticsApi } from '@/modules/analytics/api/analytics.api';
 import { ownerAnalyticsService } from '@/modules/analytics/services/ownerAnalytics.service';
+import { formatPrice } from '@/shared/utils/currency';
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
-const moneyFormatter = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-});
 const integerFormatter = new Intl.NumberFormat('en-US');
 const t = (...args) => i18n.global.t(...args);
 
-const formatMoney = (value) => moneyFormatter.format(Number(value) || 0);
+const formatMoney = (value) => formatPrice(value);
 
 const formatDate = (value) => {
     if (!value) return '—';
@@ -97,7 +93,7 @@ export const useAnalyticsDashboardStore = defineStore('owner-analytics-dashboard
     // ── Year Options ─────────────────────────────────────────────────────────
     const yearOptions = computed(() => {
         const currentYear = new Date().getFullYear();
-        return [currentYear, currentYear - 1, currentYear - 2];
+        return [currentYear];
     });
     const selectedYearLabel = computed(() => selectedYear.value || yearOptions.value[0]);
 

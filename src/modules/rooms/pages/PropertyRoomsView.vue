@@ -5,6 +5,7 @@ import { useI18n } from "vue-i18n";
 import RoomFilter from "@/modules/rooms/components/RoomFilter.vue";
 import LoadingSpinner from "@/shared/components/LoadingSpinner.vue";
 import http from "@/app/api/http";
+import { formatPrice } from "@/shared/utils/currency";
 
 const { t } = useI18n({ useScope: "global" });
 const route = useRoute();
@@ -374,7 +375,7 @@ const filteredRooms = computed(() => {
                   style="color: var(--color-text)"
                   class="text-2xl font-bold tracking-tight"
                 >
-                  ${{ room.price }}
+                  {{ formatPrice(room.price) }}
                 </div>
                 <div
                   style="color: var(--color-muted)"

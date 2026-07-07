@@ -15,6 +15,7 @@ import {
   CheckCircleIcon,
 } from "@heroicons/vue/24/outline";
 import BookingForm from "../components/BookingForm.vue";
+import { formatPrice } from "@/shared/utils/currency";
 
 const { t, te } = useI18n({ useScope: "global" });
 const safeT = (key, fallback) => (te(key) ? t(key) : fallback);
@@ -319,7 +320,7 @@ const handleSubmit = async (formData) => {
                     {{ t("bookingCreatePage.baseRateLabel") }}
                   </p>
                   <p class="text-sm font-black text-(--color-text)">
-                    ${{ room?.price || 0 }}
+                    {{ formatPrice(room?.price || 0) }}
                     <span class="text-[10px] font-normal text-(--color-muted)"
                       >{{ t("bookingCreatePage.perNight") }}</span
                     >
@@ -339,7 +340,7 @@ const handleSubmit = async (formData) => {
                     >{{ t("bookingCreatePage.roomRateLine", { count: stayNights }) }}</span
                   >
                   <span class="font-bold text-(--color-text)"
-                    >${{ roomCost }}</span
+                    >{{ formatPrice(roomCost) }}</span
                   >
                 </div>
 
@@ -353,7 +354,7 @@ const handleSubmit = async (formData) => {
                   <span
                     class="text-2xl font-black tracking-tight bg-gradient-to-r from-(--color-primary) to-sky-500 bg-clip-text text-transparent"
                   >
-                    ${{ calculatedTotal }}
+                    {{ formatPrice(calculatedTotal) }}
                   </span>
                 </div>
               </div>

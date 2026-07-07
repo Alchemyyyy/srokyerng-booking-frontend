@@ -12,6 +12,7 @@ import {
   ClockIcon,
 } from "@heroicons/vue/24/outline";
 import { StarIcon as StarSolid } from "@heroicons/vue/24/solid";
+import AppModal from "@/shared/components/AppModal.vue";
 
 const props = defineProps({
   review: { type: Object, required: true },
@@ -23,6 +24,7 @@ const isReplying = ref(false);
 const isEditing = ref(false);
 const replyText = ref("");
 const submitting = ref(false);
+const showRemoveReplyModal = ref(false);
 
 const hasReply = computed(() => !!props.review.ownerReply);
 const ratingInt = computed(() => Math.round(props.review.rating));
@@ -89,8 +91,12 @@ const submit = async () => {
 };
 
 const deleteReply = () => {
-  if (confirm(t("owner.reviews.card.confirmRemove")))
-    emit("delete-reply", props.review.id);
+  showRemoveReplyModal.value = true;
+};
+
+const confirmRemoveReply = () => {
+  showRemoveReplyModal.value = false;
+  emit("delete-reply", props.review.id);
 };
 </script>
 
@@ -221,6 +227,26 @@ const deleteReply = () => {
         {{ t("owner.reviews.card.replyToGuest") }}
       </button>
     </div>
+
+    <!-- Remove reply confirmation -->
+    <AppModal
+      :open="showRemoveReplyModal"
+      :title="t('owner.reviews.card.removeTitle')"
+      panel-class="rounded-2xl border border-(--color-border) shadow-2xl bg-(--color-surface) max-w-sm"
+      @close="showRemoveReplyModal = false"
+    >
+      <p class="text-sm leading-relaxed text-(--color-muted) py-2">
+        {{ t("owner.reviews.card.confirmRemove") }}
+      </p>
+      <template #footer>
+        <button class="btn-cancel" @click="showRemoveReplyModal = false">
+          {{ t("owner.reviews.card.cancel") }}
+        </button>
+        <button class="btn-del" @click="confirmRemoveReply">
+          <TrashIcon class="w-3.5 h-3.5" />{{ t("owner.reviews.card.remove") }}
+        </button>
+      </template>
+    </AppModal>
   </div>
 </template>
 

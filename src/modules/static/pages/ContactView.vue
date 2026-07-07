@@ -5,6 +5,7 @@ import { useI18n } from "vue-i18n";
 import ContactHero from "@/assets/images/contact/hero/hero_banner.png";
 import AppButton from "@/shared/components/AppButton.vue";
 import AppInput from "@/shared/components/AppInput.vue";
+import { useToastStore } from "@/shared/store/toastStore";
 import {
   ArrowRightIcon,
   BuildingOffice2Icon,
@@ -17,6 +18,7 @@ import {
 } from "@heroicons/vue/24/outline";
 
 const { t, locale } = useI18n({ useScope: "global" });
+const toastStore = useToastStore();
 
 const form = ref({
   name: "",
@@ -69,7 +71,7 @@ const supportItems = computed(() => [
 
 const handleSubmit = () => {
   if (!form.value.agree) {
-    alert(t("contact.form.alertAgree"));
+    toastStore.warning(t("contact.form.alertAgree"));
     return;
   }
 

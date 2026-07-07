@@ -153,7 +153,7 @@ onMounted(() => {
         type="button"
         variant="secondary"
         size="sm"
-        class="!rounded-sm"
+        class="shrink-0 !rounded-sm"
         :disabled="loading"
         @click="loadSessions({ notify: true })"
       >

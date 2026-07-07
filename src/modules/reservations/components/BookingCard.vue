@@ -16,6 +16,7 @@ import {
   ArrowPathIcon,
   EllipsisVerticalIcon,
 } from "@heroicons/vue/24/outline";
+import { formatPrice } from "@/shared/utils/currency";
 
 const props = defineProps({
   booking: {
@@ -225,7 +226,7 @@ onBeforeUnmount(()  => document.removeEventListener("click", handleOutsideClick)
           {{ t("components.bookingCard.totalAmount") }}
         </span>
         <span class="text-2xl font-black text-(--color-text) tracking-tight block mt-0.5">
-          ${{ Number(booking.total_amount || booking.totalPrice || 0) }}
+          {{ formatPrice(booking.total_amount || booking.totalPrice || 0) }}
         </span>
       </div>
 

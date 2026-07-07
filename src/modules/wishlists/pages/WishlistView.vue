@@ -13,6 +13,7 @@ import PublicNavbar from "@/shared/components/PublicNavbar.vue";
 import PublicFooter from "@/shared/components/PublicFooter.vue";
 import { resolveAssetUrl } from "@/shared/utils/assetUrl";
 import placeholer from "@/assets/images/properties/placeholder.png";
+import { formatPrice } from "@/shared/utils/currency";
 
 const router = useRouter();
 const wishlistStore = useWishlistStore();
@@ -324,7 +325,7 @@ const goToSearch = () => {
                   <p class="text-[11px] font-medium text-(--color-muted) truncate">{{ item.city || item.province || t("wishlists.cambodiaFallback") }}</p>
                 </div>
                 <div class="flex items-center justify-between mt-1">
-                  <span class="text-xs font-bold text-(--color-text)">${{ item.price_per_night ?? 0 }}{{ t("wishlists.perNight") }}</span>
+                  <span class="text-xs font-bold text-(--color-text)">{{ formatPrice(item.price_per_night ?? 0) }}{{ t("wishlists.perNight") }}</span>
                   <span class="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-(--color-primary) px-1.5 py-0.5 rounded-sm" style="border-radius: var(--radius-sm);">
                     <StarIconSolid class="h-2.5 w-2.5" /> {{ t("wishlists.newBadge") }}
                   </span>

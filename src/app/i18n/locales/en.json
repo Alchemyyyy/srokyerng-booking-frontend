@@ -249,6 +249,7 @@
       "khqrWithMethod": "KHQR · {method}",
       "khqrOnly": "KHQR",
       "qrAlt": "Bakong KHQR code",
+      "previewQr": "Preview QR code",
       "qrNotConfigured": "QR not configured",
       "bank": "Bank",
       "merchant": "Merchant",
@@ -668,11 +669,14 @@
       }
     },
     "details": {
-      "title": "Personal information",
-      "description": "Update your public profile details.",
+      "title": "My profile",
+      "description": "Hosts and guests can see your profile details to help build trust in our booking community.",
+      "editPhoto": "Edit photo",
+      "removePhoto": "Remove photo",
       "fullName": "Full name",
-      "fullNamePlaceholder": "Your full name",
-      "phonePlaceholder": "012345678",
+      "fullNamePlaceholder": "Enter full name",
+      "phone": "Phone number",
+      "phonePlaceholder": "Enter phone number",
       "gender": "Gender",
       "preferNotToSay": "Prefer not to say",
       "male": "Male",
@@ -680,9 +684,9 @@
       "other": "Other",
       "dateOfBirth": "Date of birth",
       "address": "Address",
-      "addressPlaceholder": "Your address",
-      "unsavedChanges": "Unsaved changes.",
-      "helper": "These details are used for booking communication and account recovery.",
+      "addressPlaceholder": "Enter your address",
+      "unsavedChanges": "Unsaved changes",
+      "helper": "Keep your profile updated.",
       "saveProfile": "Save profile"
     },
     "password": {
@@ -776,11 +780,18 @@
       "facebookComingSoon": "Facebook linking isn't available yet.",
       "comingSoon": "Coming soon",
       "connected": "Connected",
+      "connect": "Connect",
+      "connecting": "Connecting...",
       "disconnect": "Disconnect",
       "disconnectTitle": "Disconnect account?",
       "disconnectConfirm": "Are you sure you want to disconnect your Srok-Yerng Booking account from this {provider} account? You will no longer be able to log in using it.",
       "connectSuccess": "{provider} account connected successfully!",
       "disconnectSuccess": "{provider} account disconnected."
+    },
+    "ownerPage": {
+      "title": "Profile",
+      "subtitle": "Manage your host profile, photo, and account security.",
+      "personalDetails": "Personal details"
     }
   },
   "notifications": {
@@ -804,6 +815,15 @@
       "all": "All",
       "unread": "Unread",
       "read": "Read"
+    },
+    "tabs": {
+      "all": "All",
+      "unread": "Unread",
+      "archived": "Archived"
+    },
+    "sidebar": {
+      "infoTitle": "Stay Updated",
+      "infoDesc": "Check back frequently for important stay, booking, payment status, and chat notifications."
     },
     "pageTitles": {
       "all": "Notifications",
@@ -829,6 +849,7 @@
       "property_approved": "Property approved",
       "property_rejected": "Property rejected",
       "password_changed": "Password changed",
+      "message_received": "New message",
       "system": "System",
       "default": "Notification"
     },
@@ -841,7 +862,8 @@
       "viewDetails": "View Details",
       "viewBooking": "View Booking",
       "viewPayment": "View Payment",
-      "viewProperty": "View Property"
+      "viewProperty": "View Property",
+      "viewChat": "View Chat"
     },
     "metadata": {
       "reservationId": "Reservation ID",
@@ -1540,7 +1562,63 @@
     "showMore": "Show more",
     "guestFavorite": "Guest favorite",
     "guestFavoriteDesc": "One of the most loved homes on Srok-Yerng, based on guest ratings, reviews, and reliability",
-    "noMatchingReviews": "No reviews match your search query."
+    "noMatchingReviews": "No reviews match your search query.",
+    "loadingDetails": "Loading spectacular property details...",
+    "tryAgain": "Try Again",
+    "availabilityNav": "Availability",
+    "fromPrice": "From",
+    "verifiedHost": "Verified Host",
+    "entireServicedStay": "Entire Serviced Stay",
+    "hostedBy": "Hosted by {name}",
+    "superhostVerified": "Superhost Verified",
+    "contactHost": "Contact Host",
+    "pricePerNight": "Price per night",
+    "seeDetail": "See Detail",
+    "floorLabel": "Floor {number}",
+    "whatThisPlaceOffers": "What this place offers",
+    "showAllAmenities": "Show all {count} amenities",
+    "selectCheckInDate": "Select check-in date",
+    "selectCheckInDateDesc": "Add your travel dates for exact pricing. Unavailable dates are highlighted in red.",
+    "instantBookingConfirmed": "Instant Booking Confirmed",
+    "notChargedYet": "You won't be charged yet",
+    "totalAmount": "Total amount",
+    "availableOptions": "{count} Available Options",
+    "upToGuests": "Up to {count} guests",
+    "ratingDistribution": "Rating distribution",
+    "categoryRatings": "Category ratings",
+    "highlights": {
+      "title": "Why guests love this stay",
+      "location": {
+        "title": "Spectacular Location",
+        "desc": "100% of recent guests gave this property's location a flawless 5-star rating."
+      },
+      "checkIn": {
+        "title": "Seamless Self Check-In",
+        "desc": "Checking in is totally effortless with our smart digital lockpad system."
+      },
+      "cancellation": {
+        "title": "Flexible Cancellation",
+        "desc": "Take the stress out of planning with full flexibility on your upcoming travel dates."
+      },
+      "wifi": {
+        "title": "Dedicated High-Speed WiFi",
+        "desc": "Experience ultra-fast, stable internet tailored for remote working or streaming."
+      }
+    },
+    "specs": {
+      "guests": "{count} guests",
+      "bedroomSingular": "{count} bedroom",
+      "bedroomsPlural": "{count} bedrooms",
+      "bedSingular": "{count} bed",
+      "bedsPlural": "{count} beds",
+      "bathSingular": "{count} private bath",
+      "bathsPlural": "{count} baths"
+    },
+    "exploreMore": {
+      "title": "Explore all accommodation options",
+      "description": "Looking for more options? Browse all available rooms for this property to find your perfect match.",
+      "viewAllRooms": "View all available rooms"
+    }
   },
   "reviewCreate": {
     "breadcrumb": {
@@ -1836,7 +1914,11 @@
         "chooseProperty": "Please choose a property.",
         "typeRequired": "Room type is required.",
         "nameRequired": "Room name is required.",
-        "priceRequired": "Price is required."
+        "priceRequired": "Price is required.",
+        "inventoryRequired": "Total rooms is required.",
+        "inventoryNotNumber": "Total rooms must be a number.",
+        "inventoryNotInteger": "Total rooms must be a whole number (no decimals).",
+        "inventoryTooLow": "Total rooms can't be less than {min}."
       },
       "toasts": {
         "roomAdded": "Room added successfully.",
@@ -2213,7 +2295,9 @@
         "activateProperty": "Activate Property"
       },
       "confirm": {
+        "deactivateTitle": "Deactivate Property",
         "deactivateMessage": "Deactivate this property? It will be hidden from guests.",
+        "activateTitle": "Activate Property",
         "activateMessage": "Activate this property? It will be visible to guests again."
       },
       "errors": {
@@ -2370,6 +2454,7 @@
         "updatePlaceholder": "Update your reply…",
         "replyPlaceholder": "Thank the guest, address their comments…",
         "confirmRemove": "Remove your reply to this review?",
+        "removeTitle": "Remove reply?",
         "ratings": {
           "excellent": "Excellent",
           "veryGood": "Very Good",
@@ -2499,7 +2584,14 @@
     "selector": {
       "searchPlaceholder": "Search amenities...",
       "all": "All",
-      "noResults": "No amenities found"
+      "noResults": "No amenities found",
+      "amenityCount": "{count} amenities"
+    },
+    "errors": {
+      "loadAmenities": "Failed to load amenities.",
+      "loadProperties": "Failed to load your properties.",
+      "loadPropertyAmenities": "Failed to load this property's amenities.",
+      "saveAmenities": "Failed to save amenities."
     }
   },
   "bookingHistory": {
@@ -2602,7 +2694,13 @@
       "submitting": "Submitting…",
       "successTitle": "Refund Requested",
       "successMessage": "Your refund request has been submitted successfully.",
-      "errorMessage": "Failed to submit refund request. Please try again."
+      "errorMessage": "Failed to submit refund request. Please try again.",
+      "rejectedTitle": "Refund Request Rejected",
+      "rejectedDesc": "The owner has rejected your refund request.",
+      "ownerNote": "Owner's Note:",
+      "requestAgainTitle": "Request Refund Again",
+      "requestAgainDesc": "You can submit a new refund request with more details or explanations for the owner.",
+      "minChars": "Reason must be at least 10 characters long."
     },
     "toast": {
       "successTitle": "Cancelled",
@@ -3423,9 +3521,17 @@
           "title": "Connected portals",
           "description": "Link your Srok-Yerng Booking account to social services for fast authentication."
         },
-        "dataArchive": {
-          "title": "Data archive",
-          "description": "Download a copy of your personal data archive containing reservations history and profile details."
+        "cookies": {
+          "title": "Cookie Preferences",
+          "description": "Manage cookies and tracking technologies used to deliver and improve your experience."
+        },
+        "retention": {
+          "title": "Data Retention",
+          "description": "Choose how long our platform retains your activity and browsing history."
+        },
+        "faq": {
+          "title": "Frequently Asked Questions & Security Tips",
+          "description": "Learn more about how we safeguard your account and protect your personal information."
         }
       },
       "toggles": {
@@ -3436,6 +3542,39 @@
         "reviewSharing": {
           "label": "Review sharing",
           "description": "Publish your feedback and review comments to external travel portals."
+        }
+      },
+      "cookies": {
+        "essential": {
+          "label": "Essential Cookies",
+          "description": "Necessary for core features like authentication, secure payments, and system integrity."
+        },
+        "analytical": {
+          "label": "Analytical & Performance Cookies",
+          "description": "Helps us understand how guests use our website to optimize speed and design layouts."
+        },
+        "marketing": {
+          "label": "Marketing & Personalization Cookies",
+          "description": "Allows us to remember your search preferences to display tailored property recommendations."
+        }
+      },
+      "retention": {
+        "label": "Activity Log Retention",
+        "options": {
+          "indefinite": "Keep indefinitely (Recommended)",
+          "m3": "Automatically delete after 3 months",
+          "m6": "Automatically delete after 6 months",
+          "m12": "Automatically delete after 12 months"
+        }
+      },
+      "faq": {
+        "items": {
+          "q1": "How is my personal data encrypted?",
+          "a1": "All communication between your device and our servers is secured using TLS 1.3 encryption. Your passwords, credit card info, and payment slips are hashed and encrypted at rest.",
+          "q2": "Who can see my booking history?",
+          "a2": "Only you, the system administrators, and the specific property owners where you make reservations can view your bookings. We never share your itineraries with third-party advertisers.",
+          "q3": "How do I request account deletion?",
+          "a3": "To permanently delete your account and erase all associated personal profiles, please contact our support desk at privacy{'@'}srokyerng.com. We process deletion requests within 30 business days."
         }
       },
       "connections": {
@@ -3496,7 +3635,7 @@
         },
         "appConnections": {
           "title": "App connections",
-          "description": "Connecting your Facebook or Google profile allows you to sign in with a single click, using social auth credentials."
+          "description": "Connecting your Google profile allows you to sign in with a single click, using social auth credentials."
         }
       }
     }

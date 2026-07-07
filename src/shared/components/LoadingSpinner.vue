@@ -8,6 +8,18 @@ const props = defineProps({
     type: String,
     default: "",
   },
+  noText: {
+    type: Boolean,
+    default: false,
+  },
+  sizeClass: {
+    type: String,
+    default: "size-5",
+  },
+  colorClass: {
+    type: String,
+    default: "border-(--color-primary)",
+  },
 });
 
 const displayLabel = computed(() => props.label || t("common.loading"));
@@ -16,9 +28,9 @@ const displayLabel = computed(() => props.label || t("common.loading"));
 <template>
   <div class="inline-flex items-center gap-3 text-(--color-muted)" role="status">
     <span
-      class="size-5 animate-spin rounded-full border-2 border-(--color-primary) border-t-transparent"
+      :class="[sizeClass, colorClass, 'animate-spin rounded-full border-2 border-t-transparent']"
       aria-hidden="true"
     ></span>
-    <span>{{ displayLabel }}</span>
+    <span v-if="!noText && displayLabel">{{ displayLabel }}</span>
   </div>
 </template>

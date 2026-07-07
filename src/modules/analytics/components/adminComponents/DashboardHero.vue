@@ -8,7 +8,7 @@ const { t } = useI18n({ useScope: 'global' })
 defineProps({
   // loading: { type: Boolean, default: false },
   historyOptions: { type: Array, default: () => [] },
-  selectedHistory: { type: String, default: '12m' }
+  selectedHistory: { type: String, default: '24m' }
 })
 
 const emit = defineEmits(['refresh', 'change-history'])

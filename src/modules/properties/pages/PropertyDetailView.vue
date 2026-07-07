@@ -173,9 +173,15 @@ const roomFeatures = computed(() => {
   const baths = matchBath ? Number(matchBath[1]) : 1;
 
   return {
-    bedrooms: `${bedrooms} ${bedrooms > 1 ? 'bedrooms' : 'bedroom'}`,
-    beds: `${beds} ${beds > 1 ? 'beds' : 'bed'}`,
-    baths: `${baths} ${baths > 1 ? 'baths' : 'private bath'}`
+    bedrooms: bedrooms > 1
+      ? t('propertyDetail.specs.bedroomsPlural', { count: bedrooms })
+      : t('propertyDetail.specs.bedroomSingular', { count: bedrooms }),
+    beds: beds > 1
+      ? t('propertyDetail.specs.bedsPlural', { count: beds })
+      : t('propertyDetail.specs.bedSingular', { count: beds }),
+    baths: baths > 1
+      ? t('propertyDetail.specs.bathsPlural', { count: baths })
+      : t('propertyDetail.specs.bathSingular', { count: baths }),
   };
 });
 
@@ -398,11 +404,7 @@ const fetchPropertyReviews = async () => {
       ? await propertyApi.getPropertyReviews(propertyId)
       : await http.get(`/properties/${propertyId}/reviews`);
 
-    console.log("[reviews] propertyId:", propertyId);
-    console.log("[reviews] raw response:", res);
-
     const rawReviews = res?.data?.data || res?.data || [];
-    console.log("[reviews] parsed list:", rawReviews);
 
     guestReviews.value = rawReviews.map((r) => ({
       id: r.id,
@@ -419,7 +421,6 @@ const fetchPropertyReviews = async () => {
       comment: r.comment || "",
       roomName: r.room_name || "",
     }));
-    activeReviewIndex.value = 0;
   } catch (err) {
     console.error("[reviews] fetch failed:", err?.response || err);
     guestReviews.value = [];
@@ -450,7 +451,7 @@ const displayedAmenities = computed(() => amenities.value.slice(0, 6));
     >
       <div class="flex flex-col items-center justify-center gap-4">
         <div class="h-10 w-10 animate-spin rounded-full border-4 border-(--color-primary) border-t-transparent"></div>
-        <p class="text-base font-bold">Loading spectacular property details...</p>
+        <p class="text-base font-bold">{{ t("propertyDetail.loadingDetails") }}</p>
       </div>
     </div>
 
@@ -461,7 +462,7 @@ const displayedAmenities = computed(() => amenities.value.slice(0, 6));
       <div class="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-8 text-rose-600 max-w-lg mx-auto shadow-sm">
         <p class="text-lg font-bold">{{ propertyStore.error }}</p>
         <button @click="fetchProperty" class="mt-4 px-6 py-2 rounded-xl bg-rose-600 text-white text-sm font-bold shadow-md hover:opacity-90 transition active:scale-95 cursor-pointer">
-          Try Again
+          {{ t("propertyDetail.tryAgain") }}
         </button>
       </div>
     </div>
@@ -492,7 +493,7 @@ const displayedAmenities = computed(() => amenities.value.slice(0, 6));
             </button>
             <button type="button" class="flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 hover:bg-(--color-primary-soft) hover:text-(--color-primary) active:scale-95 cursor-pointer text-(--color-text)" @click="scrollToSection('availability')">
               <CalendarDaysIcon class="h-4 w-4 text-(--color-primary)" />
-              <span>Availability</span>
+              <span>{{ t("propertyDetail.availabilityNav") }}</span>
             </button>
             <button type="button" class="flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 hover:bg-(--color-primary-soft) hover:text-(--color-primary) active:scale-95 cursor-pointer text-(--color-text)" @click="scrollToSection('reviews')">
               <StarIcon class="h-4 w-4 text-(--color-primary)" />
@@ -503,9 +504,9 @@ const displayedAmenities = computed(() => amenities.value.slice(0, 6));
           <!-- Quick Right Callout (Price & Instant Reserve) -->
           <div class="hidden md:flex items-center gap-6 shrink-0 border-l border-(--color-border)/60 pl-6 pr-1">
             <div class="flex items-baseline gap-1.5 text-right">
-              <span class="text-xs font-bold text-(--color-muted) uppercase tracking-wider">From</span>
+              <span class="text-xs font-bold text-(--color-muted) uppercase tracking-wider">{{ t("propertyDetail.fromPrice") }}</span>
               <span class="text-2xl font-black text-(--color-text)">{{ formatPrice(selectedRoom.price) }}</span>
-              <span class="text-xs font-extrabold text-(--color-muted)">/ night</span>
+              <span class="text-xs font-extrabold text-(--color-muted)">/ {{ t("propertyDetail.night") }}</span>
             </div>
             <button
               type="button"
@@ -530,21 +531,21 @@ const displayedAmenities = computed(() => amenities.value.slice(0, 6));
                 <div class="flex items-center gap-2 mb-2">
                   <span class="inline-flex items-center gap-1 bg-(--color-success-soft) text-(--color-success) px-2.5 py-1 text-xs font-black uppercase tracking-wider" style="border-radius: var(--radius-sm);">
                     <ShieldCheckIcon class="h-4 w-4 text-(--color-success)" />
-                    <span>Verified Host</span>
+                    <span>{{ t("propertyDetail.verifiedHost") }}</span>
                   </span>
-                  <span class="text-xs font-black text-(--color-muted)">· Entire Serviced Stay</span>
+                  <span class="text-xs font-black text-(--color-muted)">· {{ t("propertyDetail.entireServicedStay") }}</span>
                 </div>
 
                 <div class="flex items-center gap-4">
                   <h2 class="text-2xl font-black text-(--color-text) tracking-tight">
-                    Hosted by {{ hostName }}
+                    {{ t("propertyDetail.hostedBy", { name: hostName }) }}
                   </h2>
                   <!-- Compact Host Avatar right near the text -->
                   <div class="relative shrink-0">
                     <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-tr from-(--color-primary) to-sky-400 text-white font-black text-lg shadow-md ring-2 ring-(--color-primary)/20 hover:scale-105 transition-all duration-300">
                       {{ hostInitials }}
                     </div>
-                    <div class="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-white ring-2 ring-white dark:ring-gray-900 shadow-xs" title="Superhost Verified">
+                    <div class="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-white ring-2 ring-white dark:ring-gray-900 shadow-xs" :title="t('propertyDetail.superhostVerified')">
                       <ShieldCheckIcon class="h-3 w-3" />
                     </div>
                   </div>
@@ -558,7 +559,7 @@ const displayedAmenities = computed(() => amenities.value.slice(0, 6));
                   class="mt-4 px-5 py-2.5 rounded-full border border-(--color-border) hover:border-(--color-text) hover:bg-(--color-surface-soft) text-xs font-bold text-(--color-text) transition active:scale-95 cursor-pointer flex items-center justify-center gap-2 w-fit"
                 >
                   <ChatBubbleOvalLeftIcon class="h-4.5 w-4.5 text-(--color-primary)" />
-                  <span>Contact Host</span>
+                  <span>{{ t("propertyDetail.contactHost") }}</span>
                 </button>
               </div>  
 
@@ -566,7 +567,7 @@ const displayedAmenities = computed(() => amenities.value.slice(0, 6));
               <div class="flex flex-wrap items-center gap-2.5 pt-2">
                 <span class="inline-flex items-center gap-1.5 rounded-full bg-(--color-surface-soft) border border-(--color-border) px-4 py-1.5 text-xs font-bold text-(--color-text) shadow-xs">
                   <UserGroupIcon class="h-4 w-4 text-(--color-primary)" />
-                  <span>{{ selectedRoom.capacity }} guests</span>
+                  <span>{{ t("propertyDetail.specs.guests", { count: selectedRoom.capacity }) }}</span>
                 </span>
                 <span class="inline-flex items-center gap-1.5 rounded-full bg-(--color-surface-soft) border border-(--color-border) px-4 py-1.5 text-xs font-bold text-(--color-text) shadow-xs">
                   <BuildingOfficeIcon class="h-4 w-4 text-(--color-primary)" />

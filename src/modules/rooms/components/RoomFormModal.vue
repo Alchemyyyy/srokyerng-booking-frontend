@@ -319,12 +319,20 @@ const removeExistingImage = (index) => {
         />
       </div>
 
-      <AppInput
-        v-model.number="props.modelValue.inventory"
-        :label="t('components.roomFormModal.totalRooms')"
-        type="number"
-        min="1"
-      />
+      <div>
+        <AppInput
+          v-model.number="props.modelValue.inventory"
+          :label="t('components.roomFormModal.totalRooms')"
+          type="number"
+          min="1"
+        />
+        <span
+          v-if="errors.inventory"
+          class="text-xs font-medium text-(--color-danger)"
+        >
+          {{ errors.inventory }}
+        </span>
+      </div>
       <div>
         <AppInput
           v-model.number="props.modelValue.floorNumber"

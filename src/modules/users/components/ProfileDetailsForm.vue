@@ -64,7 +64,7 @@ const fileInput = ref(null);
             />
           </div>
           <div v-if="uploadingImage" class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center">
-            <span class="text-white text-xs font-bold">Uploading...</span>
+            <span class="text-white text-xs font-bold">{{ t("profile.summary.uploading") }}</span>
           </div>
         </div>
 
@@ -87,9 +87,9 @@ const fileInput = ref(null);
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            Edit photo
+            {{ t("profile.details.editPhoto") }}
           </button>
-          
+
           <button
             v-if="hasCustomAvatar"
             type="button"
@@ -97,7 +97,7 @@ const fileInput = ref(null);
             :disabled="uploadingImage"
             class="text-xs font-bold text-rose-500 hover:underline active:scale-95 transition mt-1 cursor-pointer bg-transparent border-none"
           >
-            Remove photo
+            {{ t("profile.details.removePhoto") }}
           </button>
         </div>
       </div>
@@ -105,9 +105,9 @@ const fileInput = ref(null);
       <!-- Right Column: My Profile Info Section -->
       <div class="md:col-span-2 space-y-8">
         <div>
-          <h2 class="text-3xl font-extrabold tracking-tight text-(--color-text)">My profile</h2>
+          <h2 class="text-3xl font-extrabold tracking-tight text-(--color-text)">{{ t("profile.details.title") }}</h2>
           <p class="mt-2 text-sm leading-relaxed text-(--color-muted) font-medium">
-            Hosts and guests can see your profile details to help build trust in our booking community.
+            {{ t("profile.details.description") }}
           </p>
         </div>
 
@@ -120,13 +120,13 @@ const fileInput = ref(null);
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
             <div class="flex-1 min-w-0">
-              <span class="block text-[10px] uppercase tracking-wider font-extrabold text-(--color-muted) mb-0.5">Full name</span>
+              <span class="field-label block uppercase tracking-wider font-extrabold text-(--color-muted) mb-0.5">{{ t("profile.details.fullName") }}</span>
               <input
                 v-model="form.full_name"
                 type="text"
-                placeholder="Enter full name"
+                :placeholder="t('profile.details.fullNamePlaceholder')"
                 required
-                class="w-full bg-transparent border-none outline-hidden text-sm font-bold text-(--color-text) placeholder-(--color-muted) p-0 focus:ring-0 focus:outline-hidden"
+                class="field-value w-full bg-transparent border-none outline-hidden text-sm font-bold text-(--color-text) placeholder-(--color-muted) p-0 focus:ring-0 focus:outline-hidden"
               />
             </div>
           </div>
@@ -137,12 +137,12 @@ const fileInput = ref(null);
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
             </svg>
             <div class="flex-1 min-w-0">
-              <span class="block text-[10px] uppercase tracking-wider font-extrabold text-(--color-muted) mb-0.5">Phone number</span>
+              <span class="field-label block uppercase tracking-wider font-extrabold text-(--color-muted) mb-0.5">{{ t("profile.details.phone") }}</span>
               <input
                 v-model="form.phone"
                 type="text"
-                placeholder="Enter phone number"
-                class="w-full bg-transparent border-none outline-hidden text-sm font-bold text-(--color-text) placeholder-(--color-muted) p-0 focus:ring-0 focus:outline-hidden"
+                :placeholder="t('profile.details.phonePlaceholder')"
+                class="field-value w-full bg-transparent border-none outline-hidden text-sm font-bold text-(--color-text) placeholder-(--color-muted) p-0 focus:ring-0 focus:outline-hidden"
               />
             </div>
           </div>
@@ -153,15 +153,15 @@ const fileInput = ref(null);
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
             <div class="flex-1 min-w-0">
-              <span class="block text-[10px] uppercase tracking-wider font-extrabold text-(--color-muted) mb-0.5">Gender</span>
+              <span class="field-label block uppercase tracking-wider font-extrabold text-(--color-muted) mb-0.5">{{ t("profile.details.gender") }}</span>
               <select
                 v-model="form.gender"
-                class="w-full bg-transparent border-none outline-hidden text-sm font-bold text-(--color-text) placeholder-(--color-muted) p-0 focus:ring-0 focus:outline-hidden cursor-pointer"
+                class="field-value w-full bg-transparent border-none outline-hidden text-sm font-bold text-(--color-text) placeholder-(--color-muted) p-0 focus:ring-0 focus:outline-hidden cursor-pointer"
               >
-                <option value="">Prefer not to say</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
+                <option value="">{{ t("profile.details.preferNotToSay") }}</option>
+                <option value="male">{{ t("profile.details.male") }}</option>
+                <option value="female">{{ t("profile.details.female") }}</option>
+                <option value="other">{{ t("profile.details.other") }}</option>
               </select>
             </div>
           </div>
@@ -172,11 +172,11 @@ const fileInput = ref(null);
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             <div class="flex-1 min-w-0">
-              <span class="block text-[10px] uppercase tracking-wider font-extrabold text-(--color-muted) mb-0.5">Date of birth</span>
+              <span class="field-label block uppercase tracking-wider font-extrabold text-(--color-muted) mb-0.5">{{ t("profile.details.dateOfBirth") }}</span>
               <input
                 v-model="form.date_of_birth"
                 type="date"
-                class="w-full bg-transparent border-none outline-hidden text-sm font-bold text-(--color-text) placeholder-(--color-muted) p-0 focus:ring-0 focus:outline-hidden cursor-pointer"
+                class="field-value w-full bg-transparent border-none outline-hidden text-sm font-bold text-(--color-text) placeholder-(--color-muted) p-0 focus:ring-0 focus:outline-hidden cursor-pointer"
               />
             </div>
           </div>
@@ -188,12 +188,12 @@ const fileInput = ref(null);
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             <div class="flex-1 min-w-0">
-              <span class="block text-[10px] uppercase tracking-wider font-extrabold text-(--color-muted) mb-0.5">Address</span>
+              <span class="field-label block uppercase tracking-wider font-extrabold text-(--color-muted) mb-0.5">{{ t("profile.details.address") }}</span>
               <input
                 v-model="form.address"
                 type="text"
-                placeholder="Enter your address"
-                class="w-full bg-transparent border-none outline-hidden text-sm font-bold text-(--color-text) placeholder-(--color-muted) p-0 focus:ring-0 focus:outline-hidden"
+                :placeholder="t('profile.details.addressPlaceholder')"
+                class="field-value w-full bg-transparent border-none outline-hidden text-sm font-bold text-(--color-text) placeholder-(--color-muted) p-0 focus:ring-0 focus:outline-hidden"
               />
             </div>
           </div>
@@ -205,10 +205,10 @@ const fileInput = ref(null);
           <p class="text-sm text-(--color-muted) font-medium">
             <span v-if="hasChanges" class="font-black text-(--color-warning) flex items-center gap-1.5">
               <span class="flex h-2 w-2 rounded-full bg-(--color-warning) animate-ping"></span>
-              Unsaved changes
+              {{ t("profile.details.unsavedChanges") }}
             </span>
             <span v-else>
-              Keep your profile updated.
+              {{ t("profile.details.helper") }}
             </span>
           </p>
           <AppButton
@@ -217,7 +217,7 @@ const fileInput = ref(null);
             :disabled="saving || !hasChanges"
             :loading="saving"
           >
-            Save profile
+            {{ t("profile.details.saveProfile") }}
           </AppButton>
         </div>
 
@@ -228,6 +228,19 @@ const fileInput = ref(null);
 </template>
 
 <style scoped>
+.field-label {
+  font-size: 0.625rem;
+}
+:lang(km) .field-label {
+  font-size: 0.8rem;
+}
+.field-value {
+  font-size: 0.875rem;
+}
+:lang(km) .field-value {
+  font-size: 1rem;
+}
+
 /* Standard styling options override to secure clean transparent inputs */
 input, select {
   box-shadow: none !important;
