@@ -12,7 +12,7 @@ import {
 import { useI18n } from "vue-i18n";
 import { useAuthStore } from "@/modules/auth/store/authStore";
 import { useChatStore } from "../store/chatStore";
-import { socketService } from "../services/socket.service";
+import { socketService } from "@/shared/services/socket.service";
 import UserAvatar from "@/shared/components/UserAvatar.vue";
 
 const { t, te } = useI18n({ useScope: "global" });

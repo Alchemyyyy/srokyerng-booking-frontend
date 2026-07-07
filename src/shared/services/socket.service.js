@@ -6,13 +6,22 @@ import { io } from "socket.io-client";
 const base = import.meta.env.VITE_API_BASE_URL?.replace(/\/api\/?$/, "") || "http://localhost:5000";
 
 let socket = null;
+let authToken = null;
 
 export const socketService = {
+  setAuthToken(token) {
+    authToken = token || null;
+  },
+
   connect() {
     if (!socket) {
       socket = io(base, {
         withCredentials: true,
         autoConnect: true,
+        // A callback (not a static object) so socket.io-client re-reads the
+        // current token on every (re)connection attempt, rather than baking
+        // in whatever token existed the first time connect() was called.
+        auth: (cb) => cb({ token: authToken }),
       });
       console.log("Socket initialized, connecting to:", base);
     } else if (!socket.connected) {
@@ -59,5 +68,27 @@ export const socketService = {
     if (socket) {
       socket.off("message-unsent", callback);
     }
-  }
+  },
+
+  onNotification(callback) {
+    this.connect();
+    socket.on("notification:new", callback);
+  },
+
+  offNotification(callback) {
+    if (socket) {
+      socket.off("notification:new", callback);
+    }
+  },
+
+  onAdminActivity(callback) {
+    this.connect();
+    socket.on("admin:activity", callback);
+  },
+
+  offAdminActivity(callback) {
+    if (socket) {
+      socket.off("admin:activity", callback);
+    }
+  },
 };

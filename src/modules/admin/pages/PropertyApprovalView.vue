@@ -14,6 +14,8 @@ import { ExclamationTriangleIcon, InboxIcon, CheckCircleIcon, XCircleIcon, Quest
 import { useSidebar } from '@/shared/composables/useSidebar';
 import { useToastStore } from '@/shared/store/toastStore';
 import { useI18n } from 'vue-i18n';
+import { useRealtimeRefresh } from '@/shared/composables/useRealtimeRefresh';
+import { socketService } from '@/shared/services/socket.service';
 
 const router = useRouter();
 const toastStore = useToastStore();
@@ -130,6 +132,13 @@ const currentPendingId = ref(null);
 
 onMounted(async () => {
     await approvalStore.fetchProperties();
+});
+
+useRealtimeRefresh({
+    subscribe: socketService.onAdminActivity.bind(socketService),
+    unsubscribe: socketService.offAdminActivity.bind(socketService),
+    types: ['property_submitted'],
+    refetchFn: () => approvalStore.fetchProperties(),
 });
 
 const handleFilterUpdate = (newStatus) => {

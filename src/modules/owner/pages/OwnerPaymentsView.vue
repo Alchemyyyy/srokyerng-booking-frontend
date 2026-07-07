@@ -13,6 +13,8 @@ import { useOwnerPaymentStore } from "../store/ownerPayment.store";
 import { ShieldCheckIcon, CheckIcon, XMarkIcon, CheckCircleIcon, XCircleIcon } from "@heroicons/vue/24/outline";
 import { useToastStore } from "@/shared/store/toastStore";
 import { useI18n } from "vue-i18n";
+import { useRealtimeRefresh } from "@/shared/composables/useRealtimeRefresh";
+import { socketService } from "@/shared/services/socket.service";
 
 const router = useRouter();
 const toast = useToastStore();
@@ -167,6 +169,13 @@ const closeRejectModal = () => {
 };
 
 onMounted(paymentStore.loadData);
+
+useRealtimeRefresh({
+  subscribe: socketService.onNotification.bind(socketService),
+  unsubscribe: socketService.offNotification.bind(socketService),
+  types: ["payment_submitted", "payment_verified", "payment_rejected", "payment_refunded"],
+  refetchFn: () => paymentStore.loadData(),
+});
 
 const approveModalTitle = computed(() =>
     activeModule.value === 'payments'

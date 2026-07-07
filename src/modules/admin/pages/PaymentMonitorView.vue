@@ -11,6 +11,8 @@ import {
   getImageUrl,
 } from "../utils/formatters";
 import { getBankName, getBankLogo } from "@/modules/payments/utils/bankBranding";
+import { useRealtimeRefresh } from "@/shared/composables/useRealtimeRefresh";
+import { socketService } from "@/shared/services/socket.service";
 import {
   MagnifyingGlassIcon,
   ExclamationTriangleIcon,
@@ -57,6 +59,13 @@ const openReceiptModal = (payment) => {
 
 onMounted(() => {
   store.fetchPayments();
+});
+
+useRealtimeRefresh({
+  subscribe: socketService.onAdminActivity.bind(socketService),
+  unsubscribe: socketService.offAdminActivity.bind(socketService),
+  types: ["payment_submitted", "payment_verified", "payment_rejected", "payment_refunded"],
+  refetchFn: () => store.fetchPayments(),
 });
 </script>
 

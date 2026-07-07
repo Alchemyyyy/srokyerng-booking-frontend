@@ -3,6 +3,7 @@ import { defineStore } from "pinia";
 import { authService } from "@/modules/auth/services/authService";
 import { useNotificationStore } from "@/modules/notifications/store/notificationStore";
 import { setAccessToken, setAuthHandlers } from "@/app/api/http";
+import { socketService } from "@/shared/services/socket.service";
 
 export const useAuthStore = defineStore("auth", () => {
   const notificationStore = useNotificationStore();
@@ -40,12 +41,16 @@ export const useAuthStore = defineStore("auth", () => {
     accessToken.value = data.access_token;
     user.value = data.user;
     setAccessToken(data.access_token);
+    socketService.setAuthToken(data.access_token);
+    socketService.connect();
   };
 
   const clearSession = () => {
     accessToken.value = null;
     user.value = null;
     setAccessToken(null);
+    socketService.setAuthToken(null);
+    socketService.disconnect();
     notificationStore.reset();
   };
 

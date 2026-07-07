@@ -12,6 +12,8 @@ import {
   getImageUrl,
 } from "../utils/formatters";
 import { getBankName, getBankLogo } from "@/modules/payments/utils/bankBranding";
+import { useRealtimeRefresh } from "@/shared/composables/useRealtimeRefresh";
+import { socketService } from "@/shared/services/socket.service";
 import {
   EyeIcon,
   XMarkIcon,
@@ -114,6 +116,13 @@ const nightsLabel = (nights) =>
 
 onMounted(() => {
   reservationStore.fetchReservations();
+});
+
+useRealtimeRefresh({
+  subscribe: socketService.onAdminActivity.bind(socketService),
+  unsubscribe: socketService.offAdminActivity.bind(socketService),
+  types: ["reservation_created", "reservation_cancelled", "reservation_confirmed"],
+  refetchFn: () => reservationStore.fetchReservations(),
 });
 </script>
 

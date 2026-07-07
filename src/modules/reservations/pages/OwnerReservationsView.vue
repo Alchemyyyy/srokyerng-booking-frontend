@@ -8,6 +8,8 @@ import TablePagination from "@/modules/owner/components/TablePagination.vue";
 import LoadingSpinner from "@/shared/components/LoadingSpinner.vue";
 import OwnerLoadingState from "@/modules/owner/components/OwnerLoadingState.vue";
 import { reservationApi } from "../api/reservation.api";
+import { useRealtimeRefresh } from "@/shared/composables/useRealtimeRefresh";
+import { socketService } from "@/shared/services/socket.service";
 
 const router = useRouter();
 const { t, te } = useI18n({ useScope: "global" });
@@ -106,6 +108,13 @@ const goToReservationDetail = (row) => {
 };
 
 onMounted(fetchReservations);
+
+useRealtimeRefresh({
+  subscribe: socketService.onNotification.bind(socketService),
+  unsubscribe: socketService.offNotification.bind(socketService),
+  types: ["reservation_created", "reservation_cancelled", "reservation_confirmed"],
+  refetchFn: fetchReservations,
+});
 </script>
 
 <template> <div class="owner-reservations text-(--color-text) ">

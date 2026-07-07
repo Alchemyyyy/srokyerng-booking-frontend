@@ -12,6 +12,8 @@ import { useToastStore } from "@/shared/store/toastStore";
 import { propertyApi } from "@/modules/properties/api/property.api";
 import { resolveAssetUrl } from "@/shared/utils/assetUrl";
 import { useI18n } from "vue-i18n";
+import { useRealtimeRefresh } from "@/shared/composables/useRealtimeRefresh";
+import { socketService } from "@/shared/services/socket.service";
 
 import {
   PlusIcon,
@@ -768,6 +770,13 @@ onMounted(async () => {
   } catch {
     toast.danger(t("owner.propertiesPage.toasts.loadPropertiesFailed"));
   }
+});
+
+useRealtimeRefresh({
+  subscribe: socketService.onNotification.bind(socketService),
+  unsubscribe: socketService.offNotification.bind(socketService),
+  types: ["property_approved", "property_rejected"],
+  refetchFn: () => propertyStore.fetchMyProperties(),
 });
 </script>
 
