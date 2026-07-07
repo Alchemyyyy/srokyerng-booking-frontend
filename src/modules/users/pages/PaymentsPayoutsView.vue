@@ -48,7 +48,7 @@ const fetchPaymentHistory = async () => {
   loadingTransactions.value = true;
   try {
     // Fetch user reservations
-    const response = await http.get("/reservations");
+    const response = await http.get("/reservations/my");
     const bookings = response.data || response || [];
     
     // Extract payment details from bookings
